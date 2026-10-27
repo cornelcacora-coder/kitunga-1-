@@ -147,7 +147,7 @@ class _IntroWidgetState extends State<IntroWidget>
                                                                   16.0,
                                                                   16.0),
                                                       child: Text(
-                                                        'Faites vos achats en un click',
+                                                        'Faites vos achats en un clic',
                                                         textAlign:
                                                             TextAlign.center,
                                                         maxLines: 2,
@@ -1258,9 +1258,9 @@ class _IntroWidgetState extends State<IntroWidget>
                                             context: context,
                                             builder: (alertDialogContext) {
                                               return AlertDialog(
-                                                title: Text('Acces Refusé'),
+                                                title: Text('Accès refusé'),
                                                 content: Text(
-                                                    'Vous ne pouvez pas vous connecté. Vous devez disposé d\'un accès admin'),
+                                                    'Vous ne pouvez pas vous connecter. Vous devez disposer d\'un accès admin.'),
                                                 actions: [
                                                   TextButton(
                                                     onPressed: () =>

@@ -947,7 +947,7 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                                 title:
                                                     'Aucun Abonnement Disponible  ! ',
                                                 description:
-                                                    'Vous n\'etes pas abonné à kitunga, veuillez souscrire à un abonnement afin de bénéficier de toutes les fonctionalités.',
+                                                    'Vous n\'etes pas abonné à kitunga, veuillez souscrire à un abonnement afin de bénéficier de toutes les fonctionnalités.',
                                                 buttonText: 'Ok',
                                                 action: () async {
                                                   Navigator.pop(context);

@@ -115,8 +115,8 @@ class _DeliveryStoryWidgetState extends State<DeliveryStoryWidget> {
             ),
             Text(
               valueOrDefault<String>(
-                dateTimeFormat("M/d H:mm", widget!.createdAt),
-                ' 6/10 16:19',
+                dateTimeFormat("d/M H:mm", widget!.createdAt),
+                '-',
               ),
               style: FlutterFlowTheme.of(context).labelSmall.override(
                     font: GoogleFonts.inter(

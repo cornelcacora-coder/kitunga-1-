@@ -73,7 +73,7 @@ class _AddPhoneNumberWidgetState extends State<AddPhoneNumberWidget> {
             },
           ),
           title: Text(
-            'Telephone',
+            'Téléphone',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
                   font: GoogleFonts.interTight(
                     fontWeight:
@@ -121,7 +121,7 @@ class _AddPhoneNumberWidgetState extends State<AddPhoneNumberWidget> {
                     ),
                   ),
                   Text(
-                    'Nouveau numero de telehone',
+                    'Nouveau numéro de téléphone',
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).titleLarge.override(
                           font: GoogleFonts.interTight(
@@ -139,7 +139,7 @@ class _AddPhoneNumberWidgetState extends State<AddPhoneNumberWidget> {
                         ),
                   ),
                   Text(
-                    'Ajouter un nouveau numero de telephone pour parfaire votre commande. ',
+                    'Ajoutez un nouveau numéro de téléphone pour finaliser votre commande. ',
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).titleSmall.override(
                           font: GoogleFonts.inter(

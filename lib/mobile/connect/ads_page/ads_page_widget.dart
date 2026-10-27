@@ -199,7 +199,7 @@ class _AdsPageWidgetState extends State<AdsPageWidget>
                             onPressed: () async {
                               context.pushNamed(IntroWidget.routeName);
                             },
-                            text: 'Demarrer',
+                            text: 'Démarrer',
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 40.0,

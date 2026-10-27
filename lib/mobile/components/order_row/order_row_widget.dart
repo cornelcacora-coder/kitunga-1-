@@ -99,7 +99,7 @@ class _OrderRowWidgetState extends State<OrderRowWidget> {
                     Text(
                       valueOrDefault<String>(
                         widget!.customer,
-                        'Alex Johnson',
+                        'Client',
                       ),
                       style: FlutterFlowTheme.of(context).bodyLarge.override(
                             font: GoogleFonts.inter(

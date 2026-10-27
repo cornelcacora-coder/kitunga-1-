@@ -163,7 +163,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                     Text(
                       valueOrDefault<String>(
                         widget!.zone,
-                        'Talangai',
+                        'Zone non précisée',
                       ),
                       textAlign: TextAlign.start,
                       maxLines: 2,
@@ -191,7 +191,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                     Text(
                       valueOrDefault<String>(
                         dateTimeFormat("d/M/y", widget!.createdAt),
-                        ' 12/5/2026',
+                        '-',
                       ),
                       textAlign: TextAlign.start,
                       maxLines: 1,

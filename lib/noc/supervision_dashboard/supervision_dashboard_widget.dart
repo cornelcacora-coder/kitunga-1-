@@ -1104,7 +1104,7 @@ class _SupervisionDashboardWidgetState
                                             valueOrDefault<String>(
                                               dateTimeFormat("MMMMEEEEd",
                                                   getCurrentTimestamp),
-                                              'Tuesday, May 12',
+                                              '',
                                             ),
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
@@ -1958,7 +1958,7 @@ class _SupervisionDashboardWidgetState
                                                                         String>(
                                                                       listedOrderOrdersRecord
                                                                           .deliveryZone,
-                                                                      'Talangai',
+                                                                      'Zone non précisée',
                                                                     ),
                                                                     orderId:
                                                                         listedOrderOrdersRecord

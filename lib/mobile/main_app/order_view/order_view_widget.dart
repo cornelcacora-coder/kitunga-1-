@@ -469,7 +469,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                 valueOrDefault<String>(
                                                   middleBodyOrdersRecord
                                                       .deliveryZone,
-                                                  'Talangai',
+                                                  'Zone non précisée',
                                                 ),
                                                 style: FlutterFlowTheme.of(
                                                         context)
@@ -670,7 +670,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                               if (wrapOrderItemsRecordList
                                                   .isEmpty) {
                                                 return EmptyCardWidget(
-                                                  title: 'Pannier Vide !',
+                                                  title: 'Panier vide !',
                                                   description:
                                                       'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
                                                   buttonText: 'Explorer',
@@ -1296,8 +1296,8 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                 alignment: AlignmentDirectional(
                                                     0.0, 1.0),
                                                 child: FFButtonWidget(
-                                                  onPressed: () {
-                                                    print('Button pressed ...');
+                                                  onPressed: () async {
+                                                    await launchURL('https://wa.me/242069232569');
                                                   },
                                                   text: 'Admin',
                                                   options: FFButtonOptions(

@@ -1383,7 +1383,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                         dateTimeFormat(
                                                                             "d/M H:mm",
                                                                             listViewOrdersRecord.createdAt),
-                                                                        '26/3 14:53',
+                                                                        '-',
                                                                       ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
@@ -1618,7 +1618,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                         String>(
                                                                       listViewOrdersRecord
                                                                           .deliveryZone,
-                                                                      'Talangai',
+                                                                      'Zone non précisée',
                                                                     ),
                                                                     maxLines: 1,
                                                                     style: FlutterFlowTheme.of(
@@ -1769,7 +1769,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: EmptyCardWidget(
                                                                                 photo: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gv3nx4dk4pps/boxicons-pXmQQk8IxaQ-unsplash.png',
-                                                                                title: 'Colis Non Reçu !',
+                                                                                title: 'Colis non reçu !',
                                                                                 description: 'Veuillez demandé une confirmation de l\'utilisateur afin de confirmer votre livraison ',
                                                                                 buttonText: 'Compris !',
                                                                                 action: () async {

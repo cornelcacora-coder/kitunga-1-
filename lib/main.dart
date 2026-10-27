@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
@@ -21,6 +22,9 @@ void main() async {
   usePathUrlStrategy();
 
   await initFirebase();
+
+  // Données de formatage des dates en français (voir dateTimeFormat).
+  await initializeDateFormatting('fr');
 
   await FlutterFlowTheme.initialize();
 
@@ -113,7 +117,8 @@ class _MyAppState extends State<MyApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [Locale('en', '')],
+      locale: const Locale('fr'),
+      supportedLocales: const [Locale('fr', ''), Locale('en', '')],
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: false,
@@ -200,7 +205,7 @@ class _NavBarPageState extends State<NavBarPage> {
                 Icons.shopping_basket_outlined,
                 size: 24.0,
               ),
-              label: 'Order',
+              label: 'Commandes',
               tooltip: '',
             ),
             BottomNavigationBarItem(
@@ -208,7 +213,7 @@ class _NavBarPageState extends State<NavBarPage> {
                 Icons.person_outlined,
                 size: 24.0,
               ),
-              label: 'Profile',
+              label: 'Profil',
               tooltip: '',
             )
           ],

@@ -59,7 +59,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   title: 'Accès Refusé !',
                   iconBg: FlutterFlowTheme.of(context).secondary,
                   subtitle:
-                      'Veuillez vous abonnez afin d\'accéder à toutes les fonctionalités de Kitunga sans limitation.',
+                      'Veuillez vous abonner afin d\'accéder à toutes les fonctionnalités de Kitunga sans limitation.',
                   btnTxt: 'S\'abonner',
                   onValidate: () async {
                     Navigator.of(context).pop();

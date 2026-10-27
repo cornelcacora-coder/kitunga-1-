@@ -199,7 +199,7 @@ class _AdsPageCopyWidgetState extends State<AdsPageCopyWidget>
                             onPressed: () async {
                               context.pushNamed(IntroWidget.routeName);
                             },
-                            text: 'Demarrer',
+                            text: 'Démarrer',
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 40.0,

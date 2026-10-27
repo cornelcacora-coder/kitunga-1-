@@ -1,53 +1,126 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return /databases/$(database)/documents/User/$(request.auth.uid);
+    }
+
+    function myRole() {
+      return get(me()).data.get('role', '');
+    }
+
+    function isAdmin() {
+      return signedIn() && myRole() == 'Admin';
+    }
+
+    // Rôles qu'un utilisateur peut s'attribuer lui-même (jamais 'Admin').
+    function selfAssignableRole(role) {
+      return role in ['User', 'Seller', 'Deliver', 'Guest'];
+    }
+
+    // ── User ───────────────────────────────────────────────────────────────
+    // Lecture réservée aux utilisateurs connectés (les invités sont connectés
+    // anonymement). Personne ne peut se donner le rôle Admin : il s'attribue
+    // depuis la console Firebase.
     match /User/{document} {
-      allow create: if request.auth.uid == document;
-      allow read: if true;
-      allow write: if request.auth.uid == document;
-      allow delete: if request.auth != null;
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == document
+        && selfAssignableRole(request.resource.data.get('role', 'User'));
+      allow update: if signedIn() && request.auth.uid == document
+        && (request.resource.data.get('role', '') == resource.data.get('role', '')
+            || selfAssignableRole(request.resource.data.get('role', '')));
+      allow delete: if (signedIn() && request.auth.uid == document) || isAdmin();
     }
 
+    // ── Product ────────────────────────────────────────────────────────────
     match /Product/{document} {
-      allow create: if request.auth != null;
       allow read: if true;
-      allow write: if resource.data.seller_ref == /databases/$(database)/documents/User/$(request.auth.uid);
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.seller_ref == me();
+      allow update: if signedIn()
+        && (resource.data.seller_ref == me() || isAdmin())
+        && request.resource.data.seller_ref == resource.data.seller_ref;
+      allow delete: if signedIn() && (resource.data.seller_ref == me() || isAdmin());
     }
 
+    // ── Cart ───────────────────────────────────────────────────────────────
     match /Cart/{document} {
-      allow create: if request.auth != null;
-      allow read: if resource.data.user_ref == /databases/$(database)/documents/User/$(request.auth.uid);
-      allow write: if resource.data.user_ref == /databases/$(database)/documents/User/$(request.auth.uid);
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_ref == me();
+      allow read: if signedIn() && (resource.data.user_ref == me() || isAdmin());
+      allow update: if signedIn() && resource.data.user_ref == me()
+        && request.resource.data.user_ref == me();
+      allow delete: if signedIn() && (resource.data.user_ref == me() || isAdmin());
+    }
+
+    // ── Orders ─────────────────────────────────────────────────────────────
+    // Les livreurs consultent les commandes disponibles : lecture pour tout
+    // utilisateur connecté. Modification réservée aux personnes concernées par
+    // la commande ; montant, client et vendeur ne peuvent plus être changés.
+    function isBuyer(order) {
+      return order.user_ref == me();
+    }
+
+    function isSeller(order) {
+      return order.get('seller_ref', null) == me();
+    }
+
+    function isAssignedDeliverer(order) {
+      return order.get('deliver_reference', null) == me()
+        || order.get('deliverer_ref', '') == request.auth.uid;
+    }
+
+    // Un livreur peut prendre une commande qui n'a pas encore de livreur.
+    function canTakeOrder(order) {
+      return myRole() == 'Deliver'
+        && (order.get('deliver_reference', null) == null || isAssignedDeliverer(order));
+    }
+
+    function orderKeyFieldsUnchanged() {
+      return request.resource.data.user_ref == resource.data.user_ref
+        && request.resource.data.get('seller_ref', null) == resource.data.get('seller_ref', null)
+        && request.resource.data.get('total_amount', null) == resource.data.get('total_amount', null)
+        && request.resource.data.get('delivery_fees', null) == resource.data.get('delivery_fees', null);
     }
 
     match /Orders/{document} {
-      allow create: if request.resource.data.user_ref == /databases/$(database)/documents/User/$(request.auth.uid);
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_ref == me();
+      allow read: if signedIn();
+      allow update: if signedIn() && orderKeyFieldsUnchanged()
+        && (isBuyer(resource.data) || isSeller(resource.data)
+            || isAssignedDeliverer(resource.data) || canTakeOrder(resource.data)
+            || isAdmin());
+      allow delete: if isAdmin();
     }
 
+    // ── OrderItems ─────────────────────────────────────────────────────────
     match /OrderItems/{document} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_ref == me();
+      allow read: if signedIn();
+      allow update: if signedIn() && (resource.data.user_ref == me() || isAdmin())
+        && request.resource.data.user_ref == resource.data.user_ref;
+      allow delete: if signedIn() && (resource.data.user_ref == me() || isAdmin());
     }
 
+    // ── system_logs ────────────────────────────────────────────────────────
     match /system_logs/{document} {
-      allow create: if true;
-      allow read: if true;
-      allow write: if false;
-      allow delete: if request.auth != null;
+      allow create: if signedIn();
+      allow read: if signedIn();
+      allow update: if false;
+      allow delete: if isAdmin();
     }
 
+    // ── Paiement ───────────────────────────────────────────────────────────
+    // Trace des tentatives de paiement MoMo (écrite par l'app, lue par le NOC).
     match /Paiement/{document} {
-      allow create: if true;
-      allow read: if true;
-      allow write: if false;
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_ref == me();
+      allow read: if isAdmin() || (signedIn() && resource.data.get('user_ref', null) == me());
+      allow update: if false;
+      allow delete: if isAdmin();
     }
   }
 }

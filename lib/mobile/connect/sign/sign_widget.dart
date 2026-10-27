@@ -1021,7 +1021,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
-                                                hintText: 'Categorie Business',
+                                                hintText: 'Catégorie Business',
                                                 icon: Icon(
                                                   Icons
                                                       .keyboard_arrow_down_rounded,
@@ -1322,7 +1322,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                                   .fontStyle,
                                                         ),
                                                     hintText:
-                                                        'Horraire (ex: 8h - 18h)',
+                                                        'Horaire (ex: 8h - 18h)',
                                                     hintStyle: FlutterFlowTheme
                                                             .of(context)
                                                         .labelMedium
@@ -2155,9 +2155,9 @@ class _SignWidgetState extends State<SignWidget> {
                                                                   _model
                                                                       .bioTextController
                                                                       .text,
-                                                                  'Je suis content d\'utiliser Kitunga comme App pour mes achat au quotidien',
+                                                                  'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
                                                                 )
-                                                              : 'Je suis content d\'utiliser Kitunga comme App pour mes achat au quotidien',
+                                                              : 'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
                                                           horraire: _model
                                                               .horraireTextController
                                                               .text,
@@ -2171,14 +2171,6 @@ class _SignWidgetState extends State<SignWidget> {
                                                                   .subscribTypeUserValue,
                                                           subscribeCloseAt:
                                                               getCurrentTimestamp,
-                                                          password: widget!.accessibility ==
-                                                                  'Admin'
-                                                              ? _model
-                                                                  .pwdBusinessTextController
-                                                                  .text
-                                                              : _model
-                                                                  .passwordUserTextController
-                                                                  .text,
                                                         ));
 
                                                     context.pushNamedAuth(
@@ -3189,9 +3181,9 @@ class _SignWidgetState extends State<SignWidget> {
                                         bio: widget!.accessibility == 'Admin'
                                             ? valueOrDefault<String>(
                                                 _model.bioTextController.text,
-                                                'Je suis content d\'utiliser Kitunga comme App pour mes achat au quotidien',
+                                                'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
                                               )
-                                            : 'Je suis content d\'utiliser Kitunga comme App pour mes achat au quotidien',
+                                            : 'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
                                         horraire:
                                             _model.horraireTextController.text,
                                         isSubscribed: true,
@@ -3200,14 +3192,6 @@ class _SignWidgetState extends State<SignWidget> {
                                             ? _model.subscribTypBusinessValue
                                             : _model.subscribTypeUserValue,
                                         subscribeCloseAt: getCurrentTimestamp,
-                                        password:
-                                            widget!.accessibility == 'Admin'
-                                                ? _model
-                                                    .pwdBusinessTextController
-                                                    .text
-                                                : _model
-                                                    .passwordUserTextController
-                                                    .text,
                                       ));
 
                                   await showDialog(

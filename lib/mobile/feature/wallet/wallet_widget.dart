@@ -478,8 +478,21 @@ class _WalletWidgetState extends State<WalletWidget> {
                                                   ],
                                                 ),
                                                 FFButtonWidget(
-                                                  onPressed: () {
-                                                    print('Button pressed ...');
+                                                  onPressed: () async {
+                                                    await showDialog(
+                                                      context: context,
+                                                      builder: (alertDialogContext) => AlertDialog(
+                                                        title: Text('Bientôt disponible'),
+                                                        content: Text(
+                                                            'Le dépôt sur Kitunga Cash n\'est pas encore disponible. Merci de réessayer ultérieurement.'),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () => Navigator.pop(alertDialogContext),
+                                                            child: Text('Compris'),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
                                                   },
                                                   text: 'Déposez',
                                                   icon: Icon(

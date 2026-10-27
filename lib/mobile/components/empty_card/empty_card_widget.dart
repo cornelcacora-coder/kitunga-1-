@@ -151,7 +151,7 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
                 },
                 text: valueOrDefault<String>(
                   widget!.buttonText,
-                  'Button Text',
+                  'OK',
                 ),
                 options: FFButtonOptions(
                   height: 40.0,

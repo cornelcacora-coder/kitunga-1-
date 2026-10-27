@@ -297,7 +297,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                               context)
                                                                           .secondary,
                                                                       subtitle:
-                                                                          'Veuillez vous abonnez afin d\'accéder à toutes les fonctionalités de Kitunga sans limitation.',
+                                                                          'Veuillez vous abonner afin d\'accéder à toutes les fonctionnalités de Kitunga sans limitation.',
                                                                       btnTxt:
                                                                           'S\'abonner',
                                                                       onValidate:
@@ -329,7 +329,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       }
                                                     },
                                                     child: Text(
-                                                      'Pannier',
+                                                      'Panier',
                                                       style:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -452,7 +452,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                     context)
                                                                 .secondary,
                                                         subtitle:
-                                                            'Veuillez vous abonnez afin d\'accéder à toutes les fonctionalités de Kitunga sans limitation.',
+                                                            'Veuillez vous abonner afin d\'accéder à toutes les fonctionnalités de Kitunga sans limitation.',
                                                         btnTxt: 'S\'abonner',
                                                         onValidate: () async {
                                                           Navigator.of(context).pop();
@@ -575,7 +575,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                 valueOrDefault<String>(
                                                   dateTimeFormat("MMMMEEEEd",
                                                       getCurrentTimestamp),
-                                                  'Saturday, July 25',
+                                                  '',
                                                 ),
                                                 maxLines: 1,
                                                 style:
@@ -674,7 +674,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                     .center,
                                                             children: [
                                                               Text(
-                                                                'Faites vos achats en un click',
+                                                                'Faites vos achats en un clic',
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
@@ -758,7 +758,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                     .center,
                                                             children: [
                                                               Text(
-                                                                'Tout ce dont vous avez besoin au meme endroit !',
+                                                                'Tout ce dont vous avez besoin au même endroit !',
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
@@ -842,7 +842,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                     .center,
                                                             children: [
                                                               Text(
-                                                                'Les meilleures plats sont ici et null ailleurs',
+                                                                'Les meilleurs plats sont ici et nulle part ailleurs',
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
@@ -2013,7 +2013,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                 ),
                                                       ),
                                                       Text(
-                                                        'Parcourrez les meilleurs articles',
+                                                        'Parcourez les meilleurs articles',
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -2457,7 +2457,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                     .fromSTEB(
                                                         20.0, 0.0, 20.0, 0.0),
                                                 child: Text(
-                                                  'Parcourrir',
+                                                  'Parcourir',
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .headlineMedium
@@ -3083,7 +3083,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                   color: Color(0xFF0D62F9),
                                                   size: 24.0,
                                                 ),
-                                                label: 'Categorie',
+                                                label: 'Catégorie',
                                                 value: valueOrDefault<String>(
                                                   valueOrDefault(
                                                       currentUserDocument
@@ -3110,7 +3110,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       .primary,
                                                   size: 24.0,
                                                 ),
-                                                label: 'Horraire',
+                                                label: 'Horaire',
                                                 value: valueOrDefault<String>(
                                                   valueOrDefault(
                                                       currentUserDocument
@@ -3136,15 +3136,15 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                           context)
                                                       .warning,
                                                 ),
-                                                label: 'Statu',
+                                                label: 'Statut',
                                                 value: valueOrDefault<String>(
                                                   valueOrDefault<bool>(
                                                           currentUserDocument
                                                               ?.verified,
                                                           false)
-                                                      ? 'Certifier'
-                                                      : 'Non Certifier',
-                                                  'Non Certifier',
+                                                      ? 'Certifié'
+                                                      : 'Non certifié',
+                                                  'Non certifié',
                                                 ),
                                               ),
                                             ),
@@ -4188,11 +4188,11 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       photo:
                                                           'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
                                                       description:
-                                                          'Patientez un instant ou revenez plus tard quand une ofre sera disponile',
+                                                          'Patientez un instant ou revenez plus tard quand une offre sera disponible',
                                                       buttonText:
-                                                          'Raffraichir la page',
+                                                          'Rafraîchir la page',
                                                       title:
-                                                          'Aucune Commande Dipsonible !',
+                                                          'Aucune commande disponible !',
                                                       action: () async {
                                                         safeSetState(() {});
                                                       },
@@ -4344,7 +4344,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                               Text(
                                                                                 valueOrDefault<String>(
                                                                                   dateTimeFormat("d/M H:mm", listViewOrdersRecord.createdAt),
-                                                                                  '26/3 14:53',
+                                                                                  '-',
                                                                                 ),
                                                                                 style: FlutterFlowTheme.of(context).bodySmall.override(
                                                                                       font: GoogleFonts.inter(
@@ -4520,7 +4520,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                             Text(
                                                                               valueOrDefault<String>(
                                                                                 listViewOrdersRecord.deliveryZone,
-                                                                                'Talangai',
+                                                                                'Zone non précisée',
                                                                               ),
                                                                               maxLines: 1,
                                                                               style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -4564,11 +4564,34 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                         FFButtonWidget(
                                                                           onPressed:
                                                                               () async {
-                                                                            await listViewOrdersRecord.reference.update(createOrdersRecordData(
-                                                                              status: 'encours',
-                                                                              delivererRef: currentUserReference?.id,
-                                                                              deliverReference: currentUserReference,
-                                                                            ));
+                                                                            final assignedToMe = listViewOrdersRecord.deliverReference == currentUserReference ||
+                                                                                listViewOrdersRecord.delivererRef == currentUserReference?.id;
+                                                                            final assignedToOther = !assignedToMe &&
+                                                                                (listViewOrdersRecord.deliverReference != null ||
+                                                                                    listViewOrdersRecord.delivererRef.isNotEmpty);
+                                                                            if (listViewOrdersRecord.status == 'Pret' && !assignedToOther) {
+                                                                              // Accepter : le livreur prend la commande.
+                                                                              await listViewOrdersRecord.reference.update(createOrdersRecordData(
+                                                                                status: 'encours',
+                                                                                delivererRef: currentUserReference?.id,
+                                                                                deliverReference: currentUserReference,
+                                                                              ));
+                                                                            } else if (listViewOrdersRecord.status == 'encours' && assignedToMe) {
+                                                                              // Terminer : même action que dans l'onglet Commandes.
+                                                                              await listViewOrdersRecord.reference.update(createOrdersRecordData(
+                                                                                status: 'Livrer',
+                                                                                delivererRef: currentUserReference?.id,
+                                                                              ));
+                                                                            } else {
+                                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                                SnackBar(
+                                                                                  content: Text(assignedToOther
+                                                                                      ? 'Cette commande a déjà été prise par un autre livreur.'
+                                                                                      : 'Cette commande n\'est plus disponible.'),
+                                                                                  duration: Duration(seconds: 3),
+                                                                                ),
+                                                                              );
+                                                                            }
                                                                             safeSetState(() {});
                                                                           },
                                                                           text:
@@ -4692,7 +4715,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                           context
                                               .pushNamed(IntroWidget.routeName);
                                         },
-                                        text: 'Demarrer',
+                                        text: 'Démarrer',
                                         options: FFButtonOptions(
                                           width: double.infinity,
                                           height: 40.0,
@@ -4916,7 +4939,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                     .center,
                                                             children: [
                                                               Text(
-                                                                'Faites vos achats en un click',
+                                                                'Faites vos achats en un clic',
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
@@ -5000,7 +5023,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                     .center,
                                                             children: [
                                                               Text(
-                                                                'Tout ce dont vous avez besoin au meme endroit !',
+                                                                'Tout ce dont vous avez besoin au même endroit !',
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
@@ -5084,7 +5107,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                     .center,
                                                             children: [
                                                               Text(
-                                                                'Les meilleures plats sont ici et null ailleurs',
+                                                                'Les meilleurs plats sont ici et nulle part ailleurs',
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
@@ -6270,7 +6293,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                 ),
                                                       ),
                                                       Text(
-                                                        'Parcourrez les meilleurs articles',
+                                                        'Parcourez les meilleurs articles',
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -6704,7 +6727,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                     .fromSTEB(
                                                         20.0, 0.0, 20.0, 0.0),
                                                 child: Text(
-                                                  'Parcourrir',
+                                                  'Parcourir',
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .headlineMedium

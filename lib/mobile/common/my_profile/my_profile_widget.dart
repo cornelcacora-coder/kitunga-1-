@@ -326,7 +326,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Telephone',
+                                  'Téléphone',
                                   style: FlutterFlowTheme.of(context)
                                       .titleSmall
                                       .override(
