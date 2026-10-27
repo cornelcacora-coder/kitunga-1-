@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>44272206573-8gtb0eb4b9f0qolpg281rl94nco6d7ko.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.44272206573-8gtb0eb4b9f0qolpg281rl94nco6d7ko</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBkACUFQyVXlnjUCV0SPpW_KcVF9pPXrlo</string>
+	<key>GCM_SENDER_ID</key>
+	<string>44272206573</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.mycompany.kitunga</string>
+	<key>PROJECT_ID</key>
+	<string>kitunga-xtvpe4</string>
+	<key>STORAGE_BUCKET</key>
+	<string>kitunga-xtvpe4.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:44272206573:ios:cea388a7e66589355b02e4</string>
+</dict>
+</plist>

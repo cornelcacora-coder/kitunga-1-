@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "44272206573",
+    "project_id": "kitunga-xtvpe4",
+    "storage_bucket": "kitunga-xtvpe4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44272206573:android:42dd1d7a84c430465b02e4",
+        "android_client_info": {
+          "package_name": "com.mycompany.kitunga"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "44272206573-gsk59m26a2jjfnsjihqs47urpb8oipcf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6bmQeCe_bmN-bFzliZFuO2J414ZU-k6E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44272206573-gsk59m26a2jjfnsjihqs47urpb8oipcf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "44272206573-8gtb0eb4b9f0qolpg281rl94nco6d7ko.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.kitunga"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44272206573:android:55bb2e574ee67cea5b02e4",
+        "android_client_info": {
+          "package_name": "com.ntemoconsulting.kitunga"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "44272206573-gsk59m26a2jjfnsjihqs47urpb8oipcf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6bmQeCe_bmN-bFzliZFuO2J414ZU-k6E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44272206573-gsk59m26a2jjfnsjihqs47urpb8oipcf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "44272206573-8gtb0eb4b9f0qolpg281rl94nco6d7ko.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.kitunga"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
