@@ -329,7 +329,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       }
                                                     },
                                                     child: Text(
-                                                      'Pannier',
+                                                      'Panier',
                                                       style:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -401,7 +401,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                       ),
                                       if (valueOrDefault(
                                               currentUserDocument?.role, '') ==
-                                          'User')
+                                          'User' || valueOrDefault(currentUserDocument?.role, '') == 'Guest' || valueOrDefault(currentUserDocument?.role, '') == '')
                                         FlutterFlowIconButton(
                                           borderRadius: 24.0,
                                           buttonSize: 40.0,
@@ -498,10 +498,15 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
               child: Stack(
                 alignment: AlignmentDirectional(1.0, 1.0),
                 children: [
-                  Builder(
+                  AuthUserStreamWidget(
+                    builder: (context) => Builder(
                     builder: (context) {
                       if (valueOrDefault(currentUserDocument?.role, '') ==
-                          'User') {
+                              'User' ||
+                          valueOrDefault(currentUserDocument?.role, '') ==
+                              'Guest' ||
+                          valueOrDefault(currentUserDocument?.role, '') ==
+                              '') {
                         return Stack(
                           children: [
                             Align(
@@ -6892,6 +6897,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                         );
                       }
                     },
+                  ),
                   ),
                   if (valueOrDefault(currentUserDocument?.role, '') != 'Admin')
                     Align(
