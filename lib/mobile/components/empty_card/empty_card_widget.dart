@@ -167,7 +167,7 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
                           fontStyle:
                               FlutterFlowTheme.of(context).labelLarge.fontStyle,
                         ),
-                        color: FlutterFlowTheme.of(context).primaryBackground,
+                        color: Colors.white,
                         letterSpacing: 0.0,
                         fontWeight:
                             FlutterFlowTheme.of(context).labelLarge.fontWeight,

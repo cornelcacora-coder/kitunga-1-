@@ -56,11 +56,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                     Icons.crisis_alert,
                     color: Colors.white,
                   ),
-                  title: 'Accès Refusé !',
+                  title: 'Créez votre compte',
                   iconBg: FlutterFlowTheme.of(context).secondary,
                   subtitle:
-                      'Veuillez vous abonner afin d\'accéder à toutes les fonctionnalités de Kitunga sans limitation.',
-                  btnTxt: 'S\'abonner',
+                      'Créez votre compte Kitunga pour commander, suivre vos achats et profiter de toutes les fonctionnalités.',
+                  btnTxt: 'Créer un compte',
                   onValidate: () async {
                     Navigator.of(context).pop();
                     context.pushNamed(
@@ -164,10 +164,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                           child: EmptyCardWidget(
                             photo:
                                 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
-                            title: 'Accès refusé !',
+                            title: 'Créez votre compte',
                             description:
-                                'Veuillez vous abonné pour accéder au journanl des commandes',
-                            buttonText: 'S\'abonner',
+                                'Créez votre compte Kitunga pour accéder à l\'historique de vos commandes.',
+                            buttonText: 'Créer un compte',
                             action: () async {
                               context.pushNamed(
                                 SignWidget.routeName,
@@ -545,7 +545,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                   0.0,
                                                                   0.0),
                                                       child: Text(
-                                                        'My profile',
+                                                        'Mon profil',
                                                         maxLines: 1,
                                                         style: FlutterFlowTheme
                                                                 .of(context)
@@ -668,7 +668,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                   0.0,
                                                                   0.0),
                                                       child: Text(
-                                                        'Security',
+                                                        'Sécurité',
                                                         maxLines: 1,
                                                         style: FlutterFlowTheme
                                                                 .of(context)
@@ -789,7 +789,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                   0.0,
                                                                   0.0),
                                                       child: Text(
-                                                        'Settings',
+                                                        'Paramètres',
                                                         maxLines: 1,
                                                         style: FlutterFlowTheme
                                                                 .of(context)
@@ -915,7 +915,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                   0.0,
                                                                   0.0),
                                                       child: Text(
-                                                        'Privacy policy',
+                                                        'Politique de confidentialité',
                                                         maxLines: 1,
                                                         style: FlutterFlowTheme
                                                                 .of(context)
@@ -1047,7 +1047,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                   0.0,
                                                                   0.0),
                                                       child: Text(
-                                                        'Terms & conditions',
+                                                        'Conditions d\'utilisation',
                                                         maxLines: 1,
                                                         style: FlutterFlowTheme
                                                                 .of(context)
@@ -1189,7 +1189,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                   0.0,
                                                                   0.0),
                                                       child: Text(
-                                                        'Log out',
+                                                        'Déconnexion',
                                                         maxLines: 1,
                                                         style: FlutterFlowTheme
                                                                 .of(context)

@@ -503,14 +503,14 @@ class _ShopsWidgetState extends State<ShopsWidget> {
                                                         Icons.crisis_alert,
                                                         color: Colors.white,
                                                       ),
-                                                      title: 'Accès Refusé !',
+                                                      title: 'Créez votre compte',
                                                       iconBg:
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .secondary,
                                                       subtitle:
-                                                          'Veuillez vous abonner afin d\'accéder à toutes les fonctionnalités de Kitunga sans limitation.',
-                                                      btnTxt: 'S\'abonner',
+                                                          'Créez votre compte Kitunga pour commander, suivre vos achats et profiter de toutes les fonctionnalités.',
+                                                      btnTxt: 'Créer un compte',
                                                       onValidate: () async {
                                                         Navigator.of(context).pop();
                                                         context.pushNamed(

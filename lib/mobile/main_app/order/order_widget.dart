@@ -130,10 +130,10 @@ class _OrderWidgetState extends State<OrderWidget> {
                               return EmptyCardWidget(
                                 photo:
                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
-                                title: 'Aucun Ordre Disponible !',
+                                title: 'Aucune commande pour le moment',
                                 description:
-                                    'Ajouter un produit dans le pannier et confirmer la commande afin de le voir apparaitre ici',
-                                buttonText: 'Voir catalogue',
+                                    'Ajoutez des produits à votre panier et validez votre commande : vous pourrez la suivre ici.',
+                                buttonText: 'Découvrir les boutiques',
                                 action: () async {
                                   context.pushNamed(HomeWidget.routeName);
                                 },
@@ -595,9 +595,9 @@ class _OrderWidgetState extends State<OrderWidget> {
                                 return EmptyCardWidget(
                                   photo:
                                       'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
-                                  title: 'Aucun Ordre Disponible !',
+                                  title: 'Aucune commande pour le moment',
                                   description:
-                                      'Attendez qu\'un client passe une commande et elle apparaitra ici !',
+                                      'Dès qu\'un client passera commande dans votre boutique, elle apparaîtra ici.',
                                   buttonText: 'Voir mes produits',
                                   action: () async {
                                     context.pushNamed(HomeWidget.routeName);
@@ -1936,10 +1936,10 @@ class _OrderWidgetState extends State<OrderWidget> {
                             return EmptyCardWidget(
                               photo:
                                   'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
-                              title: 'Aucun Ordre Disponible !',
+                              title: 'Aucune commande pour le moment',
                               description:
-                                  'Ajouter un produit dans le pannier et confirmer la commande afin de le voir apparaitre ici',
-                              buttonText: 'Voir catalogue',
+                                  'Ajoutez des produits à votre panier et validez votre commande : vous pourrez la suivre ici.',
+                              buttonText: 'Découvrir les boutiques',
                               action: () async {
                                 context.pushNamed(HomeWidget.routeName);
                               },
@@ -2328,10 +2328,10 @@ class _OrderWidgetState extends State<OrderWidget> {
                               child: EmptyCardWidget(
                                 photo:
                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
-                                title: 'Accès refusé !',
+                                title: 'Créez votre compte',
                                 description:
-                                    'Veuillez vous abonné pour accéder au journanl des commandes',
-                                buttonText: 'S\'abonner',
+                                    'Créez votre compte Kitunga pour accéder à l\'historique de vos commandes.',
+                                buttonText: 'Créer un compte',
                                 action: () async {
                                   context.pushNamed(
                                     SignWidget.routeName,

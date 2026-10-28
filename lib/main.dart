@@ -56,7 +56,11 @@ class MyAppScrollBehavior extends MaterialScrollBehavior {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = FlutterFlowTheme.themeMode;
+  // Mode clair par défaut ; le mode sombre s'active depuis le menu latéral
+  // et le choix est mémorisé.
+  ThemeMode _themeMode = FlutterFlowTheme.themeMode == ThemeMode.system
+      ? ThemeMode.light
+      : FlutterFlowTheme.themeMode;
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
@@ -185,9 +189,9 @@ class _NavBarPageState extends State<NavBarPage> {
             _currentPage = null;
             _currentPageName = tabs.keys.toList()[i];
           }),
-          backgroundColor: Colors.white,
-          selectedItemColor: Color(0xFFD91B53),
-          unselectedItemColor: Color(0xFF6B6B7A),
+          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          selectedItemColor: FlutterFlowTheme.of(context).primary,
+          unselectedItemColor: FlutterFlowTheme.of(context).secondaryText,
           showSelectedLabels: true,
           showUnselectedLabels: true,
           type: BottomNavigationBarType.fixed,

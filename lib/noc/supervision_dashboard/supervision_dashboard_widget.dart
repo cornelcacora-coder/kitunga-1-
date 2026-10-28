@@ -20,6 +20,7 @@ import '/noc/noc_cta/noc_cta_widget.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
+import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -105,13 +106,7 @@ class _SupervisionDashboardWidgetState
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Image.asset(
-                                      'assets/images/photo_2025-12-24_16-17-10-removebg-preview.png',
-                                      width: 60.0,
-                                      height: 40.0,
-                                      fit: BoxFit.cover,
-                                      alignment: Alignment(0.0, 0.0),
-                                    ),
+                                    KitungaLogo(size: 44.0),
                                     Column(
                                       mainAxisSize: MainAxisSize.min,
                                       mainAxisAlignment:

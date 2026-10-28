@@ -89,7 +89,7 @@ class _AddressCardWidgetState extends State<AddressCardWidget> {
                         Text(
                           valueOrDefault<String>(
                             widget!.type,
-                            'Home',
+                            'Domicile',
                           ),
                           style: FlutterFlowTheme.of(context)
                               .titleSmall

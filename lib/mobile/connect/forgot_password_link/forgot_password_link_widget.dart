@@ -56,7 +56,7 @@ class _ForgotPasswordLinkWidgetState extends State<ForgotPasswordLinkWidget> {
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           automaticallyImplyLeading: false,
           title: Text(
-            'Mot de passe oublier',
+            'Mot de passe oublié ?',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
                   font: GoogleFonts.interTight(
                     fontWeight: FontWeight.w500,
