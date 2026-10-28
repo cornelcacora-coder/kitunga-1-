@@ -625,7 +625,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ),
-                                    Expanded(
+                                    Container(
                                       child: Padding(
                                         padding: EdgeInsets.all(10.0),
                                         child: Container(
@@ -1786,7 +1786,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ),
-                                    Expanded(
+                                    Container(
                                       child: Padding(
                                         padding: EdgeInsets.all(20.0),
                                         child: Builder(
@@ -2072,7 +2072,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ),
-                                    Expanded(
+                                    Container(
                                       child: Padding(
                                         padding: EdgeInsets.all(20.0),
                                         child: Builder(
@@ -2351,7 +2351,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ),
-                                    Expanded(
+                                    Container(
                                       child: Padding(
                                         padding: EdgeInsets.all(20.0),
                                         child: Builder(
@@ -4890,7 +4890,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ),
-                                    Expanded(
+                                    Container(
                                       child: Padding(
                                         padding: EdgeInsets.all(10.0),
                                         child: Container(
@@ -6071,7 +6071,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ),
-                                    Expanded(
+                                    Container(
                                       child: Padding(
                                         padding: EdgeInsets.all(20.0),
                                         child: Builder(
@@ -6352,7 +6352,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ),
-                                    Expanded(
+                                    Container(
                                       child: Padding(
                                         padding: EdgeInsets.all(20.0),
                                         child: Builder(
@@ -6626,7 +6626,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     ),
-                                    Expanded(
+                                    Container(
                                       child: Padding(
                                         padding: EdgeInsets.all(20.0),
                                         child: Builder(
