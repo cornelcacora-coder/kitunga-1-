@@ -1,3 +1,4 @@
+import '/backend/order_status.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -270,10 +271,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                                 Flexible(
                                   flex: 1,
                                   child: Text(
-                                    valueOrDefault<String>(
-                                      widget!.status,
-                                      'Non Reçu',
-                                    ),
+                                    OrderStatus.label(widget!.status ?? ''),
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
                                         .labelSmall

@@ -1,3 +1,4 @@
+import '/backend/order_status.dart';
 import '/backend/backend.dart';
 import '/components/order_comp_n_o_c_widget.dart';
 import '/components/view_deliver_widget.dart';
@@ -353,65 +354,8 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                                   listedOrderOrdersRecord.status,
                                   'En attente',
                                 ),
-                                statusBg: valueOrDefault<Color>(
-                                  () {
-                                    if (listedOrderOrdersRecord.status ==
-                                        'En attente') {
-                                      return FlutterFlowTheme.of(context)
-                                          .accent3;
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'Pret') {
-                                      return Color(0x4DEEED60);
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'encours') {
-                                      return Color(0x4D3943D2);
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'Livrer') {
-                                      return FlutterFlowTheme.of(context)
-                                          .accent2;
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'Reçu') {
-                                      return Color(0x4DAC39D2);
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'Non Reçu') {
-                                      return Color(0x4DCB39D2);
-                                    } else {
-                                      return FlutterFlowTheme.of(context)
-                                          .accent2;
-                                    }
-                                  }(),
-                                  FlutterFlowTheme.of(context).accent2,
-                                ),
-                                statuTextBg: valueOrDefault<Color>(
-                                  () {
-                                    if (listedOrderOrdersRecord.status ==
-                                        'En attente') {
-                                      return FlutterFlowTheme.of(context)
-                                          .primary;
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'Pret') {
-                                      return FlutterFlowTheme.of(context)
-                                          .warning;
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'encours') {
-                                      return Color(0xFF180FE0);
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'Livrer') {
-                                      return FlutterFlowTheme.of(context)
-                                          .tertiary;
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'Reçu') {
-                                      return Color(0xFFB908EC);
-                                    } else if (listedOrderOrdersRecord.status ==
-                                        'Non Reçu') {
-                                      return Color(0xFFF10DC3);
-                                    } else {
-                                      return FlutterFlowTheme.of(context)
-                                          .secondaryText;
-                                    }
-                                  }(),
-                                  FlutterFlowTheme.of(context).success,
-                                ),
+                                statusBg: OrderStatus.color(listedOrderOrdersRecord.status),
+                                statuTextBg: OrderStatus.color(listedOrderOrdersRecord.status),
                                 createdAt: listedOrderOrdersRecord.createdAt,
                                 isReady: Icon(
                                   Icons.add_alert_rounded,

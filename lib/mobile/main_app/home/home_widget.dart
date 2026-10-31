@@ -27,6 +27,7 @@ import 'package:provider/provider.dart';
 import '/mobile/components/app_drawer/app_drawer_widget.dart';
 import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
 import '/mobile/seller/seller_dashboard.dart';
+import '/backend/order_status.dart';
 import 'buyer_home_view.dart';
 import 'home_model.dart';
 export 'home_model.dart';
@@ -526,7 +527,8 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                         } else if (valueOrDefault(
                                 currentUserDocument?.role, '') ==
                             'Seller') {
-                          return SellerDashboardView(shop: currentUserDocument!);
+                          return SellerDashboardView(
+                              shop: currentUserDocument!);
                         } else if (valueOrDefault(
                                 currentUserDocument?.role, '') ==
                             'Deliver') {
@@ -1171,11 +1173,13 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                 child: StreamBuilder<
                                                     List<OrdersRecord>>(
                                                   stream: queryOrdersRecord(
-                                                    queryBuilder:
-                                                        (ordersRecord) =>
-                                                            ordersRecord.where(
+                                                    queryBuilder: (ordersRecord) =>
+                                                        // Livreurs : uniquement les commandes prêtes ou en cours de livraison
+                                                        // (pas celles en attente, refusées ou annulées).
+                                                        ordersRecord.where(
                                                       'status',
-                                                      isNotEqualTo: 'Livrer',
+                                                      whereIn: OrderStatus
+                                                          .forDeliverers,
                                                     ),
                                                     limit: 20,
                                                   ),
@@ -1784,7 +1788,8 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                               if (valueOrDefault(
                                       currentUserDocument?.role, '') ==
                                   'Seller') {
-                                openNewProductForm(context, currentUserDocument!);
+                                openNewProductForm(
+                                    context, currentUserDocument!);
                               } else {
                                 context.pushNamed(
                                   ShopsWidget.routeName,

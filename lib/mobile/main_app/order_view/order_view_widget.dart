@@ -6,6 +6,8 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/mobile/components/empty_card/empty_card_widget.dart';
 import 'dart:ui';
 import '/index.dart';
+import '/auth/firebase_auth/auth_util.dart';
+import '/mobile/components/order_progress/order_progress_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -150,6 +152,17 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Suivi par étapes, annulation tant que le
+                              // commerce n'a pas accepté.
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    20.0, 8.0, 20.0, 16.0),
+                                child: KitungaOrderProgress(
+                                  order: middleBodyOrdersRecord,
+                                  canCancel: middleBodyOrdersRecord.userRef ==
+                                      currentUserReference,
+                                ),
+                              ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     20.0, 0.0, 20.0, 16.0),

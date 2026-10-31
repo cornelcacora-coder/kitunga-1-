@@ -20,6 +20,7 @@ import '/noc/noc_cta/noc_cta_widget.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
+import '/backend/order_status.dart';
 import '/noc/noc_missing_images/noc_missing_images_widget.dart';
 import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
 import 'package:flutter/material.dart';
@@ -2060,79 +2061,9 @@ class _SupervisionDashboardWidgetState
                                                                       'En attente',
                                                                     ),
                                                                     statusBg:
-                                                                        valueOrDefault<
-                                                                            Color>(
-                                                                      () {
-                                                                        if (listedOrderOrdersRecord.status ==
-                                                                            'En attente') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .accent3;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Pret') {
-                                                                          return Color(
-                                                                              0x4DEEED60);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'encours') {
-                                                                          return Color(
-                                                                              0x4D3943D2);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Livrer') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .accent2;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Reçu') {
-                                                                          return Color(
-                                                                              0x4DAC39D2);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Non Reçu') {
-                                                                          return Color(
-                                                                              0x4DCB39D2);
-                                                                        } else {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .accent2;
-                                                                        }
-                                                                      }(),
-                                                                      FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .accent2,
-                                                                    ),
+                                                                        OrderStatus.color(listedOrderOrdersRecord.status),
                                                                     statuTextBg:
-                                                                        valueOrDefault<
-                                                                            Color>(
-                                                                      () {
-                                                                        if (listedOrderOrdersRecord.status ==
-                                                                            'En attente') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .primary;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Pret') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .warning;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'encours') {
-                                                                          return Color(
-                                                                              0xFF180FE0);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Livrer') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .tertiary;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Reçu') {
-                                                                          return Color(
-                                                                              0xFFB908EC);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Non Reçu') {
-                                                                          return Color(
-                                                                              0xFFF10DC3);
-                                                                        } else {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .secondaryText;
-                                                                        }
-                                                                      }(),
-                                                                      FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .success,
-                                                                    ),
+                                                                        OrderStatus.color(listedOrderOrdersRecord.status),
                                                                     createdAt:
                                                                         listedOrderOrdersRecord
                                                                             .createdAt,
