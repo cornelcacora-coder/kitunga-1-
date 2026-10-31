@@ -132,7 +132,7 @@ class _AdsCompWidgetState extends State<AdsCompWidget> {
                     Text(
                       valueOrDefault<String>(
                         widget!.subtitle,
-                        'Achetez vos produit et vos bien immobier en un click',
+                        'Achetez vos produits et vos biens immobiliers en un clic',
                       ),
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             font: GoogleFonts.inter(

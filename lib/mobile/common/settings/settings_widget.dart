@@ -351,8 +351,22 @@ class _SettingsWidgetState extends State<SettingsWidget>
                             child: Text('Annuler'),
                           ),
                           ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              final message = feedbackController.text.trim();
                               Navigator.pop(ctx);
+                              if (message.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Veuillez saisir un message avant d\'envoyer.')),
+                                );
+                                return;
+                              }
+                              // Ouvre l'application e-mail avec le message pré-rempli.
+                              await launchURL(Uri(
+                                scheme: 'mailto',
+                                path: 'contact@ntemoconsulting.com',
+                                query: 'subject=${Uri.encodeComponent('Feedback Kitunga')}'
+                                    '&body=${Uri.encodeComponent(message)}',
+                              ).toString());
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Merci pour votre retour !')),
                               );

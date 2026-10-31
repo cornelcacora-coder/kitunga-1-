@@ -17,6 +17,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
 
 import '/index.dart';
+import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -84,13 +85,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? NavBarPage() : AdsPageWidget(),
+          appStateNotifier.loggedIn ? NavBarPage() : IntroWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
           builder: (context, _) =>
-              appStateNotifier.loggedIn ? NavBarPage() : AdsPageWidget(),
+              appStateNotifier.loggedIn ? NavBarPage() : IntroWidget(),
         ),
         FFRoute(
           name: LoginWidget.routeName,
@@ -578,7 +579,7 @@ class FFRoute {
 
           if (requireAuth && !appStateNotifier.loggedIn) {
             appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
-            return '/adsPage';
+            return '/intro';
           }
           return null;
         },
@@ -592,11 +593,25 @@ class FFRoute {
                 )
               : builder(context, ffParams);
           final child = appStateNotifier.loading
+              // Écran de chargement : fond blanc (et non transparent, qui
+              // laissait apparaître du noir au lancement).
               ? Container(
-                  color: Colors.transparent,
-                  child: Image.asset(
-                    'assets/images/photo_2025-12-24_16-17-10-removebg-preview.png',
-                    fit: BoxFit.contain,
+                  color: Colors.white,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      KitungaLogo(size: 130.0),
+                      SizedBox(height: 32.0),
+                      SizedBox(
+                        width: 24.0,
+                        height: 24.0,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Color(0xFFD1184F),
+                        ),
+                      ),
+                    ],
                   ),
                 )
               : page;

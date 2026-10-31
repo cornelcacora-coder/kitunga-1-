@@ -257,8 +257,8 @@ class _OrderCardWidgetState extends State<OrderCardWidget> {
                             ),
                             Text(
                               valueOrDefault<String>(
-                                dateTimeFormat("M/d H:mm", widget!.createdAt),
-                                '3/21 13:03',
+                                dateTimeFormat("d/M H:mm", widget!.createdAt),
+                                '-',
                               ),
                               style: FlutterFlowTheme.of(context)
                                   .titleMedium

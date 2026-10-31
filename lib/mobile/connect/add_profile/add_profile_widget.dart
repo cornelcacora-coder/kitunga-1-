@@ -880,7 +880,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                       }
                                                     }
                                                   },
-                                                  text: 'Profile',
+                                                  text: 'Profil',
                                                   icon: Icon(
                                                     Icons.add,
                                                     size: 15.0,

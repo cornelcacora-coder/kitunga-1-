@@ -314,7 +314,7 @@ class _PaymentMethodWidgetState extends State<PaymentMethodWidget> {
                                   return AlertDialog(
                                     title: Text('Oups ... Non Disponible '),
                                     content: Text(
-                                        'Airtel Money n\'est pas disponible actuellement , il est enours d\'intégration. Merci de réessayé ultérieurement.'),
+                                        'Airtel Money n\'est pas disponible actuellement, il est en cours d\'intégration. Merci de réessayer ultérieurement.'),
                                     actions: [
                                       TextButton(
                                         onPressed: () =>

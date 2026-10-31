@@ -945,9 +945,9 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                                 photo:
                                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
                                                 title:
-                                                    'Aucun Abonnement Disponible  ! ',
+                                                    'Abonnement requis',
                                                 description:
-                                                    'Vous n\'etes pas abonné à kitunga, veuillez souscrire à un abonnement afin de bénéficier de toutes les fonctionalités.',
+                                                    'Votre abonnement Kitunga n\'est pas actif. Souscrivez une formule pour commander ce produit.',
                                                 buttonText: 'Ok',
                                                 action: () async {
                                                   Navigator.pop(context);

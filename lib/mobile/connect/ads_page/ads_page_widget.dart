@@ -44,9 +44,9 @@ class _AdsPageWidgetState extends State<AdsPageWidget>
           milliseconds: 4000,
         ),
       );
-      setDarkModeSetting(context, ThemeMode.light);
+      if (!mounted) return;
 
-      context.pushNamed(IntroWidget.routeName);
+      _goToIntro();
     });
 
     animationsMap.addAll({
@@ -93,6 +93,72 @@ class _AdsPageWidgetState extends State<AdsPageWidget>
     super.dispose();
   }
 
+  // Empêche d'ouvrir l'introduction deux fois (bouton « Passer » + minuteur).
+  bool _leftAd = false;
+
+  void _goToIntro() {
+    if (_leftAd || !mounted) return;
+    _leftAd = true;
+    context.pushNamed(IntroWidget.routeName);
+  }
+
+  Widget _adLabel() => Container(
+        padding: EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
+        decoration: BoxDecoration(
+          color: Color(0x8A000000),
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Text(
+          'Publicité',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 12.0,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+
+  // Bouton « Passer » avec un anneau qui se remplit pendant la publicité.
+  Widget _skipButton() => Material(
+        color: Color(0x8A000000),
+        shape: StadiumBorder(),
+        child: InkWell(
+          customBorder: StadiumBorder(),
+          onTap: _goToIntro,
+          child: Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 12.0, 8.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Passer',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: Duration(milliseconds: 4000),
+                  builder: (context, value, _) => SizedBox(
+                    width: 18.0,
+                    height: 18.0,
+                    child: CircularProgressIndicator(
+                      value: value,
+                      strokeWidth: 2.0,
+                      color: Colors.white,
+                      backgroundColor: Color(0x40FFFFFF),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -102,85 +168,43 @@ class _AdsPageWidgetState extends State<AdsPageWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: SafeArea(
-          top: true,
-          child: Builder(
-            builder: (context) {
-              if (MediaQuery.sizeOf(context).width < 500.0) {
-                return Stack(
-                  children: [
-                    Align(
-                      alignment: AlignmentDirectional(0.0, 0.0),
-                      child: Padding(
-                        padding: EdgeInsets.all(10.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12.0),
-                          child: Image.asset(
-                            'assets/images/pub_model.jpg',
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                            alignment: Alignment(0.0, 0.0),
-                          ),
-                        ).animateOnPageLoad(
-                            animationsMap['imageOnPageLoadAnimation']!),
+        backgroundColor: MediaQuery.sizeOf(context).width < 500.0
+            ? Colors.black
+            : FlutterFlowTheme.of(context).primaryBackground,
+        body: Builder(
+          builder: (context) {
+            if (MediaQuery.sizeOf(context).width < 500.0) {
+              // Publicité plein écran, sous la barre d'état.
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    'assets/images/pub_model.jpg',
+                    fit: BoxFit.cover,
+                    alignment: Alignment(0.0, 0.0),
+                  ).animateOnPageLoad(
+                      animationsMap['imageOnPageLoadAnimation']!),
+                  SafeArea(
+                    child: Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _adLabel(),
+                          Spacer(),
+                          _skipButton().animateOnPageLoad(
+                              animationsMap['buttonOnPageLoadAnimation']!),
+                        ],
                       ),
                     ),
-                    Align(
-                      alignment: AlignmentDirectional(0.71, -0.92),
-                      child: FFButtonWidget(
-                        onPressed: () async {
-                          await Future.delayed(
-                            Duration(
-                              milliseconds: 500,
-                            ),
-                          );
-
-                          context.pushNamed(IntroWidget.routeName);
-                        },
-                        text: 'Passer',
-                        icon: Icon(
-                          Icons.skip_next_rounded,
-                          size: 24.0,
-                        ),
-                        options: FFButtonOptions(
-                          height: 40.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
-                          iconAlignment: IconAlignment.end,
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 0.0),
-                          color: FlutterFlowTheme.of(context).primary,
-                          textStyle:
-                              FlutterFlowTheme.of(context).titleSmall.override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                          elevation: 2.0,
-                          borderRadius: BorderRadius.circular(24.0),
-                        ),
-                      ).animateOnPageLoad(
-                          animationsMap['buttonOnPageLoadAnimation']!),
-                    ),
-                  ],
-                );
-              } else {
-                return Align(
+                  ),
+                ],
+              );
+            } else {
+              return SafeArea(
+                top: true,
+                child: Align(
                   alignment: AlignmentDirectional(0.0, 0.0),
                   child: Container(
                     width: 350.0,
@@ -199,7 +223,7 @@ class _AdsPageWidgetState extends State<AdsPageWidget>
                             onPressed: () async {
                               context.pushNamed(IntroWidget.routeName);
                             },
-                            text: 'Demarrer',
+                            text: 'Démarrer',
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 40.0,
@@ -236,10 +260,10 @@ class _AdsPageWidgetState extends State<AdsPageWidget>
                       ),
                     ),
                   ),
-                );
-              }
-            },
-          ),
+                ),
+              );
+            }
+          },
         ),
       ),
     );

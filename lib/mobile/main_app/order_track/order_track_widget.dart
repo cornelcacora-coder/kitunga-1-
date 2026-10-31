@@ -1149,7 +1149,7 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
                                                                 return 'En attente livraison';
                                                               }
                                                             }(),
-                                                            'Colis Livrer',
+                                                            'Colis livré',
                                                           ),
                                                           textAlign:
                                                               TextAlign.start,
@@ -1248,7 +1248,7 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
                                             context: context,
                                             builder: (alertDialogContext) {
                                               return AlertDialog(
-                                                title: Text('Commande Reçu !'),
+                                                title: Text('Commande reçue !'),
                                                 content: Text(
                                                     'Vous avez confirmé la reception de la commande. Merci pour votre confiance aux service Kitunga '),
                                                 actions: [
@@ -1380,7 +1380,7 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
                                             builder: (alertDialogContext) {
                                               return AlertDialog(
                                                 title:
-                                                    Text('Commande Non Reçu !'),
+                                                    Text('Commande non reçue !'),
                                                 content: Text(
                                                     'Merci de nous avoir signalé ce problème. Nous allons traité votre problème et vous revenir dans un bref delais. En absnce de réponse, veuillez svp, contacté notre service clien tau +242068039120'),
                                                 actions: [

@@ -5,6 +5,10 @@ admin.initializeApp();
 const https = require("https");
 const cors = require("cors")({ origin: true });
 const corsProxyRuntimeOptions = { minInstances: 1, timeoutSeconds: 15 };
+const ALLOWED_PROXY_HOSTS = [
+  "firebasestorage.googleapis.com",
+  "storage.googleapis.com",
+];
 
 /**
  * Provides a CORS proxy and returns the response body of the requested url,
@@ -22,14 +26,30 @@ async function handleRequest(req, res) {
     let url = req.query.url || req.body.url;
     if (!url) {
       res.status(403).send("URL is empty.");
+      return;
     }
-    https.get(url, (resp) => {
-      res.setHeader(
-        "content-type",
-        resp.headers["content-type"] || "image/jpeg",
-      );
-      resp.pipe(res);
-    });
+    // N'autorise que les fichiers hébergés sur le stockage Firebase / Google
+    // pour éviter que le proxy serve à télécharger n'importe quelle URL.
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (_) {
+      res.status(400).send("Invalid URL.");
+      return;
+    }
+    if (parsed.protocol !== "https:" || !ALLOWED_PROXY_HOSTS.includes(parsed.hostname)) {
+      res.status(403).send("Host not allowed.");
+      return;
+    }
+    https
+      .get(url, (resp) => {
+        res.setHeader(
+          "content-type",
+          resp.headers["content-type"] || "image/jpeg",
+        );
+        resp.pipe(res);
+      })
+      .on("error", () => res.status(502).send("Upstream error."));
   });
 }
 exports.onUserDeleted = functions

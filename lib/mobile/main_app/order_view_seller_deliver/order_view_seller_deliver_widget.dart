@@ -184,7 +184,7 @@ class _OrderViewSellerDeliverWidgetState
                           snapshot.data!;
                       if (listViewOrderItemsRecordList.isEmpty) {
                         return EmptyCardWidget(
-                          title: 'Pannier Vide !',
+                          title: 'Panier vide !',
                           description:
                               'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
                           buttonText: 'Explorer',

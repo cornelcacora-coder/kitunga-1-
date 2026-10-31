@@ -56,7 +56,7 @@ class _ForgotPasswordLinkWidgetState extends State<ForgotPasswordLinkWidget> {
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           automaticallyImplyLeading: false,
           title: Text(
-            'Mot de passe oublier',
+            'Mot de passe oublié ?',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
                   font: GoogleFonts.interTight(
                     fontWeight: FontWeight.w500,
@@ -90,7 +90,7 @@ class _ForgotPasswordLinkWidgetState extends State<ForgotPasswordLinkWidget> {
                       'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/huber-eats-consumer-app-38yn7u/assets/bh9lkvi2krgy/Screenshot_2024-03-10_at_15.29.09.png',
                   title: 'Mail Envoyé',
                   description:
-                      'Nous vous avions envoyé un lien, consultez vos mail afin de pouvoir suivre le lien de reconnection. ',
+                      'Nous vous avions envoyé un lien, consultez vos e-mails afin de suivre le lien de reconnexion. ',
                   buttonText: 'Se reconnecter',
                   action: () async {
                     context.pushNamed(LoginWidget.routeName);

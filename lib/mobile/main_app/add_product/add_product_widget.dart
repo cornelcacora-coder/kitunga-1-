@@ -151,8 +151,8 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                         .primaryBackground,
                                                 size: 24.0,
                                               ),
-                                              onPressed: () {
-                                                print('IconButton pressed ...');
+                                              onPressed: () async {
+                                                context.safePop();
                                               },
                                             ),
                                             Text(
@@ -190,8 +190,21 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                         .primaryBackground,
                                                 size: 24.0,
                                               ),
-                                              onPressed: () {
-                                                print('IconButton pressed ...');
+                                              onPressed: () async {
+                                                await showDialog(
+                                                  context: context,
+                                                  builder: (alertDialogContext) => AlertDialog(
+                                                    title: Text('Ajouter un produit'),
+                                                    content: Text(
+                                                        'Renseignez le nom, la description, le prix et la quantité de votre produit, ajoutez une photo, puis appuyez sur « Publier le produit ».'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(alertDialogContext),
+                                                        child: Text('Compris'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
                                               },
                                             ),
                                           ],

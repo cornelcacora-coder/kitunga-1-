@@ -196,8 +196,21 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                                                 .primaryBackground,
                                             size: 24.0,
                                           ),
-                                          onPressed: () {
-                                            print('IconButton pressed ...');
+                                          onPressed: () async {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (alertDialogContext) => AlertDialog(
+                                                title: Text('Preuve de livraison'),
+                                                content: Text(
+                                                    'Prenez une photo du colis remis au client, puis faites signer le client dans le cadre prévu. Appuyez ensuite sur Terminer pour valider la livraison.'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(alertDialogContext),
+                                                    child: Text('Compris'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
                                           },
                                         ),
                                       ],
@@ -516,8 +529,10 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                         color: FlutterFlowTheme.of(context).secondaryText,
                         size: 24.0,
                       ),
-                      onPressed: () {
-                        print('IconButton pressed ...');
+                      onPressed: () async {
+                        safeSetState(() {
+                          _model.signatureController?.clear();
+                        });
                       },
                     ),
                     Padding(

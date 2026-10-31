@@ -146,7 +146,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
           title: Align(
             alignment: AlignmentDirectional(0.0, 0.0),
             child: Text(
-              'Pannier',
+              'Panier',
               style: FlutterFlowTheme.of(context).headlineMedium.override(
                     font: GoogleFonts.interTight(
                       fontWeight: FlutterFlowTheme.of(context)
@@ -249,7 +249,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                             }
                             if (cartCartRecordList.isEmpty) {
                               return EmptyCardWidget(
-                                title: 'Pannier Vide !',
+                                title: 'Panier vide !',
                                 description:
                                     'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
                                 buttonText: 'Explorer',
@@ -1501,7 +1501,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                         AddPhoneNumberWidget.routeName);
                                   },
                                   child: Text(
-                                    'Changer le Numero',
+                                    'Changer le numéro',
                                     style: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .override(
@@ -2017,6 +2017,31 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           return;
                                                         }
 
+                                                        String rawPhone = widget!.mtnNumber != null && widget!.mtnNumber!.trim().isNotEmpty
+                                                            ? widget!.mtnNumber!.trim()
+                                                            : currentPhoneNumber;
+                                                        String cleanedPhone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+                                                        if (cleanedPhone.startsWith('06') && cleanedPhone.length == 9) {
+                                                          cleanedPhone = '242$cleanedPhone';
+                                                        } else if (cleanedPhone.startsWith('6') && cleanedPhone.length == 8) {
+                                                          cleanedPhone = '2420$cleanedPhone';
+                                                        }
+                                                        if (cleanedPhone.isEmpty) {
+                                                          await showDialog(
+                                                            context: context,
+                                                            builder: (dialogCtx) => AlertDialog(
+                                                              title: Text('Numéro requis'),
+                                                              content: Text('Veuillez renseigner votre numéro MTN Mobile Money avant de valider votre commande.'),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed: () => Navigator.pop(dialogCtx),
+                                                                  child: Text('Ok'),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                          return;
+                                                        }
                                                         showDialog(
                                                           context: context,
                                                           barrierDismissible: false,
@@ -2035,7 +2060,8 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                   ),
                                                                   SizedBox(height: 16.0),
                                                                   Text(
-                                                                    'Initialisation du paiement MoMo...',
+                                                                    'Validez le paiement sur votre téléphone\n(saisissez votre code PIN MTN)...',
+                                                                    textAlign: TextAlign.center,
                                                                     style: FlutterFlowTheme.of(context).bodyMedium,
                                                                   ),
                                                                 ],
@@ -2044,18 +2070,6 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           ),
                                                         );
 
-                                                        String rawPhone = widget!.mtnNumber != null && widget!.mtnNumber!.trim().isNotEmpty
-                                                            ? widget!.mtnNumber!.trim()
-                                                            : currentPhoneNumber;
-                                                        String cleanedPhone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
-                                                        if (cleanedPhone.startsWith('06') && cleanedPhone.length == 9) {
-                                                          cleanedPhone = '242$cleanedPhone';
-                                                        } else if (cleanedPhone.startsWith('6') && cleanedPhone.length == 8) {
-                                                          cleanedPhone = '2420$cleanedPhone';
-                                                        }
-                                                        if (cleanedPhone.isEmpty) {
-                                                          cleanedPhone = '242067199098';
-                                                        }
 
                                                         final currentFee = getDeliveryFeeForZone(_model.zoneValue);
                                                         FFAppState().fixedShippingFee = currentFee;
@@ -2097,6 +2111,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                         Navigator.of(context, rootNavigator: true).pop();
 
                                                         if (!momoResponse.succeeded || MoMoCallCall.status(momoResponse.jsonBody) != 'success') {
+                                                          await _logPaiement(
+                                                            status: MoMoCallCall.status(momoResponse.jsonBody) == 'pending'
+                                                                ? 'En attente'
+                                                                : 'Echec',
+                                                            response: momoResponse,
+                                                            amount: momoAmount,
+                                                            orderId: momoOrderId,
+                                                          );
                                                           await showDialog(
                                                             context: context,
                                                             builder: (alertDialogContext) => AlertDialog(
@@ -2189,6 +2211,21 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                       'En attente',
                                                                 ),
                                                                 ordersRecordReference);
+                                                        try {
+                                                          await ordersRecordReference.update({
+                                                            'payment_reference': MoMoCallCall.referenceId(momoResponse.jsonBody),
+                                                            'payment_status': 'Réussi',
+                                                          });
+                                                        } catch (_) {
+                                                          // Le paiement est déjà encaissé : ne jamais interrompre la suite.
+                                                        }
+                                                        await _logPaiement(
+                                                          status: 'Réussi',
+                                                          response: momoResponse,
+                                                          amount: momoAmount,
+                                                          orderId: momoOrderId,
+                                                          orderRef: ordersRecordReference,
+                                                        );
                                                         await Future.wait([
                                                           Future(() async {
                                                             _model.orderRefs =
@@ -2311,5 +2348,36 @@ class _CartLastWidgetState extends State<CartLastWidget> {
         ),
       ),
     );
+  }
+
+  /// Trace chaque tentative de paiement MoMo dans la collection `Paiement`
+  /// (consultée par le tableau de bord NOC) pour pouvoir rapprocher les
+  /// paiements avec MTN en cas de litige.
+  Future _logPaiement({
+    required String status,
+    required ApiCallResponse response,
+    required double amount,
+    required String orderId,
+    DocumentReference? orderRef,
+  }) async {
+    // Erreur de saisie (numéro, montant) : aucune demande envoyée à MTN.
+    if (getJsonField(response.jsonBody, r'''$.step''') == 'validation') {
+      return;
+    }
+    try {
+      await PaiementRecord.collection.doc().set({
+        'status': status,
+        'reference_id': MoMoCallCall.referenceId(response.jsonBody),
+        'message': MoMoCallCall.message(response.jsonBody),
+        'amount': amount,
+        'order_id': orderId,
+        'order_ref': orderRef,
+        'user_ref': currentUserReference,
+        'operator': 'MTN',
+        'created_at': getCurrentTimestamp,
+      });
+    } catch (_) {
+      // La journalisation ne doit jamais bloquer le parcours d'achat.
+    }
   }
 }

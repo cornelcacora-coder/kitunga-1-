@@ -346,7 +346,7 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                                 profile: listedOrderOrdersRecord.deliveryPhoto,
                                 zone: valueOrDefault<String>(
                                   listedOrderOrdersRecord.deliveryZone,
-                                  'Talangai',
+                                  'Zone non précisée',
                                 ),
                                 orderId: listedOrderOrdersRecord.orderId,
                                 status: valueOrDefault<String>(

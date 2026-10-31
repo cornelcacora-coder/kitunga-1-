@@ -189,7 +189,7 @@ class _ShopsWidgetState extends State<ShopsWidget> {
                                   } else if (widget!.tag == 'Pharmacie') {
                                     return 'Retrouver tous vos produits dans la pharmacie la plus proche de chez vous';
                                   } else {
-                                    return 'Tout ce dont vous avez besoin au meme endroit et en un click. ';
+                                    return 'Tout ce dont vous avez besoin au même endroit et en un clic. ';
                                   }
                                 }(),
                                 tag: widget!.tag,
@@ -503,14 +503,14 @@ class _ShopsWidgetState extends State<ShopsWidget> {
                                                         Icons.crisis_alert,
                                                         color: Colors.white,
                                                       ),
-                                                      title: 'Accès Refusé !',
+                                                      title: 'Créez votre compte',
                                                       iconBg:
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .secondary,
                                                       subtitle:
-                                                          'Veuillez vous abonnez afin d\'accéder à toutes les fonctionalités de Kitunga sans limitation.',
-                                                      btnTxt: 'S\'abonner',
+                                                          'Créez votre compte Kitunga pour commander, suivre vos achats et profiter de toutes les fonctionnalités.',
+                                                      btnTxt: 'Créer un compte',
                                                       onValidate: () async {
                                                         Navigator.of(context).pop();
                                                         context.pushNamed(

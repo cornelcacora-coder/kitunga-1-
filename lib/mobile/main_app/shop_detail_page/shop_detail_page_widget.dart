@@ -455,7 +455,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                                     color: Color(0xFF0D62F9),
                                     size: 24.0,
                                   ),
-                                  label: 'Categorie',
+                                  label: 'Catégorie',
                                   value: valueOrDefault<String>(
                                     listViewUserRecord.category,
                                     'Shop',
@@ -474,7 +474,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                                     color: FlutterFlowTheme.of(context).primary,
                                     size: 24.0,
                                   ),
-                                  label: 'Horraire',
+                                  label: 'Horaire',
                                   value: valueOrDefault<String>(
                                     listViewUserRecord.horraire,
                                     '8h - 18h',
@@ -492,12 +492,12 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                                     Icons.stars,
                                     color: FlutterFlowTheme.of(context).warning,
                                   ),
-                                  label: 'Statu',
+                                  label: 'Statut',
                                   value: valueOrDefault<String>(
                                     listViewUserRecord.verified
-                                        ? 'Certifier'
-                                        : 'Non Certifier',
-                                    'Non Certifier',
+                                        ? 'Certifié'
+                                        : 'Non certifié',
+                                    'Non certifié',
                                   ),
                                 ),
                               ),

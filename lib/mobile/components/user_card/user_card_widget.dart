@@ -219,7 +219,7 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                             Text(
                               valueOrDefault<String>(
                                 dateTimeFormat("yMMMd", widget!.createdAt),
-                                'Mar,12,2026',
+                                '-',
                               ),
                               style: FlutterFlowTheme.of(context)
                                   .bodySmall
