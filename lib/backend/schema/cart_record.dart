@@ -174,7 +174,8 @@ class CartRecordDocumentEquality implements Equality<CartRecord> {
         e1?.isOrdered == e2?.isOrdered &&
         e1?.clearCartValue == e2?.clearCartValue &&
         e1?.sellerRef == e2?.sellerRef &&
-        e1?.photo == e2?.photo;
+        e1?.photo == e2?.photo &&
+        e1?.options == e2?.options;
   }
 
   @override
@@ -189,7 +190,8 @@ class CartRecordDocumentEquality implements Equality<CartRecord> {
         e?.isOrdered,
         e?.clearCartValue,
         e?.sellerRef,
-        e?.photo
+        e?.photo,
+        e?.options,
       ]);
 
   @override

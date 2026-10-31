@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/mobile/components/empty_card/empty_card_widget.dart';
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import 'dart:ui';
 import '/flutter_flow/random_data_util.dart' as random_data;
 import '/index.dart';
@@ -157,16 +158,11 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                 padding: EdgeInsets.all(10.0),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(12.0),
-                                  child: Image.network(
-                                    getCORSProxyUrl(
-                                      valueOrDefault<String>(
-                                        middleBodyProductRecord.prodImg,
-                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
-                                      ),
-                                    ),
+                                  child: KitungaImage(
+                                    middleBodyProductRecord.prodImg,
                                     width: double.infinity,
                                     height: 302.0,
-                                    fit: BoxFit.cover,
+                                    fallbackIcon: Icons.image_outlined,
                                   ),
                                 ),
                               ),
@@ -867,10 +863,39 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                         chosenQuantity = custom.quantity;
                                         chosenOptions = custom.summary;
                                       }
+                                      // ── Vérification doublon panier ────────────────────────────────
+                                      // Si le même produit (même options) est déjà dans un panier
+                                      // actif et non commandé, on incrémente la quantité.
+                                      final existingCarts = await queryCartRecordOnce(
+                                        queryBuilder: (q) => q
+                                            .where('user_ref', isEqualTo: currentUserReference)
+                                            .where('product_ref', isEqualTo: widget.productRef)
+                                            .where('is_ordered', isEqualTo: false)
+                                            .where('is_active', isEqualTo: true),
+                                      );
+                                      final duplicate = existingCarts.where((c) =>
+                                          c.options == chosenOptions).firstOrNull;
+                                      if (duplicate != null) {
+                                        // Incrémenter la quantité existante.
+                                        await duplicate.reference.update({
+                                          'quantity': duplicate.quantity + chosenQuantity,
+                                          'price': (duplicate.quantity + chosenQuantity) *
+                                              unitPrice.toDouble(),
+                                        });
+                                        if (!mounted) return;
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                          content: const Text(
+                                              'Quantité mise à jour dans votre panier.'),
+                                        ));
+                                        context.pushNamed(CartLastWidget.routeName);
+                                        return;
+                                      }
+                                      // ── Nouveau article dans le panier ─────────────────────────────
                                       var cartRecordReference =
                                           CartRecord.collection.doc();
                                       await cartRecordReference
                                           .set(createCartRecordData(
+
                                         productRef: widget!.productRef,
                                         userRef: currentUserReference,
                                         quantity: chosenQuantity,
@@ -903,14 +928,12 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                               ),
                                               cartRecordReference);
                                       if (FFAppState().isSameOrder != true) {
+                                        // Identifiant de commande unique et robuste :
+                                        // timestamp ms + suffixe alphanumérique aléatoire.
+                                        final ts = DateTime.now().millisecondsSinceEpoch;
+                                        final suffix = random_data.randomString(6, 6, true, true, false);
                                         FFAppState().orderReferenceUnique =
-                                            '#id${random_data.randomInteger(0, 10).toString()}-${random_data.randomString(
-                                          1,
-                                          3,
-                                          true,
-                                          false,
-                                          false,
-                                        )}-${random_data.randomInteger(0, 3).toString()}';
+                                            'ORD-$ts-$suffix';
                                         safeSetState(() {});
                                       }
 
@@ -1010,7 +1033,7 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
 
                                     safeSetState(() {});
                                   },
-                                  text: 'Ajouter au pannier',
+                                  text: 'Ajouter au panier',
                                   options: FFButtonOptions(
                                     width: double.infinity,
                                     height: 56.0,

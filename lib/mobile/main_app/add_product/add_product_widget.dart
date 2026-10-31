@@ -9,8 +9,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/upload_data.dart';
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import 'dart:ui';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -83,22 +83,23 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12.0),
-                            child: CachedNetworkImage(
-                              fadeInDuration: Duration(milliseconds: 0),
-                              fadeOutDuration: Duration(milliseconds: 0),
-                              imageUrl: getCORSProxyUrl(
-                                valueOrDefault<String>(
-                                  _model.uploadedFileUrl_prodImg != null &&
-                                          _model.uploadedFileUrl_prodImg != ''
-                                      ? _model.uploadedFileUrl_prodImg
-                                      : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
-                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
-                                ),
-                              ),
-                              width: double.infinity,
-                              height: 250.0,
-                              fit: BoxFit.cover,
-                            ),
+                            child: (_model.uploadedFileUrl_prodImg?.isNotEmpty ?? false)
+                                ? KitungaImage(
+                                    _model.uploadedFileUrl_prodImg!,
+                                    width: double.infinity,
+                                    height: 250.0,
+                                    fallbackIcon: Icons.add_a_photo_rounded,
+                                  )
+                                : Container(
+                                    width: double.infinity,
+                                    height: 250.0,
+                                    color: Colors.black26,
+                                    child: const Icon(
+                                      Icons.add_a_photo_rounded,
+                                      color: Colors.white54,
+                                      size: 48.0,
+                                    ),
+                                  ),
                           ),
                           Container(
                             width: double.infinity,

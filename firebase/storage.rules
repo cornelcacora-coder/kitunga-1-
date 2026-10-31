@@ -1,12 +1,29 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+
+    // Par défaut : rien n'est lisible ni modifiable.
     match /{allPaths=**} {
       allow read, write: if false;
     }
+
+    // Tous les envois de l'application (photos de profil, logos et
+    // couvertures des commerces, photos de produits, preuves de livraison)
+    // sont rangés dans users/{identifiant}/uploads/ (voir
+    // lib/flutter_flow/upload_data.dart).
+    //
+    // - Lecture publique : nécessaire pour afficher les vitrines, y compris
+    //   aux visiteurs.
+    // - Écriture réservée au propriétaire du dossier : personne ne peut
+    //   remplacer les images d'un autre commerce.
+    // - Taille limitée à 10 Mo et images uniquement.
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth.uid == userId;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && (request.resource == null
+            || (request.resource.size < 10 * 1024 * 1024
+                && request.resource.contentType.matches('image/.*')));
     }
   }
 }
