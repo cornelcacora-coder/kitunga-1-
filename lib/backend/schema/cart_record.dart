@@ -72,6 +72,11 @@ class CartRecord extends FirestoreRecord {
   String get photo => _photo ?? '';
   bool hasPhoto() => _photo != null;
 
+  // "options" field : choix du client (résumé)
+  String? _options;
+  String get options => _options ?? '';
+  bool hasOptions() => _options != null;
+
   void _initializeFields() {
     _productRef = snapshotData['product_ref'] as DocumentReference?;
     _userRef = snapshotData['user_ref'] as DocumentReference?;
@@ -84,6 +89,7 @@ class CartRecord extends FirestoreRecord {
     _clearCartValue = snapshotData['clearCartValue'] as String?;
     _sellerRef = snapshotData['seller_ref'] as DocumentReference?;
     _photo = snapshotData['photo'] as String?;
+    _options = snapshotData['options'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -131,6 +137,7 @@ Map<String, dynamic> createCartRecordData({
   String? clearCartValue,
   DocumentReference? sellerRef,
   String? photo,
+  String? options,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -145,6 +152,7 @@ Map<String, dynamic> createCartRecordData({
       'clearCartValue': clearCartValue,
       'seller_ref': sellerRef,
       'photo': photo,
+      'options': options,
     }.withoutNulls,
   );
 

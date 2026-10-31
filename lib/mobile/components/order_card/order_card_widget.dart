@@ -372,7 +372,7 @@ class _OrderCardWidgetState extends State<OrderCardWidget> {
                             EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                         color: valueOrDefault<Color>(
                           widget!.statusBtnColor,
-                          Color(0xFFFF2D87),
+                          Color(0xFFE30613),
                         ),
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(

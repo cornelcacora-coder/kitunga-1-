@@ -22,7 +22,7 @@ class PopUpN1Widget extends StatefulWidget {
   })  : this.title = title ?? 'Contactez un Admin',
         this.subtitle = subtitle ??
             'Pour vendre sur Kitunga, il vous suffit de contacter un admin afin d\'etre ajouté',
-        this.iconColor = iconColor ?? const Color(0xFFE8AABE);
+        this.iconColor = iconColor ?? const Color(0xFFFFE5E6);
 
   final String title;
   final String subtitle;

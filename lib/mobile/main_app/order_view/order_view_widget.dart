@@ -851,6 +851,17 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                                           TextOverflow
                                                                               .ellipsis,
                                                                     ),
+                                                                    // Options choisies par le client (taille, suppléments…).
+                                                                    if (wrapOrderItemsRecord.options.isNotEmpty)
+                                                                      Text(
+                                                                        wrapOrderItemsRecord.options,
+                                                                        maxLines: 2,
+                                                                        overflow: TextOverflow.ellipsis,
+                                                                        style: GoogleFonts.inter(
+                                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                                          fontSize: 12.5,
+                                                                        ),
+                                                                      ),
                                                                     Row(
                                                                       mainAxisSize:
                                                                           MainAxisSize

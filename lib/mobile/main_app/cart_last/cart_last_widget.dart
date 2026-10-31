@@ -427,6 +427,17 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                     ),
+                                                    // Options choisies par le client (taille, suppléments…).
+                                                    if (cartCartRecord.options.isNotEmpty)
+                                                      Text(
+                                                        cartCartRecord.options,
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: GoogleFonts.inter(
+                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                          fontSize: 12.5,
+                                                        ),
+                                                      ),
                                                     Row(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -638,13 +649,8 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           MainAxisSize.min,
                                                       children: [
                                                         Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            productProductRecord
-                                                                .salePrice
-                                                                .toString(),
-                                                            '0',
-                                                          ),
+                                                          // Prix unitaire de la ligne (suppléments compris).
+                                                          cartCartRecord.price.round().toString(),
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .titleMedium

@@ -977,6 +977,16 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                               padding: EdgeInsets.all(20.0),
                                               child: FFButtonWidget(
                                                 onPressed: () async {
+                                                  // Logo et couverture obligatoires pour un commerce.
+                                                  if (_model.uploadedFileUrl_businessProfile.isEmpty ||
+                                                      _model.uploadedFileUrl_businessCover.isEmpty) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                          content: Text(
+                                                              'Ajoutez le logo et la photo de couverture du commerce.')),
+                                                    );
+                                                    return;
+                                                  }
                                                   await currentUserReference!
                                                       .update(
                                                           createUserRecordData(

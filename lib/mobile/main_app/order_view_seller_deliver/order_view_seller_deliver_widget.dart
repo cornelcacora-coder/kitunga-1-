@@ -321,6 +321,17 @@ class _OrderViewSellerDeliverWidgetState
                                                         ),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
+                                              // Options choisies par le client (taille, suppléments…).
+                                              if (listViewOrderItemsRecord.options.isNotEmpty)
+                                                Text(
+                                                  listViewOrderItemsRecord.options,
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(
+                                                    color: FlutterFlowTheme.of(context).secondaryText,
+                                                    fontSize: 12.5,
+                                                  ),
+                                                ),
                                               Row(
                                                 mainAxisSize: MainAxisSize.max,
                                                 mainAxisAlignment:

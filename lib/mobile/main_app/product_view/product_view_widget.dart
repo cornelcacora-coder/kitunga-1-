@@ -8,6 +8,7 @@ import '/mobile/components/empty_card/empty_card_widget.dart';
 import 'dart:ui';
 import '/flutter_flow/random_data_util.dart' as random_data;
 import '/index.dart';
+import '/mobile/components/product_options/customize_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -823,20 +824,59 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                               child: AuthUserStreamWidget(
                                 builder: (context) => FFButtonWidget(
                                   onPressed: () async {
+                                    // Médicament sur ordonnance : non commandable en ligne pour
+                                    // l'instant (règles de délivrance à valider).
+                                    if (middleBodyProductRecord.requiresPrescription) {
+                                      await showDialog(
+                                        context: context,
+                                        builder: (dialogContext) => AlertDialog(
+                                          title: Text('Médicament sur ordonnance'),
+                                          content: Text(
+                                              'Ce médicament nécessite une ordonnance. Il ne peut pas être commandé en ligne pour le moment : rendez-vous directement à la pharmacie avec votre ordonnance.'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(dialogContext),
+                                              child: Text('Compris'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      return;
+                                    }
                                     if (valueOrDefault<bool>(
                                             currentUserDocument?.isSubscribed,
                                             false) ==
                                         true) {
+                                      // Produit épuisé : pas d'ajout au panier.
+                                      if (middleBodyProductRecord.quantity <= 0) {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                            content: Text('Ce produit est actuellement en rupture de stock.')));
+                                        return;
+                                      }
+                                      // Options, suppléments, variantes : choix du client et prix final.
+                                      var unitPrice = middleBodyProductRecord.salePrice > 0
+                                          ? middleBodyProductRecord.salePrice
+                                          : middleBodyProductRecord.price.round();
+                                      var chosenQuantity = 1;
+                                      var chosenOptions = '';
+                                      if (middleBodyProductRecord.options.isNotEmpty) {
+                                        final custom = await showKitungaCustomizeSheet(
+                                            context, middleBodyProductRecord);
+                                        if (custom == null) return;
+                                        unitPrice = custom.unitPrice;
+                                        chosenQuantity = custom.quantity;
+                                        chosenOptions = custom.summary;
+                                      }
                                       var cartRecordReference =
                                           CartRecord.collection.doc();
                                       await cartRecordReference
                                           .set(createCartRecordData(
                                         productRef: widget!.productRef,
                                         userRef: currentUserReference,
-                                        quantity: 1,
+                                        quantity: chosenQuantity,
                                         createdAt: getCurrentTimestamp,
-                                        price: middleBodyProductRecord.salePrice
-                                            .toDouble(),
+                                        price: unitPrice.toDouble(),
+                                        options: chosenOptions,
                                         productName:
                                             middleBodyProductRecord.name,
                                         isActive: true,
@@ -849,11 +889,10 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                               createCartRecordData(
                                                 productRef: widget!.productRef,
                                                 userRef: currentUserReference,
-                                                quantity: 1,
+                                                quantity: chosenQuantity,
                                                 createdAt: getCurrentTimestamp,
-                                                price: middleBodyProductRecord
-                                                    .salePrice
-                                                    .toDouble(),
+                                                price: unitPrice.toDouble(),
+                                                options: chosenOptions,
                                                 productName:
                                                     middleBodyProductRecord
                                                         .name,
@@ -879,6 +918,11 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                           OrderItemsRecord.collection.doc();
                                       await orderItemsRecordReference
                                           .set(createOrderItemsRecordData(
+                                        itemName: middleBodyProductRecord.name,
+                                        priceAtPurchase: unitPrice.toDouble(),
+                                        quantity: chosenQuantity,
+                                        image: middleBodyProductRecord.prodImg,
+                                        options: chosenOptions,
                                         cartRef:
                                             _model.nouveauPanierRef?.reference,
                                         userRef: currentUserReference,
@@ -890,7 +934,12 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                       _model.nouveauOrderitems =
                                           OrderItemsRecord.getDocumentFromData(
                                               createOrderItemsRecordData(
-                                                cartRef: _model.nouveauPanierRef
+                                        itemName: middleBodyProductRecord.name,
+                                        priceAtPurchase: unitPrice.toDouble(),
+                                        quantity: chosenQuantity,
+                                        image: middleBodyProductRecord.prodImg,
+                                        options: chosenOptions,
+                                        cartRef: _model.nouveauPanierRef
                                                     ?.reference,
                                                 userRef: currentUserReference,
                                                 productRef:

@@ -2,14 +2,16 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import '/mobile/components/product_card/product_card_widget.dart';
+import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart';
+import 'categories_page.dart';
+import 'home_sections.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Accueil des clients et des visiteurs : recherche, bannières, catégories,
-/// rangées par type de commerce puis liste complète.
+/// commerces certifiés, nouveaux produits et tous les commerces.
 class BuyerHomeView extends StatefulWidget {
   const BuyerHomeView({super.key, required this.sellers});
 
@@ -22,16 +24,13 @@ class BuyerHomeView extends StatefulWidget {
 
 class _BuyerHomeViewState extends State<BuyerHomeView> {
   final _searchController = TextEditingController();
+  // Produits les plus récents (section « Nos produits »).
+  late final Stream<List<ProductRecord>> _newProducts = queryProductRecord(
+    queryBuilder: (q) => q.orderBy('created_at', descending: true),
+    limit: 10,
+  );
   String _query = '';
   int _bannerIndex = 0;
-
-  static const _categories = [
-    (name: 'Boutique', image: 'assets/images/images__14_-removebg-preview.png'),
-    (name: 'Restaurant', image: 'assets/images/images__1_-removebg-preview.png'),
-    (name: 'Pharmacie', image: 'assets/images/tlchargement-removebg-preview.png'),
-    (name: 'Magasin', image: 'assets/images/images__5_-removebg-preview.png'),
-    (name: 'Fast Food', image: 'assets/images/images-removebg-preview.png'),
-  ];
 
   static const _banners = [
     (image: 'assets/images/Cover.png', title: '', subtitle: ''),
@@ -47,36 +46,14 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     ),
   ];
 
-  static const _rows = [
-    (category: 'Boutique', title: 'Boutiques à la une'),
-    (category: 'Restaurant', title: 'Restaurants populaires'),
-    (category: 'Pharmacie', title: 'Pharmacies'),
-  ];
-
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  void _openShop(UserRecord seller) {
-    context.pushNamed(
-      ShopDetailPageWidget.routeName,
-      queryParameters: {
-        'userRef': serializeParam(seller.reference, ParamType.DocumentReference),
-        'isSameSeller': serializeParam(false, ParamType.bool),
-      }.withoutNulls,
-    );
-  }
-
-  void _openCategory(String category) {
-    context.pushNamed(
-      ShopsWidget.routeName,
-      queryParameters: {
-        'tag': serializeParam(category, ParamType.String),
-      }.withoutNulls,
-    );
-  }
+  List<UserRecord> get _certified =>
+      widget.sellers.where((s) => s.verified).toList();
 
   List<UserRecord> get _searchResults {
     final q = _query.trim().toLowerCase();
@@ -91,9 +68,8 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final firstName = currentUserDisplayName.trim().split(' ').first;
-    final isGuest =
-        valueOrDefault(currentUserDocument?.role, '') == 'Guest' ||
-            firstName.isEmpty;
+    final isGuest = valueOrDefault(currentUserDocument?.role, '') == 'Guest' ||
+        firstName.isEmpty;
 
     return ListView(
       padding: EdgeInsets.only(bottom: 32.0),
@@ -140,8 +116,8 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               suffixIcon: _query.isEmpty
                   ? null
                   : IconButton(
-                      icon: Icon(Icons.close_rounded,
-                          color: theme.secondaryText),
+                      icon:
+                          Icon(Icons.close_rounded, color: theme.secondaryText),
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _query = '');
@@ -163,49 +139,45 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
         else ...[
           SizedBox(height: 20.0),
           _buildBanners(theme),
-          _sectionHeader('Catégories'),
-          _buildCategories(theme),
-          for (final row in _rows)
-            ..._buildCategoryRow(theme, row.category, row.title),
-          if (widget.sellers.isNotEmpty) ...[
-            _sectionHeader('Tous les commerces'),
-            for (final seller in widget.sellers) _shopTile(theme, seller),
-          ],
-        ],
-      ],
-    );
-  }
-
-  Widget _sectionHeader(String title, {VoidCallback? onSeeAll}) {
-    final theme = FlutterFlowTheme.of(context);
-    return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(20.0, 28.0, 12.0, 12.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: GoogleFonts.interTight(
-                color: theme.primaryText,
-                fontSize: 18.0,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+          KitungaSectionHeader(
+            title: 'Explorer par catégorie',
+            subtitle: 'Trouvez le bon commerce en un geste',
+            onMore: () => openSeeMore(context, KitungaCategoriesPage()),
           ),
-          if (onSeeAll != null)
-            TextButton(
-              onPressed: onSeeAll,
-              child: Text(
-                'Voir tout',
-                style: GoogleFonts.inter(
-                  color: theme.primary,
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w600,
+          _buildCategories(),
+          if (_certified.isNotEmpty) ...[
+            KitungaSectionHeader(
+              title: 'Commerces certifiés',
+              subtitle: 'Vérifiés par l\'équipe Kitunga',
+              onMore: () => openSeeMore(
+                context,
+                KitungaShopListPage(
+                  title: 'Commerces certifiés',
+                  subtitle: 'Vérifiés par l\'équipe Kitunga',
+                  shops: _certified,
                 ),
               ),
             ),
+            _shopRow(_certified),
+          ],
+          _buildNewProducts(),
+          if (widget.sellers.isNotEmpty) ...[
+            KitungaSectionHeader(
+              title: 'Tous nos commerces',
+              subtitle: 'Boutiques, restaurants, pharmacies et plus',
+              onMore: () => openSeeMore(
+                context,
+                KitungaShopListPage(
+                  title: 'Tous nos commerces',
+                  subtitle: '${widget.sellers.length} commerces sur Kitunga',
+                  shops: widget.sellers,
+                ),
+              ),
+            ),
+            _shopRow(widget.sellers),
+          ],
         ],
-      ),
+      ],
     );
   }
 
@@ -296,220 +268,72 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     );
   }
 
-  Widget _buildCategories(FlutterFlowTheme theme) {
+  Widget _buildCategories() {
     return SizedBox(
       height: 104.0,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 20.0),
-        itemCount: _categories.length,
+        itemCount: kitungaCategories.length,
         separatorBuilder: (_, __) => SizedBox(width: 14.0),
-        itemBuilder: (context, i) {
-          final c = _categories[i];
-          return InkWell(
-            borderRadius: BorderRadius.circular(18.0),
-            onTap: () => _openCategory(c.name),
-            child: SizedBox(
-              width: 72.0,
-              child: Column(
-                children: [
-                  Container(
-                    width: 72.0,
-                    height: 72.0,
-                    padding: EdgeInsets.all(10.0),
-                    decoration: BoxDecoration(
-                      color: theme.primaryBackground,
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    child: Image.asset(c.image, fit: BoxFit.contain),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    c.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      color: theme.primaryText,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  List<Widget> _buildCategoryRow(
-      FlutterFlowTheme theme, String category, String title) {
-    final shops = widget.sellers.where((s) => s.category == category).toList();
-    if (shops.isEmpty) return [];
-    return [
-      _sectionHeader(title, onSeeAll: () => _openCategory(category)),
-      SizedBox(
-        height: 206.0,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 20.0),
-          itemCount: shops.length,
-          separatorBuilder: (_, __) => SizedBox(width: 14.0),
-          itemBuilder: (context, i) => _shopCard(theme, shops[i]),
+        itemBuilder: (context, i) => KitungaCategoryTile(
+          name: kitungaCategories[i].name,
+          image: kitungaCategories[i].image,
         ),
       ),
-    ];
-  }
-
-  Widget _image(String url, {double? width, double? height}) {
-    final theme = FlutterFlowTheme.of(context);
-    final placeholder = Container(
-      width: width,
-      height: height,
-      color: theme.primaryBackground,
-      child: Icon(Icons.storefront_rounded, color: theme.secondaryText),
-    );
-    if (url.isEmpty) return placeholder;
-    return CachedNetworkImage(
-      imageUrl: url,
-      width: width,
-      height: height,
-      fit: BoxFit.cover,
-      placeholder: (_, __) => placeholder,
-      errorWidget: (_, __, ___) => placeholder,
     );
   }
 
-  Widget _verified(FlutterFlowTheme theme, UserRecord s) => s.verified
-      ? Padding(
-          padding: EdgeInsetsDirectional.only(start: 4.0),
-          child: Icon(Icons.verified_rounded, color: theme.primary, size: 16.0),
-        )
-      : SizedBox.shrink();
+  /// Rangée horizontale de cartes de commerces.
+  Widget _shopRow(List<UserRecord> shops) {
+    return SizedBox(
+      height: KitungaShopCard.rowHeight,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 20.0),
+        itemCount: shops.length,
+        separatorBuilder: (_, __) => SizedBox(width: 14.0),
+        itemBuilder: (context, i) => KitungaShopCard(shop: shops[i]),
+      ),
+    );
+  }
 
-  String _subtitle(UserRecord s) =>
-      [s.category, s.horraire].where((e) => e.trim().isNotEmpty).join(' · ');
-
-  /// Carte de commerce pour les rangées horizontales.
-  Widget _shopCard(FlutterFlowTheme theme, UserRecord s) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18.0),
-      onTap: () => _openShop(s),
-      child: SizedBox(
-        width: 230.0,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  /// « Nos produits » : rangée horizontale des produits les plus récents.
+  Widget _buildNewProducts() {
+    return StreamBuilder<List<ProductRecord>>(
+      stream: _newProducts,
+      builder: (context, snapshot) {
+        final products =
+            (snapshot.data ?? []).where(kitungaIsPublished).toList();
+        if (products.isEmpty) return SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18.0),
-                  child: _image(s.businessCover, width: 230.0, height: 130.0),
-                ),
-                Positioned(
-                  left: 12.0,
-                  bottom: -18.0,
-                  child: Container(
-                    padding: EdgeInsets.all(2.0),
-                    decoration: BoxDecoration(
-                      color: theme.secondaryBackground,
-                      shape: BoxShape.circle,
-                    ),
-                    child: ClipOval(
-                      child: _image(s.photoUrl, width: 40.0, height: 40.0),
-                    ),
+            KitungaSectionHeader(
+              title: 'Nos produits',
+              subtitle: 'Les nouveautés de nos commerçants',
+              onMore: () => openSeeMore(context, KitungaProductListPage()),
+            ),
+            // Même présentation que les autres sections : rangée horizontale.
+            SizedBox(
+              height: KitungaProductCard.gridExtent,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                itemCount: products.length,
+                separatorBuilder: (_, __) => SizedBox(width: 14.0),
+                itemBuilder: (context, i) => SizedBox(
+                  width: 170.0,
+                  child: KitungaProductCard(
+                    product: products[i],
+                    onTap: () => openKitungaProduct(context, products[i]),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 24.0),
-            Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    s.displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.interTight(
-                      color: theme.primaryText,
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                _verified(theme, s),
-              ],
-            ),
-            SizedBox(height: 2.0),
-            Text(
-              _subtitle(s),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                color: theme.secondaryText,
-                fontSize: 12.0,
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  /// Ligne compacte pour la liste complète et les résultats de recherche.
-  Widget _shopTile(FlutterFlowTheme theme, UserRecord s) {
-    return InkWell(
-      onTap: () => _openShop(s),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(14.0),
-              child: _image(s.photoUrl.isNotEmpty ? s.photoUrl : s.businessCover,
-                  width: 56.0, height: 56.0),
-            ),
-            SizedBox(width: 14.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          s.displayName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.interTight(
-                            color: theme.primaryText,
-                            fontSize: 15.0,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      _verified(theme, s),
-                    ],
-                  ),
-                  SizedBox(height: 3.0),
-                  Text(
-                    _subtitle(s),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      color: theme.secondaryText,
-                      fontSize: 13.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: theme.secondaryText),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -536,9 +360,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
       ];
     }
     return [
-      _sectionHeader(
-          '${results.length} résultat${results.length > 1 ? 's' : ''}'),
-      for (final s in results) _shopTile(theme, s),
+      KitungaSectionHeader(
+          title: '${results.length} résultat${results.length > 1 ? 's' : ''}'),
+      for (final s in results) KitungaShopListTile(shop: s),
     ];
   }
 }

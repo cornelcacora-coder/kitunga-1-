@@ -1081,6 +1081,15 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                               children: [
                                 FFButtonWidget(
                                   onPressed: () async {
+                                    // Photo obligatoire : un produit sans photo ne se vend pas.
+                                    if (_model.uploadedFileUrl_prodImg.isEmpty) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Ajoutez une photo du produit avant de le publier.')),
+                                      );
+                                      return;
+                                    }
                                     await ProductRecord.collection
                                         .doc()
                                         .set(createProductRecordData(

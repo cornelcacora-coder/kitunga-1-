@@ -92,10 +92,10 @@ class _PaymentMethodWidgetState extends State<PaymentMethodWidget> {
                                 widget!.selected,
                                 true,
                               )
-                                  ? Color(0x1AD1184F)
+                                  ? Color(0x1AE30613)
                                   : FlutterFlowTheme.of(context)
                                       .secondaryBackground,
-                              Color(0x1AD1184F),
+                              Color(0x1AE30613),
                             ),
                             borderRadius: BorderRadius.circular(16.0),
                             shape: BoxShape.rectangle,
@@ -222,10 +222,10 @@ class _PaymentMethodWidgetState extends State<PaymentMethodWidget> {
                                 widget!.selected,
                                 true,
                               )
-                                  ? Color(0x1AD1184F)
+                                  ? Color(0x1AE30613)
                                   : FlutterFlowTheme.of(context)
                                       .secondaryBackground,
-                              Color(0x1AD1184F),
+                              Color(0x1AE30613),
                             ),
                             borderRadius: BorderRadius.circular(16.0),
                             shape: BoxShape.rectangle,

@@ -598,7 +598,7 @@ class FFRoute {
                         height: 24.0,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          color: Color(0xFFD1184F),
+                          color: Color(0xFFE30613),
                         ),
                       ),
                     ],
