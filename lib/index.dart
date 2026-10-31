@@ -1,6 +1,5 @@
 // Export pages
 export '/mobile/connect/login/login_widget.dart' show LoginWidget;
-export '/mobile/connect/ads_page/ads_page_widget.dart' show AdsPageWidget;
 export '/mobile/connect/intro/intro_widget.dart' show IntroWidget;
 export '/template/template_widget.dart' show TemplateWidget;
 export '/mobile/connect/sign/sign_widget.dart' show SignWidget;
@@ -50,8 +49,6 @@ export '/noc/supervision_dashboard/supervision_dashboard_widget.dart'
     show SupervisionDashboardWidget;
 export '/mobile/main_app/add_phone_number/add_phone_number_widget.dart'
     show AddPhoneNumberWidget;
-export '/mobile/connect/ads_page_copy/ads_page_copy_widget.dart'
-    show AdsPageCopyWidget;
 export '/mobile/main_app/order_view_seller_deliver/order_view_seller_deliver_widget.dart'
     show OrderViewSellerDeliverWidget;
 export '/mobile/main_app/cart_last/cart_last_widget.dart' show CartLastWidget;

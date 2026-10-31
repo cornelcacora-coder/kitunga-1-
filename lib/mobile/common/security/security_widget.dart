@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/mobile/components/delete_account/delete_account.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -420,6 +421,52 @@ class _SecurityWidgetState extends State<SecurityWidget>
                     ),
                   ).animateOnPageLoad(
                       animationsMap['containerOnPageLoadAnimation3']!),
+                ),
+                // Suppression définitive du compte (exigence Google Play).
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 16.0),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16.0),
+                    onTap: () => showDeleteAccountDialog(context),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context)
+                            .error
+                            .withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 16.0, 8.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48.0,
+                            height: 48.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context).error,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.delete_forever_rounded,
+                                color: Colors.white, size: 24.0),
+                          ),
+                          SizedBox(width: 16.0),
+                          Expanded(
+                            child: Text(
+                              'Supprimer mon compte',
+                              style: GoogleFonts.interTight(
+                                color: FlutterFlowTheme.of(context).error,
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios,
+                              color: FlutterFlowTheme.of(context).error,
+                              size: 20.0),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

@@ -99,11 +99,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => LoginWidget(),
         ),
         FFRoute(
-          name: AdsPageWidget.routeName,
-          path: AdsPageWidget.routePath,
-          builder: (context, params) => AdsPageWidget(),
-        ),
-        FFRoute(
           name: IntroWidget.routeName,
           path: IntroWidget.routePath,
           builder: (context, params) => IntroWidget(),
@@ -333,11 +328,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AddPhoneNumberWidget.routeName,
           path: AddPhoneNumberWidget.routePath,
           builder: (context, params) => AddPhoneNumberWidget(),
-        ),
-        FFRoute(
-          name: AdsPageCopyWidget.routeName,
-          path: AdsPageCopyWidget.routePath,
-          builder: (context, params) => AdsPageCopyWidget(),
         ),
         FFRoute(
           name: OrderViewSellerDeliverWidget.routeName,
