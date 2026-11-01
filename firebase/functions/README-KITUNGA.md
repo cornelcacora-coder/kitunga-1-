@@ -53,8 +53,9 @@ firebase emulators:exec --only firestore --project demo-kitunga \
   "node --test kitunga/payments.emulator.test.js"   # parcours complet, MTN simulé
 ```
 
-## Étape suivante (application)
+## Activer dans l'application
 
-Une fois les fonctions déployées, l'écran de paiement de l'application devra
-appeler `kitungaStartPayment` puis `kitungaConfirmPayment` (paquet
-`cloud_functions`) au lieu d'appeler MTN directement.
+L'écran de paiement est déjà prêt (`lib/backend/server_payment.dart`).
+Après le déploiement et la configuration des secrets, passer
+`const kServerPayment = false;` à `true`, recompiler et publier.
+L'ancien paiement direct reste utilisé tant que la valeur est `false`.
