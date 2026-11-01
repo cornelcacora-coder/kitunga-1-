@@ -63,6 +63,8 @@ exports.onUserDeleted = functions
 // ── Paiement contrôlé par le serveur (voir README-KITUNGA.md) ─────────────
 const momo = require("./kitunga/momo");
 const payments = require("./kitunga/payments");
+const subscriptions = require("./kitunga/subscriptions");
+const {reconcilePending} = require("./kitunga/reconcile");
 
 const MOMO_SECRETS = [
   "MOMO_COLLECTION_USER", "MOMO_COLLECTION_KEY", "MOMO_COLLECTION_SUBSCRIPTION",
@@ -99,6 +101,25 @@ exports.kitungaConfirmPayment = callable((data, uid) =>
   payments.confirmPayment({
     db: admin.firestore(), momo, uid, referenceId: String(data.referenceId || ""),
   }));
+
+/** Abonnement client payé par MoMo depuis la page web Kitunga. */
+exports.kitungaStartSubscription = callable((data, uid) =>
+  subscriptions.startSubscription({
+    db: admin.firestore(), momo, uid,
+    plan: String(data.plan || ""), phone: data.phone,
+  }));
+
+/** Vérifie le paiement et prolonge l'abonnement. */
+exports.kitungaConfirmSubscription = callable((data, uid) =>
+  subscriptions.confirmSubscription({
+    db: admin.firestore(), momo, uid, referenceId: String(data.referenceId || ""),
+  }));
+
+/** Termine les paiements validés chez MTN mais jamais confirmés. */
+exports.kitungaReconcilePayments = functions.region("us-west1")
+    .runWith({secrets: MOMO_SECRETS})
+    .pubsub.schedule("every 5 minutes")
+    .onRun(() => reconcilePending({db: admin.firestore(), momo}));
 
 /** Remboursement automatique d'une commande payée refusée ou annulée. */
 exports.kitungaRefundOrder = functions.region("us-west1")

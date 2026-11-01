@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/backend/subscription.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -839,12 +840,8 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                       );
                                       return;
                                     }
-                                    // Application gratuite : il suffit d'avoir un compte
-                                    // (les visiteurs sont invités à en créer un).
-                                    if (currentUserReference != null &&
-                                        valueOrDefault(
-                                                currentUserDocument?.role, '') !=
-                                            'Guest') {
+                                    // Client abonné (ou commerçant, livreur…) : il peut commander.
+                                    if (kitungaCanOrder()) {
                                       // Produit épuisé : pas d'ajout au panier.
                                       if (middleBodyProductRecord.quantity <= 0) {
                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -999,6 +996,24 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                           'cartRef': _model.nouveauPanierRef,
                                         },
                                       );
+                                    } else if (currentUserReference != null &&
+                                        valueOrDefault(
+                                                currentUserDocument?.role, '') !=
+                                            'Guest') {
+                                      // Client connecté sans abonnement actif.
+                                      await showDialog(
+                                        context: context,
+                                        builder: (c) => AlertDialog(
+                                          title: Text('Abonnement requis'),
+                                          content: Text(kitungaSubscriptionRequired),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(c),
+                                              child: Text('Compris'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
                                     } else {
                                       await showModalBottomSheet(
                                         isScrollControlled: true,
@@ -1021,7 +1036,7 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                                 title:
                                                     'Créez votre compte',
                                                 description:
-                                                    'Créez votre compte Kitunga gratuit pour commander et suivre vos livraisons.',
+                                                    'Créez votre compte Kitunga pour commander et suivre vos livraisons.',
                                                 buttonText: 'Créer un compte',
                                                 action: () async {
                                                   Navigator.pop(context);

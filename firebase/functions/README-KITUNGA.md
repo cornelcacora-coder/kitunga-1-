@@ -11,6 +11,25 @@ le montant ni commander un article épuisé.
 | `kitungaStartPayment` | appel (onCall) | Relit le panier, recalcule prix + livraison + stock, envoie la demande MTN, crée `Paiement/{referenceId}` |
 | `kitungaConfirmPayment` | appel (onCall) | Vérifie MTN ; si payé : stock décrémenté (produit et variantes), commande + articles créés, panier vidé (transaction) |
 | `kitungaRefundOrder` | déclencheur `Orders/{id}` | Commande payée puis refusée/annulée : virement MTN vers le client, une seule fois |
+| `kitungaStartSubscription` | appel (onCall) | Abonnement client : prix de la formule fixé par le serveur, demande MTN |
+| `kitungaConfirmSubscription` | appel (onCall) | Si payé : `User.subscribe_close_at` prolongé (30, 90 ou 365 jours) |
+| `kitungaReconcilePayments` | toutes les 5 min | Termine les paiements validés chez MTN mais jamais confirmés (client parti trop tôt) |
+
+## Abonnement client
+
+- Obligatoire pour commander (rôle `User`) : l'application, les règles
+  Firestore (Cart, Orders) et `kitungaStartPayment` le vérifient.
+- Formules : Mensuel 250 F (30 j), Trimestriel 500 F (90 j), Annuel 1000 F (365 j).
+- Payé **hors de l'application** sur `web/abonnement.html` (règle Google Play
+  sur les services numériques). L'application ne contient ni lien ni bouton
+  de paiement d'abonnement : il faut communiquer l'adresse aux clients
+  (SMS, WhatsApp, réseaux sociaux).
+- La page est publiée avec l'hébergement Firebase :
+  `flutter build web && firebase deploy --only hosting -P kitunga-xtvpe4`
+  puis `https://kitunga-xtvpe4.web.app/abonnement.html`.
+- Les clients déjà inscrits n'ont pas de date de fin : ils doivent payer
+  avant de commander. Pour offrir une période (ex. 30 jours de lancement),
+  renseigner `subscribe_close_at` dans la console Firebase.
 
 Paramètres de `kitungaStartPayment` : `sellerPath` (ex. `User/abc`), `zone`,
 `deliveryLocation`, `phone`. Réponse : `{referenceId, amount, subtotal, fee}`.
@@ -41,7 +60,7 @@ Le remboursement nécessite un compte MTN **Disbursement** approvisionné.
 
 ```bash
 cd firebase
-firebase deploy --only functions:kitungaStartPayment,functions:kitungaConfirmPayment,functions:kitungaRefundOrder -P kitunga-xtvpe4
+firebase deploy --only firestore:rules,functions:kitungaStartPayment,functions:kitungaConfirmPayment,functions:kitungaRefundOrder,functions:kitungaStartSubscription,functions:kitungaConfirmSubscription,functions:kitungaReconcilePayments -P kitunga-xtvpe4
 ```
 
 ## Tests

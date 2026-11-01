@@ -10,6 +10,8 @@ const assert = require("node:assert");
 const admin = require("firebase-admin");
 const momo = require("./momo");
 const {startPayment, confirmPayment, refundOrder} = require("./payments");
+const {startSubscription, confirmSubscription} = require("./subscriptions");
+const {reconcilePending} = require("./reconcile");
 
 admin.initializeApp({projectId: "demo-kitunga"});
 const db = admin.firestore();
@@ -28,7 +30,8 @@ const burger = {
 async function seed(cartOptions, quantity) {
   const all = await db.listCollections();
   for (const c of all) await db.recursiveDelete(c);
-  await db.doc("User/buyer").set({role: "User"});
+  await db.doc("User/buyer").set({role: "User",
+    subscribe_close_at: new Date(Date.now() + 86400000)});
   await db.doc("User/seller").set({role: "Seller"});
   await db.doc("Product/p1").set(burger);
   await db.doc("Cart/c1").set({
@@ -117,4 +120,57 @@ test("paiement refusé par MTN : échec enregistré", async () => {
   assert.equal(r.status, "failed");
   assert.equal((await db.doc(`Paiement/${s.referenceId}`).get())
       .get("status"), "Echec");
+});
+
+test("abonnement expiré : commande refusée", async () => {
+  await seed("Taille : Normal", 1);
+  await db.doc("User/buyer").update({subscribe_close_at: new Date(0)});
+  await assert.rejects(start, /abonnement Kitunga actif/);
+});
+
+test("abonnement payé : actif, prolongé, sans double comptage", async () => {
+  await seed("Taille : Normal", 1);
+  await db.doc("User/buyer").update({subscribe_close_at: new Date(0)});
+  const s = await startSubscription({db, momo, uid: "buyer",
+    plan: "monthly", phone: "065551234"});
+  assert.equal(s.amount, 250);
+  const r = await confirmSubscription({db, momo, uid: "buyer",
+    referenceId: s.referenceId});
+  assert.equal(r.status, "paid");
+  const until = (await db.doc("User/buyer").get())
+      .get("subscribe_close_at").toDate();
+  const days = (until - Date.now()) / 86400000;
+  assert.ok(days > 29.9 && days <= 30, `jours : ${days}`);
+  // Confirmer deux fois ne prolonge pas deux fois.
+  await confirmSubscription({db, momo, uid: "buyer",
+    referenceId: s.referenceId});
+  assert.equal((await db.doc("User/buyer").get())
+      .get("subscribe_close_at").toDate().getTime(), until.getTime());
+  // Un renouvellement s'ajoute à la fin actuelle.
+  const s2 = await startSubscription({db, momo, uid: "buyer",
+    plan: "annual", phone: "065551234"});
+  await confirmSubscription({db, momo, uid: "buyer",
+    referenceId: s2.referenceId});
+  const until2 = (await db.doc("User/buyer").get())
+      .get("subscribe_close_at").toDate();
+  assert.equal(until2 - until, 365 * 86400000);
+  assert.equal((await db.doc("User/buyer").get()).get("subscribe_type"),
+      "Annuel - 1000 F");
+  // Le paiement d'abonnement ne peut pas servir à créer une commande.
+  await assert.rejects(confirmPayment({db, momo, uid: "buyer",
+    referenceId: s.referenceId}), /introuvable/);
+  await start(); // abonné : la commande passe
+});
+
+test("reconcile : abonnement et commande en attente", async () => {
+  await seed("Taille : Normal", 1);
+  await startSubscription({db, momo, uid: "buyer", plan: "monthly",
+    phone: "065551234"});
+  await start();
+  assert.equal(await reconcilePending({db, momo}), 2);
+  assert.equal((await db.collection("Orders").get()).size, 1);
+  const pending = await db.collection("Paiement")
+      .where("status", "==", "En attente").get();
+  assert.equal(pending.size, 0);
+  assert.equal(await reconcilePending({db, momo}), 0);
 });

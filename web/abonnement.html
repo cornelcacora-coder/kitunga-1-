@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abonnement Kitunga</title>
+  <!--
+    Paiement de l'abonnement client par MTN MoMo, hors de l'application
+    Android (règle Google Play). Le prix et l'activation sont gérés par les
+    fonctions kitungaStartSubscription / kitungaConfirmSubscription.
+  -->
+  <style>
+    :root {
+      --primary: #E30613;
+      --text: #121212;
+      --muted: #6B6B6B;
+      --bg: #F5F5F5;
+      --card: #FFFFFF;
+      --line: #E5E5E5;
+      --ok: #1E8E3E;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #FF2D2D;
+        --text: #FFFFFF;
+        --muted: #A3A3A3;
+        --bg: #0F0F0F;
+        --card: #1A1A1A;
+        --line: #2E2E2E;
+        --ok: #4CC36B;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary), #9E040D);
+      color: #fff;
+      padding: 32px 16px 56px;
+      text-align: center;
+    }
+    header h1 { margin: 0; font-size: 1.7rem; }
+    header p { margin: 6px 0 0; opacity: .9; }
+    main { max-width: 480px; margin: -32px auto 32px; padding: 0 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    h2 { margin: 0 0 12px; font-size: 1.15rem; }
+    label { display: block; font-size: .9rem; color: var(--muted); margin: 12px 0 4px; }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 1rem;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 14px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: default; }
+    .link { background: none; color: var(--muted); font-weight: 500; margin-top: 8px; }
+    .plans { display: grid; gap: 10px; }
+    .plan {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      cursor: pointer;
+    }
+    .plan input { width: auto; accent-color: var(--primary); }
+    .plan.selected { border-color: var(--primary); }
+    .plan .name { font-weight: 700; flex: 1; }
+    .plan .price { font-weight: 800; color: var(--primary); }
+    .status { padding: 12px 14px; border-radius: 12px; background: var(--bg); font-size: .95rem; }
+    .status.ok { color: var(--ok); font-weight: 600; }
+    .msg { margin-top: 12px; font-size: .95rem; }
+    .msg.error { color: var(--primary); }
+    .msg.ok { color: var(--ok); font-weight: 600; }
+    .hidden { display: none; }
+    .spinner {
+      width: 28px; height: 28px; margin: 8px auto;
+      border: 3px solid var(--line); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Abonnement Kitunga</h1>
+    <p>Payez par MTN Mobile Money pour commander dans l'application.</p>
+  </header>
+
+  <main>
+    <section id="login" class="card">
+      <h2>Connexion</h2>
+      <p style="margin:0;color:var(--muted)">Utilisez l'e-mail et le mot de passe de votre compte Kitunga.</p>
+      <form id="loginForm">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" autocomplete="email" required>
+        <label for="password">Mot de passe</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button id="loginBtn" type="submit">Se connecter</button>
+        <div id="loginMsg" class="msg error"></div>
+      </form>
+    </section>
+
+    <section id="account" class="hidden">
+      <div class="card">
+        <h2 id="hello"></h2>
+        <div id="subStatus" class="status"></div>
+      </div>
+
+      <form id="payForm" class="card">
+        <h2>Choisir une formule</h2>
+        <div class="plans">
+          <label class="plan"><input type="radio" name="plan" value="monthly" checked><span class="name">Mensuel · 30 jours</span><span class="price">250 F</span></label>
+          <label class="plan"><input type="radio" name="plan" value="quarterly"><span class="name">Trimestriel · 90 jours</span><span class="price">500 F</span></label>
+          <label class="plan"><input type="radio" name="plan" value="annual"><span class="name">Annuel · 365 jours</span><span class="price">1000 F</span></label>
+        </div>
+        <label for="phone">Numéro MTN Mobile Money</label>
+        <input id="phone" type="tel" inputmode="numeric" placeholder="06 123 45 67" required>
+        <button id="payBtn" type="submit">Payer avec MTN MoMo</button>
+        <div id="waiting" class="hidden" style="text-align:center;margin-top:12px">
+          <div class="spinner"></div>
+          Validez le paiement sur votre téléphone (code PIN MTN)…
+        </div>
+        <div id="payMsg" class="msg"></div>
+      </form>
+
+      <button id="logout" class="link" type="button">Se déconnecter</button>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyBTSb_W8R4dV7oTRLvcR7GSZI6vUZhD3pc",
+      authDomain: "kitunga-xtvpe4.firebaseapp.com",
+      projectId: "kitunga-xtvpe4",
+      storageBucket: "kitunga-xtvpe4.firebasestorage.app",
+      messagingSenderId: "44272206573",
+      appId: "1:44272206573:web:2ca918ed50da1e8c5b02e4",
+    });
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const fns = firebase.app().functions("us-west1");
+    const startSub = fns.httpsCallable("kitungaStartSubscription");
+    const confirmSub = fns.httpsCallable("kitungaConfirmSubscription");
+    const $ = (id) => document.getElementById(id);
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const fmt = (d) => d.toLocaleDateString("fr-FR", {day: "numeric", month: "long", year: "numeric"});
+
+    function showStatus(until) {
+      const el = $("subStatus");
+      if (until && until > new Date()) {
+        el.textContent = "Abonnement actif jusqu'au " + fmt(until) + ". Un nouveau paiement prolonge cette date.";
+        el.className = "status ok";
+      } else {
+        el.textContent = until ? "Votre abonnement a expiré le " + fmt(until) + "." : "Vous n'avez pas encore d'abonnement.";
+        el.className = "status";
+      }
+    }
+
+    async function loadAccount(user) {
+      const snap = await db.doc("User/" + user.uid).get();
+      const data = snap.exists ? snap.data() : {};
+      $("hello").textContent = "Bonjour " + (data.display_name || user.email);
+      if (!$("phone").value && data.phone_number) $("phone").value = data.phone_number;
+      showStatus(data.subscribe_close_at ? data.subscribe_close_at.toDate() : null);
+    }
+
+    auth.onAuthStateChanged((user) => {
+      $("login").classList.toggle("hidden", !!user);
+      $("account").classList.toggle("hidden", !user);
+      if (user) loadAccount(user).catch(() => {});
+    });
+
+    document.querySelectorAll(".plan input").forEach((r) => {
+      const sync = () => document.querySelectorAll(".plan").forEach((p) =>
+        p.classList.toggle("selected", p.querySelector("input").checked));
+      r.addEventListener("change", sync);
+      sync();
+    });
+
+    $("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      $("loginBtn").disabled = true;
+      $("loginMsg").textContent = "";
+      try {
+        await auth.signInWithEmailAndPassword($("email").value.trim(), $("password").value);
+      } catch (err) {
+        $("loginMsg").textContent = "E-mail ou mot de passe incorrect.";
+      }
+      $("loginBtn").disabled = false;
+    });
+
+    $("logout").addEventListener("click", () => auth.signOut());
+
+    $("payForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = $("payMsg");
+      msg.textContent = "";
+      msg.className = "msg";
+      $("payBtn").disabled = true;
+      $("waiting").classList.remove("hidden");
+      try {
+        const plan = document.querySelector(".plan input:checked").value;
+        const start = await startSub({plan, phone: $("phone").value});
+        const end = Date.now() + 2 * 60 * 1000;
+        let result;
+        do {
+          await sleep(5000);
+          result = (await confirmSub({referenceId: start.data.referenceId})).data;
+        } while (result.status === "pending" && Date.now() < end);
+
+        if (result.status === "paid") {
+          msg.textContent = "Paiement reçu. Abonnement actif jusqu'au " + fmt(new Date(result.until)) + ". Vous pouvez commander dans l'application Kitunga.";
+          msg.className = "msg ok";
+          showStatus(new Date(result.until));
+        } else if (result.status === "failed") {
+          msg.textContent = "MTN a refusé le paiement. Vérifiez votre solde puis réessayez.";
+          msg.className = "msg error";
+        } else {
+          msg.textContent = "Validation MTN pas encore reçue. Si vous avez validé, votre abonnement sera actif dans quelques minutes.";
+        }
+      } catch (err) {
+        msg.textContent = err.message || "Le paiement n'a pas pu être lancé. Réessayez.";
+        msg.className = "msg error";
+      }
+      $("waiting").classList.add("hidden");
+      $("payBtn").disabled = false;
+    });
+  </script>
+</body>
+</html>

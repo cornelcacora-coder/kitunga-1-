@@ -9,15 +9,11 @@
  * db et momo sont injectés (tests avec l'émulateur et un MTN simulé).
  */
 const {priceCart} = require("./pricing");
+const {subscriptionActive} = require("./subscriptions");
+const {PaymentError} = require("./errors");
 
 const STOPPED = ["Refusée", "Annulée"];
 
-class PaymentError extends Error {
-  constructor(code, message) {
-    super(message);
-    this.code = code;
-  }
-}
 
 function orderReference() {
   const n = Date.now().toString(36).toUpperCase();
@@ -44,6 +40,11 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
     throw new PaymentError("invalid-argument", "Numéro MTN invalide.");
   }
   const userRef = db.doc(`User/${uid}`);
+  const user = await userRef.get();
+  if (!subscriptionActive(user)) {
+    throw new PaymentError("failed-precondition",
+        "Un abonnement Kitunga actif est nécessaire pour commander.");
+  }
   const sellerRef = db.doc(sellerPath);
   const carts = await loadCart(db, userRef, sellerRef);
   if (carts.length === 0) {
@@ -94,7 +95,8 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
 async function confirmPayment({db, momo, uid, referenceId}) {
   const payRef = db.doc(`Paiement/${referenceId}`);
   const pay = await payRef.get();
-  if (!pay.exists || pay.get("user_ref").id !== uid) {
+  if (!pay.exists || pay.get("user_ref").id !== uid ||
+      pay.get("kind") === "subscription") {
     throw new PaymentError("not-found", "Paiement introuvable.");
   }
   if (pay.get("status") === "Réussi") {

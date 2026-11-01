@@ -58,7 +58,8 @@ function normalizePhone(raw) {
 const mock = () => process.env.KITUNGA_MOMO_MOCK === "1";
 
 /** Demande de paiement au client (il valide avec son code PIN). */
-async function requestToPay({amount, phone, externalId}) {
+async function requestToPay({amount, phone, externalId,
+  note = `commande ${externalId}`}) {
   const referenceId = crypto.randomUUID();
   if (mock()) return referenceId;
   const {accessToken, sub} = await token("collection");
@@ -68,7 +69,7 @@ async function requestToPay({amount, phone, externalId}) {
     externalId: `${PLATFORM}-${externalId}`,
     payer: {partyIdType: "MSISDN", partyId: phone},
     payerMessage: PLATFORM,
-    payeeNote: `Paiement venant de ${PLATFORM} - commande ${externalId}`,
+    payeeNote: `Paiement venant de ${PLATFORM} - ${note}`,
   }, {
     headers: {
       "Authorization": `Bearer ${accessToken}`,

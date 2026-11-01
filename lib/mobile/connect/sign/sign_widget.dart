@@ -119,8 +119,8 @@ class _SignWidgetState extends State<SignWidget> {
             bio:
                 'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
             horraire: _model.horraireTextController.text,
-            isSubscribed: true,
-            subscribeCloseAt: getCurrentTimestamp,
+            // Abonnement activé par le serveur après paiement MoMo.
+            isSubscribed: false,
           ));
 
       await showDialog(
@@ -2428,8 +2428,6 @@ class _SignWidgetState extends State<SignWidget> {
                                                                   .subscribTypBusinessValue
                                                               : _model
                                                                   .subscribTypeUserValue,
-                                                          subscribeCloseAt:
-                                                              getCurrentTimestamp,
                                                         ));
 
                                                     context.pushNamedAuth(

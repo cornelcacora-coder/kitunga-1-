@@ -24,6 +24,19 @@ service cloud.firestore {
       return role in ['User', 'Seller', 'Deliver', 'Guest'];
     }
 
+    // Abonnement client obligatoire pour commander : la date de fin
+    // (subscribe_close_at) n'est prolongée que par le serveur après paiement.
+    function canOrder() {
+      let u = get(me()).data;
+      return u.get('role', 'User') != 'User'
+        || u.get('subscribe_close_at', timestamp.value(0)) > request.time;
+    }
+
+    function subscriptionUnchanged() {
+      return request.resource.data.get('subscribe_close_at', null)
+          == resource.data.get('subscribe_close_at', null);
+    }
+
     // ── User ───────────────────────────────────────────────────────────────
     // Lecture réservée aux utilisateurs connectés (les invités sont connectés
     // anonymement). Personne ne peut se donner le rôle Admin : il s'attribue
@@ -31,8 +44,11 @@ service cloud.firestore {
     match /User/{document} {
       allow read: if signedIn();
       allow create: if signedIn() && request.auth.uid == document
-        && selfAssignableRole(request.resource.data.get('role', 'User'));
+        && selfAssignableRole(request.resource.data.get('role', 'User'))
+        && request.resource.data.get('subscribe_close_at', timestamp.value(0))
+            <= request.time + duration.value(1, 'h');
       allow update: if signedIn() && request.auth.uid == document
+        && subscriptionUnchanged()
         && (request.resource.data.get('role', '') == resource.data.get('role', '')
             || selfAssignableRole(request.resource.data.get('role', '')));
       allow delete: if (signedIn() && request.auth.uid == document) || isAdmin();
@@ -50,7 +66,8 @@ service cloud.firestore {
 
     // ── Cart ───────────────────────────────────────────────────────────────
     match /Cart/{document} {
-      allow create: if signedIn() && request.resource.data.user_ref == me();
+      allow create: if signedIn() && request.resource.data.user_ref == me()
+        && canOrder();
       allow read: if signedIn() && (resource.data.user_ref == me() || isAdmin());
       allow update: if signedIn() && resource.data.user_ref == me()
         && request.resource.data.user_ref == me();
@@ -88,7 +105,8 @@ service cloud.firestore {
     }
 
     match /Orders/{document} {
-      allow create: if signedIn() && request.resource.data.user_ref == me();
+      allow create: if signedIn() && request.resource.data.user_ref == me()
+        && canOrder();
       allow read: if signedIn();
       allow update: if signedIn() && orderKeyFieldsUnchanged()
         && (isBuyer(resource.data) || isSeller(resource.data)

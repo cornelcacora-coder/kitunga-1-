@@ -2,6 +2,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/server_payment.dart';
+import '/backend/subscription.dart';
 import '/components/payment_method_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -1950,6 +1951,22 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           return;
                                                         }
 
+                                                        if (!kitungaCanOrder()) {
+                                                          await showDialog(
+                                                            context: context,
+                                                            builder: (c) => AlertDialog(
+                                                              title: Text('Abonnement requis'),
+                                                              content: Text(kitungaSubscriptionRequired),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed: () => Navigator.pop(c),
+                                                                  child: Text('Compris'),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                          return;
+                                                        }
                                                         String rawPhone = widget!.mtnNumber != null && widget!.mtnNumber!.trim().isNotEmpty
                                                             ? widget!.mtnNumber!.trim()
                                                             : currentPhoneNumber;

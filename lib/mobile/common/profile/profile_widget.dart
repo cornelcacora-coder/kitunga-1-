@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/subscription.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -309,6 +310,15 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                     if (plan.isNotEmpty && role != 'Guest' && role != 'User') ...[
                       SizedBox(width: 6.0),
                       _badge(theme, plan),
+                    ],
+                    if (role == 'User') ...[
+                      SizedBox(width: 6.0),
+                      _badge(
+                        theme,
+                        kitungaSubscriptionActive()
+                            ? 'Abonné jusqu\'au ${dateTimeFormat('d/M/y', currentUserDocument!.subscribeCloseAt)}'
+                            : 'Sans abonnement',
+                      ),
                     ],
                   ],
                 ),
