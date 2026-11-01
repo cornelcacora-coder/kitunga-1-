@@ -15,6 +15,9 @@ const crypto = require("crypto");
 const BASE_URL = process.env.MOMO_BASE_URL || "https://proxy.momoapi.mtn.com";
 const TARGET_ENV = process.env.MOMO_TARGET_ENV || "mtncongo";
 const CURRENCY = "XAF";
+// Un seul jeu de clés MTN pour toutes les plateformes NTEMO : chaque
+// transaction porte le nom de la plateforme (rapprochement comptable).
+const PLATFORM = "Kitunga";
 
 function credentials(product) {
   const p = product === "disbursement" ? "DISBURSEMENT" : "COLLECTION";
@@ -62,10 +65,10 @@ async function requestToPay({amount, phone, externalId}) {
   await axios.post(`${BASE_URL}/collection/v1_0/requesttopay`, {
     amount: String(Math.round(amount)),
     currency: CURRENCY,
-    externalId,
+    externalId: `${PLATFORM}-${externalId}`,
     payer: {partyIdType: "MSISDN", partyId: phone},
-    payerMessage: "Kitunga",
-    payeeNote: `Commande ${externalId}`,
+    payerMessage: PLATFORM,
+    payeeNote: `Paiement venant de ${PLATFORM} - commande ${externalId}`,
   }, {
     headers: {
       "Authorization": `Bearer ${accessToken}`,
@@ -102,10 +105,10 @@ async function transfer({amount, phone, externalId}) {
   await axios.post(`${BASE_URL}/disbursement/v1_0/transfer`, {
     amount: String(Math.round(amount)),
     currency: CURRENCY,
-    externalId,
+    externalId: `${PLATFORM}-REMB-${externalId}`,
     payee: {partyIdType: "MSISDN", partyId: phone},
-    payerMessage: "Remboursement Kitunga",
-    payeeNote: `Remboursement ${externalId}`,
+    payerMessage: `Remboursement ${PLATFORM}`,
+    payeeNote: `Remboursement ${PLATFORM} - commande ${externalId}`,
   }, {
     headers: {
       "Authorization": `Bearer ${accessToken}`,
