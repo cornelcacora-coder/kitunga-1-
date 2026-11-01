@@ -59,3 +59,52 @@ exports.onUserDeleted = functions
     let firestore = admin.firestore();
     let userRef = firestore.doc("User/" + user.uid);
   });
+
+// ── Paiement contrôlé par le serveur (voir README-KITUNGA.md) ─────────────
+const momo = require("./kitunga/momo");
+const payments = require("./kitunga/payments");
+
+const MOMO_SECRETS = [
+  "MOMO_COLLECTION_USER", "MOMO_COLLECTION_KEY", "MOMO_COLLECTION_SUBSCRIPTION",
+  "MOMO_DISBURSEMENT_USER", "MOMO_DISBURSEMENT_KEY",
+  "MOMO_DISBURSEMENT_SUBSCRIPTION",
+];
+
+function callable(handler) {
+  return functions.region("us-west1")
+      .runWith({secrets: MOMO_SECRETS, timeoutSeconds: 60})
+      .https.onCall(async (data, context) => {
+        try {
+          return await handler(data || {}, context.auth && context.auth.uid);
+        } catch (e) {
+          if (e instanceof payments.PaymentError) {
+            throw new functions.https.HttpsError(e.code, e.message);
+          }
+          console.error(e);
+          throw new functions.https.HttpsError("internal",
+              "Le paiement n'a pas pu être traité. Réessayez.");
+        }
+      });
+}
+
+/** Démarre un paiement MoMo : montant recalculé par le serveur. */
+exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
+  db: admin.firestore(), momo, uid,
+  sellerPath: String(data.sellerPath || ""),
+  zone: data.zone, deliveryLocation: data.deliveryLocation, phone: data.phone,
+}));
+
+/** Vérifie le paiement et crée la commande (stock décrémenté). */
+exports.kitungaConfirmPayment = callable((data, uid) =>
+  payments.confirmPayment({
+    db: admin.firestore(), momo, uid, referenceId: String(data.referenceId || ""),
+  }));
+
+/** Remboursement automatique d'une commande payée refusée ou annulée. */
+exports.kitungaRefundOrder = functions.region("us-west1")
+    .runWith({secrets: MOMO_SECRETS})
+    .firestore.document("Orders/{orderId}")
+    .onUpdate((change) => payments.refundOrder({
+      db: admin.firestore(), momo,
+      orderRef: change.after.ref, order: change.after.data(),
+    }));

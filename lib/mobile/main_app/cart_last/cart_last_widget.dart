@@ -251,7 +251,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                               return EmptyCardWidget(
                                 title: 'Panier vide !',
                                 description:
-                                    'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
+                                    'Votre panier est vide. Parcourez les commerces pour choisir vos produits.',
                                 buttonText: 'Explorer',
                                 photo:
                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
@@ -283,9 +283,9 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                     context: context,
                                     builder: (alertDialogContext) {
                                       return AlertDialog(
-                                        title: Text('Commande non valide'),
+                                        title: Text('Un seul commerce par panier'),
                                         content: Text(
-                                            'Vous ne pouvez créer un pannier que pour un vendeur à la fois'),
+                                            'Votre panier contient déjà les articles d\'un autre commerce. Finalisez ou videz ce panier avant de commander ailleurs.'),
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(
@@ -382,7 +382,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                       valueOrDefault<String>(
                                                         productProductRecord
                                                             .name,
-                                                        'Aucun produit Dispo',
+                                                        'Produit',
                                                       ),
                                                       maxLines: 1,
                                                       style:
@@ -443,7 +443,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                               String>(
                                                             productProductRecord
                                                                 .specifications,
-                                                            'Aucune specification',
+                                                            '',
                                                           ),
                                                           style: FlutterFlowTheme
                                                                   .of(context)
@@ -766,7 +766,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'Addresse de Livraison',
+                                                  'Adresse de livraison',
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .titleSmall
@@ -996,7 +996,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                   .fontStyle,
                                                         ),
                                                     hintText:
-                                                        'Choisi ton quartier',
+                                                        'Choisissez votre quartier',
                                                     icon: Icon(
                                                       Icons
                                                           .keyboard_arrow_down_rounded,
@@ -1383,7 +1383,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                               }
                                             }(),
                                             width: double.infinity,
-                                            height: 320.0,
+                                            height: 150.0,
                                             fallbackIcon: Icons.location_city_rounded,
                                           ),
                                         ),

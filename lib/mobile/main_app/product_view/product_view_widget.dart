@@ -839,10 +839,12 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                       );
                                       return;
                                     }
-                                    if (valueOrDefault<bool>(
-                                            currentUserDocument?.isSubscribed,
-                                            false) ==
-                                        true) {
+                                    // Application gratuite : il suffit d'avoir un compte
+                                    // (les visiteurs sont invités à en créer un).
+                                    if (currentUserReference != null &&
+                                        valueOrDefault(
+                                                currentUserDocument?.role, '') !=
+                                            'Guest') {
                                       // Produit épuisé : pas d'ajout au panier.
                                       if (middleBodyProductRecord.quantity <= 0) {
                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -1017,12 +1019,21 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                                 photo:
                                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
                                                 title:
-                                                    'Abonnement requis',
+                                                    'Créez votre compte',
                                                 description:
-                                                    'Votre abonnement Kitunga n\'est pas actif. Souscrivez une formule pour commander ce produit.',
-                                                buttonText: 'Ok',
+                                                    'Créez votre compte Kitunga gratuit pour commander et suivre vos livraisons.',
+                                                buttonText: 'Créer un compte',
                                                 action: () async {
                                                   Navigator.pop(context);
+                                                  context.pushNamed(
+                                                    SignWidget.routeName,
+                                                    queryParameters: {
+                                                      'accessibility':
+                                                          serializeParam(
+                                                              'User',
+                                                              ParamType.String),
+                                                    }.withoutNulls,
+                                                  );
                                                 },
                                               ),
                                             ),

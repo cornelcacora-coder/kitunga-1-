@@ -306,7 +306,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _badge(theme, _roleLabel(role)),
-                    if (plan.isNotEmpty && role != 'Guest') ...[
+                    if (plan.isNotEmpty && role != 'Guest' && role != 'User') ...[
                       SizedBox(width: 6.0),
                       _badge(theme, plan),
                     ],
