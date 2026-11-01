@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
+import '/backend/server_payment.dart';
 import '/components/payment_method_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -10,6 +11,7 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/mobile/components/empty_card/empty_card_widget.dart';
 import '/mobile/components/kitunga_image/kitunga_image.dart';
+import '/mobile/components/product_card/product_card_widget.dart' show kitungaPrice;
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
@@ -1973,6 +1975,10 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           );
                                                           return;
                                                         }
+                                                        if (kServerPayment) {
+                                                          await _payOnServer(cleanedPhone);
+                                                          return;
+                                                        }
                                                         showDialog(
                                                           context: context,
                                                           barrierDismissible: false,
@@ -2279,6 +2285,91 @@ class _CartLastWidgetState extends State<CartLastWidget> {
         ),
       ),
     );
+  }
+
+  /// Paiement contrôlé par le serveur : prix, stock et commande calculés
+  /// par les Cloud Functions (voir lib/backend/server_payment.dart).
+  Future<void> _payOnServer(String phone) async {
+    final theme = FlutterFlowTheme.of(context);
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final router = GoRouter.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: EdgeInsets.all(24.0),
+          decoration: BoxDecoration(
+            color: theme.secondaryBackground,
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: theme.primary),
+              SizedBox(height: 16.0),
+              Text(
+                'Validez le paiement sur votre téléphone\n(saisissez votre code PIN MTN)...',
+                textAlign: TextAlign.center,
+                style: theme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    String title;
+    String message;
+    var paid = false;
+    try {
+      final r = await kitungaServerPay(
+        sellerRef: widget.sellerRef!,
+        zone: _model.zoneValue ?? '',
+        deliveryLocation: _model.locationTextController.text,
+        phone: phone,
+      );
+      switch (r.status) {
+        case 'paid':
+          paid = true;
+          title = 'Commande confirmée';
+          message =
+              'Paiement de ${kitungaPrice(r.amount)} reçu. Le commerce prépare votre commande, suivez-la dans « Mes commandes ».';
+        case 'paid_refund':
+          title = 'Article plus disponible';
+          message =
+              'Votre paiement a été reçu, mais un article n\'est plus disponible${r.reason?.isNotEmpty == true ? ' :\n${r.reason}' : '.'}\nLe support Kitunga va vous rembourser (contact@ntemoconsulting.com).';
+        case 'failed':
+          title = 'Paiement refusé';
+          message =
+              'MTN a refusé le paiement. Vérifiez votre solde puis réessayez.';
+        default:
+          title = 'Paiement en attente';
+          message =
+              'Nous n\'avons pas encore reçu la validation MTN. Si vous avez validé, votre commande apparaîtra dans « Mes commandes » dans quelques minutes.';
+      }
+    } on ServerPaymentException catch (e) {
+      title = 'Paiement impossible';
+      message = e.message;
+    }
+    navigator.pop();
+    if (!mounted) return;
+    if (paid) {
+      FFAppState().GrandTotalCart = 0.0;
+      FFAppState().totalCart = 0.0;
+      FFAppState().isSameOrder = false;
+      FFAppState().orderReferenceUnique = '';
+    }
+    await showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c), child: Text('Ok')),
+        ],
+      ),
+    );
+    if (paid) router.pushNamed(HomeWidget.routeName);
   }
 
   /// Trace chaque tentative de paiement MoMo dans la collection `Paiement`
