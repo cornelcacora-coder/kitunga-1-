@@ -78,28 +78,28 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
   static const _categories = [
     (
       name: 'Boutique',
-      image: 'assets/images/images__14_-removebg-preview.png',
-      bg: Color(0xFFF3E8FF),
+      image: 'assets/images/categories/boutique.png',
+      bg: Color(0xFFFFE4E1),
     ),
     (
       name: 'Restaurant',
-      image: 'assets/images/images__1_-removebg-preview.png',
-      bg: Color(0xFFFEECE4),
+      image: 'assets/images/categories/restaurant.png',
+      bg: Color(0xFFFFEBD6),
     ),
     (
       name: 'Pharmacie',
-      image: 'assets/images/tlchargement-removebg-preview.png',
-      bg: Color(0xFFE5F8ED),
+      image: 'assets/images/categories/pharmacie.png',
+      bg: Color(0xFFE2F5E9),
     ),
     (
       name: 'Magasin',
-      image: 'assets/images/images__5_-removebg-preview.png',
-      bg: Color(0xFFFEEDEA),
+      image: 'assets/images/categories/magasin.png',
+      bg: Color(0xFFE2EDFB),
     ),
     (
       name: 'Fast Food',
-      image: 'assets/images/images-removebg-preview.png',
-      bg: Color(0xFFFFF2E5),
+      image: 'assets/images/categories/fastfood.png',
+      bg: Color(0xFFFFF3D1),
     ),
   ];
 
@@ -178,7 +178,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     text: TextSpan(
                       text: 'Bonjour, ',
                       style: GoogleFonts.interTight(
-                        color: const Color(0xFF1E242B),
+                        color: theme.primaryText,
                         fontSize: 24.0,
                         fontWeight: FontWeight.w800,
                       ),
@@ -202,7 +202,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   Text(
                     'Que souhaitez-vous commander aujourd\'hui ?',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF6B7280),
+                      color: theme.secondaryText,
                       fontSize: 14.0,
                       fontWeight: FontWeight.normal,
                     ),
@@ -217,9 +217,12 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               child: Container(
                 height: 52.0,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF1E242B) : Colors.white,
                   borderRadius: BorderRadius.circular(28.0),
-                  border: Border.all(color: const Color(0xFFF1F4F8), width: 1.2),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF2C3238) : const Color(0xFFF1F4F8),
+                    width: 1.2,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0x0C000000),
@@ -244,7 +247,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                         decoration: InputDecoration(
                           hintText: 'Rechercher une boutique, un restaurant...',
                           hintStyle: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF),
+                            color: isDark ? const Color(0xFF64748B) : const Color(0xFF9CA3AF),
                             fontSize: 13.5,
                             fontWeight: FontWeight.normal,
                           ),
@@ -253,7 +256,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           contentPadding: EdgeInsets.zero,
                         ),
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF1E242B),
+                          color: theme.primaryText,
                           fontSize: 14.0,
                         ),
                       ),
@@ -325,8 +328,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
 
   /// Barre d'en-tête fidèle à la maquette
   Widget _buildHeader(BuildContext context, FlutterFlowTheme theme) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      color: Colors.white,
+      color: isDark ? const Color(0xFF14181B) : Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -345,9 +349,12 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               width: 38.0,
               height: 38.0,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? const Color(0xFF1E242B) : Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF1F4F8), width: 1.0),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF2C3238) : const Color(0xFFF1F4F8),
+                  width: 1.0,
+                ),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x0F000000),
@@ -356,9 +363,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.menu_rounded,
-                color: Color(0xFF1E242B),
+                color: theme.primaryText,
                 size: 22.0,
               ),
             ),
@@ -398,7 +405,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                       Text(
                         'Achetez. Vivez mieux !',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF1E242B),
+                          color: theme.secondaryText,
                           fontSize: 9.0,
                           fontWeight: FontWeight.w600,
                         ),
@@ -465,10 +472,12 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           width: 38.0,
                           height: 38.0,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? const Color(0xFF1E242B) : Colors.white,
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: const Color(0xFFF1F4F8), width: 1.0),
+                              color: isDark ? const Color(0xFF2C3238) : const Color(0xFFF1F4F8),
+                              width: 1.0,
+                            ),
                             boxShadow: const [
                               BoxShadow(
                                 color: Color(0x0F000000),
@@ -477,9 +486,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.shopping_cart_outlined,
-                            color: Color(0xFF1E242B),
+                            color: theme.primaryText,
                             size: 20.0,
                           ),
                         ),
@@ -707,6 +716,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
 
   /// Section "Explorer par catégorie"
   Widget _buildCategoriesSection(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -729,7 +739,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   Text(
                     'Explorer par catégorie',
                     style: GoogleFonts.interTight(
-                      color: const Color(0xFF1E242B),
+                      color: theme.primaryText,
                       fontSize: 17.0,
                       fontWeight: FontWeight.w800,
                     ),
@@ -789,7 +799,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     Text(
                       c.name,
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF1E242B),
+                        color: theme.primaryText,
                         fontSize: 12.0,
                         fontWeight: FontWeight.w700,
                       ),
@@ -835,7 +845,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                       Text(
                         'Commerces certifiés',
                         style: GoogleFonts.interTight(
-                          color: const Color(0xFF1E242B),
+                          color: theme.primaryText,
                           fontSize: 17.0,
                           fontWeight: FontWeight.w800,
                         ),
@@ -843,7 +853,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                       Text(
                         'Vérifiés par l\'équipe Kitunga',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF6B7280),
+                          color: theme.secondaryText,
                           fontSize: 12.0,
                           fontWeight: FontWeight.normal,
                         ),
