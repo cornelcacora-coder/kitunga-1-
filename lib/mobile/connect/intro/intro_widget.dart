@@ -96,7 +96,7 @@ class _IntroWidgetState extends State<IntroWidget>
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12.0),
                       child: Image.asset(
-                        'assets/images/Gemini_Generated_Image_w63nlqw63nlqw63n.png',
+                        'assets/logo/image1.png',
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
@@ -598,19 +598,19 @@ class _IntroWidgetState extends State<IntroWidget>
 
   static const _introSlides = [
     (
-      image: 'assets/images/youngAfrican.jpg',
+      image: 'assets/logo/image1.png',
       title: 'Faites vos achats en un clic',
       text:
           'Boutiques, magasins, restaurants, fast-foods et pharmacies réunis dans une seule application.',
     ),
     (
-      image: 'assets/images/Girl_Bag2.jpg',
+      image: 'assets/logo/image2.png',
       title: 'Passez des commandes instantanées',
       text:
           'Une solution rapide pour vos achats, vos repas et vos produits pharmaceutiques.',
     ),
     (
-      image: 'assets/images/beautiful2.jpg',
+      image: 'assets/logo/image3.png',
       title: 'Augmentez la visibilité de vos produits',
       text:
           'Une plateforme incontournable pour le commerce local et la restauration.',
@@ -622,11 +622,16 @@ class _IntroWidgetState extends State<IntroWidget>
     final index = _model.carouselCurrentIndex % _introSlides.length;
     final slide = _introSlides[index];
 
-    return Column(
-      children: [
-        // Photos plein écran, sous la barre d'état.
-        Expanded(
-          child: Stack(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxHeight < 200 || constraints.maxWidth < 100) {
+          return const SizedBox.shrink();
+        }
+        return Column(
+          children: [
+            // Photos plein écran, sous la barre d'état.
+            Expanded(
+              child: Stack(
             fit: StackFit.expand,
             children: [
               CarouselSlider(
@@ -792,7 +797,9 @@ class _IntroWidgetState extends State<IntroWidget>
             ),
           ),
         ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

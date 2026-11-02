@@ -157,3 +157,6 @@ flutter:
     - assets/pdfs/
     - assets/jsons/
     - assets/logo/
+    - assets/logo/image1.png
+    - assets/logo/image2.png
+    - assets/logo/image3.png

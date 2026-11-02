@@ -165,6 +165,73 @@ class _NavBarPageState extends State<NavBarPage> {
     _currentPage = widget.page;
   }
 
+  Widget _buildNavItem({
+    required BuildContext context,
+    required int index,
+    required int currentIndex,
+    required String label,
+    required IconData activeIcon,
+    required IconData inactiveIcon,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = index == currentIndex;
+    return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (isSelected)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+              decoration: BoxDecoration(
+                color: Color(0xFFE51A1A),
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              child: Icon(
+                activeIcon,
+                color: Colors.white,
+                size: 20.0,
+              ),
+            )
+          else
+            Container(
+              height: 30.0,
+              alignment: Alignment.center,
+              child: Icon(
+                inactiveIcon,
+                color: Color(0xFF1E242B),
+                size: 22.0,
+              ),
+            ),
+          SizedBox(height: 2.0),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: isSelected ? Color(0xFFE51A1A) : Color(0xFF1E242B),
+              fontSize: 11.0,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 2.0),
+          if (isSelected)
+            Container(
+              width: 30.0,
+              height: 2.0,
+              decoration: BoxDecoration(
+                color: Color(0xFFE51A1A),
+                borderRadius: BorderRadius.circular(2.0),
+              ),
+            )
+          else
+            SizedBox(height: 2.0),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tabs = {
@@ -183,44 +250,70 @@ class _NavBarPageState extends State<NavBarPage> {
           tabletLandscape: false,
           desktop: false,
         ),
-        child: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: (i) => safeSetState(() {
-            _currentPage = null;
-            _currentPageName = tabs.keys.toList()[i];
-          }),
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-          selectedItemColor: FlutterFlowTheme.of(context).primary,
-          unselectedItemColor: FlutterFlowTheme.of(context).secondaryText,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          items: <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.home_outlined,
-                size: 24.0,
+        child: Container(
+          decoration: BoxDecoration(
+            color: FlutterFlowTheme.of(context).secondaryBackground,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 16.0,
+                offset: Offset(0, -4),
               ),
-              label: 'Accueil',
-              tooltip: '',
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    context: context,
+                    index: 0,
+                    currentIndex: currentIndex,
+                    label: 'Accueil',
+                    activeIcon: Icons.home_rounded,
+                    inactiveIcon: Icons.home_outlined,
+                    onTap: () => safeSetState(() {
+                      _currentPage = null;
+                      _currentPageName = 'Home';
+                    }),
+                  ),
+                  _buildNavItem(
+                    context: context,
+                    index: 1,
+                    currentIndex: currentIndex,
+                    label: 'Commandes',
+                    activeIcon: Icons.shopping_bag_rounded,
+                    inactiveIcon: Icons.shopping_bag_outlined,
+                    onTap: () => safeSetState(() {
+                      _currentPage = null;
+                      _currentPageName = 'Order';
+                    }),
+                  ),
+                  Container(
+                    width: 1.0,
+                    height: 26.0,
+                    color: Color(0xFFE5E7EB),
+                  ),
+                  _buildNavItem(
+                    context: context,
+                    index: 2,
+                    currentIndex: currentIndex,
+                    label: 'Profil',
+                    activeIcon: Icons.person_rounded,
+                    inactiveIcon: Icons.person_outline_rounded,
+                    onTap: () => safeSetState(() {
+                      _currentPage = null;
+                      _currentPageName = 'Profile';
+                    }),
+                  ),
+                ],
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.shopping_basket_outlined,
-                size: 24.0,
-              ),
-              label: 'Commandes',
-              tooltip: '',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.person_outlined,
-                size: 24.0,
-              ),
-              label: 'Profil',
-              tooltip: '',
-            )
-          ],
+          ),
         ),
       ),
     );
