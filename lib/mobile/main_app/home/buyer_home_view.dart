@@ -154,6 +154,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final topInset = MediaQuery.of(context).padding.top;
     final nameParts = currentUserDisplayName.trim().split(' ');
     final firstName = nameParts.first.trim();
