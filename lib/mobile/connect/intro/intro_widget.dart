@@ -96,7 +96,7 @@ class _IntroWidgetState extends State<IntroWidget>
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12.0),
                       child: Image.asset(
-                        'assets/logo/image1.png',
+                        'assets/images/youngAfrican.jpg',
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
@@ -598,19 +598,19 @@ class _IntroWidgetState extends State<IntroWidget>
 
   static const _introSlides = [
     (
-      image: 'assets/logo/image1.png',
+      image: 'assets/images/youngAfrican.jpg',
       title: 'Faites vos achats en un clic',
       text:
           'Boutiques, magasins, restaurants, fast-foods et pharmacies réunis dans une seule application.',
     ),
     (
-      image: 'assets/logo/image2.png',
+      image: 'assets/images/Girl_Bag2.jpg',
       title: 'Passez des commandes instantanées',
       text:
           'Une solution rapide pour vos achats, vos repas et vos produits pharmaceutiques.',
     ),
     (
-      image: 'assets/logo/image3.png',
+      image: 'assets/images/beautiful2.jpg',
       title: 'Augmentez la visibilité de vos produits',
       text:
           'Une plateforme incontournable pour le commerce local et la restauration.',
@@ -627,176 +627,192 @@ class _IntroWidgetState extends State<IntroWidget>
         if (constraints.maxHeight < 200 || constraints.maxWidth < 100) {
           return const SizedBox.shrink();
         }
-        return Column(
+        return Stack(
+          fit: StackFit.expand,
           children: [
-            // Photos plein écran, sous la barre d'état.
-            Expanded(
-              child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CarouselSlider(
-                items: _introSlides
-                    .map((s) => Image.asset(
-                          s.image,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                        ))
-                    .toList(),
-                carouselController: _model.carouselController ??=
-                    CarouselSliderController(),
-                options: CarouselOptions(
-                  height: double.infinity,
-                  initialPage: 0,
-                  viewportFraction: 1.0,
-                  enableInfiniteScroll: true,
-                  autoPlay: true,
-                  autoPlayInterval: Duration(seconds: 4),
-                  autoPlayAnimationDuration: Duration(milliseconds: 600),
-                  autoPlayCurve: Curves.easeInOut,
-                  onPageChanged: (i, _) =>
-                      safeSetState(() => _model.carouselCurrentIndex = i),
+            // 1. Fond carrousel photo plein écran
+            CarouselSlider(
+              items: _introSlides
+                  .map((s) => Image.asset(
+                        s.image,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ))
+                  .toList(),
+              carouselController: _model.carouselController ??=
+                  CarouselSliderController(),
+              options: CarouselOptions(
+                height: double.infinity,
+                initialPage: 0,
+                viewportFraction: 1.0,
+                enableInfiniteScroll: true,
+                autoPlay: true,
+                autoPlayInterval: const Duration(seconds: 4),
+                autoPlayAnimationDuration: const Duration(milliseconds: 600),
+                autoPlayCurve: Curves.easeInOut,
+                onPageChanged: (i, _) =>
+                    safeSetState(() => _model.carouselCurrentIndex = i),
+              ),
+            ),
+
+            // 2. Dégradé sombre élégant (sans aucun conteneur blanc qui coupe)
+            IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0x80000000), // Léger voile en haut pour le bouton Passer
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.55),
+                      Colors.black.withOpacity(0.92), // Fondu doux et sombre en bas
+                    ],
+                    stops: const [0.0, 0.35, 0.65, 1.0],
+                  ),
                 ),
               ),
-              // Léger voile en haut pour garder le logo et « Passer » lisibles.
-              IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment(0.0, -0.3),
-                      colors: [Color(0x73000000), Color(0x00000000)],
+            ),
+
+            // 3. Bouton « Passer » en haut à droite
+            SafeArea(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: Material(
+                    color: Colors.black.withOpacity(0.35),
+                    shape: const StadiumBorder(),
+                    child: InkWell(
+                      customBorder: const StadiumBorder(),
+                      onTap: () =>
+                          context.pushNamed(OnboardingWidget.routeName),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          'Passer',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-              SafeArea(
+            ),
+
+            // 4. Contenu en bas (Points, Titre, Sous-titre, Bouton Commencer)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                      const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Spacer(),
-                      Material(
-                        color: Color(0x59000000),
-                        shape: StadiumBorder(),
-                        child: InkWell(
-                          customBorder: StadiumBorder(),
-                          onTap: () =>
-                              context.pushNamed(OnboardingWidget.routeName),
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                16.0, 8.0, 16.0, 8.0),
-                            child: Text(
-                              'Passer',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.w600,
-                              ),
+                      // Points de pagination
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          _introSlides.length,
+                          (i) => AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                            width: i == index ? 24.0 : 8.0,
+                            height: 6.0,
+                            decoration: BoxDecoration(
+                              color: i == index
+                                  ? const Color(0xFFE51A1A)
+                                  : Colors.white.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(3.0),
                             ),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 18.0),
+
+                      // Textes animés avec typographie soignée
+                      SizedBox(
+                        height: 120.0,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: Column(
+                            key: ValueKey(index),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                slide.title,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.interTight(
+                                  color: Colors.white,
+                                  fontSize: 25.0,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.3,
+                                  height: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 10.0),
+                              Text(
+                                slide.text,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white.withOpacity(0.85),
+                                  fontSize: 14.5,
+                                  height: 1.45,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20.0),
+
+                      // Bouton Commencer rouge Kitunga
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54.0,
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              context.pushNamed(OnboardingWidget.routeName),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE51A1A),
+                            foregroundColor: Colors.white,
+                            elevation: 4.0,
+                            shadowColor: const Color(0x66E51A1A),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Commencer',
+                                style: GoogleFonts.interTight(
+                                  fontSize: 16.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 8.0),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  size: 20.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12.0),
                     ],
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-        // Panneau blanc arrondi qui chevauche la photo.
-        Transform.translate(
-          offset: Offset(0.0, -28.0),
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: theme.secondaryBackground,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28.0)),
             ),
-            padding: EdgeInsetsDirectional.fromSTEB(24.0, 24.0, 24.0, 0.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    _introSlides.length,
-                    (i) => AnimatedContainer(
-                      duration: Duration(milliseconds: 250),
-                      margin: EdgeInsets.symmetric(horizontal: 4.0),
-                      width: i == index ? 24.0 : 8.0,
-                      height: 8.0,
-                      decoration: BoxDecoration(
-                        color: i == index ? theme.primary : theme.divider,
-                        borderRadius: BorderRadius.circular(4.0),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20.0),
-                // Hauteur fixe : le panneau ne saute pas d'une diapositive à l'autre.
-                SizedBox(
-                  height: 132.0,
-                  child: AnimatedSwitcher(
-                    duration: Duration(milliseconds: 300),
-                    child: Column(
-                      key: ValueKey(index),
-                      children: [
-                        Text(
-                          slide.title,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.interTight(
-                            color: theme.primaryText,
-                            fontSize: 24.0,
-                            fontWeight: FontWeight.w800,
-                            height: 1.25,
-                          ),
-                        ),
-                        SizedBox(height: 10.0),
-                        Text(
-                          slide.text,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            color: theme.secondaryText,
-                            fontSize: 15.0,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.0),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56.0,
-                  child: ElevatedButton(
-                    onPressed: () =>
-                        context.pushNamed(OnboardingWidget.routeName),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                    ),
-                    child: Text(
-                      'Commencer',
-                      style: GoogleFonts.interTight(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 8.0 + MediaQuery.paddingOf(context).bottom),
-              ],
-            ),
-          ),
-        ),
           ],
         );
       },
