@@ -193,6 +193,13 @@
       $("hello").textContent = "Bonjour " + (data.display_name || user.email);
       if (!$("phone").value && data.phone_number) $("phone").value = data.phone_number;
       showStatus(data.subscribe_close_at ? data.subscribe_close_at.toDate() : null);
+      // Formule choisie à l'inscription, présélectionnée (modifiable).
+      const chosen = {"Mensuel - 250F": "monthly", "Trimestriel - 500 F": "quarterly", "Annuel - 1000 F": "annual"}[data.subscribe_type];
+      const radio = chosen && document.querySelector('.plan input[value="' + chosen + '"]');
+      if (radio) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event("change"));
+      }
     }
 
     auth.onAuthStateChanged((user) => {

@@ -20,6 +20,8 @@ le montant ni commander un article épuisé.
 - Obligatoire pour commander (rôle `User`) : l'application, les règles
   Firestore (Cart, Orders) et `kitungaStartPayment` le vérifient.
 - Formules : Mensuel 250 F (30 j), Trimestriel 500 F (90 j), Annuel 1000 F (365 j).
+- La formule choisie à l'inscription (`User.subscribe_type`) est un simple
+  choix : elle est présélectionnée sur la page web et n'active rien sans paiement.
 - Payé **hors de l'application** sur `web/abonnement.html` (règle Google Play
   sur les services numériques). L'application ne contient ni lien ni bouton
   de paiement d'abonnement : il faut communiquer l'adresse aux clients

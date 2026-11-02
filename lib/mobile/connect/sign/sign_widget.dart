@@ -92,6 +92,12 @@ class _SignWidgetState extends State<SignWidget> {
   final _userFormKey = GlobalKey<FormState>();
   bool _signingUp = false;
 
+  static const _plans = [
+    'Mensuel - 250F',
+    'Trimestriel - 500 F',
+    'Annuel - 1000 F',
+  ];
+
   Future _signUpUser() async {
     if (_signingUp) return;
     if (!(_userFormKey.currentState?.validate() ?? false)) return;
@@ -121,6 +127,7 @@ class _SignWidgetState extends State<SignWidget> {
             horraire: _model.horraireTextController.text,
             // Abonnement activé par le serveur après paiement MoMo.
             isSubscribed: false,
+            subscribeType: _model.subscribTypeUserValue,
           ));
 
       await showDialog(
@@ -257,6 +264,25 @@ class _SignWidgetState extends State<SignWidget> {
                   style: fieldStyle,
                   decoration: kitungaInputDecoration(
                       context, '06 XXX XX XX', Icons.phone_outlined),
+                ),
+                SizedBox(height: 18.0),
+                KitungaFieldLabel('Formule d\'abonnement'),
+                DropdownButtonFormField<String>(
+                  initialValue: _model.subscribTypeUserValue,
+                  items: _plans
+                      .map((p) => DropdownMenuItem(
+                            value: p,
+                            child: Text(p, style: fieldStyle),
+                          ))
+                      .toList(),
+                  onChanged: (v) =>
+                      safeSetState(() => _model.subscribTypeUserValue = v),
+                  dropdownColor: theme.secondaryBackground,
+                  borderRadius: BorderRadius.circular(14.0),
+                  icon: Icon(Icons.expand_more_rounded,
+                      color: theme.secondaryText),
+                  decoration: kitungaInputDecoration(context,
+                      'Choisissez votre formule', Icons.workspace_premium_outlined),
                 ),
                 SizedBox(height: 18.0),
                 KitungaFieldLabel('Mot de passe'),
