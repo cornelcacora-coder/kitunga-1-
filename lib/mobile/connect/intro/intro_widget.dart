@@ -631,42 +631,14 @@ class _IntroWidgetState extends State<IntroWidget>
           body: Stack(
             fit: StackFit.expand,
             children: [
-              // 1. Affiche publicitaire avec fond flouté immersif (aucun zoom excessif, affiche entière visible)
+              // 1. Affiche publicitaire pleine hauteur et pleine largeur (100% écran)
               CarouselSlider(
                 items: _introSlides
-                    .map((s) => Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            // A. Arrière-plan ambiance flouté qui remplit l'écran
-                            Image.asset(
-                              s.image,
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                            BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                              child: Container(
-                                color: Colors.black.withOpacity(0.35),
-                              ),
-                            ),
-                            // B. Affiche publicitaire réelle nette et entière (sans aucun rognage)
-                            SafeArea(
-                              child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      14.0, 56.0, 14.0, 96.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    child: Image.asset(
-                                      s.image,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                    .map((s) => Image.asset(
+                          s.image,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.fill,
                         ))
                     .toList(),
                 carouselController: _model.carouselController ??=
@@ -693,12 +665,12 @@ class _IntroWidgetState extends State<IntroWidget>
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.4),
+                        Colors.black.withOpacity(0.35),
                         Colors.transparent,
-                        Colors.black.withOpacity(0.4),
-                        Colors.black.withOpacity(0.85),
+                        Colors.black.withOpacity(0.35),
+                        Colors.black.withOpacity(0.75),
                       ],
-                      stops: const [0.0, 0.25, 0.70, 1.0],
+                      stops: const [0.0, 0.20, 0.75, 1.0],
                     ),
                   ),
                 ),
