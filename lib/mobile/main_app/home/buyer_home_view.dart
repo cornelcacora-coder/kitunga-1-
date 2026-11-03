@@ -53,22 +53,22 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     });
   }
 
-  // Données des slides du carrousel avec les 3 images de assets/logo/
+  // Données des slides du carrousel avec les 3 images de assets/images/
   static const _bannerSlides = [
     (
-      image: 'assets/logo/image1.png',
+      image: 'assets/images/image1.png',
       title1: 'Tout au même',
       title2: 'endroit',
       subtitle: 'Boutiques, restaurants\net pharmacies',
     ),
     (
-      image: 'assets/logo/image2.png',
+      image: 'assets/images/image2.png',
       title1: 'Livraison',
       title2: 'rapide',
       subtitle: 'Recevez vos commandes\nà domicile',
     ),
     (
-      image: 'assets/logo/image3.png',
+      image: 'assets/images/image3.png',
       title1: 'Paiement',
       title2: 'sécurisé',
       subtitle: 'Achetez en toute\nconfiance',

@@ -96,7 +96,7 @@ class _IntroWidgetState extends State<IntroWidget>
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12.0),
                       child: Image.asset(
-                        'assets/images/youngAfrican.jpg',
+                        'assets/images/image1.png',
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
@@ -598,19 +598,19 @@ class _IntroWidgetState extends State<IntroWidget>
 
   static const _introSlides = [
     (
-      image: 'assets/images/youngAfrican.jpg',
+      image: 'assets/images/image1.png',
       title: 'Faites vos achats en un clic',
       text:
           'Boutiques, magasins, restaurants, fast-foods et pharmacies réunis dans une seule application.',
     ),
     (
-      image: 'assets/images/Girl_Bag2.jpg',
+      image: 'assets/images/image2.png',
       title: 'Passez des commandes instantanées',
       text:
           'Une solution rapide pour vos achats, vos repas et vos produits pharmaceutiques.',
     ),
     (
-      image: 'assets/images/beautiful2.jpg',
+      image: 'assets/images/image3.png',
       title: 'Augmentez la visibilité de vos produits',
       text:
           'Une plateforme incontournable pour le commerce local et la restauration.',
@@ -619,6 +619,7 @@ class _IntroWidgetState extends State<IntroWidget>
 
   Widget _buildMobileIntro(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final index = _model.carouselCurrentIndex % _introSlides.length;
     final slide = _introSlides[index];
 
@@ -627,93 +628,118 @@ class _IntroWidgetState extends State<IntroWidget>
         if (constraints.maxHeight < 200 || constraints.maxWidth < 100) {
           return const SizedBox.shrink();
         }
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            // 1. Fond carrousel photo plein écran
-            CarouselSlider(
-              items: _introSlides
-                  .map((s) => Image.asset(
-                        s.image,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                      ))
-                  .toList(),
-              carouselController: _model.carouselController ??=
-                  CarouselSliderController(),
-              options: CarouselOptions(
-                height: double.infinity,
-                initialPage: 0,
-                viewportFraction: 1.0,
-                enableInfiniteScroll: true,
-                autoPlay: true,
-                autoPlayInterval: const Duration(seconds: 4),
-                autoPlayAnimationDuration: const Duration(milliseconds: 600),
-                autoPlayCurve: Curves.easeInOut,
-                onPageChanged: (i, _) =>
-                    safeSetState(() => _model.carouselCurrentIndex = i),
-              ),
-            ),
-
-            // 2. Dégradé sombre élégant (sans aucun conteneur blanc qui coupe)
-            IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      const Color(0x80000000), // Léger voile en haut pour le bouton Passer
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.55),
-                      Colors.black.withOpacity(0.92), // Fondu doux et sombre en bas
-                    ],
-                    stops: const [0.0, 0.35, 0.65, 1.0],
-                  ),
-                ),
-              ),
-            ),
-
-            // 3. Bouton « Passer » en haut à droite
-            SafeArea(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: Material(
-                    color: Colors.black.withOpacity(0.35),
-                    shape: const StadiumBorder(),
-                    child: InkWell(
-                      customBorder: const StadiumBorder(),
-                      onTap: () =>
-                          context.pushNamed(OnboardingWidget.routeName),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+        return Scaffold(
+          backgroundColor: theme.primaryBackground,
+          body: SafeArea(
+            child: Column(
+              children: [
+                // 1. Barre du haut : Logo Kitunga + Bouton « Passer »
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/logo/kitunga_logo.png',
+                            width: 28.0,
+                            height: 28.0,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(width: 8.0),
+                          Text(
+                            'KITUNGA',
+                            style: GoogleFonts.interTight(
+                              color: const Color(0xFFE51A1A),
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            context.pushNamed(OnboardingWidget.routeName),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14.0, vertical: 6.0),
+                          backgroundColor: isDark
+                              ? const Color(0xFF2C3238)
+                              : const Color(0xFFF1F4F8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                        ),
                         child: Text(
                           'Passer',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 14.0,
+                            color: theme.primaryText,
+                            fontSize: 13.0,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+
+                // 2. Affiche publicitaire pleine, nette, entière sans aucune coupure
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 6.0),
+                    child: CarouselSlider(
+                      items: _introSlides
+                          .map((s) => Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(22.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 16.0,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(22.0),
+                                  child: Image.asset(
+                                    s.image,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                      carouselController: _model.carouselController ??=
+                          CarouselSliderController(),
+                      options: CarouselOptions(
+                        height: double.infinity,
+                        initialPage: 0,
+                        viewportFraction: 1.0,
+                        enableInfiniteScroll: true,
+                        autoPlay: true,
+                        autoPlayInterval: const Duration(seconds: 4),
+                        autoPlayAnimationDuration:
+                            const Duration(milliseconds: 500),
+                        autoPlayCurve: Curves.easeInOut,
+                        onPageChanged: (i, _) =>
+                            safeSetState(() => _model.carouselCurrentIndex = i),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
 
-            // 4. Contenu en bas (Points, Titre, Sous-titre, Bouton Commencer)
-            SafeArea(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
+                // 3. Bas de page continu (SANS conteneur blanc qui coupe l'image)
+                Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                      const EdgeInsets.fromLTRB(24.0, 10.0, 24.0, 16.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -724,23 +750,26 @@ class _IntroWidgetState extends State<IntroWidget>
                           _introSlides.length,
                           (i) => AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
-                            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                            margin:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
                             width: i == index ? 24.0 : 8.0,
                             height: 6.0,
                             decoration: BoxDecoration(
                               color: i == index
                                   ? const Color(0xFFE51A1A)
-                                  : Colors.white.withOpacity(0.4),
+                                  : (isDark
+                                      ? const Color(0xFF374151)
+                                      : const Color(0xFFE2E8F0)),
                               borderRadius: BorderRadius.circular(3.0),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 18.0),
+                      const SizedBox(height: 14.0),
 
-                      // Textes animés avec typographie soignée
+                      // Textes bien mis en valeur
                       SizedBox(
-                        height: 120.0,
+                        height: 90.0,
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
                           child: Column(
@@ -750,42 +779,44 @@ class _IntroWidgetState extends State<IntroWidget>
                               Text(
                                 slide.title,
                                 textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.interTight(
-                                  color: Colors.white,
-                                  fontSize: 25.0,
+                                  color: theme.primaryText,
+                                  fontSize: 20.0,
                                   fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.3,
-                                  height: 1.2,
+                                  letterSpacing: -0.2,
                                 ),
                               ),
-                              const SizedBox(height: 10.0),
+                              const SizedBox(height: 6.0),
                               Text(
                                 slide.text,
                                 textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.inter(
-                                  color: Colors.white.withOpacity(0.85),
-                                  fontSize: 14.5,
-                                  height: 1.45,
+                                  color: theme.secondaryText,
+                                  fontSize: 13.5,
+                                  height: 1.4,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20.0),
+                      const SizedBox(height: 12.0),
 
-                      // Bouton Commencer rouge Kitunga
+                      // Bouton Commencer
                       SizedBox(
                         width: double.infinity,
-                        height: 54.0,
+                        height: 52.0,
                         child: ElevatedButton(
                           onPressed: () =>
                               context.pushNamed(OnboardingWidget.routeName),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFE51A1A),
                             foregroundColor: Colors.white,
-                            elevation: 4.0,
-                            shadowColor: const Color(0x66E51A1A),
+                            elevation: 2.0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16.0),
                             ),
@@ -796,24 +827,23 @@ class _IntroWidgetState extends State<IntroWidget>
                               Text(
                                 'Commencer',
                                 style: GoogleFonts.interTight(
-                                  fontSize: 16.5,
+                                  fontSize: 16.0,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                               const SizedBox(width: 8.0),
                               const Icon(Icons.arrow_forward_rounded,
-                                  size: 20.0),
+                                  size: 18.0),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12.0),
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
