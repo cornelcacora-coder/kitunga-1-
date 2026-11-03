@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'product_view_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'product_view_model.dart';
 
 /// Page d'inscription utilisateur
@@ -61,6 +62,7 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () {
@@ -69,9 +71,9 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -109,7 +111,8 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Align(
             alignment: AlignmentDirectional(0.0, 0.0),
@@ -1107,6 +1110,7 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );

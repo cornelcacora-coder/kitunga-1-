@@ -16,6 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'security_model.dart';
 export 'security_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 
 /// Page d'inscription utilisateur
 class SecurityWidget extends StatefulWidget {
@@ -102,6 +103,7 @@ class _SecurityWidgetState extends State<SecurityWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -109,9 +111,9 @@ class _SecurityWidgetState extends State<SecurityWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -149,7 +151,17 @@ class _SecurityWidgetState extends State<SecurityWidget>
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                ),
+              ),
+            ),
+            SafeArea(
           top: true,
           child: Padding(
             padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
@@ -471,6 +483,8 @@ class _SecurityWidgetState extends State<SecurityWidget>
               ],
             ),
           ),
+        ),
+          ],
         ),
       ),
     );

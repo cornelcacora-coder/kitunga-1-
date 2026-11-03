@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'add_phone_number_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'add_phone_number_model.dart';
 
 /// Page d'inscription utilisateur
@@ -47,6 +48,7 @@ class _AddPhoneNumberWidgetState extends State<AddPhoneNumberWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -54,9 +56,9 @@ class _AddPhoneNumberWidgetState extends State<AddPhoneNumberWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -94,7 +96,8 @@ class _AddPhoneNumberWidgetState extends State<AddPhoneNumberWidget> {
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Align(
             alignment: AlignmentDirectional(0.0, -1.0),
@@ -335,6 +338,7 @@ class _AddPhoneNumberWidgetState extends State<AddPhoneNumberWidget> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );

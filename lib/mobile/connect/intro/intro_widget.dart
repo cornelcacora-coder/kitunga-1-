@@ -635,7 +635,7 @@ class _IntroWidgetState extends State<IntroWidget>
           body: Stack(
             fit: StackFit.expand,
             children: [
-              // 1. Affiche publicitaire avec respect naturel des proportions (sans étirement du texte)
+              // 1. Affiche publicitaire plein écran haute définition (format 9:16 adapté mobile, zéro étirement, zéro coupure)
               CarouselSlider(
                 items: _introSlides
                     .map((s) => Image.asset(

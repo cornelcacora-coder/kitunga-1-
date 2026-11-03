@@ -161,42 +161,73 @@ class _SignWidgetState extends State<SignWidget> {
     }
   }
 
-  Widget _passwordToggle(bool visible, VoidCallback onTap) => IconButton(
-        onPressed: onTap,
-        icon: Icon(
-          visible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-          color: FlutterFlowTheme.of(context).secondaryText,
-          size: 22.0,
-        ),
-      );
+  Widget _passwordToggle(bool visible, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return IconButton(
+      onPressed: onTap,
+      splashRadius: 20.0,
+      icon: Icon(
+        visible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+        size: 20.0,
+      ),
+    );
+  }
 
   /// Formulaire « Créer un compte » des clients.
   Widget _buildUserSignUp(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final fieldStyle = GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fieldStyle = GoogleFonts.inter(
+      color: theme.primaryText,
+      fontSize: 15.0,
+      fontWeight: FontWeight.w500,
+    );
+
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 450.0),
+        constraints: const BoxConstraints(maxWidth: 440.0),
         child: SingleChildScrollView(
-          padding: EdgeInsetsDirectional.fromSTEB(24.0, 8.0, 24.0, 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Form(
             key: _userFormKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Bouton retour rond
                 Align(
                   alignment: AlignmentDirectional.centerStart,
-                  child: IconButton(
-                    onPressed: () => context.safePop(),
-                    style: IconButton.styleFrom(
-                        backgroundColor: theme.primaryBackground),
-                    icon: Icon(Icons.arrow_back_rounded,
-                        color: theme.primaryText),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(22.0),
+                    onTap: () => context.safePop(),
+                    child: Container(
+                      width: 42.0,
+                      height: 42.0,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E242B) : const Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF2C3238) : const Color(0xFFE2E8F0),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_rounded,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                        size: 20.0,
+                      ),
+                    ),
                   ),
                 ),
-                SizedBox(height: 8.0),
-                Center(child: KitungaLogo(size: 110.0)),
-                SizedBox(height: 24.0),
+                const SizedBox(height: 8.0),
+
+                // Logo Kitunga
+                Center(
+                  child: KitungaLogo(size: 110.0),
+                ),
+                const SizedBox(height: 18.0),
+
+                // Titre
                 Text(
                   'Créer un compte',
                   textAlign: TextAlign.center,
@@ -204,44 +235,61 @@ class _SignWidgetState extends State<SignWidget> {
                     color: theme.primaryText,
                     fontSize: 28.0,
                     fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
                   ),
                 ),
-                SizedBox(height: 6.0),
+                const SizedBox(height: 12.0),
+
+                // Séparateur signature ─── 🛍️ ───
+                const KitungaOrnamentDivider(),
+                const SizedBox(height: 12.0),
+
+                // Sous-titre
                 Text(
                   'Rejoignez Kitunga et commandez auprès des commerces près de chez vous.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: theme.secondaryText,
-                    fontSize: 15.0,
-                    height: 1.5,
+                    fontSize: 14.5,
+                    height: 1.45,
                   ),
                 ),
-                SizedBox(height: 28.0),
-                KitungaFieldLabel('Nom complet'),
+                const SizedBox(height: 26.0),
+
+                // Nom complet
+                const KitungaFieldLabel('Nom complet'),
                 TextFormField(
                   controller: _model.displayNameTextController,
                   focusNode: _model.displayNameFocusNode,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  autofillHints: [AutofillHints.name],
+                  autofillHints: const [AutofillHints.name],
                   style: fieldStyle,
                   decoration: kitungaInputDecoration(
-                      context, 'Ex : Jean Mabiala', Icons.person_outline_rounded),
+                    context,
+                    'Ex : Jean Mabiala',
+                    Icons.person_outline_rounded,
+                  ),
                   validator: (v) => (v ?? '').trim().isEmpty
                       ? 'Veuillez saisir votre nom.'
                       : null,
                 ),
-                SizedBox(height: 18.0),
-                KitungaFieldLabel('Adresse e-mail'),
+                const SizedBox(height: 16.0),
+
+                // Adresse e-mail
+                const KitungaFieldLabel('Adresse e-mail'),
                 TextFormField(
                   controller: _model.emailUserTextController,
                   focusNode: _model.emailUserFocusNode,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  autofillHints: [AutofillHints.email],
+                  autofillHints: const [AutofillHints.email],
                   style: fieldStyle,
                   decoration: kitungaInputDecoration(
-                      context, 'exemple@email.com', Icons.mail_outline_rounded),
+                    context,
+                    'exemple@email.com',
+                    Icons.mail_outline_rounded,
+                  ),
                   validator: (v) {
                     final value = (v ?? '').trim();
                     if (value.isEmpty) {
@@ -253,20 +301,27 @@ class _SignWidgetState extends State<SignWidget> {
                     return null;
                   },
                 ),
-                SizedBox(height: 18.0),
-                KitungaFieldLabel('Téléphone'),
+                const SizedBox(height: 16.0),
+
+                // Téléphone
+                const KitungaFieldLabel('Téléphone'),
                 TextFormField(
                   controller: _model.phoneUserTextController,
                   focusNode: _model.phoneUserFocusNode,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
-                  autofillHints: [AutofillHints.telephoneNumber],
+                  autofillHints: const [AutofillHints.telephoneNumber],
                   style: fieldStyle,
                   decoration: kitungaInputDecoration(
-                      context, '06 XXX XX XX', Icons.phone_outlined),
+                    context,
+                    '06 XXX XX XX',
+                    Icons.phone_outlined,
+                  ),
                 ),
-                SizedBox(height: 18.0),
-                KitungaFieldLabel('Formule d\'abonnement'),
+                const SizedBox(height: 16.0),
+
+                // Formule d'abonnement
+                const KitungaFieldLabel('Formule d\'abonnement'),
                 DropdownButtonFormField<String>(
                   initialValue: _model.subscribTypeUserValue,
                   items: _plans
@@ -277,21 +332,28 @@ class _SignWidgetState extends State<SignWidget> {
                       .toList(),
                   onChanged: (v) =>
                       safeSetState(() => _model.subscribTypeUserValue = v),
-                  dropdownColor: theme.secondaryBackground,
-                  borderRadius: BorderRadius.circular(14.0),
-                  icon: Icon(Icons.expand_more_rounded,
-                      color: theme.secondaryText),
-                  decoration: kitungaInputDecoration(context,
-                      'Choisissez votre formule', Icons.workspace_premium_outlined),
+                  dropdownColor: isDark ? const Color(0xFF1E242B) : Colors.white,
+                  borderRadius: BorderRadius.circular(22.0),
+                  icon: Icon(
+                    Icons.expand_more_rounded,
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  ),
+                  decoration: kitungaInputDecoration(
+                    context,
+                    'Choisissez votre formule',
+                    Icons.workspace_premium_outlined,
+                  ),
                 ),
-                SizedBox(height: 18.0),
-                KitungaFieldLabel('Mot de passe'),
+                const SizedBox(height: 16.0),
+
+                // Mot de passe
+                const KitungaFieldLabel('Mot de passe'),
                 TextFormField(
                   controller: _model.passwordUserTextController,
                   focusNode: _model.passwordUserFocusNode,
                   obscureText: !_model.passwordUserVisibility,
                   textInputAction: TextInputAction.next,
-                  autofillHints: [AutofillHints.newPassword],
+                  autofillHints: const [AutofillHints.newPassword],
                   style: fieldStyle,
                   decoration: kitungaInputDecoration(
                     context,
@@ -307,8 +369,10 @@ class _SignWidgetState extends State<SignWidget> {
                       ? 'Le mot de passe doit comporter au moins 6 caractères.'
                       : null,
                 ),
-                SizedBox(height: 18.0),
-                KitungaFieldLabel('Confirmer le mot de passe'),
+                const SizedBox(height: 16.0),
+
+                // Confirmer le mot de passe
+                const KitungaFieldLabel('Confirmer le mot de passe'),
                 TextFormField(
                   controller: _model.confirmPasswordUserTextController,
                   focusNode: _model.confirmPasswordUserFocusNode,
@@ -331,39 +395,77 @@ class _SignWidgetState extends State<SignWidget> {
                       ? 'Les mots de passe ne correspondent pas.'
                       : null,
                 ),
-                SizedBox(height: 28.0),
+                const SizedBox(height: 26.0),
+
+                // Bouton principal d'inscription
                 KitungaPrimaryButton(
                   text: 'Créer mon compte',
                   loading: _signingUp,
                   onPressed: _signUpUser,
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 18.0),
+
+                // Déjà un compte ? Se connecter
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'Vous avez déjà un compte ?',
                       style: GoogleFonts.inter(
-                          color: theme.secondaryText, fontSize: 14.0),
+                        color: theme.secondaryText,
+                        fontSize: 14.0,
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () => context.pushNamed(LoginWidget.routeName),
+                    const SizedBox(width: 4.0),
+                    GestureDetector(
+                      onTap: () => context.pushNamed(LoginWidget.routeName),
                       child: Text(
                         'Se connecter',
                         style: GoogleFonts.interTight(
-                          color: theme.primary,
+                          color: const Color(0xFFE51A1A),
                           fontSize: 14.0,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
                   ],
                 ),
-                Text(
-                  'En créant un compte, vous acceptez nos conditions d\'utilisation.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(color: theme.hint, fontSize: 12.0),
+                const SizedBox(height: 14.0),
+
+                // Conditions d'utilisation
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  children: [
+                    Text(
+                      'En continuant, vous acceptez nos ',
+                      style: GoogleFonts.inter(
+                        color: theme.hint,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () =>
+                          context.pushNamed(TermsConditionsWidget.routeName),
+                      child: Text(
+                        'conditions d\'utilisation',
+                        style: GoogleFonts.inter(
+                          color: theme.secondaryText,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '.',
+                      style: GoogleFonts.inter(
+                        color: theme.hint,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 20.0),
               ],
             ),
           ),
@@ -374,6 +476,40 @@ class _SignWidgetState extends State<SignWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Vue utilisateur standard avec arrière-plan signature Kitunga
+    if (widget.accessibility != 'Admin') {
+      return GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              // ── Arrière-plan signature Kitunga (vagues rouges, cercles & filigrane) ──
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                  ),
+                ),
+              ),
+
+              // ── Formulaire d'inscription ──
+              SafeArea(
+                child: _buildUserSignUp(context),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();

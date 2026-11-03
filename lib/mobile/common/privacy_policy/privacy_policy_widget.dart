@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'privacy_policy_model.dart';
 export 'privacy_policy_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 
 /// Page d'inscription utilisateur
 class PrivacyPolicyWidget extends StatefulWidget {
@@ -63,6 +64,7 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -70,9 +72,9 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -110,7 +112,17 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                ),
+              ),
+            ),
+            SafeArea(
           top: true,
           child: Padding(
             padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
@@ -243,6 +255,8 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
               ],
             ).animateOnPageLoad(animationsMap['listViewOnPageLoadAnimation']!),
           ),
+        ),
+          ],
         ),
       ),
     );

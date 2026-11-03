@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'order_view_seller_deliver_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'order_view_seller_deliver_model.dart';
 
 /// Page d'inscription utilisateur
@@ -58,6 +59,7 @@ class _OrderViewSellerDeliverWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -65,9 +67,9 @@ class _OrderViewSellerDeliverWidgetState
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: Row(
             mainAxisSize: MainAxisSize.max,
@@ -146,7 +148,8 @@ class _OrderViewSellerDeliverWidgetState
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Container(
             width: double.infinity,
@@ -735,6 +738,7 @@ class _OrderViewSellerDeliverWidgetState
               ),
             ),
           ),
+        ),
         ),
       ),
     );

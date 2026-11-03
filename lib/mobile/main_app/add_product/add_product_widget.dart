@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'add_product_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'add_product_model.dart';
 
 class AddProductWidget extends StatefulWidget {
@@ -60,10 +61,12 @@ class _AddProductWidgetState extends State<AddProductWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-      body: SafeArea(
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      body: KitungaScaffoldBackground(
+        child: SafeArea(
         top: true,
         child: Container(
           child: Padding(
@@ -1163,6 +1166,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

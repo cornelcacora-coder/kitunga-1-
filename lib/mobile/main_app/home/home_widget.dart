@@ -28,6 +28,7 @@ import '/mobile/components/app_drawer/app_drawer_widget.dart';
 import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
 import 'buyer_home_view.dart';
 import 'home_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'home_model.dart';
 
 /// Page d'inscription utilisateur
@@ -132,6 +133,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
         }
         List<UserRecord> homeUserRecordList = snapshot.data!;
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -139,7 +141,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
           },
           child: Scaffold(
             key: scaffoldKey,
-            backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+            backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
             drawer: AppDrawerWidget(),
             appBar: valueOrDefault(currentUserDocument?.role, '') == 'Seller'
                 ? PreferredSize(
@@ -505,7 +507,8 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
               ),
             )
           : null,
-            body: SafeArea(
+            body: KitungaScaffoldBackground(
+              child: SafeArea(
               top: valueOrDefault(currentUserDocument?.role, '') == 'Seller',
               child: Stack(
                 alignment: AlignmentDirectional(1.0, 1.0),
@@ -2703,6 +2706,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                     ),
                 ],
               ),
+            ),
             ),
           ),
         );

@@ -349,10 +349,21 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: theme.primaryBackground,
-      body: AuthUserStreamWidget(
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: KitungaAuthBackgroundPainter(isDark: isDark),
+              ),
+            ),
+          ),
+          AuthUserStreamWidget(
         builder: (context) {
           final role = valueOrDefault(currentUserDocument?.role, '');
           final guest = role == 'Guest' || role.isEmpty;
@@ -476,6 +487,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
             ],
           );
         },
+      ),
+        ],
       ),
     );
   }

@@ -15,6 +15,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '/mobile/seller/seller_orders.dart';
 import 'order_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'order_model.dart';
 
 /// Page d'inscription utilisateur
@@ -50,6 +51,7 @@ class _OrderWidgetState extends State<OrderWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -57,9 +59,9 @@ class _OrderWidgetState extends State<OrderWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: Align(
             alignment: AlignmentDirectional(0.0, -1.0),
@@ -87,7 +89,8 @@ class _OrderWidgetState extends State<OrderWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Stack(
             children: [
@@ -1648,6 +1651,7 @@ class _OrderWidgetState extends State<OrderWidget> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

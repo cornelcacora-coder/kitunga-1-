@@ -18,6 +18,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'edit_profile_model.dart';
 export 'edit_profile_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 
 /// Page d'inscription utilisateur
 class EditProfileWidget extends StatefulWidget {
@@ -113,6 +114,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -120,8 +122,18 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-        body: SafeArea(
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                ),
+              ),
+            ),
+            SafeArea(
           top: true,
           child: Padding(
             padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
@@ -886,6 +898,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
               ],
             ),
           ),
+        ),
+          ],
         ),
       ),
     );

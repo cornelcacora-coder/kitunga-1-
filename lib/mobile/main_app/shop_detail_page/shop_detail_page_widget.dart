@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'shop_detail_page_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'shop_detail_page_model.dart';
 
 class ShopDetailPageWidget extends StatefulWidget {
@@ -597,10 +598,12 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: theme.secondaryBackground,
-      body: StreamBuilder<UserRecord>(
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      body: KitungaScaffoldBackground(
+        child: StreamBuilder<UserRecord>(
         stream: UserRecord.getDocument(widget!.userRef!),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -618,6 +621,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
             ],
           );
         },
+      ),
       ),
     );
   }

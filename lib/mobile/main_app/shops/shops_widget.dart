@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'shops_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'shops_model.dart';
 
 /// Page d'inscription utilisateur
@@ -81,12 +82,14 @@ class _ShopsWidgetState extends State<ShopsWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final cat = kitungaCategories.firstWhere((c) => c.name == _category,
         orElse: () => kitungaCategories.first);
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: theme.secondaryBackground,
-      body: SafeArea(
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      body: KitungaScaffoldBackground(
+        child: SafeArea(
         child: StreamBuilder<List<UserRecord>>(
           stream: _shops,
           builder: (context, snapshot) {
@@ -170,6 +173,7 @@ class _ShopsWidgetState extends State<ShopsWidget> {
               ],
             );
           },
+        ),
         ),
       ),
     );

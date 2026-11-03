@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'cart_last_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'cart_last_model.dart';
 
 /// Page d'inscription utilisateur
@@ -105,6 +106,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () {
@@ -113,9 +115,9 @@ class _CartLastWidgetState extends State<CartLastWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -172,23 +174,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Container(
-            width: () {
-              if (MediaQuery.sizeOf(context).width < kBreakpointSmall) {
-                return 400.0;
-              } else if (MediaQuery.sizeOf(context).width < kBreakpointMedium) {
-                return 400.0;
-              } else if (MediaQuery.sizeOf(context).width < kBreakpointLarge) {
-                return 500.0;
-              } else {
-                return 500.0;
-              }
-            }(),
-            height: MediaQuery.sizeOf(context).height * 0.85,
-            decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground,
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
             ),
             child: Stack(
               alignment: AlignmentDirectional(0.0, -1.0),
@@ -2299,6 +2292,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
               ],
             ),
           ),
+        ),
         ),
       ),
     );
