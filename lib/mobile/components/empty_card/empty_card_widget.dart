@@ -56,8 +56,8 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.max,
