@@ -86,9 +86,13 @@ class _IntroWidgetState extends State<IntroWidget>
             : FlutterFlowTheme.of(context).primary,
         body: Builder(
           builder: (context) {
-            if (MediaQuery.sizeOf(context).width < 480.0) {
-              return _buildMobileIntro(context);
-            } else {
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480.0),
+                child: _buildMobileIntro(context),
+              ),
+            );
+            if (false) {
               return SafeArea(
                 top: true,
                 child: Stack(

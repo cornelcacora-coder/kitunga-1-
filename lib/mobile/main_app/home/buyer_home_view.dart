@@ -53,25 +53,25 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     });
   }
 
-  // Données des slides du carrousel avec les 3 images de assets/images/
+  // Données des slides du carrousel d'accueil (photos adaptées à la maquette)
   static const _bannerSlides = [
     (
-      image: 'assets/images/image1.png',
+      image: 'assets/images/Girl_Bag2.jpg',
       title1: 'Tout au même',
       title2: 'endroit',
       subtitle: 'Boutiques, restaurants\net pharmacies',
     ),
     (
-      image: 'assets/images/image2.png',
+      image: 'assets/images/youngAfrican.jpg',
       title1: 'Livraison',
       title2: 'rapide',
       subtitle: 'Recevez vos commandes\nà domicile',
     ),
     (
-      image: 'assets/images/image3.png',
-      title1: 'Paiement',
-      title2: 'sécurisé',
-      subtitle: 'Achetez en toute\nconfiance',
+      image: 'assets/images/Gemini_Generated_Image_xb96ubxb96ubxb96.png',
+      title1: 'Produits',
+      title2: 'frais',
+      subtitle: 'Alimentation, marché\net épicerie',
     ),
   ];
 
@@ -160,14 +160,28 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     final firstName = nameParts.first.trim();
     final displayName = firstName.isNotEmpty ? firstName : 'OKOMBI';
 
-    return ListView(
-      padding: EdgeInsets.only(
-        top: topInset,
-        bottom: 32.0,
-      ),
+    return Stack(
       children: [
-        // 1. Barre d'en-tête (Menu, Logo Kitunga, Mode Nuit, Panier)
-        _buildHeader(context, theme),
+        if (!isDark)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 290.0,
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: HeaderBackgroundWavesPainter(),
+              ),
+            ),
+          ),
+        ListView(
+          padding: EdgeInsets.only(
+            top: topInset + 4.0,
+            bottom: 32.0,
+          ),
+          children: [
+            // 1. Barre d'en-tête (Menu, Logo Kitunga, Mode Nuit, Panier)
+            _buildHeader(context, theme),
 
             // 2. Salutation ("Bonjour, OKOMBI 👋")
             Padding(
@@ -324,14 +338,16 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                 ..._buildCategoryRow(theme, row.category, row.title),
             ],
           ],
-        );
+        ),
+      ],
+    );
   }
 
   /// Barre d'en-tête fidèle à la maquette
   Widget _buildHeader(BuildContext context, FlutterFlowTheme theme) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      color: isDark ? const Color(0xFF14181B) : Colors.white,
+      color: Colors.transparent,
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -427,7 +443,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Bouton Mode Sombre / Clair (cercle noir avec croissant blanc)
+              // Bouton Mode Sombre / Clair (cercle blanc harmonisé avec le panier)
               InkWell(
                 onTap: () {
                   setDarkModeSetting(
@@ -437,20 +453,31 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                         : ThemeMode.dark,
                   );
                 },
-                borderRadius: BorderRadius.circular(18.0),
+                borderRadius: BorderRadius.circular(20.0),
                 child: Container(
-                  width: 36.0,
-                  height: 36.0,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0F172A),
+                  width: 38.0,
+                  height: 38.0,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E242B) : Colors.white,
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF2C3238) : const Color(0xFFF1F4F8),
+                      width: 1.0,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0F000000),
+                        blurRadius: 6.0,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Icon(
                     Theme.of(context).brightness == Brightness.dark
                         ? Icons.light_mode_rounded
                         : Icons.nightlight_round,
-                    color: Colors.white,
-                    size: 17.0,
+                    color: isDark ? const Color(0xFFFFD200) : const Color(0xFF1E242B),
+                    size: 19.0,
                   ),
                 ),
               ),
@@ -1204,7 +1231,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
 class HeaderBackgroundWavesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Décoration douce coin supérieur gauche (s'arrête bien avant le logo pour laisser le fond propre)
+    // 1. Décoration douce coin supérieur gauche (s'arrête bien avant le logo)
     final leftPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
@@ -1213,21 +1240,21 @@ class HeaderBackgroundWavesPainter extends CustomPainter {
           Color(0xFFE51A1A),
           Color(0xFFFF4D4D),
         ],
-      ).createShader(Rect.fromLTWH(0, 0, size.width * 0.22, 50));
+      ).createShader(Rect.fromLTWH(0, 0, size.width * 0.28, 65));
 
     final pathLeft = Path();
     pathLeft.moveTo(0, 0);
-    pathLeft.lineTo(size.width * 0.20, 0);
+    pathLeft.lineTo(size.width * 0.26, 0);
     pathLeft.quadraticBezierTo(
-      size.width * 0.10,
-      25,
-      0,
+      size.width * 0.12,
       35,
+      0,
+      50,
     );
     pathLeft.close();
     canvas.drawPath(pathLeft, leftPaint);
 
-    // 2. Vague fluide descendante sur le côté droit (derrière la salutation et le micro de recherche)
+    // 2. Vague fluide descendante sur le côté droit
     final rightPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topRight,
@@ -1238,26 +1265,26 @@ class HeaderBackgroundWavesPainter extends CustomPainter {
           Color(0xFFFF3333),
         ],
       ).createShader(
-          Rect.fromLTWH(size.width * 0.65, 0, size.width * 0.35, 290));
+          Rect.fromLTWH(size.width * 0.60, 0, size.width * 0.40, 260));
 
     final pathRight = Path();
-    pathRight.moveTo(size.width * 0.78, 0);
+    pathRight.moveTo(size.width * 0.72, 0);
     pathRight.lineTo(size.width, 0);
-    pathRight.lineTo(size.width, 270);
+    pathRight.lineTo(size.width, 180);
     pathRight.cubicTo(
-      size.width * 0.80,
-      240,
-      size.width * 0.75,
-      175,
-      size.width * 0.90,
-      115,
+      size.width * 0.85,
+      170,
+      size.width * 0.74,
+      120,
+      size.width * 0.88,
+      70,
     );
     pathRight.cubicTo(
-      size.width * 0.98,
-      75,
-      size.width * 0.90,
-      35,
-      size.width * 0.78,
+      size.width * 0.96,
+      40,
+      size.width * 0.85,
+      20,
+      size.width * 0.72,
       0,
     );
     pathRight.close();
@@ -1265,26 +1292,33 @@ class HeaderBackgroundWavesPainter extends CustomPainter {
 
     // 3. Voile doux translucide rouge le long du côté droit
     final softPaint = Paint()
-      ..color = const Color(0x22E51A1A)
-      ..style = PaintingStyle.fill;
+      ..shader = const LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [
+          Color(0x35E51A1A),
+          Color(0x15FF4D4D),
+          Color(0x00FFFFFF),
+        ],
+      ).createShader(Rect.fromLTWH(size.width * 0.55, 0, size.width * 0.45, 280));
     final softPath = Path();
-    softPath.moveTo(size.width * 0.72, 0);
+    softPath.moveTo(size.width * 0.62, 0);
     softPath.lineTo(size.width, 0);
-    softPath.lineTo(size.width, 285);
+    softPath.lineTo(size.width, 270);
     softPath.cubicTo(
-      size.width * 0.76,
-      250,
-      size.width * 0.70,
-      170,
-      size.width * 0.86,
-      110,
+      size.width * 0.75,
+      230,
+      size.width * 0.68,
+      160,
+      size.width * 0.84,
+      100,
     );
     softPath.cubicTo(
-      size.width * 0.95,
-      70,
-      size.width * 0.85,
-      30,
-      size.width * 0.72,
+      size.width * 0.94,
+      60,
+      size.width * 0.80,
+      25,
+      size.width * 0.62,
       0,
     );
     softPath.close();
