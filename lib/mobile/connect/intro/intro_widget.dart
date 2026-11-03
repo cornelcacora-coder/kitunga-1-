@@ -631,14 +631,15 @@ class _IntroWidgetState extends State<IntroWidget>
           body: Stack(
             fit: StackFit.expand,
             children: [
-              // 1. Affiche publicitaire pleine hauteur et pleine largeur (100% écran)
+              // 1. Affiche publicitaire avec respect naturel des proportions (sans étirement du texte)
               CarouselSlider(
                 items: _introSlides
                     .map((s) => Image.asset(
                           s.image,
                           width: double.infinity,
                           height: double.infinity,
-                          fit: BoxFit.fill,
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
                         ))
                     .toList(),
                 carouselController: _model.carouselController ??=
