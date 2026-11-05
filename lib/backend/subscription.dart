@@ -1,3 +1,4 @@
+import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
@@ -7,6 +8,18 @@ import '/flutter_flow/flutter_flow_util.dart';
 bool kitungaSubscriptionActive() {
   final until = currentUserDocument?.subscribeCloseAt;
   return until != null && until.isAfter(DateTime.now());
+}
+
+/// Abonnement réel d'un utilisateur : seule la date de fin fait foi, comme
+/// pour le droit de commander (pas is_subscribed ni la formule choisie).
+bool kitungaUserSubscribed(UserRecord user) {
+  final until = user.subscribeCloseAt;
+  return until != null && until.isAfter(DateTime.now());
+}
+
+String kitungaSubscriptionLabel(UserRecord user) {
+  if (!kitungaUserSubscribed(user)) return 'Sans abonnement';
+  return user.subscribeType.isNotEmpty ? user.subscribeType : 'Abonné';
 }
 
 bool kitungaCanOrder() {

@@ -95,7 +95,8 @@ async function paymentStatus(referenceId) {
         },
         timeout: 15000,
       });
-  return {status: res.data.status, reason: res.data.reason};
+  return {status: res.data.status, reason: res.data.reason,
+    amount: res.data.amount};
 }
 
 /** Remboursement : virement vers le numéro du client (Disbursement). */

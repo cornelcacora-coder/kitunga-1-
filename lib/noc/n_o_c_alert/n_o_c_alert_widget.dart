@@ -1,3 +1,4 @@
+import '/backend/order_status.dart';
 import '/backend/backend.dart';
 import '/components/alert_card_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -627,7 +628,12 @@ class _NOCAlertWidgetState extends State<NOCAlertWidget> {
                                             ),
                                       ),
                                       FutureBuilder<int>(
-                                        future: querySystemLogsRecordCount(),
+                                        future: queryOrdersRecordCount(
+  queryBuilder: (ordersRecord) => ordersRecord.where(
+    'status',
+    isEqualTo: OrderStatus.notReceived,
+  ),
+),
                                         builder: (context, snapshot) {
                                           // Customize what your widget looks like when it's loading.
                                           if (!snapshot.hasData) {

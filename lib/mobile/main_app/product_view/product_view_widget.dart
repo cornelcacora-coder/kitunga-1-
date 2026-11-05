@@ -881,15 +881,24 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                         // Incrémenter la quantité existante.
                                         await duplicate.reference.update({
                                           'quantity': duplicate.quantity + chosenQuantity,
-                                          'price': (duplicate.quantity + chosenQuantity) *
-                                              unitPrice.toDouble(),
+                                          // Prix unitaire : le sous-total du panier
+                                          // le multiplie déjà par la quantité.
+                                          'price': unitPrice.toDouble(),
                                         });
                                         if (!mounted) return;
                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                           content: const Text(
                                               'Quantité mise à jour dans votre panier.'),
                                         ));
-                                        context.pushNamed(CartLastWidget.routeName);
+                                        context.pushNamed(
+                                          CartLastWidget.routeName,
+                                          queryParameters: {
+                                            'sellerRef': serializeParam(
+                                              middleBodyProductRecord.sellerRef,
+                                              ParamType.DocumentReference,
+                                            ),
+                                          }.withoutNulls,
+                                        );
                                         return;
                                       }
                                       // ── Nouveau article dans le panier ─────────────────────────────

@@ -1,3 +1,4 @@
+import '/flutter_flow/random_data_util.dart' as random_data;
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
@@ -83,6 +84,28 @@ class _CartLastWidgetState extends State<CartLastWidget> {
       return 2500.0;
     }
     return 1000.0;
+  }
+
+  /// Lignes affichées, et donc payées, sur cet écran.
+  List<CartRecord> _cartLines = [];
+
+  /// Commerce de la commande : celui demandé à l'ouverture de l'écran, sinon
+  /// celui des lignes affichées (panier ouvert depuis le menu, l'accueil…).
+  DocumentReference? get _sellerRef =>
+      widget.sellerRef ?? _cartLines.firstOrNull?.sellerRef;
+
+  /// Une commande ne concerne qu'un seul commerce. Sans commerce précisé, on
+  /// garde celui du dernier article ajouté ; les autres articles restent dans
+  /// le panier et ne sont pas facturés.
+  List<CartRecord> _linesOfOneSeller(List<CartRecord> lines) {
+    if (widget.sellerRef != null || lines.isEmpty) return lines;
+    var latest = lines.first;
+    for (final line in lines) {
+      final at = line.createdAt;
+      final best = latest.createdAt;
+      if (at != null && (best == null || at.isAfter(best))) latest = line;
+    }
+    return lines.where((l) => l.sellerRef == latest.sellerRef).toList();
   }
 
   @override
@@ -224,7 +247,8 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                               );
                             }
                             List<CartRecord> cartCartRecordList =
-                                snapshot.data!;
+                                _linesOfOneSeller(snapshot.data!);
+                            _cartLines = cartCartRecordList;
                             final currentSubtotal =
                                 functions.calculateSubtotal(cartCartRecordList.toList()) ?? 0.0;
                             final currentFee = getDeliveryFeeForZone(_model.zoneValue);
@@ -263,7 +287,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                               hoverColor: Colors.transparent,
                               highlightColor: Colors.transparent,
                               onTap: () async {
-                                if (widget!.sellerRef ==
+                                if (_sellerRef ==
                                     cartCartRecordList.lastOrNull?.sellerRef) {
                                   FFAppState().totalCart =
                                       functions.calculateSubtotal(
@@ -292,7 +316,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                       );
                                     },
                                   );
-                                  await widget!.cartRef!.reference.delete();
+                                  await widget.cartRef?.reference.delete();
                                 }
                               },
                               child: Column(
@@ -1912,6 +1936,28 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                   Expanded(
                                                     child: FFButtonWidget(
                                                       onPressed: () async {
+                                                        // Lignes et commerce figés avant le paiement :
+                                                        // ce sont eux qui seront facturés puis retirés.
+                                                        final paidLines = List<CartRecord>.of(_cartLines);
+                                                        final orderSellerRef = _sellerRef;
+                                                        if (paidLines.isEmpty || orderSellerRef == null) {
+                                                          await showDialog(
+                                                            context: context,
+                                                            builder: (dialogCtx) => AlertDialog(
+                                                              title: Text(paidLines.isEmpty ? 'Panier vide' : 'Commerce introuvable'),
+                                                              content: Text(paidLines.isEmpty
+                                                                  ? 'Ajoutez un produit à votre panier avant de valider votre commande.'
+                                                                  : 'Retirez cet article du panier puis ajoutez-le de nouveau depuis la page du commerce.'),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed: () => Navigator.pop(dialogCtx),
+                                                                  child: Text('Ok'),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                          return;
+                                                        }
                                                         if (_model.zoneValue == null || _model.zoneValue!.trim().isEmpty) {
                                                           await showDialog(
                                                             context: context,
@@ -2020,15 +2066,18 @@ class _CartLastWidgetState extends State<CartLastWidget> {
 
                                                         final currentFee = getDeliveryFeeForZone(_model.zoneValue);
                                                         FFAppState().fixedShippingFee = currentFee;
+                                                        FFAppState().totalCart =
+                                                            functions.calculateSubtotal(paidLines) ?? 0.0;
                                                         FFAppState().GrandTotalCart =
                                                             (FFAppState().totalCart) + currentFee;
                                                         final momoAmount = valueOrDefault<double>(
                                                           FFAppState().GrandTotalCart,
                                                           0.0,
                                                         );
-                                                        final momoOrderId = FFAppState().orderReferenceUnique.isNotEmpty
-                                                            ? FFAppState().orderReferenceUnique
-                                                            : 'ORD-${DateTime.now().millisecondsSinceEpoch}';
+                                                        // Référence propre à cette commande : les articles payés y sont
+                                                        // rattachés juste après le paiement (voir _linkOrderItems).
+                                                        final momoOrderId =
+                                                            'ORD-${DateTime.now().millisecondsSinceEpoch}-${random_data.randomString(6, 6, true, true, false)}';
 
                                                         ApiCallResponse momoResponse;
                                                         try {
@@ -2105,19 +2154,16 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                             0.0,
                                                           ),
                                                           sellerRef:
-                                                              widget!.sellerRef,
+                                                              orderSellerRef,
                                                           deliveryLocation: _model
                                                               .locationTextController
                                                               .text,
-                                                          orderId: FFAppState()
-                                                              .orderReferenceUnique,
+                                                          orderId: momoOrderId,
                                                           deliveryZone:
                                                               _model.zoneValue,
                                                           deliveryFees: FFAppState()
                                                               .fixedShippingFee,
-                                                          orderUniqueReference:
-                                                              FFAppState()
-                                                                  .orderReferenceUnique,
+                                                          orderUniqueReference: momoOrderId,
                                                           status: 'En attente',
                                                         ));
                                                         _model.orderReference =
@@ -2136,28 +2182,25 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                         .GrandTotalCart,
                                                                     0.0,
                                                                   ),
-                                                                  sellerRef: widget!
-                                                                      .sellerRef,
+                                                                  sellerRef:
+                                                                      orderSellerRef,
                                                                   deliveryLocation:
                                                                       _model
                                                                           .locationTextController
                                                                           .text,
-                                                                  orderId:
-                                                                      FFAppState()
-                                                                          .orderReferenceUnique,
+                                                                  orderId: momoOrderId,
                                                                   deliveryZone:
                                                                       _model
                                                                           .zoneValue,
                                                                   deliveryFees:
                                                                       FFAppState()
                                                                           .fixedShippingFee,
-                                                                  orderUniqueReference:
-                                                                      FFAppState()
-                                                                          .orderReferenceUnique,
+                                                                  orderUniqueReference: momoOrderId,
                                                                   status:
                                                                       'En attente',
                                                                 ),
                                                                 ordersRecordReference);
+                                                        await _linkOrderItems(paidLines, momoOrderId);
                                                         try {
                                                           await ordersRecordReference.update({
                                                             'payment_reference': MoMoCallCall.referenceId(momoResponse.jsonBody),
@@ -2194,10 +2237,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                             FFAppState()
                                                                 .orderReferenceUnique = '';
                                                             safeSetState(() {});
-                                                            await widget!
-                                                                .cartRef!
-                                                                .reference
-                                                                .delete();
+                                                            // Toutes les lignes payées quittent le panier.
+                                                            // La commande est déjà enregistrée : un échec
+                                                            // ici ne doit pas masquer la confirmation.
+                                                            for (final line in paidLines) {
+                                                              try {
+                                                                await line.reference.delete();
+                                                              } catch (_) {}
+                                                            }
                                                           }),
                                                         ]);
                                                         await showDialog(
@@ -2298,6 +2345,29 @@ class _CartLastWidgetState extends State<CartLastWidget> {
     );
   }
 
+  /// Rattache à la commande les articles réellement payés, avec leur quantité
+  /// et leur prix finaux. La commande est déjà enregistrée : un échec ici ne
+  /// doit pas interrompre le parcours.
+  Future<void> _linkOrderItems(
+      List<CartRecord> lines, String reference) async {
+    for (final line in lines) {
+      try {
+        final items = await queryOrderItemsRecordOnce(
+          queryBuilder: (q) => q
+              .where('user_ref', isEqualTo: currentUserReference)
+              .where('cart_ref', isEqualTo: line.reference),
+        );
+        for (final item in items) {
+          await item.reference.update({
+            'order_ref': reference,
+            'quantity': line.quantity,
+            'price_at_purchase': line.price,
+          });
+        }
+      } catch (_) {}
+    }
+  }
+
   /// Paiement contrôlé par le serveur : prix, stock et commande calculés
   /// par les Cloud Functions (voir lib/backend/server_payment.dart).
   Future<void> _payOnServer(String phone) async {
@@ -2334,7 +2404,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
     var paid = false;
     try {
       final r = await kitungaServerPay(
-        sellerRef: widget.sellerRef!,
+        sellerRef: _sellerRef!,
         zone: _model.zoneValue ?? '',
         deliveryLocation: _model.locationTextController.text,
         phone: phone,

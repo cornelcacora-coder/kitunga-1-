@@ -1,3 +1,4 @@
+import '/backend/order_status.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -94,7 +95,7 @@ class _DeliveryStoryWidgetState extends State<DeliveryStoryWidget> {
             ),
             Text(
               valueOrDefault<String>(
-                widget!.status,
+                OrderStatus.label(widget!.status ?? ''),
                 'En attente',
               ),
               style: FlutterFlowTheme.of(context).labelSmall.override(

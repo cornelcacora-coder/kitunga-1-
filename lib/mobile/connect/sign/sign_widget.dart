@@ -1,3 +1,4 @@
+import '/backend/server_payment.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -718,7 +719,6 @@ class _SignWidgetState extends State<SignWidget> {
                                                 options: [
                                                   'Vendeur',
                                                   'Livreur',
-                                                  'Admin'
                                                 ],
                                                 onChanged: (val) =>
                                                     safeSetState(() => _model
@@ -2455,8 +2455,6 @@ class _SignWidgetState extends State<SignWidget> {
                                                         20.0, 28.0, 20.0, 24.0),
                                                 child: FFButtonWidget(
                                                   onPressed: () async {
-                                                    GoRouter.of(context)
-                                                        .prepareAuthEvent();
                                                     if (_model.emailBusinessTextController.text.trim().isEmpty) {
                                                       ScaffoldMessenger.of(context).showSnackBar(
                                                         SnackBar(content: Text('Veuillez renseigner votre adresse email.')),
@@ -2493,113 +2491,59 @@ class _SignWidgetState extends State<SignWidget> {
                                                       return;
                                                     }
 
-                                                    final user = await authManager
-                                                        .createAccountWithEmail(
-                                                      context,
-                                                      _model
-                                                          .emailBusinessTextController
-                                                          .text,
-                                                      _model
-                                                          .pwdBusinessTextController
-                                                          .text,
-                                                    );
-                                                    if (user == null) {
+                                                    final partnerRole = switch (_model.userTypeValue) {
+                                                      'Vendeur' => 'Seller',
+                                                      'Livreur' => 'Deliver',
+                                                      _ => null,
+                                                    };
+                                                    if (partnerRole == null) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text('Choisissez le type de partenaire : vendeur ou livreur.')),
+                                                      );
                                                       return;
                                                     }
 
-                                                    await UserRecord.collection
-                                                        .doc(user.uid)
-                                                        .set(
-                                                            createUserRecordData(
-                                                          createdTime:
-                                                              getCurrentTimestamp,
-                                                          role: () {
-                                                            if (_model
-                                                                    .userTypeValue ==
-                                                                'Vendeur') {
-                                                              return 'Seller';
-                                                            } else if (_model
-                                                                    .userTypeValue ==
-                                                                'Livreur') {
-                                                              return 'Deliver';
-                                                            } else if (_model
-                                                                    .userTypeValue ==
-                                                                'Admin') {
-                                                              return 'Admin';
-                                                            } else {
-                                                              return 'User';
-                                                            }
-                                                          }(),
-                                                          email: widget!
-                                                                      .accessibility ==
-                                                                  'Admin'
-                                                              ? _model
-                                                                  .emailBusinessTextController
-                                                                  .text
-                                                              : _model
-                                                                  .emailUserTextController
-                                                                  .text,
-                                                          displayName: widget!
-                                                                      .accessibility ==
-                                                                  'Admin'
-                                                              ? _model
-                                                                  .businessNameTextController
-                                                                  .text
-                                                              : _model
-                                                                  .displayNameTextController
-                                                                  .text,
-                                                          phoneNumber: widget!
-                                                                      .accessibility ==
-                                                                  'Admin'
-                                                              ? _model
-                                                                  .phoneBusinessTextController
-                                                                  .text
-                                                              : _model
-                                                                  .phoneUserTextController
-                                                                  .text,
-                                                          category:
-                                                              valueOrDefault<
-                                                                  String>(
-                                                            widget!.accessibility ==
-                                                                    'Admin'
-                                                                ? _model
-                                                                    .categoryValue
-                                                                : 'User',
-                                                            'Vendeur',
-                                                          ),
-                                                          verified: _model
-                                                              .certifiedValue,
-                                                          bio: widget!.accessibility ==
-                                                                  'Admin'
-                                                              ? valueOrDefault<
-                                                                  String>(
-                                                                  _model
-                                                                      .bioTextController
-                                                                      .text,
-                                                                  'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
-                                                                )
+                                                    // Compte créé par le serveur : l'administrateur
+                                                    // reste connecté à son propre compte.
+                                                    final String partnerId;
+                                                    try {
+                                                      final created = await kitungaCallFunction(
+                                                        'kitungaCreatePartner',
+                                                        {
+                                                          'email': _model.emailBusinessTextController.text,
+                                                          'password': _model.pwdBusinessTextController.text,
+                                                          'role': partnerRole,
+                                                          'displayName': _model.businessNameTextController.text,
+                                                          'phoneNumber': _model.phoneBusinessTextController.text,
+                                                          'category': _model.categoryValue,
+                                                          'verified': _model.certifiedValue,
+                                                          'bio': _model.bioTextController.text.trim().isNotEmpty
+                                                              ? _model.bioTextController.text
                                                               : 'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
-                                                          horraire: _model
-                                                              .horraireTextController
-                                                              .text,
-                                                          isSubscribed: true,
-                                                          subscribeType: widget!
-                                                                      .accessibility ==
-                                                                  'Admin'
-                                                              ? _model
-                                                                  .subscribTypBusinessValue
-                                                              : _model
-                                                                  .subscribTypeUserValue,
-                                                        ));
+                                                          'horraire': _model.horraireTextController.text,
+                                                          'subscribeType': _model.subscribTypBusinessValue,
+                                                        },
+                                                      );
+                                                      partnerId = created['uid'] as String;
+                                                    } on ServerPaymentException catch (e) {
+                                                      if (!context.mounted) return;
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text(e.message)),
+                                                      );
+                                                      return;
+                                                    }
+                                                    if (!context.mounted) return;
 
-                                                    context.pushNamedAuth(
-                                                      AddProfileWidget
-                                                          .routeName,
-                                                      context.mounted,
+                                                    context.pushNamed(
+                                                      AddProfileWidget.routeName,
                                                       queryParameters: {
                                                         'role': serializeParam(
                                                           widget!.accessibility,
                                                           ParamType.String,
+                                                        ),
+                                                        'partnerRef': serializeParam(
+                                                          UserRecord.collection.doc(partnerId),
+                                                          ParamType.DocumentReference,
                                                         ),
                                                       }.withoutNulls,
                                                     );

@@ -103,11 +103,91 @@ test("commande refusée : remboursée une seule fois", async () => {
   const orderRef = db.doc(r.orderPath);
   await orderRef.update({status: "Refusée", refund_needed: true});
   const order = (await orderRef.get()).data();
-  const first = await refundOrder({db, momo, orderRef, order});
+  const first = await refundOrder({db, momo, orderRef, order,
+    previousStatus: "En attente"});
   assert.ok(first);
-  const second = await refundOrder({db, momo, orderRef, order});
+  const second = await refundOrder({db, momo, orderRef, order,
+    previousStatus: "En attente"});
   assert.equal(second, null);
   assert.equal((await orderRef.get()).get("refund_status"), "Envoyé");
+});
+
+/** Commande payée par le serveur puis arrêtée, prête à être remboursée. */
+async function paidAndStoppedOrder() {
+  await seed("Taille : Normal", 1);
+  const s = await start();
+  const r = await confirmPayment({db, momo, uid: "buyer",
+    referenceId: s.referenceId});
+  const orderRef = db.doc(r.orderPath);
+  await orderRef.update({status: "Annulée", refund_needed: true});
+  return {orderRef, order: (await orderRef.get()).data(),
+    referenceId: s.referenceId};
+}
+
+async function assertNotRefunded(orderRef, reason) {
+  const after = (await orderRef.get()).data();
+  assert.equal(after.refund_status, "À traiter manuellement");
+  assert.match(after.refund_error, reason);
+}
+
+// MTN simulé qui échoue si un virement est tenté.
+const noTransfer = (status = {status: "SUCCESSFUL"}) => ({
+  paymentStatus: async () => status,
+  transfer: async () => assert.fail("virement interdit"),
+});
+
+test("remboursement : commande déjà livrée refusée", async () => {
+  const {orderRef, order} = await paidAndStoppedOrder();
+  const r = await refundOrder({db, momo: noTransfer(), orderRef, order,
+    previousStatus: "Livrer"});
+  assert.equal(r, null);
+  await assertNotRefunded(orderRef, /déjà acceptée/);
+});
+
+test("remboursement : fausse commande sur un vrai paiement refusée", async () => {
+  const {order} = await paidAndStoppedOrder();
+  const fake = db.collection("Orders").doc();
+  await fake.set({...order, total_amount: 1000000});
+  const r = await refundOrder({db, momo: noTransfer(), orderRef: fake,
+    order: (await fake.get()).data(), previousStatus: "En attente"});
+  assert.equal(r, null);
+  await assertNotRefunded(fake, /ne correspond pas/);
+});
+
+test("remboursement : fausse trace de paiement refusée", async () => {
+  await seed("Taille : Normal", 1);
+  const fake = db.collection("Orders").doc();
+  await db.doc("Paiement/forged").set({status: "En attente", amount: 1000000,
+    payer_phone: "242060000000", order_ref: fake});
+  await fake.set({status: "Annulée", refund_needed: true,
+    total_amount: 1000000, payment_reference: "forged"});
+  const r = await refundOrder({db, momo: noTransfer(), orderRef: fake,
+    order: (await fake.get()).data(), previousStatus: "En attente"});
+  assert.equal(r, null);
+  await assertNotRefunded(fake, /non réussi/);
+});
+
+test("remboursement : montant différent chez MTN refusé", async () => {
+  const {orderRef, order} = await paidAndStoppedOrder();
+  const r = await refundOrder({db,
+    momo: noTransfer({status: "SUCCESSFUL", amount: "1"}), orderRef, order,
+    previousStatus: "En attente"});
+  assert.equal(r, null);
+  await assertNotRefunded(orderRef, /Montant MTN/);
+});
+
+test("remboursement : paiement non confirmé par MTN refusé", async () => {
+  const {orderRef, order} = await paidAndStoppedOrder();
+  const r = await refundOrder({db, momo: noTransfer({status: "FAILED"}),
+    orderRef, order, previousStatus: "En attente"});
+  assert.equal(r, null);
+  await assertNotRefunded(orderRef, /non confirmé/);
+});
+
+test("visiteur : ne peut pas commander", async () => {
+  await seed("Taille : Normal", 1);
+  await db.doc("User/buyer").update({role: "Guest"});
+  await assert.rejects(start, /abonnement Kitunga actif/);
 });
 
 test("paiement refusé par MTN : échec enregistré", async () => {

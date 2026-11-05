@@ -191,16 +191,55 @@ async function confirmPayment({db, momo, uid, referenceId}) {
   });
 }
 
-/** Rembourse une commande payée puis refusée ou annulée (une seule fois). */
-async function refundOrder({db, momo, orderRef, order}) {
+/**
+ * Motif de refus d'un remboursement automatique, ou null s'il est légitime.
+ * Tous les champs de la commande pouvant venir de l'application, seuls le
+ * paiement écrit par le serveur et la réponse de MTN font foi.
+ */
+async function refundBlocker({momo, orderRef, order, previousStatus, pay}) {
+  if (previousStatus !== "" && previousStatus !== "En attente") {
+    return "Commande déjà acceptée au moment de l'arrêt.";
+  }
+  if (!pay.exists || pay.get("kind") === "subscription" ||
+      pay.get("status") !== "Réussi" || !pay.get("payer_phone")) {
+    return "Paiement serveur introuvable ou non réussi.";
+  }
+  const paidOrder = pay.get("order_ref");
+  if (!paidOrder || paidOrder.path !== orderRef.path) {
+    return "Ce paiement ne correspond pas à cette commande.";
+  }
+  if (Number(order.total_amount) !== Number(pay.get("amount"))) {
+    return "Montant de la commande différent du montant payé.";
+  }
+  let mtn;
+  try {
+    mtn = await momo.paymentStatus(order.payment_reference);
+  } catch (e) {
+    return "Vérification MTN impossible.";
+  }
+  if (mtn.status !== "SUCCESSFUL") return "Paiement non confirmé par MTN.";
+  if (mtn.amount != null && Number(mtn.amount) !== Number(pay.get("amount"))) {
+    return "Montant MTN différent du montant enregistré.";
+  }
+  return null;
+}
+
+/**
+ * Rembourse une commande payée puis refusée ou annulée (une seule fois).
+ * previousStatus : statut de la commande avant la modification.
+ */
+async function refundOrder({db, momo, orderRef, order, previousStatus}) {
   if (!order.refund_needed || order.refund_status) return null;
   if (!STOPPED.includes(order.status) || !order.payment_reference) return null;
   const pay = await db.doc(`Paiement/${order.payment_reference}`).get();
-  const phone = pay.exists ? pay.get("payer_phone") : null;
-  if (!phone) {
-    await orderRef.update({refund_status: "À traiter manuellement"});
+  const blocker = await refundBlocker({momo, orderRef, order, previousStatus,
+    pay});
+  if (blocker) {
+    await orderRef.update({refund_status: "À traiter manuellement",
+      refund_error: blocker});
     return null;
   }
+  const phone = pay.get("payer_phone");
   // Verrou : évite un double remboursement si la fonction est relancée.
   const locked = await db.runTransaction(async (tx) => {
     const cur = await tx.get(orderRef);
@@ -211,7 +250,8 @@ async function refundOrder({db, momo, orderRef, order}) {
   if (!locked) return null;
   try {
     const transferId = await momo.transfer({
-      amount: order.total_amount, phone, externalId: order.order_unique_reference,
+      amount: pay.get("amount"), phone,
+      externalId: pay.get("order_unique_reference"),
     });
     await orderRef.update({refund_status: "Envoyé", refund_reference: transferId});
     return transferId;

@@ -1,3 +1,4 @@
+import '/backend/order_status.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/shop_card_vertical_widget.dart';
@@ -2022,9 +2023,8 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       (ordersRecord) =>
                                                           ordersRecord.where(
                                                     'status',
-                                                    isNotEqualTo: 'Livrer',
+                                                    whereIn: OrderStatus.forDeliverers,
                                                   ),
-                                                  limit: 20,
                                                 ),
                                                 builder: (context, snapshot) {
                                                   // Customize what your widget looks like when it's loading.
@@ -2574,8 +2574,8 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                     children: [
                                       FFButtonWidget(
                                         onPressed: () async {
-                                          context
-                                              .pushNamed(IntroWidget.routeName);
+                                          context.pushNamed(
+                                              SupervisionDashboardWidget.routeName);
                                         },
                                         text: 'Démarrer',
                                         options: FFButtonOptions(

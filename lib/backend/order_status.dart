@@ -22,6 +22,19 @@ class OrderStatus {
   /// Commandes visibles par les livreurs (à prendre ou en cours).
   static const forDeliverers = [ready, delivering];
 
+  /// Commandes encore en cours pour le suivi d'administration.
+  static const inProgress = ['', pending, preparing, ready, delivering];
+
+  /// Commandes terminées ou arrêtées (historique d'administration).
+  static const finished = [delivered, received, notReceived, refused, cancelled];
+
+  /// Commandes remises au client.
+  static const successful = [delivered, received];
+
+  /// Remboursement demandé et pas encore envoyé.
+  static bool refundToProcess(Map<String, dynamic> order) =>
+      order['refund_needed'] == true && order['refund_status'] != 'Envoyé';
+
   static bool isClosed(String s) =>
       s == received || s == notReceived || s == refused || s == cancelled;
 

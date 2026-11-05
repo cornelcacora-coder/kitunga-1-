@@ -1,3 +1,4 @@
+import '/backend/subscription.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -489,9 +490,8 @@ class _NOCSellersWidgetState extends State<NOCSellersWidget> {
                                         : listViewUserRecord.category,
                                     'USER',
                                   ),
-                                  subscribType:
-                                      listViewUserRecord.subscribeType,
-                                  isSubscrib: listViewUserRecord.isSubscribed,
+                                  subscribType: kitungaSubscriptionLabel(listViewUserRecord),
+                                  isSubscrib: kitungaUserSubscribed(listViewUserRecord),
                                 ),
                               );
                             },

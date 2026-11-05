@@ -1,3 +1,4 @@
+import '/backend/order_status.dart';
 import '/backend/backend.dart';
 import '/components/delivery_story_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -84,7 +85,7 @@ class _NOCDeliveryWidgetState extends State<NOCDeliveryWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'HISTORIQUE DES LIVRAISONS',
+                        'HISTORIQUE DES COMMANDES',
                         style: FlutterFlowTheme.of(context)
                             .titleMedium
                             .override(
@@ -130,7 +131,7 @@ class _NOCDeliveryWidgetState extends State<NOCDeliveryWidget> {
                       stream: queryOrdersRecord(
                         queryBuilder: (ordersRecord) => ordersRecord.where(
                           'status',
-                          isEqualTo: 'Reçu',
+                          whereIn: OrderStatus.finished,
                         ),
                       ),
                       builder: (context, snapshot) {

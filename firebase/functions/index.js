@@ -64,6 +64,7 @@ exports.onUserDeleted = functions
 const momo = require("./kitunga/momo");
 const payments = require("./kitunga/payments");
 const subscriptions = require("./kitunga/subscriptions");
+const partners = require("./kitunga/partners");
 const {reconcilePending} = require("./kitunga/reconcile");
 
 const MOMO_SECRETS = [
@@ -88,6 +89,24 @@ function callable(handler) {
         }
       });
 }
+
+/** Création d'un partenaire par un administrateur (sans secret MTN). */
+exports.kitungaCreatePartner = functions.region("us-west1")
+    .https.onCall(async (data, context) => {
+      try {
+        return await partners.createPartner({
+          db: admin.firestore(), auth: admin.auth(),
+          uid: context.auth && context.auth.uid, data: data || {},
+        });
+      } catch (e) {
+        if (e instanceof payments.PaymentError) {
+          throw new functions.https.HttpsError(e.code, e.message);
+        }
+        console.error(e);
+        throw new functions.https.HttpsError("internal",
+            "Le partenaire n'a pas pu être créé. Réessayez.");
+      }
+    });
 
 /** Démarre un paiement MoMo : montant recalculé par le serveur. */
 exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
@@ -128,4 +147,5 @@ exports.kitungaRefundOrder = functions.region("us-west1")
     .onUpdate((change) => payments.refundOrder({
       db: admin.firestore(), momo,
       orderRef: change.after.ref, order: change.after.data(),
+      previousStatus: change.before.get("status") || "",
     }));

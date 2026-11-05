@@ -23,7 +23,9 @@ function toDate(v) {
 /** Seuls les clients (rôle User) doivent être abonnés pour commander. */
 function subscriptionActive(user, now = new Date()) {
   if (!user || !user.exists) return false;
-  if ((user.get("role") || "User") !== "User") return true;
+  const role = user.get("role") || "User";
+  if (role === "Guest") return false;
+  if (role !== "User") return true;
   const until = toDate(user.get("subscribe_close_at"));
   return until != null && until > now;
 }

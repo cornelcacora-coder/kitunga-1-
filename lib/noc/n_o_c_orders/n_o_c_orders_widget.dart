@@ -209,7 +209,7 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                               ),
                         ),
                         Text(
-                          'Date de livraison',
+                          'Date de commande',
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
@@ -299,7 +299,7 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                       stream: queryOrdersRecord(
                         queryBuilder: (ordersRecord) => ordersRecord.where(
                           'status',
-                          isNotEqualTo: 'Reçu',
+                          whereIn: OrderStatus.inProgress,
                         ),
                       ),
                       builder: (context, snapshot) {
@@ -381,6 +381,8 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                                   Icons.thumb_up_alt,
                                   color: FlutterFlowTheme.of(context).tertiary,
                                 ),
+                                refundToProcess: OrderStatus.refundToProcess(
+                                    listedOrderOrdersRecord.snapshotData),
                                 viewDeliver: () async {
                                   if (listedOrderOrdersRecord.delivererRef !=
                                           null &&

@@ -1,3 +1,4 @@
+import '/backend/order_status.dart';
 import '/backend/backend.dart';
 import '/components/order_comp_n_o_c_widget.dart';
 import '/components/view_deliver_widget.dart';
@@ -87,7 +88,7 @@ class _NOCOrdersDeliveredWidgetState extends State<NOCOrdersDeliveredWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'COMMANDES EN COURS',
+                        'COMMANDES TERMINÉES',
                         style: FlutterFlowTheme.of(context)
                             .titleMedium
                             .override(
@@ -209,7 +210,7 @@ class _NOCOrdersDeliveredWidgetState extends State<NOCOrdersDeliveredWidget> {
                               ),
                         ),
                         Text(
-                          'Date de livraison',
+                          'Date de commande',
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
@@ -299,7 +300,7 @@ class _NOCOrdersDeliveredWidgetState extends State<NOCOrdersDeliveredWidget> {
                       stream: queryOrdersRecord(
                         queryBuilder: (ordersRecord) => ordersRecord.where(
                           'status',
-                          isEqualTo: 'Reçu',
+                          whereIn: OrderStatus.finished,
                         ),
                       ),
                       builder: (context, snapshot) {
@@ -438,6 +439,8 @@ class _NOCOrdersDeliveredWidgetState extends State<NOCOrdersDeliveredWidget> {
                                   Icons.thumb_up_alt,
                                   color: FlutterFlowTheme.of(context).tertiary,
                                 ),
+                                refundToProcess: OrderStatus.refundToProcess(
+                                    listedOrderOrdersRecord.snapshotData),
                                 viewDeliver: () async {
                                   if (listedOrderOrdersRecord.delivererRef !=
                                           null &&

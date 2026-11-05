@@ -14,6 +14,7 @@ le montant ni commander un article épuisé.
 | `kitungaStartSubscription` | appel (onCall) | Abonnement client : prix de la formule fixé par le serveur, demande MTN |
 | `kitungaConfirmSubscription` | appel (onCall) | Si payé : `User.subscribe_close_at` prolongé (30, 90 ou 365 jours) |
 | `kitungaReconcilePayments` | toutes les 5 min | Termine les paiements validés chez MTN mais jamais confirmés (client parti trop tôt) |
+| `kitungaCreatePartner` | appel (onCall) | Un administrateur crée un commerçant ou un livreur sans quitter sa session |
 
 ## Abonnement client
 
@@ -62,8 +63,13 @@ Le remboursement nécessite un compte MTN **Disbursement** approvisionné.
 
 ```bash
 cd firebase
-firebase deploy --only firestore:rules,functions:kitungaStartPayment,functions:kitungaConfirmPayment,functions:kitungaRefundOrder,functions:kitungaStartSubscription,functions:kitungaConfirmSubscription,functions:kitungaReconcilePayments -P kitunga-xtvpe4
+firebase deploy --only firestore:rules,functions:kitungaStartPayment,functions:kitungaConfirmPayment,functions:kitungaRefundOrder,functions:kitungaStartSubscription,functions:kitungaConfirmSubscription,functions:kitungaReconcilePayments,functions:kitungaCreatePartner -P kitunga-xtvpe4
 ```
+
+Les règles limitent la lecture des profils et des commandes. Les anciennes
+versions de l'application demandent aux livreurs une liste que ces règles
+refusent : publier d'abord `kitungaCreatePartner`, le web et l'application, puis
+déployer les règles une fois les livreurs passés à la nouvelle version.
 
 ## Tests
 
@@ -72,7 +78,22 @@ cd firebase/functions
 node --test kitunga/pricing.test.js          # calcul des prix
 firebase emulators:exec --only firestore --project demo-kitunga \
   "node --test kitunga/payments.emulator.test.js"   # parcours complet, MTN simulé
+firebase emulators:exec --only firestore --project demo-kitunga \
+  "node --test kitunga/rules.emulator.test.js"      # règles Firestore
+firebase emulators:exec --only firestore --project demo-kitunga \
+  "node --test kitunga/partners.emulator.test.js"   # création de partenaire
 ```
+
+L'émulateur demande Java 21 ou plus récent. Lancer ces fichiers un par un :
+ils utilisent la même base de test.
+
+## Remboursement automatique
+
+`kitungaRefundOrder` ne vire l'argent que si tout est vérifié : commande arrêtée
+alors qu'elle était encore en attente, paiement écrit par le serveur, réussi et
+lié à cette commande, montants identiques, paiement confirmé par MTN. Le montant
+et le numéro viennent du paiement, jamais de la commande. Sinon :
+`refund_status = "À traiter manuellement"` et le motif dans `refund_error`.
 
 ## Activer dans l'application
 

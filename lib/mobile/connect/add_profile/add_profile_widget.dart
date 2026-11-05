@@ -22,10 +22,15 @@ class AddProfileWidget extends StatefulWidget {
   const AddProfileWidget({
     super.key,
     this.role,
+    this.partnerRef,
   });
 
   /// user profile
   final String? role;
+
+  /// Partenaire créé par un administrateur : c'est son profil qui est complété,
+  /// et l'administrateur reste connecté.
+  final DocumentReference? partnerRef;
 
   static String routeName = 'Add_Profile';
   static String routePath = '/addProfile';
@@ -999,7 +1004,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                     );
                                                     return;
                                                   }
-                                                  await currentUserReference!
+                                                  await (widget.partnerRef ?? currentUserReference!)
                                                       .update(
                                                           createUserRecordData(
                                                     photoUrl: _model
@@ -1027,6 +1032,13 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                       );
                                                     },
                                                   );
+                                                  if (widget.partnerRef != null) {
+                                                    if (context.mounted) {
+                                                      context.goNamed(
+                                                          SupervisionDashboardWidget.routeName);
+                                                    }
+                                                    return;
+                                                  }
                                                   GoRouter.of(context)
                                                       .prepareAuthEvent();
                                                   await authManager.signOut();

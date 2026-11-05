@@ -21,6 +21,7 @@ class OrderCompNOCWidget extends StatefulWidget {
     this.status,
     Color? statusBg,
     this.iconSatut,
+    this.refundToProcess = false,
     this.statuTextBg,
     this.name,
     this.isReady,
@@ -40,6 +41,9 @@ class OrderCompNOCWidget extends StatefulWidget {
   final String? status;
   final Color statusBg;
   final Widget? iconSatut;
+
+  /// Affiche un rappel : remboursement demandé, pas encore envoyé.
+  final bool refundToProcess;
   final Color? statuTextBg;
   final String? name;
   final Widget? isReady;
@@ -137,7 +141,15 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                               } else if (widget!.status == 'Non Reçu') {
                                 return widget!.isNotDelivery!;
                               } else {
-                                return widget!.iconSatut!;
+                                // Statuts sans icône dédiée (préparation, refus, annulation).
+                                return widget!.iconSatut ??
+                                    Icon(
+                                      OrderStatus.isStopped(widget!.status ?? '')
+                                          ? Icons.block_rounded
+                                          : Icons.inventory_2_outlined,
+                                      color: OrderStatus.color(
+                                          widget!.status ?? ''),
+                                    );
                               }
                             }(),
                           ),
@@ -298,13 +310,20 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  color: valueOrDefault<Color>(
-                                    widget!.statuTextBg,
-                                    Color(0xFF2A47A2),
+                                Tooltip(
+                                  message: widget!.refundToProcess
+                                      ? 'Remboursement à traiter'
+                                      : '',
+                                  child: Icon(
+                                    widget!.refundToProcess
+                                        ? Icons.currency_exchange_rounded
+                                        : Icons.check_circle_rounded,
+                                    color: valueOrDefault<Color>(
+                                      widget!.statuTextBg,
+                                      Color(0xFF2A47A2),
+                                    ),
+                                    size: 20.0,
                                   ),
-                                  size: 20.0,
                                 ),
                               ],
                             ),

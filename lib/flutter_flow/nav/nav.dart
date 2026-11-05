@@ -1,3 +1,5 @@
+import '/noc/admin_guard.dart';
+import '/noc/admin_login/admin_login_widget.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -104,6 +106,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => IntroWidget(),
         ),
         FFRoute(
+          name: AdminLoginWidget.routeName,
+          path: AdminLoginWidget.routePath,
+          builder: (context, params) => AdminLoginWidget(),
+        ),
+        FFRoute(
           name: TemplateWidget.routeName,
           path: TemplateWidget.routePath,
           builder: (context, params) => TemplateWidget(),
@@ -111,12 +118,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SignWidget.routeName,
           path: SignWidget.routePath,
-          builder: (context, params) => SignWidget(
-            accessibility: params.getParam(
+          builder: (context, params) {
+            final accessibility = params.getParam<String>(
               'accessibility',
               ParamType.String,
-            ),
-          ),
+            );
+            final page = SignWidget(accessibility: accessibility);
+            // Le formulaire « partenaire » est réservé aux administrateurs.
+            return accessibility == 'Admin'
+                ? KitungaAdminGuard(child: page)
+                : page;
+          },
         ),
         FFRoute(
           name: ForgotPasswordWidget.routeName,
@@ -302,6 +314,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'role',
               ParamType.String,
             ),
+            partnerRef: params.getParam(
+              'partnerRef',
+              ParamType.DocumentReference,
+              isList: false,
+              collectionNamePath: ['User'],
+            ),
           ),
         ),
         FFRoute(
@@ -322,7 +340,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SupervisionDashboardWidget.routeName,
           path: SupervisionDashboardWidget.routePath,
-          builder: (context, params) => SupervisionDashboardWidget(),
+          builder: (context, params) =>
+              KitungaAdminGuard(child: SupervisionDashboardWidget()),
         ),
         FFRoute(
           name: AddPhoneNumberWidget.routeName,

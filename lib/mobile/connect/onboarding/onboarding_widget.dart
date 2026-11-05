@@ -7,7 +7,6 @@ import '/index.dart';
 import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
 import '/mobile/components/form_styles/form_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'onboarding_model.dart';
 export 'onboarding_model.dart';
@@ -31,13 +30,6 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => OnboardingModel());
-
-    // On page load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (MediaQuery.sizeOf(context).width > 1046.0) {
-        context.pushNamed(IntroWidget.routeName);
-      }
-    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }

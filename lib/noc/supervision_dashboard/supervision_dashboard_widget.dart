@@ -1511,7 +1511,7 @@ class _SupervisionDashboardWidgetState
                                                         .primaryText,
                                                   ),
                                                   bg: Color(0x4DB539D2),
-                                                  title: 'COMMERCIAUX ACTIF',
+                                                  title: 'COMMERCIAUX',
                                                   subtitle:
                                                       'Nombre de vendeurs',
                                                   quantity: valueOrDefault<int>(
@@ -1533,7 +1533,7 @@ class _SupervisionDashboardWidgetState
                                             queryBuilder: (ordersRecord) =>
                                                 ordersRecord.where(
                                               'status',
-                                              isEqualTo: 'Reçu',
+                                              whereIn: OrderStatus.successful,
                                             ),
                                           ),
                                           builder: (context, snapshot) {
@@ -1850,7 +1850,7 @@ class _SupervisionDashboardWidgetState
                                                                   ),
                                                             ),
                                                             Text(
-                                                              'Date de livraison',
+                                                              'Date de commande',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .labelSmall
@@ -1979,8 +1979,7 @@ class _SupervisionDashboardWidgetState
                                                                     ordersRecord
                                                                         .where(
                                                               'status',
-                                                              isNotEqualTo:
-                                                                  'Reçu',
+                                                              whereIn: OrderStatus.inProgress,
                                                             ),
                                                           ),
                                                           builder: (context,
@@ -2112,7 +2111,9 @@ class _SupervisionDashboardWidgetState
                                                                               context)
                                                                           .tertiary,
                                                                     ),
-                                                                    viewDeliver:
+                                                                    refundToProcess: OrderStatus.refundToProcess(
+                                    listedOrderOrdersRecord.snapshotData),
+                                viewDeliver:
                                                                         () async {
                                                                       if (listedOrderOrdersRecord.delivererRef !=
                                                                               null &&
@@ -2251,7 +2252,7 @@ class _SupervisionDashboardWidgetState
                                                               .stretch,
                                                       children: [
                                                         Text(
-                                                          'HISTORIQUE DES LIVRAISONS',
+                                                          'HISTORIQUE DES COMMANDES',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .titleMedium
@@ -2291,7 +2292,7 @@ class _SupervisionDashboardWidgetState
                                                                     ordersRecord
                                                                         .where(
                                                               'status',
-                                                              isEqualTo: 'Reçu',
+                                                              whereIn: OrderStatus.finished,
                                                             ),
                                                           ),
                                                           builder: (context,
@@ -3162,7 +3163,12 @@ class _SupervisionDashboardWidgetState
                                                           ),
                                                           FutureBuilder<int>(
                                                             future:
-                                                                querySystemLogsRecordCount(),
+                                                                queryOrdersRecordCount(
+  queryBuilder: (ordersRecord) => ordersRecord.where(
+    'status',
+    isEqualTo: OrderStatus.notReceived,
+  ),
+),
                                                             builder: (context,
                                                                 snapshot) {
                                                               // Customize what your widget looks like when it's loading.

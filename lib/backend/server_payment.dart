@@ -52,7 +52,7 @@ Future<Map<String, dynamic>> _call(
     body = jsonDecode(res.body) as Map<String, dynamic>;
   } catch (_) {
     throw ServerPaymentException(
-        'Le service de paiement est indisponible. Réessayez plus tard.');
+        'Le service Kitunga est indisponible. Réessayez plus tard.');
   }
   if (body['error'] != null) {
     throw ServerPaymentException(
@@ -60,6 +60,12 @@ Future<Map<String, dynamic>> _call(
   }
   return Map<String, dynamic>.from(body['result'] as Map);
 }
+
+/// Appelle une Cloud Function Kitunga. Les erreurs sont levées en
+/// [ServerPaymentException], avec un message à montrer tel quel.
+Future<Map<String, dynamic>> kitungaCallFunction(
+        String name, Map<String, dynamic> data) =>
+    _call(name, data);
 
 /// Lance le paiement puis attend la validation du client (code PIN MTN).
 /// Le serveur recalcule prix, frais et stock ; il crée la commande.
