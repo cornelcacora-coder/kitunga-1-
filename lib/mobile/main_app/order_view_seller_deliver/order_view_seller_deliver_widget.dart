@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'order_view_seller_deliver_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'order_view_seller_deliver_model.dart';
 
 /// Page d'inscription utilisateur
@@ -58,6 +59,7 @@ class _OrderViewSellerDeliverWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -65,9 +67,9 @@ class _OrderViewSellerDeliverWidgetState
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: Row(
             mainAxisSize: MainAxisSize.max,
@@ -146,7 +148,8 @@ class _OrderViewSellerDeliverWidgetState
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Container(
             width: double.infinity,
@@ -184,7 +187,7 @@ class _OrderViewSellerDeliverWidgetState
                           snapshot.data!;
                       if (listViewOrderItemsRecordList.isEmpty) {
                         return EmptyCardWidget(
-                          title: 'Pannier Vide !',
+                          title: 'Panier vide !',
                           description:
                               'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
                           buttonText: 'Explorer',
@@ -321,6 +324,17 @@ class _OrderViewSellerDeliverWidgetState
                                                         ),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
+                                              // Options choisies par le client (taille, suppléments…).
+                                              if (listViewOrderItemsRecord.options.isNotEmpty)
+                                                Text(
+                                                  listViewOrderItemsRecord.options,
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(
+                                                    color: FlutterFlowTheme.of(context).secondaryText,
+                                                    fontSize: 12.5,
+                                                  ),
+                                                ),
                                               Row(
                                                 mainAxisSize: MainAxisSize.max,
                                                 mainAxisAlignment:
@@ -724,6 +738,7 @@ class _OrderViewSellerDeliverWidgetState
               ),
             ),
           ),
+        ),
         ),
       ),
     );

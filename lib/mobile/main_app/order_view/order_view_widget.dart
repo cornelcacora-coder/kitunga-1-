@@ -6,12 +6,15 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/mobile/components/empty_card/empty_card_widget.dart';
 import 'dart:ui';
 import '/index.dart';
+import '/auth/firebase_auth/auth_util.dart';
+import '/mobile/components/order_progress/order_progress_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'order_view_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'order_view_model.dart';
 
 /// Page d'inscription utilisateur
@@ -54,6 +57,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -61,9 +65,9 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -101,7 +105,8 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Align(
             alignment: AlignmentDirectional(0.0, 0.0),
@@ -150,6 +155,17 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Suivi par étapes, annulation tant que le
+                              // commerce n'a pas accepté.
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    20.0, 8.0, 20.0, 16.0),
+                                child: KitungaOrderProgress(
+                                  order: middleBodyOrdersRecord,
+                                  canCancel: middleBodyOrdersRecord.userRef ==
+                                      currentUserReference,
+                                ),
+                              ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     20.0, 0.0, 20.0, 16.0),
@@ -469,7 +485,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                 valueOrDefault<String>(
                                                   middleBodyOrdersRecord
                                                       .deliveryZone,
-                                                  'Talangai',
+                                                  'Zone non précisée',
                                                 ),
                                                 style: FlutterFlowTheme.of(
                                                         context)
@@ -670,7 +686,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                               if (wrapOrderItemsRecordList
                                                   .isEmpty) {
                                                 return EmptyCardWidget(
-                                                  title: 'Pannier Vide !',
+                                                  title: 'Panier vide !',
                                                   description:
                                                       'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
                                                   buttonText: 'Explorer',
@@ -851,6 +867,17 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                                           TextOverflow
                                                                               .ellipsis,
                                                                     ),
+                                                                    // Options choisies par le client (taille, suppléments…).
+                                                                    if (wrapOrderItemsRecord.options.isNotEmpty)
+                                                                      Text(
+                                                                        wrapOrderItemsRecord.options,
+                                                                        maxLines: 2,
+                                                                        overflow: TextOverflow.ellipsis,
+                                                                        style: GoogleFonts.inter(
+                                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                                          fontSize: 12.5,
+                                                                        ),
+                                                                      ),
                                                                     Row(
                                                                       mainAxisSize:
                                                                           MainAxisSize
@@ -1296,8 +1323,8 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                 alignment: AlignmentDirectional(
                                                     0.0, 1.0),
                                                 child: FFButtonWidget(
-                                                  onPressed: () {
-                                                    print('Button pressed ...');
+                                                  onPressed: () async {
+                                                    await launchURL('https://wa.me/242069232569');
                                                   },
                                                   text: 'Admin',
                                                   options: FFButtonOptions(
@@ -1375,6 +1402,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
               },
             ),
           ),
+        ),
         ),
       ),
     );

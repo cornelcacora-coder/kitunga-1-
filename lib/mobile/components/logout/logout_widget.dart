@@ -183,7 +183,7 @@ class _LogoutWidgetState extends State<LogoutWidget> {
                           ));
 
                           context.pushNamedAuth(
-                              AdsPageWidget.routeName, context.mounted);
+                              IntroWidget.routeName, context.mounted);
                         },
                         text: 'Oui',
                         options: FFButtonOptions(

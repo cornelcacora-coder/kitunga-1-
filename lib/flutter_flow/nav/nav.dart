@@ -1,3 +1,5 @@
+import '/noc/admin_guard.dart';
+import '/noc/admin_login/admin_login_widget.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -17,6 +19,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
 
 import '/index.dart';
+import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -84,13 +87,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? NavBarPage() : AdsPageWidget(),
+          appStateNotifier.loggedIn ? NavBarPage() : IntroWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
           builder: (context, _) =>
-              appStateNotifier.loggedIn ? NavBarPage() : AdsPageWidget(),
+              appStateNotifier.loggedIn ? NavBarPage() : IntroWidget(),
         ),
         FFRoute(
           name: LoginWidget.routeName,
@@ -98,14 +101,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => LoginWidget(),
         ),
         FFRoute(
-          name: AdsPageWidget.routeName,
-          path: AdsPageWidget.routePath,
-          builder: (context, params) => AdsPageWidget(),
-        ),
-        FFRoute(
           name: IntroWidget.routeName,
           path: IntroWidget.routePath,
           builder: (context, params) => IntroWidget(),
+        ),
+        FFRoute(
+          name: AdminLoginWidget.routeName,
+          path: AdminLoginWidget.routePath,
+          builder: (context, params) => AdminLoginWidget(),
         ),
         FFRoute(
           name: TemplateWidget.routeName,
@@ -115,12 +118,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SignWidget.routeName,
           path: SignWidget.routePath,
-          builder: (context, params) => SignWidget(
-            accessibility: params.getParam(
+          builder: (context, params) {
+            final accessibility = params.getParam<String>(
               'accessibility',
               ParamType.String,
-            ),
-          ),
+            );
+            final page = SignWidget(accessibility: accessibility);
+            // Le formulaire « partenaire » est réservé aux administrateurs.
+            return accessibility == 'Admin'
+                ? KitungaAdminGuard(child: page)
+                : page;
+          },
         ),
         FFRoute(
           name: ForgotPasswordWidget.routeName,
@@ -306,6 +314,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'role',
               ParamType.String,
             ),
+            partnerRef: params.getParam(
+              'partnerRef',
+              ParamType.DocumentReference,
+              isList: false,
+              collectionNamePath: ['User'],
+            ),
           ),
         ),
         FFRoute(
@@ -326,17 +340,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SupervisionDashboardWidget.routeName,
           path: SupervisionDashboardWidget.routePath,
-          builder: (context, params) => SupervisionDashboardWidget(),
+          builder: (context, params) =>
+              KitungaAdminGuard(child: SupervisionDashboardWidget()),
         ),
         FFRoute(
           name: AddPhoneNumberWidget.routeName,
           path: AddPhoneNumberWidget.routePath,
           builder: (context, params) => AddPhoneNumberWidget(),
-        ),
-        FFRoute(
-          name: AdsPageCopyWidget.routeName,
-          path: AdsPageCopyWidget.routePath,
-          builder: (context, params) => AdsPageCopyWidget(),
         ),
         FFRoute(
           name: OrderViewSellerDeliverWidget.routeName,
@@ -578,7 +588,7 @@ class FFRoute {
 
           if (requireAuth && !appStateNotifier.loggedIn) {
             appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
-            return '/adsPage';
+            return '/intro';
           }
           return null;
         },
@@ -592,11 +602,25 @@ class FFRoute {
                 )
               : builder(context, ffParams);
           final child = appStateNotifier.loading
+              // Écran de chargement : fond blanc (et non transparent, qui
+              // laissait apparaître du noir au lancement).
               ? Container(
-                  color: Colors.transparent,
-                  child: Image.asset(
-                    'assets/images/photo_2025-12-24_16-17-10-removebg-preview.png',
-                    fit: BoxFit.contain,
+                  color: Colors.white,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      KitungaLogo(size: 130.0),
+                      SizedBox(height: 32.0),
+                      SizedBox(
+                        width: 24.0,
+                        height: 24.0,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Color(0xFFE30613),
+                        ),
+                      ),
+                    ],
                   ),
                 )
               : page;

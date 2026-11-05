@@ -56,6 +56,11 @@ class OrderItemsRecord extends FirestoreRecord {
   String get orderRef => _orderRef ?? '';
   bool hasOrderRef() => _orderRef != null;
 
+  // "options" field : choix du client (résumé)
+  String? _options;
+  String get options => _options ?? '';
+  bool hasOptions() => _options != null;
+
   void _initializeFields() {
     _productRef = snapshotData['product_ref'] as DocumentReference?;
     _itemName = snapshotData['item_name'] as String?;
@@ -65,6 +70,7 @@ class OrderItemsRecord extends FirestoreRecord {
     _cartRef = snapshotData['cart_ref'] as DocumentReference?;
     _userRef = snapshotData['user_ref'] as DocumentReference?;
     _orderRef = snapshotData['order_ref'] as String?;
+    _options = snapshotData['options'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -110,6 +116,7 @@ Map<String, dynamic> createOrderItemsRecordData({
   DocumentReference? cartRef,
   DocumentReference? userRef,
   String? orderRef,
+  String? options,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -121,6 +128,7 @@ Map<String, dynamic> createOrderItemsRecordData({
       'cart_ref': cartRef,
       'user_ref': userRef,
       'order_ref': orderRef,
+      'options': options,
     }.withoutNulls,
   );
 

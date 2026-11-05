@@ -1,3 +1,4 @@
+import '/backend/subscription.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -198,7 +199,7 @@ class _ViewDeliverWidgetState extends State<ViewDeliverWidget> {
                                 padding: EdgeInsets.all(5.0),
                                 child: Text(
                                   valueOrDefault<String>(
-                                    containerUserRecord.subscribeType,
+                                    kitungaSubscriptionLabel(containerUserRecord),
                                     'Gratuit',
                                   ),
                                   style: FlutterFlowTheme.of(context)
@@ -232,7 +233,7 @@ class _ViewDeliverWidgetState extends State<ViewDeliverWidget> {
                               valueOrDefault<String>(
                                 dateTimeFormat("d/M/y",
                                     containerUserRecord.subscribeCloseAt),
-                                '1/4/2026',
+                                '-',
                               ),
                               style: FlutterFlowTheme.of(context)
                                   .bodySmall
@@ -278,7 +279,7 @@ class _ViewDeliverWidgetState extends State<ViewDeliverWidget> {
                               Text(
                                 valueOrDefault<String>(
                                   containerUserRecord.phoneNumber,
-                                  'Aucun Numero',
+                                  'Aucun numéro',
                                 ),
                                 maxLines: 1,
                                 style: FlutterFlowTheme.of(context)

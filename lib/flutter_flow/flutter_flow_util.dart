@@ -41,7 +41,8 @@ String dateTimeFormat(String format, DateTime? dateTime, {String? locale}) {
   if (format == 'relative') {
     return timeago.format(dateTime, locale: locale, allowFromNow: true);
   }
-  return DateFormat(format, locale).format(dateTime);
+  // Dates en français par défaut (les nombres gardent leur format actuel).
+  return DateFormat(format, locale ?? 'fr').format(dateTime);
 }
 
 Future launchURL(String url) async {

@@ -90,7 +90,7 @@ class _StepIndicatorWidgetState extends State<StepIndicatorWidget> {
         Text(
           valueOrDefault<String>(
             widget!.label,
-            'Cart',
+            'Panier',
           ),
           style: TextStyle(
             color: valueOrDefault<Color>(

@@ -12,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'settings_model.dart';
 export 'settings_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 
 /// Page d'inscription utilisateur
 class SettingsWidget extends StatefulWidget {
@@ -88,6 +89,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -95,9 +97,9 @@ class _SettingsWidgetState extends State<SettingsWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -135,7 +137,17 @@ class _SettingsWidgetState extends State<SettingsWidget>
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                ),
+              ),
+            ),
+            SafeArea(
           top: true,
           child: Padding(
             padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 16.0),
@@ -351,8 +363,22 @@ class _SettingsWidgetState extends State<SettingsWidget>
                             child: Text('Annuler'),
                           ),
                           ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              final message = feedbackController.text.trim();
                               Navigator.pop(ctx);
+                              if (message.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Veuillez saisir un message avant d\'envoyer.')),
+                                );
+                                return;
+                              }
+                              // Ouvre l'application e-mail avec le message pré-rempli.
+                              await launchURL(Uri(
+                                scheme: 'mailto',
+                                path: 'contact@ntemoconsulting.com',
+                                query: 'subject=${Uri.encodeComponent('Feedback Kitunga')}'
+                                    '&body=${Uri.encodeComponent(message)}',
+                              ).toString());
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Merci pour votre retour !')),
                               );
@@ -436,6 +462,8 @@ class _SettingsWidgetState extends State<SettingsWidget>
               ].divide(SizedBox(height: 16.0)),
             ),
           ),
+        ),
+          ],
         ),
       ),
     );

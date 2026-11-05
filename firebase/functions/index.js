@@ -5,6 +5,10 @@ admin.initializeApp();
 const https = require("https");
 const cors = require("cors")({ origin: true });
 const corsProxyRuntimeOptions = { minInstances: 1, timeoutSeconds: 15 };
+const ALLOWED_PROXY_HOSTS = [
+  "firebasestorage.googleapis.com",
+  "storage.googleapis.com",
+];
 
 /**
  * Provides a CORS proxy and returns the response body of the requested url,
@@ -22,14 +26,30 @@ async function handleRequest(req, res) {
     let url = req.query.url || req.body.url;
     if (!url) {
       res.status(403).send("URL is empty.");
+      return;
     }
-    https.get(url, (resp) => {
-      res.setHeader(
-        "content-type",
-        resp.headers["content-type"] || "image/jpeg",
-      );
-      resp.pipe(res);
-    });
+    // N'autorise que les fichiers hébergés sur le stockage Firebase / Google
+    // pour éviter que le proxy serve à télécharger n'importe quelle URL.
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (_) {
+      res.status(400).send("Invalid URL.");
+      return;
+    }
+    if (parsed.protocol !== "https:" || !ALLOWED_PROXY_HOSTS.includes(parsed.hostname)) {
+      res.status(403).send("Host not allowed.");
+      return;
+    }
+    https
+      .get(url, (resp) => {
+        res.setHeader(
+          "content-type",
+          resp.headers["content-type"] || "image/jpeg",
+        );
+        resp.pipe(res);
+      })
+      .on("error", () => res.status(502).send("Upstream error."));
   });
 }
 exports.onUserDeleted = functions
@@ -39,3 +59,93 @@ exports.onUserDeleted = functions
     let firestore = admin.firestore();
     let userRef = firestore.doc("User/" + user.uid);
   });
+
+// ── Paiement contrôlé par le serveur (voir README-KITUNGA.md) ─────────────
+const momo = require("./kitunga/momo");
+const payments = require("./kitunga/payments");
+const subscriptions = require("./kitunga/subscriptions");
+const partners = require("./kitunga/partners");
+const {reconcilePending} = require("./kitunga/reconcile");
+
+const MOMO_SECRETS = [
+  "MOMO_COLLECTION_USER", "MOMO_COLLECTION_KEY", "MOMO_COLLECTION_SUBSCRIPTION",
+  "MOMO_DISBURSEMENT_USER", "MOMO_DISBURSEMENT_KEY",
+  "MOMO_DISBURSEMENT_SUBSCRIPTION",
+];
+
+function callable(handler) {
+  return functions.region("us-west1")
+      .runWith({secrets: MOMO_SECRETS, timeoutSeconds: 60})
+      .https.onCall(async (data, context) => {
+        try {
+          return await handler(data || {}, context.auth && context.auth.uid);
+        } catch (e) {
+          if (e instanceof payments.PaymentError) {
+            throw new functions.https.HttpsError(e.code, e.message);
+          }
+          console.error(e);
+          throw new functions.https.HttpsError("internal",
+              "Le paiement n'a pas pu être traité. Réessayez.");
+        }
+      });
+}
+
+/** Création d'un partenaire par un administrateur (sans secret MTN). */
+exports.kitungaCreatePartner = functions.region("us-west1")
+    .https.onCall(async (data, context) => {
+      try {
+        return await partners.createPartner({
+          db: admin.firestore(), auth: admin.auth(),
+          uid: context.auth && context.auth.uid, data: data || {},
+        });
+      } catch (e) {
+        if (e instanceof payments.PaymentError) {
+          throw new functions.https.HttpsError(e.code, e.message);
+        }
+        console.error(e);
+        throw new functions.https.HttpsError("internal",
+            "Le partenaire n'a pas pu être créé. Réessayez.");
+      }
+    });
+
+/** Démarre un paiement MoMo : montant recalculé par le serveur. */
+exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
+  db: admin.firestore(), momo, uid,
+  sellerPath: String(data.sellerPath || ""),
+  zone: data.zone, deliveryLocation: data.deliveryLocation, phone: data.phone,
+}));
+
+/** Vérifie le paiement et crée la commande (stock décrémenté). */
+exports.kitungaConfirmPayment = callable((data, uid) =>
+  payments.confirmPayment({
+    db: admin.firestore(), momo, uid, referenceId: String(data.referenceId || ""),
+  }));
+
+/** Abonnement client payé par MoMo depuis la page web Kitunga. */
+exports.kitungaStartSubscription = callable((data, uid) =>
+  subscriptions.startSubscription({
+    db: admin.firestore(), momo, uid,
+    plan: String(data.plan || ""), phone: data.phone,
+  }));
+
+/** Vérifie le paiement et prolonge l'abonnement. */
+exports.kitungaConfirmSubscription = callable((data, uid) =>
+  subscriptions.confirmSubscription({
+    db: admin.firestore(), momo, uid, referenceId: String(data.referenceId || ""),
+  }));
+
+/** Termine les paiements validés chez MTN mais jamais confirmés. */
+exports.kitungaReconcilePayments = functions.region("us-west1")
+    .runWith({secrets: MOMO_SECRETS})
+    .pubsub.schedule("every 5 minutes")
+    .onRun(() => reconcilePending({db: admin.firestore(), momo}));
+
+/** Remboursement automatique d'une commande payée refusée ou annulée. */
+exports.kitungaRefundOrder = functions.region("us-west1")
+    .runWith({secrets: MOMO_SECRETS})
+    .firestore.document("Orders/{orderId}")
+    .onUpdate((change) => payments.refundOrder({
+      db: admin.firestore(), momo,
+      orderRef: change.after.ref, order: change.after.data(),
+      previousStatus: change.before.get("status") || "",
+    }));

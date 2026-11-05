@@ -1,17 +1,16 @@
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/mobile/components/info_badge/info_badge_widget.dart';
-import '/mobile/components/my_products_card/my_products_card_widget.dart';
 import 'dart:ui';
 import '/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import '/mobile/components/product_card/product_card_widget.dart';
+import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart';
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'shop_detail_page_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'shop_detail_page_model.dart';
 
 class ShopDetailPageWidget extends StatefulWidget {
@@ -53,773 +52,576 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-      appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-        automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisSize: MainAxisSize.max,
+  static const _filters = [
+    (label: 'Tous', value: ''),
+    (label: 'Nouveautés', value: 'Nouveauté'),
+    (label: 'Tendances', value: 'Tendance'),
+  ];
+
+  void _openProduct(ProductRecord p, UserRecord shop) {
+    context.pushNamed(
+      ProductViewWidget.routeName,
+      queryParameters: {
+        'productRef': serializeParam(p.reference, ParamType.DocumentReference),
+        'sellerRef':
+            serializeParam(shop.reference, ParamType.DocumentReference),
+      }.withoutNulls,
+    );
+  }
+
+  Widget _netImage(String url, FlutterFlowTheme theme,
+      {double? width,
+      double? height,
+      IconData icon = Icons.storefront_rounded,
+      Widget? placeholder}) {
+    return KitungaImage(url,
+        width: width,
+        height: height,
+        fallbackIcon: icon,
+        placeholder: placeholder);
+  }
+
+  Widget _pill(
+      FlutterFlowTheme theme, IconData icon, String text, Color color) {
+    return Container(
+      padding: EdgeInsetsDirectional.fromSTEB(10.0, 5.0, 12.0, 5.0),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15.0, color: color),
+          SizedBox(width: 5.0),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              color: color,
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// En-tête : couverture, logo, nom, informations et description.
+  Widget _header(FlutterFlowTheme theme, UserRecord shop) {
+    final catColor = kitungaCategoryColor(theme, shop.category);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
           children: [
-            InkWell(
-              splashColor: Colors.transparent,
-              focusColor: Colors.transparent,
-              hoverColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: () async {
-                context.safePop();
-              },
-              child: Icon(
-                Icons.arrow_back,
-                color: FlutterFlowTheme.of(context).secondaryText,
-                size: 24.0,
+            _netImage(
+                shop.businessCover.isNotEmpty
+                    ? shop.businessCover
+                    : shop.photoUrl,
+                theme,
+                width: double.infinity,
+                height: 220.0,
+                placeholder: kitungaShopPlaceholder(context, shop,
+                    width: double.infinity, height: 220.0, cover: true)),
+            // Voile en haut pour garder le bouton retour lisible.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment(0.0, -0.2),
+                      colors: [Color(0x66000000), Color(0x00000000)],
+                    ),
+                  ),
+                ),
               ),
             ),
-            Flexible(
-              child: Align(
-                alignment: AlignmentDirectional(0.0, 0.0),
-                child: Text(
-                  'Espace Business',
-                  style: FlutterFlowTheme.of(context).headlineMedium.override(
-                        font: GoogleFonts.interTight(
-                          fontWeight: FontWeight.w500,
-                          fontStyle: FlutterFlowTheme.of(context)
-                              .headlineMedium
-                              .fontStyle,
-                        ),
-                        color: FlutterFlowTheme.of(context).secondaryText,
-                        fontSize: 18.0,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.w500,
-                        fontStyle: FlutterFlowTheme.of(context)
-                            .headlineMedium
-                            .fontStyle,
-                      ),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Material(
+                  color: theme.secondaryBackground,
+                  shape: CircleBorder(),
+                  elevation: 2.0,
+                  child: IconButton(
+                    onPressed: () => context.safePop(),
+                    icon: Icon(Icons.arrow_back_rounded,
+                        color: theme.primaryText),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 20.0,
+              bottom: -38.0,
+              child: Container(
+                padding: EdgeInsets.all(4.0),
+                decoration: BoxDecoration(
+                  color: theme.secondaryBackground,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x1F000000),
+                      blurRadius: 10.0,
+                      offset: Offset(0.0, 3.0),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: _netImage(shop.photoUrl, theme,
+                      width: 76.0,
+                      height: 76.0,
+                      placeholder: kitungaShopPlaceholder(context, shop,
+                          width: 76.0, height: 76.0)),
                 ),
               ),
             ),
           ],
         ),
-        actions: [],
-        centerTitle: true,
-        elevation: 0.0,
-      ),
-      body: widget!.userRef == null
-          ? Center(
-              child: Text(
-                'Référence de la boutique non trouvée.',
-                style: FlutterFlowTheme.of(context).bodyMedium,
+        SizedBox(height: 48.0),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      shop.displayName,
+                      style: GoogleFonts.interTight(
+                        color: theme.primaryText,
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  if (shop.verified)
+                    Padding(
+                      padding: EdgeInsetsDirectional.only(start: 6.0),
+                      child: Icon(Icons.verified_rounded,
+                          color: theme.primary, size: 22.0),
+                    ),
+                ],
               ),
-            )
-          : Stack(
-              alignment: AlignmentDirectional(0.0, 1.0),
-              children: [
-                Align(
-                  alignment: AlignmentDirectional(0.0, -1.0),
-                  child: StreamBuilder<UserRecord>(
-                    stream: UserRecord.getDocument(widget!.userRef!),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Text(
-                              'Erreur lors du chargement : ${snapshot.error}',
-                              textAlign: TextAlign.center,
-                              style: FlutterFlowTheme.of(context).bodyMedium,
-                            ),
-                          ),
-                        );
-                      }
-                      // Customize what your widget looks like when it's loading.
-                      if (!snapshot.hasData) {
-                        return Center(
-                          child: SizedBox(
-                            width: 50.0,
-                            height: 50.0,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                FlutterFlowTheme.of(context).primary,
-                              ),
-                            ),
-                          ),
-                        );
-                      }
+              SizedBox(height: 10.0),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: [
+                  if (shop.category.isNotEmpty)
+                    _pill(theme, Icons.storefront_rounded, shop.category,
+                        catColor),
+                  if (shop.horraire.trim().isNotEmpty)
+                    _pill(theme, Icons.schedule_rounded, shop.horraire.trim(),
+                        theme.secondaryText),
+                  if (shop.verified)
+                    _pill(theme, Icons.verified_outlined, 'Certifié',
+                        theme.primary),
+                ],
+              ),
+              if (shop.bio.trim().isNotEmpty) ...[
+                SizedBox(height: 12.0),
+                Text(
+                  shop.bio.trim(),
+                  style: GoogleFonts.inter(
+                    color: theme.secondaryText,
+                    fontSize: 14.0,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-                      final listViewUserRecord = snapshot.data!;
+  // ── Catalogue adapté à la catégorie du commerce ──────────────────────
+  String _search = '';
+  String _chip = '';
+  final _sectionKeys = <String, GlobalKey>{};
+  late Stream<List<ProductRecord>> _productStream = _loadProducts();
 
-                      return ListView(
-                        padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        scrollDirection: Axis.vertical,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(10.0),
-                      child: Container(
-                        height: 250.0,
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12.0),
-                              child: CachedNetworkImage(
-                                fadeInDuration: Duration(milliseconds: 0),
-                                fadeOutDuration: Duration(milliseconds: 0),
-                                imageUrl: getCORSProxyUrl(
-                                  valueOrDefault<String>(
-                                    listViewUserRecord.businessCover != null &&
-                                            listViewUserRecord.businessCover !=
-                                                ''
-                                        ? listViewUserRecord.businessCover
-                                        : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
-                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
-                                  ),
-                                ),
-                                width: double.infinity,
-                                height: 250.0,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xFF0A0A0F),
-                                    Color(0x660A0A0F),
-                                    Colors.transparent
-                                  ],
-                                  stops: [0.0, 0.5, 1.0],
-                                  begin: AlignmentDirectional(0.0, -1.0),
-                                  end: AlignmentDirectional(0, 1.0),
-                                ),
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                            ),
-                            Container(
-                              height: double.infinity,
-                              decoration: BoxDecoration(),
-                              child: Padding(
-                                padding: EdgeInsets.all(24.0),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    8.0, 4.0, 8.0, 4.0),
-                                            child: Text(
-                                              'Ouvert',
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryBackground,
-                                                fontWeight: FontWeight.w800,
-                                                fontSize: 10.0,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.diamond_outlined,
-                                              color: Color(0xFF2AA2A2),
-                                              size: 16.0,
-                                            ),
-                                            Text(
-                                              valueOrDefault<String>(
-                                                listViewUserRecord.category,
-                                                'Shop',
-                                              ),
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelSmall
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelSmall
-                                                                  .fontStyle,
-                                                        ),
-                                                        color: Colors.white,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelSmall
-                                                                .fontStyle,
-                                                      ),
-                                            ),
-                                          ].divide(SizedBox(width: 4.0)),
-                                        ),
-                                      ].divide(SizedBox(width: 8.0)),
-                                    ),
-                                    Text(
-                                      valueOrDefault<String>(
-                                        listViewUserRecord.displayName,
-                                        'Profile Business (Nom)',
-                                      ),
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineLarge
-                                          .override(
-                                            font: GoogleFonts.interTight(
-                                              fontWeight: FontWeight.w900,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineLarge
-                                                      .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            fontSize: 26.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w900,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineLarge
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    Text(
-                                      valueOrDefault<String>(
-                                        listViewUserRecord.bio,
-                                        'La bio du profile Business',
-                                      ),
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: Color(0xCCFFFFFF),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    Stack(
-                                      alignment: AlignmentDirectional(1.0, 1.0),
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 5.0, 0.0),
-                                          child: Container(
-                                            width: 48.0,
-                                            height: 48.0,
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryBackground,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Align(
-                                              alignment: AlignmentDirectional(
-                                                  0.0, 0.0),
-                                              child: Padding(
-                                                padding: EdgeInsets.all(2.0),
-                                                child: Container(
-                                                  width: 48.0,
-                                                  height: 48.0,
-                                                  clipBehavior: Clip.antiAlias,
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 0),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 0),
-                                                    imageUrl: getCORSProxyUrl(
-                                                      valueOrDefault<String>(
-                                                        listViewUserRecord
-                                                                        .photoUrl !=
-                                                                    null &&
-                                                                listViewUserRecord
-                                                                        .photoUrl !=
-                                                                    ''
-                                                            ? listViewUserRecord
-                                                                .photoUrl
-                                                            : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h5ta1mt8rram/UserIcon.png',
-                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h5ta1mt8rram/UserIcon.png',
-                                                      ),
-                                                    ),
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 20.0,
-                                          height: 20.0,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.verified,
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            size: 20.0,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ].divide(SizedBox(height: 8.0)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(14.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 4.0,
-                              color: Color(0x1A000000),
-                              offset: Offset(
-                                0.0,
-                                2.0,
-                              ),
-                              spreadRadius: 0.0,
-                            )
-                          ],
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(14.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              wrapWithModel(
-                                model: _model.infoBadgeModel1,
-                                updateCallback: () => safeSetState(() {}),
-                                child: InfoBadgeWidget(
-                                  icon: Icon(
-                                    Icons.sell_rounded,
-                                    color: Color(0xFF0D62F9),
-                                    size: 24.0,
-                                  ),
-                                  label: 'Categorie',
-                                  value: valueOrDefault<String>(
-                                    listViewUserRecord.category,
-                                    'Shop',
-                                  ),
-                                ),
-                              ),
-                              Divider(
-                                color: FlutterFlowTheme.of(context).divider,
-                              ),
-                              wrapWithModel(
-                                model: _model.infoBadgeModel2,
-                                updateCallback: () => safeSetState(() {}),
-                                child: InfoBadgeWidget(
-                                  icon: Icon(
-                                    Icons.timer_sharp,
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    size: 24.0,
-                                  ),
-                                  label: 'Horraire',
-                                  value: valueOrDefault<String>(
-                                    listViewUserRecord.horraire,
-                                    '8h - 18h',
-                                  ),
-                                ),
-                              ),
-                              Divider(
-                                color: FlutterFlowTheme.of(context).divider,
-                              ),
-                              wrapWithModel(
-                                model: _model.infoBadgeModel3,
-                                updateCallback: () => safeSetState(() {}),
-                                child: InfoBadgeWidget(
-                                  icon: Icon(
-                                    Icons.stars,
-                                    color: FlutterFlowTheme.of(context).warning,
-                                  ),
-                                  label: 'Statu',
-                                  value: valueOrDefault<String>(
-                                    listViewUserRecord.verified
-                                        ? 'Certifier'
-                                        : 'Non Certifier',
-                                    'Non Certifier',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(14.0),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Container(
-                                  width: 35.0,
-                                  height: 35.0,
-                                  decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context).accent2,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.filter_list,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    size: 20.0,
-                                  ),
-                                ),
-                              ].divide(SizedBox(width: 10.0)),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                FFButtonWidget(
-                                  onPressed: () async {
-                                    _model.filter = '';
-                                    safeSetState(() {});
-                                  },
-                                  text: 'Tous',
-                                  options: FFButtonOptions(
-                                    height: 30.0,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                    color: valueOrDefault<Color>(
-                                      _model.filter == null ||
-                                              _model.filter == ''
-                                          ? FlutterFlowTheme.of(context).accent3
-                                          : FlutterFlowTheme.of(context)
-                                              .lightGrey,
-                                      FlutterFlowTheme.of(context).accent3,
-                                    ),
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w500,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleSmall
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          fontSize: 10.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleSmall
-                                                  .fontStyle,
-                                        ),
-                                    elevation: 0.0,
-                                    borderRadius: BorderRadius.circular(24.0),
-                                  ),
-                                ),
-                                FFButtonWidget(
-                                  onPressed: () async {
-                                    _model.filter = 'Nouveauté';
-                                    safeSetState(() {});
-                                  },
-                                  text: 'Nouveau',
-                                  options: FFButtonOptions(
-                                    height: 30.0,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                    color: valueOrDefault<Color>(
-                                      _model.filter == 'Nouveauté'
-                                          ? FlutterFlowTheme.of(context).accent3
-                                          : FlutterFlowTheme.of(context)
-                                              .lightGrey,
-                                      FlutterFlowTheme.of(context).lightGrey,
-                                    ),
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w500,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleSmall
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          fontSize: 10.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleSmall
-                                                  .fontStyle,
-                                        ),
-                                    elevation: 0.0,
-                                    borderRadius: BorderRadius.circular(24.0),
-                                  ),
-                                ),
-                                FFButtonWidget(
-                                  onPressed: () async {
-                                    _model.filter = 'Tendance';
-                                    safeSetState(() {});
-                                  },
-                                  text: 'Tendance',
-                                  options: FFButtonOptions(
-                                    height: 30.0,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                    color: valueOrDefault<Color>(
-                                      _model.filter == 'Tendance'
-                                          ? FlutterFlowTheme.of(context).accent3
-                                          : FlutterFlowTheme.of(context)
-                                              .lightGrey,
-                                      FlutterFlowTheme.of(context).lightGrey,
-                                    ),
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w500,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleSmall
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          fontSize: 10.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleSmall
-                                                  .fontStyle,
-                                        ),
-                                    elevation: 0.0,
-                                    borderRadius: BorderRadius.circular(24.0),
-                                  ),
-                                ),
-                              ].divide(SizedBox(width: 10.0)),
-                            ),
-                          ].divide(SizedBox(width: 10.0)),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(10.0),
-                      child: Container(
-                        decoration: BoxDecoration(),
-                        child: Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: StreamBuilder<List<ProductRecord>>(
-                            stream: queryProductRecord(
-                              queryBuilder: (productRecord) {
-                                var q = productRecord.where(
-                                  'seller_ref',
-                                  isEqualTo: widget!.userRef,
-                                );
-                                if (_model.filter != null &&
-                                    _model.filter!.isNotEmpty) {
-                                  q = q.where(
-                                    'specifications',
-                                    isEqualTo: _model.filter,
-                                  );
-                                }
-                                return q;
-                              },
-                            ),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasError) {
-                                return Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(20.0),
-                                    child: Text(
-                                      'Erreur lors du chargement des produits: ${snapshot.error}',
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium,
-                                    ),
-                                  ),
-                                );
-                              }
-                              // Customize what your widget looks like when it's loading.
-                              if (!snapshot.hasData) {
-                                return Center(
-                                  child: SizedBox(
-                                    width: 50.0,
-                                    height: 50.0,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        FlutterFlowTheme.of(context).primary,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                              List<ProductRecord> gridViewProductRecordList =
-                                  snapshot.data!;
+  Stream<List<ProductRecord>> _loadProducts() => queryProductRecord(
+        queryBuilder: (q) => q.where('seller_ref', isEqualTo: widget!.userRef),
+      );
 
-                              if (gridViewProductRecordList.isEmpty) {
-                                return Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(30.0),
-                                    child: Text(
-                                      'Aucun produit disponible',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(),
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                          ),
-                                    ),
-                                  ),
-                                );
-                              }
+  bool _isMenu(String category) =>
+      category == 'Restaurant' || category == 'Fast Food';
 
-                              return GridView.builder(
-                                padding: EdgeInsets.fromLTRB(
-                                  0,
-                                  0,
-                                  0,
-                                  20.0,
-                                ),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 20.0,
-                                  mainAxisSpacing: 20.0,
-                                  childAspectRatio: 0.75,
-                                ),
-                                physics: const NeverScrollableScrollPhysics(),
-                                primary: false,
-                                shrinkWrap: true,
-                                scrollDirection: Axis.vertical,
-                                itemCount: gridViewProductRecordList.length,
-                                itemBuilder: (context, gridViewIndex) {
-                                  final gridViewProductRecord =
-                                      gridViewProductRecordList[gridViewIndex];
-                                  return InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.pushNamed(
-                                        ProductViewWidget.routeName,
-                                        queryParameters: {
-                                          'productRef': serializeParam(
-                                            gridViewProductRecord.reference,
-                                            ParamType.DocumentReference,
-                                          ),
-                                          'sellerRef': serializeParam(
-                                            listViewUserRecord.reference,
-                                            ParamType.DocumentReference,
-                                          ),
-                                        }.withoutNulls,
-                                      );
-                                    },
-                                    child: wrapWithModel(
-                                      model:
-                                          _model.myProductsCardModels.getModel(
-                                        gridViewProductRecord.reference.id,
-                                        gridViewIndex,
-                                      ),
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: MyProductsCardWidget(
-                                        key: Key(
-                                          'Key7s4_${gridViewProductRecord.reference.id}',
-                                        ),
-                                        title: gridViewProductRecord.name,
-                                        price: gridViewProductRecord.salePrice,
-                                        cover: valueOrDefault<String>(
-                                          gridViewProductRecord.prodImg,
-                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+  String _norm(String v) => v
+      .toLowerCase()
+      .replaceAll(RegExp('[éèêë]'), 'e')
+      .replaceAll(RegExp('[àâä]'), 'a')
+      .replaceAll('ç', 'c');
+
+  /// Regroupe les produits par rubrique (ou rayon). Sans rubrique saisie,
+  /// un seul groupe au nom adapté à l'activité.
+  Map<String, List<ProductRecord>> _group(
+      List<ProductRecord> products, String category) {
+    final hasSections = products.any((p) => p.section.trim().isNotEmpty);
+    final fallback = switch (category) {
+      'Restaurant' || 'Fast Food' => 'Au menu',
+      'Pharmacie' => 'Produits disponibles',
+      'Magasin' => 'Tous les rayons',
+      _ => 'Tous les articles',
+    };
+    final groups = <String, List<ProductRecord>>{};
+    for (final p in products) {
+      final key = !hasSections
+          ? fallback
+          : (p.section.trim().isEmpty ? 'Autres' : p.section.trim());
+      groups.putIfAbsent(key, () => []).add(p);
+    }
+    return groups;
+  }
+
+  Widget _searchField(FlutterFlowTheme theme, String hint) {
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 12.0),
+      child: TextField(
+        onChanged: (v) => setState(() => _search = v),
+        textInputAction: TextInputAction.search,
+        style: GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle:
+              GoogleFonts.inter(color: theme.secondaryText, fontSize: 15.0),
+          prefixIcon: Icon(Icons.search_rounded, color: theme.secondaryText),
+          filled: true,
+          fillColor: theme.primaryBackground,
+          contentPadding: EdgeInsets.symmetric(vertical: 14.0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14.0),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _chips(FlutterFlowTheme theme, List<String> labels,
+      {required bool scrollTo}) {
+    return SizedBox(
+      height: 48.0,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.fromLTRB(20.0, 4.0, 20.0, 8.0),
+        children: [
+          for (final label in ['', ...labels])
+            if (!(scrollTo && label.isEmpty))
+              Padding(
+                padding: EdgeInsetsDirectional.only(end: 8.0),
+                child: ChoiceChip(
+                  label: Text(label.isEmpty ? 'Tous' : label),
+                  selected: _chip == label,
+                  showCheckmark: false,
+                  onSelected: (_) {
+                    setState(() => _chip = label);
+                    // Menu : on fait défiler jusqu'à la rubrique.
+                    final key = _sectionKeys[label];
+                    if (scrollTo && key?.currentContext != null) {
+                      Scrollable.ensureVisible(key!.currentContext!,
+                          duration: Duration(milliseconds: 350),
+                          curve: Curves.easeInOut);
+                    }
+                  },
+                  labelStyle: GoogleFonts.inter(
+                    color: _chip == label ? Colors.white : theme.primaryText,
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  selectedColor: theme.primary,
+                  backgroundColor: theme.primaryBackground,
+                  side: BorderSide.none,
+                  shape: StadiumBorder(),
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(FlutterFlowTheme theme, String title, int count,
+      {Key? key}) {
+    return Padding(
+      key: key,
+      padding: EdgeInsetsDirectional.fromSTEB(20.0, 18.0, 20.0, 4.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: GoogleFonts.interTight(
+                color: theme.primaryText,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          Text(
+            '$count',
+            style: GoogleFonts.inter(
+              color: theme.secondaryText,
+              fontSize: 13.0,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _grid(List<ProductRecord> products, UserRecord shop) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 0.0),
+      itemCount: products.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 14.0,
+        crossAxisSpacing: 14.0,
+        mainAxisExtent: KitungaProductCard.gridExtent,
+      ),
+      itemBuilder: (context, i) => KitungaProductCard(
+        product: products[i],
+        onTap: () => _openProduct(products[i], shop),
+      ),
+    );
+  }
+
+  Widget _rows(
+      FlutterFlowTheme theme, List<ProductRecord> products, UserRecord shop) {
+    return Column(
+      children: [
+        for (var i = 0; i < products.length; i++) ...[
+          if (i > 0)
+            Divider(
+                height: 1.0,
+                indent: 20.0,
+                endIndent: 20.0,
+                color: theme.divider),
+          KitungaProductRow(
+            product: products[i],
+            onTap: () => _openProduct(products[i], shop),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _info(FlutterFlowTheme theme, IconData icon, String text) {
+    return Container(
+      margin: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 12.0),
+      padding: EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: theme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14.0),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: theme.primary, size: 20.0),
+          SizedBox(width: 10.0),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(
+                color: theme.primaryText,
+                fontSize: 13.0,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _empty(FlutterFlowTheme theme, String text) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(32.0, 32.0, 32.0, 0.0),
+      child: Column(
+        children: [
+          Icon(Icons.inventory_2_outlined,
+              size: 44.0, color: theme.secondaryText),
+          SizedBox(height: 10.0),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style:
+                GoogleFonts.inter(color: theme.secondaryText, fontSize: 14.0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Catalogue : présentation selon la catégorie du commerce.
+  Widget _catalog(FlutterFlowTheme theme, UserRecord shop) {
+    final category = shop.category;
+    return StreamBuilder<List<ProductRecord>>(
+      stream: _productStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Padding(
+            padding: EdgeInsets.all(32.0),
+            child: Column(
+              children: [
+                Text(
+                  'Impossible de charger les produits.',
+                  style: GoogleFonts.inter(
+                      color: theme.secondaryText, fontSize: 14.0),
+                ),
+                SizedBox(height: 12.0),
+                FilledButton.icon(
+                  onPressed: () =>
+                      setState(() => _productStream = _loadProducts()),
+                  style: FilledButton.styleFrom(backgroundColor: theme.primary),
+                  icon: Icon(Icons.refresh_rounded),
+                  label: Text('Réessayer'),
+                ),
+              ],
+            ),
+          );
+        }
+        if (!snapshot.hasData) {
+          return Padding(
+            padding: EdgeInsets.all(40.0),
+            child:
+                Center(child: CircularProgressIndicator(color: theme.primary)),
+          );
+        }
+
+        final q = _norm(_search.trim());
+        // Les clients ne voient que les produits publiés (pas les brouillons).
+        final published = snapshot.data!.where(kitungaIsPublished).toList();
+        final all = published
+            .where((p) =>
+                q.isEmpty ||
+                _norm(p.name).contains(q) ||
+                _norm(p.description).contains(q))
+            .toList();
+        final groups = _group(all, category);
+        final menu = _isMenu(category);
+        final pharmacy = category == 'Pharmacie';
+
+        // Pastilles : rubriques si le vendeur en a créé, sinon les
+        // étiquettes existantes (Nouveautés / Tendances).
+        final useSections = groups.length > 1;
+        final tagLabels = _filters
+            .where((f) =>
+                f.value.isNotEmpty &&
+                all.any((p) => p.specifications == f.value))
+            .map((f) => f.label)
+            .toList();
+        List<ProductRecord> byChip(List<ProductRecord> ps) {
+          if (_chip.isEmpty || useSections || menu) return ps;
+          final tag = _filters
+              .firstWhere((f) => f.label == _chip, orElse: () => _filters.first)
+              .value;
+          return tag.isEmpty
+              ? ps
+              : ps.where((p) => p.specifications == tag).toList();
+        }
+
+        final searchHint = switch (category) {
+          'Restaurant' || 'Fast Food' => 'Rechercher un plat…',
+          'Pharmacie' => 'Rechercher un produit par son nom…',
+          _ => 'Rechercher un article…',
+        };
+
+        final children = <Widget>[
+          if (pharmacy)
+            _info(theme, Icons.medical_information_outlined,
+                'Les médicaments sur ordonnance sont visibles mais ne peuvent pas être commandés en ligne : présentez votre ordonnance directement à la pharmacie.'),
+          _searchField(theme, searchHint),
+        ];
+
+        if (published.isEmpty) {
+          children.add(
+              _empty(theme, 'Ce commerce n\'a pas encore publié de produits.'));
+          return Column(children: children);
+        }
+        if (all.isEmpty) {
+          children.add(_empty(
+              theme, 'Aucun produit ne correspond à « ${_search.trim()} ».'));
+          return Column(children: children);
+        }
+
+        if (menu || pharmacy) {
+          // Menu / pharmacie : rubriques empilées, lignes produits.
+          if (useSections) {
+            children.add(_chips(theme, groups.keys.toList(), scrollTo: true));
+          }
+          groups.forEach((name, products) {
+            final key = _sectionKeys.putIfAbsent(name, () => GlobalKey());
+            children.add(_sectionTitle(theme, name, products.length, key: key));
+            children.add(_rows(theme, products, shop));
+          });
+        } else {
+          // Boutique / magasin : filtres puis grille.
+          final labels = useSections ? groups.keys.toList() : tagLabels;
+          if (labels.isNotEmpty) {
+            children.add(_chips(theme, labels, scrollTo: false));
+          }
+          final shown = useSections && _chip.isNotEmpty
+              ? (groups[_chip] ?? <ProductRecord>[])
+              : byChip(all);
+          children.add(Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(20.0, 4.0, 20.0, 0.0),
+            child: Text(
+              '${shown.length} ${category == 'Magasin' ? 'article' : 'produit'}${shown.length > 1 ? 's' : ''}',
+              style: GoogleFonts.inter(
+                color: theme.secondaryText,
+                fontSize: 13.0,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ));
+          children.add(_grid(shown, shop));
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      key: scaffoldKey,
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      body: KitungaScaffoldBackground(
+        child: StreamBuilder<UserRecord>(
+        stream: UserRecord.getDocument(widget!.userRef!),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(color: theme.primary),
+            );
+          }
+          final shop = snapshot.data!;
+          return ListView(
+            padding: EdgeInsets.only(bottom: 32.0),
+            children: [
+              _header(theme, shop),
+              SizedBox(height: 24.0),
+              _catalog(theme, shop),
+            ],
+          );
+        },
+      ),
       ),
     );
   }

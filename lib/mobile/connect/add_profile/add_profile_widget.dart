@@ -15,16 +15,22 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'add_profile_model.dart';
 export 'add_profile_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 
 /// Page d'inscription utilisateur
 class AddProfileWidget extends StatefulWidget {
   const AddProfileWidget({
     super.key,
     this.role,
+    this.partnerRef,
   });
 
   /// user profile
   final String? role;
+
+  /// Partenaire créé par un administrateur : c'est son profil qui est complété,
+  /// et l'administrateur reste connecté.
+  final DocumentReference? partnerRef;
 
   static String routeName = 'Add_Profile';
   static String routePath = '/addProfile';
@@ -55,6 +61,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -62,9 +69,9 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -105,7 +112,17 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                ),
+              ),
+            ),
+            SafeArea(
           top: true,
           child: Builder(
             builder: (context) {
@@ -880,7 +897,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                       }
                                                     }
                                                   },
-                                                  text: 'Profile',
+                                                  text: 'Profil',
                                                   icon: Icon(
                                                     Icons.add,
                                                     size: 15.0,
@@ -977,7 +994,17 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                               padding: EdgeInsets.all(20.0),
                                               child: FFButtonWidget(
                                                 onPressed: () async {
-                                                  await currentUserReference!
+                                                  // Logo et couverture obligatoires pour un commerce.
+                                                  if (_model.uploadedFileUrl_businessProfile.isEmpty ||
+                                                      _model.uploadedFileUrl_businessCover.isEmpty) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                          content: Text(
+                                                              'Ajoutez le logo et la photo de couverture du commerce.')),
+                                                    );
+                                                    return;
+                                                  }
+                                                  await (widget.partnerRef ?? currentUserReference!)
                                                       .update(
                                                           createUserRecordData(
                                                     photoUrl: _model
@@ -1005,6 +1032,13 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                       );
                                                     },
                                                   );
+                                                  if (widget.partnerRef != null) {
+                                                    if (context.mounted) {
+                                                      context.goNamed(
+                                                          SupervisionDashboardWidget.routeName);
+                                                    }
+                                                    return;
+                                                  }
                                                   GoRouter.of(context)
                                                       .prepareAuthEvent();
                                                   await authManager.signOut();
@@ -1083,6 +1117,8 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
               }
             },
           ),
+        ),
+          ],
         ),
       ),
     );

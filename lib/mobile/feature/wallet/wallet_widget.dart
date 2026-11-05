@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'wallet_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'wallet_model.dart';
 
 /// Page d'inscription utilisateur
@@ -42,6 +43,7 @@ class _WalletWidgetState extends State<WalletWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -49,8 +51,9 @@ class _WalletWidgetState extends State<WalletWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: SafeArea(
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Padding(
             padding: EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 10.0),
@@ -478,8 +481,21 @@ class _WalletWidgetState extends State<WalletWidget> {
                                                   ],
                                                 ),
                                                 FFButtonWidget(
-                                                  onPressed: () {
-                                                    print('Button pressed ...');
+                                                  onPressed: () async {
+                                                    await showDialog(
+                                                      context: context,
+                                                      builder: (alertDialogContext) => AlertDialog(
+                                                        title: Text('Bientôt disponible'),
+                                                        content: Text(
+                                                            'Le dépôt sur Kitunga Cash n\'est pas encore disponible. Merci de réessayer ultérieurement.'),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () => Navigator.pop(alertDialogContext),
+                                                            child: Text('Compris'),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
                                                   },
                                                   text: 'Déposez',
                                                   icon: Icon(
@@ -972,6 +988,7 @@ class _WalletWidgetState extends State<WalletWidget> {
               ],
             ),
           ),
+        ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:image/image.dart' as img;
 
 void main() {
@@ -61,13 +62,13 @@ void main() {
   final adaptiveForeground = img.Image(width: iconSize, height: iconSize, numChannels: 4);
   img.fill(adaptiveForeground, color: img.ColorRgba8(0, 0, 0, 0)); // Fond transparent
 
-  final adaptiveInnerSize = (iconSize * 0.65).round(); // ~665px safe zone Android
-  double adaptiveScale;
-  if (cropped.width > cropped.height) {
-    adaptiveScale = adaptiveInnerSize / cropped.width;
-  } else {
-    adaptiveScale = adaptiveInnerSize / cropped.height;
-  }
+  // Android découpe l'icône (et l'écran de démarrage Android 12+) dans un
+  // CERCLE dont la zone garantie fait 66dp sur 108dp (~61 %). On fait donc
+  // tenir la diagonale du logo dans ce cercle, sinon les coins (le texte
+  // « KITUNGA ») sont coupés.
+  final adaptiveSafeDiameter = iconSize * 0.60; // 61 % moins une petite marge
+  final adaptiveScale = adaptiveSafeDiameter /
+      sqrt(cropped.width * cropped.width + cropped.height * cropped.height);
   final adaptiveW = (cropped.width * adaptiveScale).round();
   final adaptiveH = (cropped.height * adaptiveScale).round();
   final scaledAdaptiveLogo = img.copyResize(cropped, width: adaptiveW, height: adaptiveH, interpolation: img.Interpolation.cubic);

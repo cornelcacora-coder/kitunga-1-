@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/mobile/components/delete_account/delete_account.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -15,6 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'security_model.dart';
 export 'security_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 
 /// Page d'inscription utilisateur
 class SecurityWidget extends StatefulWidget {
@@ -101,6 +103,7 @@ class _SecurityWidgetState extends State<SecurityWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -108,9 +111,9 @@ class _SecurityWidgetState extends State<SecurityWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -148,7 +151,17 @@ class _SecurityWidgetState extends State<SecurityWidget>
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                ),
+              ),
+            ),
+            SafeArea(
           top: true,
           child: Padding(
             padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
@@ -421,9 +434,57 @@ class _SecurityWidgetState extends State<SecurityWidget>
                   ).animateOnPageLoad(
                       animationsMap['containerOnPageLoadAnimation3']!),
                 ),
+                // Suppression définitive du compte (exigence Google Play).
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 16.0),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16.0),
+                    onTap: () => showDeleteAccountDialog(context),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context)
+                            .error
+                            .withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 16.0, 8.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48.0,
+                            height: 48.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context).error,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.delete_forever_rounded,
+                                color: Colors.white, size: 24.0),
+                          ),
+                          SizedBox(width: 16.0),
+                          Expanded(
+                            child: Text(
+                              'Supprimer mon compte',
+                              style: GoogleFonts.interTight(
+                                color: FlutterFlowTheme.of(context).error,
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios,
+                              color: FlutterFlowTheme.of(context).error,
+                              size: 20.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+        ),
+          ],
         ),
       ),
     );

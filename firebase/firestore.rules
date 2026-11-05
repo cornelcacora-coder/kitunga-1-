@@ -1,53 +1,223 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return /databases/$(database)/documents/User/$(request.auth.uid);
+    }
+
+    function myRole() {
+      return get(me()).data.get('role', '');
+    }
+
+    function isAdmin() {
+      return signedIn() && myRole() == 'Admin';
+    }
+
+    // Rôles qu'un utilisateur peut s'attribuer lui-même. Commerçants et livreurs
+    // sont créés par un administrateur (kitungaCreatePartner) : un compte ne peut
+    // pas se déclarer livreur pour consulter les commandes.
+    function selfAssignableRole(role) {
+      return role in ['User', 'Guest'];
+    }
+
+    // Abonnement client obligatoire pour commander : la date de fin
+    // (subscribe_close_at) n'est prolongée que par le serveur après paiement.
+    function canOrder() {
+      let u = get(me()).data;
+      return u.get('role', 'User') != 'Guest'
+        && (u.get('role', 'User') != 'User'
+            || u.get('subscribe_close_at', timestamp.value(0)) > request.time);
+    }
+
+    // Le rôle se choisit une seule fois : à l'inscription (profil encore sans
+    // rôle) ou en quittant le mode visiteur. Ensuite il ne change plus, sinon
+    // un client pourrait devenir « Seller » pour éviter l'abonnement.
+    function roleChangeAllowed() {
+      let before = resource.data.get('role', '');
+      let after = request.resource.data.get('role', '');
+      return after == before
+        || ((before == '' || before == 'Guest') && selfAssignableRole(after));
+    }
+
+    function subscriptionUnchanged() {
+      return request.resource.data.get('subscribe_close_at', null)
+          == resource.data.get('subscribe_close_at', null);
+    }
+
+    // ── User ───────────────────────────────────────────────────────────────
+    // Chacun lit son propre profil ; seuls les profils des commerçants sont
+    // visibles par tout compte connecté (les invités sont connectés anonymement),
+    // pour afficher les boutiques. Personne ne peut se donner le rôle Admin : il
+    // s'attribue depuis la console Firebase.
     match /User/{document} {
-      allow create: if request.auth.uid == document;
-      allow read: if true;
-      allow write: if request.auth.uid == document;
-      allow delete: if request.auth != null;
+      allow read: if signedIn() && (request.auth.uid == document
+        || resource.data.get('role', '') == 'Seller'
+        || isAdmin());
+      allow create: if signedIn() && request.auth.uid == document
+        && selfAssignableRole(request.resource.data.get('role', 'User'))
+        && request.resource.data.get('subscribe_close_at', timestamp.value(0))
+            <= request.time + duration.value(1, 'h');
+      allow update: if signedIn() && request.auth.uid == document
+        && subscriptionUnchanged()
+        && roleChangeAllowed();
+      // À la création d'un partenaire, l'administrateur ajoute son logo et sa
+      // couverture. Il ne peut rien modifier d'autre sur ce profil.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['photo_url', 'Business_cover']);
+      allow delete: if (signedIn() && request.auth.uid == document) || isAdmin();
     }
 
+    // ── Product ────────────────────────────────────────────────────────────
     match /Product/{document} {
-      allow create: if request.auth != null;
       allow read: if true;
-      allow write: if resource.data.seller_ref == /databases/$(database)/documents/User/$(request.auth.uid);
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.seller_ref == me();
+      allow update: if signedIn()
+        && (resource.data.seller_ref == me() || isAdmin())
+        && request.resource.data.seller_ref == resource.data.seller_ref;
+      allow delete: if signedIn() && (resource.data.seller_ref == me() || isAdmin());
     }
 
+    // ── Cart ───────────────────────────────────────────────────────────────
     match /Cart/{document} {
-      allow create: if request.auth != null;
-      allow read: if resource.data.user_ref == /databases/$(database)/documents/User/$(request.auth.uid);
-      allow write: if resource.data.user_ref == /databases/$(database)/documents/User/$(request.auth.uid);
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_ref == me()
+        && canOrder();
+      allow read: if signedIn() && (resource.data.user_ref == me() || isAdmin());
+      allow update: if signedIn() && resource.data.user_ref == me()
+        && request.resource.data.user_ref == me();
+      allow delete: if signedIn() && (resource.data.user_ref == me() || isAdmin());
+    }
+
+    // ── Orders ─────────────────────────────────────────────────────────────
+    // Lecture : le client, le vendeur, le livreur de la commande et les
+    // administrateurs ; les livreurs voient aussi les commandes prêtes ou en
+    // cours (OrderStatus.forDeliverers). Modification réservée aux personnes
+    // concernées ; montant, client et vendeur ne peuvent plus être changés.
+    function isBuyer(order) {
+      return order.user_ref == me();
+    }
+
+    function isSeller(order) {
+      return order.get('seller_ref', null) == me();
+    }
+
+    function isAssignedDeliverer(order) {
+      return order.get('deliver_reference', null) == me()
+        || order.get('deliverer_ref', '') == request.auth.uid;
+    }
+
+    // Un livreur peut prendre une commande qui n'a pas encore de livreur.
+    function canTakeOrder(order) {
+      return myRole() == 'Deliver'
+        && (order.get('deliver_reference', null) == null || isAssignedDeliverer(order));
+    }
+
+    function orderKeyFieldsUnchanged() {
+      return request.resource.data.user_ref == resource.data.user_ref
+        && request.resource.data.get('seller_ref', null) == resource.data.get('seller_ref', null)
+        && request.resource.data.get('total_amount', null) == resource.data.get('total_amount', null)
+        && request.resource.data.get('delivery_fees', null) == resource.data.get('delivery_fees', null)
+        && request.resource.data.get('order_unique_reference', null) == resource.data.get('order_unique_reference', null);
+    }
+
+    function isPendingStatus(status) {
+      return status == '' || status == 'En attente';
+    }
+
+    function isStoppedStatus(status) {
+      return status == 'Annulée' || status == 'Refusée';
+    }
+
+    // Une commande ne revient jamais « En attente » et ne repart pas une fois
+    // arrêtée. Annuler : le client, avant acceptation. Refuser : le vendeur,
+    // avant acceptation. Le remboursement dépend de ces deux décisions.
+    function orderStatusChangeAllowed() {
+      let before = resource.data.get('status', '');
+      let after = request.resource.data.get('status', '');
+      return after == before
+        || isAdmin()
+        || (after == 'Annulée' && isPendingStatus(before) && isBuyer(resource.data))
+        || (after == 'Refusée' && isPendingStatus(before) && isSeller(resource.data))
+        || (!isPendingStatus(after) && !isStoppedStatus(after) && !isStoppedStatus(before));
+    }
+
+    // La demande de remboursement n'est possible qu'au moment de l'arrêt de
+    // la commande. Le suivi du remboursement est écrit par le serveur seul.
+    function orderRefundFieldsAllowed() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return !changed.hasAny(['refund_status', 'refund_reference', 'refund_error'])
+        && (!changed.hasAny(['refund_needed'])
+            || (request.resource.data.get('refund_needed', false) == true
+                && isStoppedStatus(request.resource.data.get('status', ''))
+                && !isStoppedStatus(resource.data.get('status', ''))));
+    }
+
+    // La référence de paiement est posée une seule fois, par le client, juste
+    // après son paiement (le serveur la revérifie avant tout remboursement).
+    function orderPaymentFieldsAllowed() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['payment_reference', 'payment_status'])
+        || (isBuyer(resource.data)
+            && !('payment_reference' in resource.data)
+            && !('payment_status' in resource.data));
     }
 
     match /Orders/{document} {
-      allow create: if request.resource.data.user_ref == /databases/$(database)/documents/User/$(request.auth.uid);
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_ref == me()
+        && canOrder()
+        && request.resource.data.get('status', '') == 'En attente'
+        && !request.resource.data.keys().hasAny(['refund_needed', 'refund_status',
+            'refund_reference', 'refund_error', 'payment_reference', 'payment_status']);
+      allow read: if signedIn() && (isBuyer(resource.data)
+        || isSeller(resource.data)
+        || isAssignedDeliverer(resource.data)
+        || (myRole() == 'Deliver' && resource.data.get('status', '') in ['Pret', 'encours'])
+        || isAdmin());
+      allow update: if signedIn() && orderKeyFieldsUnchanged()
+        && orderStatusChangeAllowed()
+        && orderRefundFieldsAllowed()
+        && orderPaymentFieldsAllowed()
+        && (isBuyer(resource.data) || isSeller(resource.data)
+            || isAssignedDeliverer(resource.data) || canTakeOrder(resource.data)
+            || isAdmin());
+      allow delete: if isAdmin();
     }
 
+    // ── OrderItems ─────────────────────────────────────────────────────────
     match /OrderItems/{document} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_ref == me();
+      allow read: if signedIn();
+      allow update: if signedIn() && (resource.data.user_ref == me() || isAdmin())
+        && request.resource.data.user_ref == resource.data.user_ref;
+      allow delete: if signedIn() && (resource.data.user_ref == me() || isAdmin());
     }
 
+    // ── system_logs ────────────────────────────────────────────────────────
     match /system_logs/{document} {
-      allow create: if true;
-      allow read: if true;
-      allow write: if false;
-      allow delete: if request.auth != null;
+      allow create: if signedIn();
+      allow read: if isAdmin();
+      allow update: if false;
+      allow delete: if isAdmin();
     }
 
+    // ── Paiement ───────────────────────────────────────────────────────────
+    // Trace des tentatives de paiement MoMo (écrite par l'app, lue par le NOC).
+    // L'application ne peut écrire qu'une trace : les champs utilisés par le
+    // serveur (kind, plan, cart_ids, payer_phone…) lui sont interdits, sinon
+    // une fausse trace pourrait activer un abonnement ou un remboursement.
     match /Paiement/{document} {
-      allow create: if true;
-      allow read: if true;
-      allow write: if false;
-      allow delete: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_ref == me()
+        && request.resource.data.keys().hasOnly(['status', 'reference_id', 'message',
+            'amount', 'order_id', 'order_ref', 'user_ref', 'operator', 'created_at']);
+      allow read: if isAdmin() || (signedIn() && resource.data.get('user_ref', null) == me());
+      allow update: if false;
+      allow delete: if isAdmin();
     }
   }
 }

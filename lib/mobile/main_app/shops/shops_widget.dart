@@ -8,10 +8,13 @@ import '/mobile/components/alert_info/alert_info_widget.dart';
 import '/mobile/components/user_card/user_card_widget.dart';
 import 'dart:ui';
 import '/index.dart';
+import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart';
+import '/mobile/main_app/home/home_sections.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'shops_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'shops_model.dart';
 
 /// Page d'inscription utilisateur
@@ -50,518 +53,445 @@ class _ShopsWidgetState extends State<ShopsWidget> {
     super.dispose();
   }
 
+  String _query = '';
+  String _filter = ''; // '', 'open', 'verified'
+  late Stream<List<UserRecord>> _shops = _load();
+
+  Stream<List<UserRecord>> _load() => queryUserRecord(
+        queryBuilder: (q) => q
+            .where('role', isEqualTo: 'Seller')
+            .where('category', isEqualTo: widget!.tag),
+      );
+
+  String get _category => widget!.tag ?? 'Boutique';
+
+  String get _plural => switch (_category) {
+        'Restaurant' => 'Restaurants',
+        'Pharmacie' => 'Pharmacies',
+        'Magasin' => 'Magasins',
+        'Fast Food' => 'Fast-foods',
+        _ => 'Boutiques',
+      };
+
+  String _norm(String v) => v
+      .toLowerCase()
+      .replaceAll(RegExp('[éèêë]'), 'e')
+      .replaceAll(RegExp('[àâä]'), 'a')
+      .replaceAll('ç', 'c');
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-        appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-          automaticallyImplyLeading: false,
-          title: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              InkWell(
-                splashColor: Colors.transparent,
-                focusColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: () async {
-                  context.safePop();
-                },
-                child: Icon(
-                  Icons.arrow_back,
-                  color: FlutterFlowTheme.of(context).secondaryText,
-                  size: 24.0,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(14.0, 1.0, 14.0, 10.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Align(
-                      alignment: AlignmentDirectional(1.0, 0.0),
-                      child: Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(10.0, 0.0, 0.0, 0.0),
-                        child: Container(
-                          width: 40.0,
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                            color: Color(0x2200FFFD),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: AlignmentDirectional(1.0, 0.0),
-                          child: Align(
-                            alignment: AlignmentDirectional(0.0, 0.0),
-                            child: Icon(
-                              Icons.store_rounded,
-                              color: Color(0xFF00B5B8),
-                              size: 24.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Text(
-                      valueOrDefault<String>(
-                        widget!.tag,
-                        'Boutique',
-                      ),
-                      style:
-                          FlutterFlowTheme.of(context).headlineMedium.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .headlineMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .headlineMedium
-                                      .fontStyle,
-                                ),
-                                fontSize: 20.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .fontStyle,
-                              ),
-                    ),
-                  ].divide(SizedBox(width: 10.0)),
-                ),
-              ),
-            ],
-          ),
-          actions: [],
-          centerTitle: true,
-          elevation: 0.0,
-        ),
-        body: SafeArea(
-          top: true,
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    primary: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (responsiveVisibility(
-                          context: context,
-                          phone: false,
-                        ))
-                          Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                20.0, 0.0, 20.0, 0.0),
-                            child: wrapWithModel(
-                              model: _model.adsCompModel,
-                              updateCallback: () => safeSetState(() {}),
-                              child: AdsCompWidget(
-                                title: () {
-                                  if (widget!.tag == 'Boutique') {
-                                    return 'Kitunga Shop';
-                                  } else if (widget!.tag == 'Magasin') {
-                                    return 'Kitunga Magasin ';
-                                  } else if (widget!.tag == 'Pharmacie') {
-                                    return 'Kitunga Pharmacy';
-                                  } else {
-                                    return 'Kitunga Store';
-                                  }
-                                }(),
-                                subtitle: () {
-                                  if (widget!.tag == 'Boutique') {
-                                    return 'Accédez aux meileures boutqiues de la place.';
-                                  } else if (widget!.tag == 'Magasin') {
-                                    return 'Visitez vos magasins préférés maintenant ';
-                                  } else if (widget!.tag == 'Pharmacie') {
-                                    return 'Retrouver tous vos produits dans la pharmacie la plus proche de chez vous';
-                                  } else {
-                                    return 'Tout ce dont vous avez besoin au meme endroit et en un click. ';
-                                  }
-                                }(),
-                                tag: widget!.tag,
-                                btnText: 'Live',
-                                cover: () {
-                                  if (widget!.tag == 'Magasin') {
-                                    return 'https://dimg.dreamflow.cloud/v1/image/modern minimalist boutique storefront interior high-end fashion';
-                                  } else if (widget!.tag == 'Pharmacie') {
-                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/x17wknlm8k4f/PharmaciModel_(1).png';
-                                  } else if (widget!.tag == 'Boutique') {
-                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/01y62vfcxq6g/AdsModel_(1).png';
-                                  } else if (widget!.tag == 'Restaurant') {
-                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/yaerg0wuc2fl/RestoModel_(1).png';
-                                  } else if (widget!.tag == 'Fast Food') {
-                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/yaerg0wuc2fl/RestoModel_(1).png';
-                                  } else {
-                                    return 'https://dimg.dreamflow.cloud/v1/image/modern minimalist boutique storefront interior high-end fashion';
-                                  }
-                                }(),
-                                onclickBtn: () async {
-                                  await showDialog(
-                                    context: context,
-                                    builder: (alertDialogContext) {
-                                      return AlertDialog(
-                                        title: Text('À venir'),
-                                        content: Text(
-                                            'Les portes vont bientot s\'ouvrire, revenez plutard svp !'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(
-                                                alertDialogContext),
-                                            child: Text('Ok'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              20.0, 0.0, 20.0, 0.0),
-                          child: Material(
-                            color: Colors.transparent,
-                            elevation: 0.0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            child: Container(
-                              width: double.infinity,
-                              height: 80.0,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context).accent3,
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(14.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          () {
-                                            if (widget!.tag == 'Boutique') {
-                                              return 'Kitunga Shop';
-                                            } else if (widget!.tag ==
-                                                'Magasin') {
-                                              return 'Kitunga Magasin ';
-                                            } else if (widget!.tag ==
-                                                'Pharmacie') {
-                                              return 'Kitunga Pharmacy';
-                                            } else if (widget!.tag ==
-                                                'Fast Food') {
-                                              return 'Kitunga Food';
-                                            } else {
-                                              return 'Kitunga Store';
-                                            }
-                                          }(),
-                                          style: FlutterFlowTheme.of(context)
-                                              .titleMedium
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleMedium
-                                                          .fontStyle,
-                                                ),
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                fontSize: 17.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                        Text(
-                                          () {
-                                            if (widget!.tag == 'Boutique') {
-                                              return 'Accédez aux meileures boutqiues de la place.';
-                                            } else if (widget!.tag ==
-                                                'Magasin') {
-                                              return 'Visitez vos magasins préférés maintenant ';
-                                            } else if (widget!.tag ==
-                                                'Pharmacie') {
-                                              return 'Vos produits dans la pharmacie la plus proche ';
-                                            } else {
-                                              return 'Tout ce dont vous avez besoin en 1  seul endroit';
-                                            }
-                                          }(),
-                                          maxLines: 2,
-                                          style: FlutterFlowTheme.of(context)
-                                              .labelLarge
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelLarge
-                                                          .fontStyle,
-                                                ),
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelLarge
-                                                        .fontStyle,
-                                              ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ].divide(SizedBox(width: 14.0)),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: StreamBuilder<List<UserRecord>>(
-                            stream: queryUserRecord(
-                              queryBuilder: (userRecord) => userRecord
-                                  .where(
-                                    'role',
-                                    isEqualTo: 'Seller',
-                                  )
-                                  .where(
-                                    'category',
-                                    isEqualTo: widget!.tag,
-                                  )
-                                  .orderBy('created_time'),
-                              limit: 20,
-                            ),
-                            builder: (context, snapshot) {
-                              // Customize what your widget looks like when it's loading.
-                              if (!snapshot.hasData) {
-                                return Center(
-                                  child: SizedBox(
-                                    width: 50.0,
-                                    height: 50.0,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        FlutterFlowTheme.of(context).primary,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                              List<UserRecord> wrapUserRecordList =
-                                  snapshot.data!;
+    final theme = FlutterFlowTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cat = kitungaCategories.firstWhere((c) => c.name == _category,
+        orElse: () => kitungaCategories.first);
+    return Scaffold(
+      key: scaffoldKey,
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      body: KitungaScaffoldBackground(
+        child: SafeArea(
+        child: StreamBuilder<List<UserRecord>>(
+          stream: _shops,
+          builder: (context, snapshot) {
+            final all = snapshot.data ?? [];
+            final q = _norm(_query.trim());
+            final shown = all.where((s) {
+              if (q.isNotEmpty &&
+                  !_norm(s.displayName).contains(q) &&
+                  !_norm(s.bio).contains(q)) {
+                return false;
+              }
+              if (_filter == 'verified' && !s.verified) return false;
+              if (_filter == 'open' &&
+                  kitungaOpeningStatus(s.horraire)?.open != true) {
+                return false;
+              }
+              return true;
+            }).toList();
 
-                              return Wrap(
-                                spacing: 0.0,
-                                runSpacing: 0.0,
-                                alignment: WrapAlignment.start,
-                                crossAxisAlignment: WrapCrossAlignment.start,
-                                direction: Axis.horizontal,
-                                runAlignment: WrapAlignment.start,
-                                verticalDirection: VerticalDirection.down,
-                                clipBehavior: Clip.none,
-                                children: List.generate(
-                                    wrapUserRecordList.length, (wrapIndex) {
-                                  final wrapUserRecord =
-                                      wrapUserRecordList[wrapIndex];
-                                  return Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 10.0),
-                                    child: wrapWithModel(
-                                      model: _model.userCardModels.getModel(
-                                        wrapUserRecord.reference.id,
-                                        wrapIndex,
-                                      ),
-                                      updateCallback: () => safeSetState(() {}),
-                                      child: UserCardWidget(
-                                        key: Key(
-                                          'Keyj18_${wrapUserRecord.reference.id}',
-                                        ),
-                                        name: wrapUserRecord.displayName,
-                                        badge: valueOrDefault<String>(
-                                          () {
-                                            if (wrapUserRecord.role ==
-                                                'Seller') {
-                                              return 'VENDEUR';
-                                            } else if (wrapUserRecord.role ==
-                                                'Deliver') {
-                                              return 'LIVREUR';
-                                            } else if (wrapUserRecord.role ==
-                                                'Admin') {
-                                              return 'ADMIN';
-                                            } else {
-                                              return 'USER';
-                                            }
-                                          }(),
-                                          'USER',
-                                        ),
-                                        badgeBg: valueOrDefault<Color>(
-                                          () {
-                                            if (wrapUserRecord.role == 'User') {
-                                              return Color(0x22FFE500);
-                                            } else if (wrapUserRecord.role ==
-                                                'Deliver') {
-                                              return FlutterFlowTheme.of(
-                                                      context)
-                                                  .accent3;
-                                            } else if (wrapUserRecord.role ==
-                                                'Admin') {
-                                              return FlutterFlowTheme.of(
-                                                      context)
-                                                  .accent1;
-                                            } else {
-                                              return FlutterFlowTheme.of(
-                                                      context)
-                                                  .accent2;
-                                            }
-                                          }(),
-                                          Color(0x22FFE500),
-                                        ),
-                                        createdAt: wrapUserRecord.createdTime,
-                                        userImg: valueOrDefault<String>(
-                                          wrapUserRecord.photoUrl,
-                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h5ta1mt8rram/UserIcon.png',
-                                        ),
-                                        isVerified: wrapUserRecord.verified,
-                                        isUserConnected: true,
-                                        iconCard: Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                          size: 16.0,
-                                        ),
-                                        actionToUser: () async {},
-                                        viewUser: () async {
-                                          if (valueOrDefault(
-                                                  currentUserDocument?.role,
-                                                  '') ==
-                                              'Guest') {
-                                            await showModalBottomSheet(
-                                              isScrollControlled: true,
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              enableDrag: false,
-                                              context: context,
-                                              builder: (context) {
-                                                return GestureDetector(
-                                                  onTap: () {
-                                                    FocusScope.of(context)
-                                                        .unfocus();
-                                                    FocusManager
-                                                        .instance.primaryFocus
-                                                        ?.unfocus();
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        MediaQuery.viewInsetsOf(
-                                                            context),
-                                                    child: AlertInfoWidget(
-                                                      icon: Icon(
-                                                        Icons.crisis_alert,
-                                                        color: Colors.white,
-                                                      ),
-                                                      title: 'Accès Refusé !',
-                                                      iconBg:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .secondary,
-                                                      subtitle:
-                                                          'Veuillez vous abonnez afin d\'accéder à toutes les fonctionalités de Kitunga sans limitation.',
-                                                      btnTxt: 'S\'abonner',
-                                                      onValidate: () async {
-                                                        Navigator.of(context).pop();
-                                                        context.pushNamed(
-                                                          SignWidget.routeName,
-                                                          queryParameters: {
-                                                            'accessibility':
-                                                                serializeParam(
-                                                              'User',
-                                                              ParamType.String,
-                                                            ),
-                                                          }.withoutNulls,
-                                                        );
-                                                      },
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            ).then(
-                                                (value) => safeSetState(() {}));
-                                          } else {
-                                            context.pushNamed(
-                                              ShopDetailPageWidget.routeName,
-                                              queryParameters: {
-                                                'userRef': serializeParam(
-                                                  wrapUserRecord.reference,
-                                                  ParamType.DocumentReference,
-                                                ),
-                                                'isSameSeller': serializeParam(
-                                                  false,
-                                                  ParamType.bool,
-                                                ),
-                                              }.withoutNulls,
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              );
-                            },
-                          ),
-                        ),
-                      ]
-                          .divide(SizedBox(height: 16.0))
-                          .addToStart(SizedBox(height: 0.0)),
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                    child: _header(
+                        theme, cat.image, all.length, snapshot.hasData)),
+                SliverToBoxAdapter(child: _searchAndFilters(theme)),
+                if (snapshot.hasError)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _message(
+                      theme,
+                      Icons.wifi_off_rounded,
+                      'Impossible de charger les commerces',
+                      'Vérifiez votre connexion internet puis réessayez.',
+                      action: FilledButton.icon(
+                        onPressed: () => setState(() => _shops = _load()),
+                        style: FilledButton.styleFrom(
+                            backgroundColor: theme.primary),
+                        icon: Icon(Icons.refresh_rounded),
+                        label: Text('Réessayer'),
+                      ),
                     ),
+                  )
+                else if (!snapshot.hasData)
+                  SliverList.list(
+                    children: List.generate(
+                      3,
+                      (_) => Container(
+                        height: 230.0,
+                        margin: EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 8.0),
+                        decoration: BoxDecoration(
+                          color: theme.primaryBackground,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                      ),
+                    ),
+                  )
+                else if (shown.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: all.isEmpty
+                        ? _message(
+                            theme,
+                            Icons.storefront_outlined,
+                            'Aucun commerce pour le moment',
+                            'Les ${_plural.toLowerCase()} arrivent bientôt sur Kitunga.')
+                        : _message(
+                            theme,
+                            Icons.search_off_rounded,
+                            'Aucun résultat',
+                            'Modifiez votre recherche ou retirez le filtre.'),
+                  )
+                else
+                  SliverList.builder(
+                    itemCount: shown.length,
+                    itemBuilder: (context, i) => Padding(
+                      padding: EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 8.0),
+                      child: _ShopCategoryCard(shop: shown[i]),
+                    ),
+                  ),
+                SliverToBoxAdapter(child: SizedBox(height: 24.0)),
+              ],
+            );
+          },
+        ),
+        ),
+      ),
+    );
+  }
+
+  Widget _header(FlutterFlowTheme theme, String image, int count, bool loaded) {
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(12.0, 8.0, 20.0, 4.0),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => context.safePop(),
+            tooltip: 'Retour',
+            style: IconButton.styleFrom(
+              backgroundColor: theme.primaryBackground,
+              minimumSize: Size(44.0, 44.0),
+            ),
+            icon: Icon(Icons.arrow_back_rounded, color: theme.primaryText),
+          ),
+          SizedBox(width: 12.0),
+          Container(
+            width: 44.0,
+            height: 44.0,
+            padding: EdgeInsets.all(6.0),
+            decoration: BoxDecoration(
+              color: kitungaCategoryBackground(context, _category),
+              borderRadius: BorderRadius.circular(14.0),
+            ),
+            child: Image.asset(image, fit: BoxFit.contain),
+          ),
+          SizedBox(width: 12.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _plural,
+                  style: GoogleFonts.interTight(
+                    color: theme.primaryText,
+                    fontSize: 21.0,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  !loaded
+                      ? 'Chargement…'
+                      : count == 0
+                          ? 'Bientôt disponible'
+                          : '$count commerce${count > 1 ? 's' : ''} sur Kitunga',
+                  style: GoogleFonts.inter(
+                    color: theme.secondaryText,
+                    fontSize: 13.0,
                   ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _searchAndFilters(FlutterFlowTheme theme) {
+    Widget chip(String label, String value, IconData icon) {
+      final selected = _filter == value;
+      return Padding(
+        padding: EdgeInsetsDirectional.only(end: 8.0),
+        child: ChoiceChip(
+          avatar: value.isEmpty
+              ? null
+              : Icon(icon,
+                  size: 16.0,
+                  color: selected ? Colors.white : theme.secondaryText),
+          label: Text(label),
+          selected: selected,
+          showCheckmark: false,
+          onSelected: (_) => setState(() => _filter = value),
+          labelStyle: GoogleFonts.inter(
+            color: selected ? Colors.white : theme.primaryText,
+            fontSize: 13.0,
+            fontWeight: FontWeight.w600,
+          ),
+          selectedColor: theme.primary,
+          backgroundColor: theme.primaryBackground,
+          side: BorderSide.none,
+          shape: StadiumBorder(),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(20.0, 12.0, 20.0, 8.0),
+          child: TextField(
+            onChanged: (v) => setState(() => _query = v),
+            textInputAction: TextInputAction.search,
+            style: GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
+            decoration: InputDecoration(
+              hintText: 'Rechercher un commerce ou une spécialité…',
+              hintStyle:
+                  GoogleFonts.inter(color: theme.secondaryText, fontSize: 15.0),
+              prefixIcon:
+                  Icon(Icons.search_rounded, color: theme.secondaryText),
+              filled: true,
+              fillColor: theme.primaryBackground,
+              contentPadding: EdgeInsets.symmetric(vertical: 15.0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16.0),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 48.0,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.fromLTRB(20.0, 4.0, 20.0, 4.0),
+            children: [
+              chip('Tous', '', Icons.apps_rounded),
+              chip('Ouverts maintenant', 'open', Icons.schedule_rounded),
+              chip('Certifiés', 'verified', Icons.verified_outlined),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _message(
+      FlutterFlowTheme theme, IconData icon, String title, String text,
+      {Widget? action}) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48.0, color: theme.secondaryText),
+            SizedBox(height: 12.0),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.interTight(
+                color: theme.primaryText,
+                fontSize: 17.0,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 6.0),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style:
+                  GoogleFonts.inter(color: theme.secondaryText, fontSize: 14.0),
+            ),
+            if (action != null) ...[SizedBox(height: 16.0), action],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Carte d'un commerce dans la liste d'une catégorie : couverture avec
+/// statut d'ouverture, logo, nom, spécialité et horaires.
+class _ShopCategoryCard extends StatelessWidget {
+  const _ShopCategoryCard({required this.shop});
+
+  final UserRecord shop;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final s = shop;
+    final status = kitungaOpeningStatus(s.horraire);
+    final specialty = s.bio.trim();
+    return Material(
+      color: theme.secondaryBackground,
+      borderRadius: BorderRadius.circular(20.0),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20.0),
+        onTap: () => openKitungaShop(context, s),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            border: Border.all(color: theme.divider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  ClipRRect(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20.0)),
+                    child: kitungaNetImage(
+                      context,
+                      s.businessCover.isNotEmpty ? s.businessCover : s.photoUrl,
+                      width: double.infinity,
+                      height: 140.0,
+                      placeholder: kitungaShopPlaceholder(context, s,
+                          width: double.infinity, height: 140.0, cover: true),
+                    ),
+                  ),
+                  if (status != null)
+                    Positioned(
+                      top: 12.0,
+                      left: 12.0,
+                      child: Container(
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                            10.0, 4.0, 10.0, 4.0),
+                        decoration: BoxDecoration(
+                          color: status.open
+                              ? Color(0xFF1E9E5A)
+                              : Color(0xCC121212),
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        child: Text(
+                          status.open ? 'Ouvert' : 'Fermé',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    left: 16.0,
+                    bottom: -22.0,
+                    child: Container(
+                      padding: EdgeInsets.all(3.0),
+                      decoration: BoxDecoration(
+                        color: theme.secondaryBackground,
+                        shape: BoxShape.circle,
+                      ),
+                      child: ClipOval(
+                        child: kitungaNetImage(context, s.photoUrl,
+                            width: 48.0,
+                            height: 48.0,
+                            placeholder: kitungaShopPlaceholder(context, s,
+                                width: 48.0, height: 48.0)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(16.0, 30.0, 16.0, 14.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            s.displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.interTight(
+                              color: theme.primaryText,
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        if (s.verified)
+                          Padding(
+                            padding: EdgeInsetsDirectional.only(start: 5.0),
+                            child: Icon(Icons.verified_rounded,
+                                color: theme.primary, size: 18.0),
+                          ),
+                      ],
+                    ),
+                    if (specialty.isNotEmpty) ...[
+                      SizedBox(height: 3.0),
+                      Text(
+                        specialty,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: theme.secondaryText,
+                          fontSize: 13.0,
+                        ),
+                      ),
+                    ],
+                    if (s.horraire.trim().isNotEmpty) ...[
+                      SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          Icon(Icons.schedule_rounded,
+                              size: 15.0, color: theme.secondaryText),
+                          SizedBox(width: 5.0),
+                          Flexible(
+                            child: Text(
+                              status?.label ?? s.horraire.trim(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                color: status?.open == true
+                                    ? Color(0xFF1E9E5A)
+                                    : theme.secondaryText,
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

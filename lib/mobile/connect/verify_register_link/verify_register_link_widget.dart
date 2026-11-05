@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'verify_register_link_model.dart';
 export 'verify_register_link_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 
 /// Page d'inscription utilisateur
 class VerifyRegisterLinkWidget extends StatefulWidget {
@@ -45,6 +46,7 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -52,9 +54,9 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: Text(
             'Vérification d\'identité',
@@ -76,7 +78,17 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                ),
+              ),
+            ),
+            SafeArea(
           top: true,
           child: Column(
             mainAxisSize: MainAxisSize.max,
@@ -146,6 +158,8 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
               ),
             ].divide(SizedBox(height: 10.0)),
           ),
+        ),
+          ],
         ),
       ),
     );

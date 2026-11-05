@@ -13,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'my_profile_model.dart';
 export 'my_profile_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 
 /// Page d'inscription utilisateur
 class MyProfileWidget extends StatefulWidget {
@@ -101,6 +102,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -108,8 +110,18 @@ class _MyProfileWidgetState extends State<MyProfileWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-        body: SafeArea(
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                ),
+              ),
+            ),
+            SafeArea(
           top: true,
           child: Padding(
             padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
@@ -326,7 +338,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Telephone',
+                                  'Téléphone',
                                   style: FlutterFlowTheme.of(context)
                                       .titleSmall
                                       .override(
@@ -611,6 +623,8 @@ class _MyProfileWidgetState extends State<MyProfileWidget>
               ],
             ),
           ),
+        ),
+          ],
         ),
       ),
     );

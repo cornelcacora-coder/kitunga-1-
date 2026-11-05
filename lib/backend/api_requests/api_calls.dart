@@ -21,11 +21,6 @@ class MoMoCallCall {
   static const String _subscriptionKey = 'b9b0c0284c1744eaae459c5ad23aa873';
   static const String _targetEnv = 'mtncongo';
 
-  // ── Disbursement MTN MoMo Congo (Production) ───────────────────────────────
-  static const String _disbursementApiUser = 'e2ad8081-f976-45f4-8936-07a2a057af73';
-  static const String _disbursementApiKey = 'd403c47553244131829ecd8fa3ab8223';
-  static const String _disbursementSubscriptionKey = '18c78372a93b494ebf9a6fc4013ac7e4';
-
   /// Helper de log uniquement en mode debug
   static void _log(String tag, dynamic value) {
     if (kDebugMode) {
@@ -35,10 +30,23 @@ class MoMoCallCall {
   }
 
   static Future<ApiCallResponse> call({
-    String? phoneNumber = '242067199098',
-    double? amount = 1500,
-    String? orderId = 'ORD-12345',
+    String? phoneNumber,
+    double? amount,
+    String? orderId,
   }) async {
+    // Aucun montant par défaut : on ne débite jamais un montant arbitraire.
+    if (amount == null || amount <= 0) {
+      return ApiCallResponse(
+        {
+          'status': 'failed',
+          'message': 'Montant de paiement invalide. Veuillez vérifier votre panier.',
+          'step': 'validation',
+        },
+        {},
+        400,
+      );
+    }
+
     final client = http.Client();
 
     try {
@@ -47,7 +55,6 @@ class MoMoCallCall {
       final basicAuth = base64Encode(utf8.encode('$_apiUser:$_apiKey'));
 
       _log('TOKEN_URL', tokenUri);
-      _log('TOKEN_SUBKEY', _subscriptionKey);
 
       final tokenRes = await client.post(
         tokenUri,
@@ -86,7 +93,7 @@ class MoMoCallCall {
       _log('TOKEN_OK', 'token_type=${tokenData['token_type']} expires_in=${tokenData['expires_in']}');
 
       // ── ÉTAPE 2 : Formater le numéro de téléphone (MSISDN Congo) ───────────
-      String cleanPhone = (phoneNumber ?? '242067199098').replaceAll(RegExp(r'[^0-9]'), '');
+      String cleanPhone = (phoneNumber ?? '').replaceAll(RegExp(r'[^0-9]'), '');
       _log('PHONE_RAW', phoneNumber);
       _log('PHONE_CLEAN_BEFORE', cleanPhone);
 
@@ -105,14 +112,24 @@ class MoMoCallCall {
         cleanPhone = '242$cleanPhone';
       }
 
+      // Numéro invalide : on refuse plutôt que d'envoyer la demande à un tiers.
       if (cleanPhone.length < 11) {
-        _log('PHONE_FALLBACK', 'longueur insuffisante: $cleanPhone, fallback vers 242067199098');
-        cleanPhone = '242067199098';
+        _log('PHONE_INVALID', 'longueur insuffisante: $cleanPhone');
+        return ApiCallResponse(
+          {
+            'status': 'failed',
+            'message':
+                'Numéro Mobile Money invalide. Veuillez renseigner un numéro MTN valide (ex : 06 XXX XX XX).',
+            'step': 'validation',
+          },
+          {},
+          400,
+        );
       }
       _log('PHONE_FINAL', cleanPhone);
 
       final refId = const Uuid().v4();
-      final payAmount = (amount ?? 1500.0).toInt().toString();
+      final payAmount = amount.toInt().toString();
       final rawOrderId = orderId ?? 'ORD-${DateTime.now().millisecondsSinceEpoch}';
       // Nettoyage strict de l'orderId : suppression de '#' et tout symbole non alphanumérique.
       // Le WAF F5 d'MTN rejette la requête avec "Request Rejected" si externalId contient des caractères tels que '#'.
@@ -195,9 +212,10 @@ class MoMoCallCall {
 
       _log('PAY_OK', 'RequestToPay accepté (202). Début du polling...');
 
-      // ── ÉTAPE 4 : Polling du statut (10 tentatives × 3s = max 30s) ─────────
+      // ── ÉTAPE 4 : Polling du statut (30 tentatives × 3s = max 90s) ─────────
+      // Laisse le temps au client de saisir son code PIN sur son téléphone.
       int attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 30;
       while (attempts < maxAttempts) {
         await Future.delayed(const Duration(seconds: 3));
         attempts++;
@@ -254,6 +272,7 @@ class MoMoCallCall {
                 {
                   'status': 'failed',
                   'reason': reason,
+                  'referenceId': refId,
                   'message': frenchReason,
                 },
                 {},
@@ -267,17 +286,21 @@ class MoMoCallCall {
         }
       }
 
-      // Timeout de polling : la requête MTN a été acceptée mais pas encore confirmée
-      _log('POLL_TIMEOUT', 'Aucun résultat après ${maxAttempts * 3}s. Renvoi success (en attente PIN).');
+      // Timeout de polling : la requête MTN a été acceptée mais le paiement
+      // n'est pas confirmé. On ne le considère PAS comme réussi, sinon une
+      // commande serait créée sans que l'argent soit encaissé.
+      _log('POLL_TIMEOUT', 'Aucun résultat après ${maxAttempts * 3}s. Paiement non confirmé.');
       return ApiCallResponse(
         {
-          'status': 'success',
+          'status': 'pending',
           'orderId': safeOrderId,
           'referenceId': refId,
-          'message': 'Demande envoyée sur votre téléphone. Veuillez saisir votre code PIN pour finaliser le paiement.',
+          'message':
+              'Le paiement n\'a pas été confirmé à temps, votre commande n\'a donc pas été enregistrée. '
+              'Si votre compte a été débité, contactez le support en indiquant la référence : $refId',
         },
         {},
-        200,
+        408,
       );
     } catch (e, stack) {
       _log('GLOBAL_ERROR', e);
@@ -307,6 +330,11 @@ class MoMoCallCall {
   static String? message(dynamic response) => castToType<String>(getJsonField(
         response,
         r'''$.message''',
+      ));
+  static String? referenceId(dynamic response) =>
+      castToType<String>(getJsonField(
+        response,
+        r'''$.referenceId''',
       ));
 }
 

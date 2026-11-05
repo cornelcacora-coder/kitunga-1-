@@ -3,15 +3,11 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/mobile/components/item/item_widget.dart';
-import 'dart:ui';
 import '/index.dart';
-import 'dart:math' as math;
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'onboarding_model.dart';
 export 'onboarding_model.dart';
 
@@ -35,450 +31,402 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
     super.initState();
     _model = createModel(context, () => OnboardingModel());
 
-    // On page load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (MediaQuery.sizeOf(context).width > 1046.0) {
-        context.pushNamed(IntroWidget.routeName);
-      }
-    });
-
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  // Évite les doubles appuis pendant la connexion en mode visiteur.
+  bool _visitorLoading = false;
+
+  Future _continueAsVisitor() async {
+    if (_visitorLoading) return;
+    safeSetState(() => _visitorLoading = true);
+    try {
+      GoRouter.of(context).prepareAuthEvent();
+      final user = await authManager.signInAnonymously(context);
+      if (user == null) {
+        return;
+      }
+
+      if (currentUserReference != null) {
+        await currentUserReference!.update(createUserRecordData(
+          role: 'Guest',
+        ));
+      }
+
+      context.pushNamedAuth(HomeWidget.routeName, context.mounted);
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Impossible d\'accéder en mode visiteur. Vérifiez votre connexion internet.'),
+        ),
+      );
+    } finally {
+      if (mounted) safeSetState(() => _visitorLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      body: SafeArea(
-        top: true,
-        child: Align(
-          alignment: AlignmentDirectional(0.0, 0.0),
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: 450.0,
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ── 1. Arrière-plan signature (vagues rouges, cercles & filigrane) ──
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: KitungaAuthBackgroundPainter(isDark: isDark),
+              ),
             ),
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: SingleChildScrollView(
-                primary: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      height: 24.0,
-                    ),
-                    Container(
-                      height: 280.0,
-                      child: Stack(
-                        alignment: AlignmentDirectional(0.0, 0.0),
-                        children: [
-                          Opacity(
-                            opacity: 0.2,
-                            child: Align(
-                              alignment: AlignmentDirectional(-1.2, -0.5),
-                              child: ClipRect(
-                                child: ImageFiltered(
-                                  imageFilter: ImageFilter.blur(
-                                    sigmaX: 60.0,
-                                    sigmaY: 60.0,
-                                  ),
-                                  child: Container(
-                                    width: 200.0,
-                                    height: 200.0,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFF0066FF),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Opacity(
-                            opacity: 0.2,
-                            child: Align(
-                              alignment: AlignmentDirectional(1.2, 0.8),
-                              child: ClipRect(
-                                child: ImageFiltered(
-                                  imageFilter: ImageFilter.blur(
-                                    sigmaX: 50.0,
-                                    sigmaY: 50.0,
-                                  ),
-                                  child: Container(
-                                    width: 180.0,
-                                    height: 180.0,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFFF2D87),
-                                      borderRadius: BorderRadius.circular(24.0),
-                                      shape: BoxShape.rectangle,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  context.pushNamed(
-                                    SignWidget.routeName,
-                                    queryParameters: {
-                                      'accessibility': serializeParam(
-                                        'Admin',
-                                        ParamType.String,
-                                      ),
-                                    }.withoutNulls,
-                                  );
-                                },
-                                child: Container(
-                                  width: 100.0,
-                                  height: 100.0,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        FlutterFlowTheme.of(context).secondary,
-                                        Color(0xFFDC87ED),
-                                        FlutterFlowTheme.of(context).primary
-                                      ],
-                                      stops: [0.0, 0.2, 0.8],
-                                      begin: AlignmentDirectional(1.0, -1.0),
-                                      end: AlignmentDirectional(-1.0, 1.0),
-                                    ),
-                                    borderRadius: BorderRadius.circular(32.0),
-                                  ),
-                                  alignment: AlignmentDirectional(0.0, 0.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(0.0),
-                                    child: Image.asset(
-                                      'assets/images/photo_2025-12-24_16-17-10-removebg-preview.png',
-                                      width: 90.0,
-                                      height: 90.0,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Kitunga',
-                                    style: FlutterFlowTheme.of(context)
-                                        .headlineLarge
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.w900,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineLarge
-                                                    .fontStyle,
-                                          ),
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          fontSize: 34.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w900,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .headlineLarge
-                                                  .fontStyle,
-                                          lineHeight: 1.1,
-                                        ),
-                                  ),
-                                  Transform.rotate(
-                                    angle: -2.0 * (math.pi / 180),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Color(0xFFFFE500),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            4.0, 12.0, 4.0, 12.0),
-                                        child: Text(
-                                          'RAPIDE • LOCAL • VITAL',
-                                          style: FlutterFlowTheme.of(context)
-                                              .labelLarge
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelLarge
-                                                          .fontStyle,
-                                                ),
-                                                color: Color(0xFF0A0A0F),
-                                                fontSize: 15.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w900,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelLarge
-                                                        .fontStyle,
-                                                lineHeight: 1.3,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ].divide(SizedBox(height: 4.0)),
-                              ),
-                            ].divide(SizedBox(height: 16.0)),
-                          ),
-                        ],
+          ),
+
+          // ── 2. Contenu principal centré ──────────────────────────────────
+          SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440.0),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Logo Kitunga
+                      Center(
+                        child: KitungaLogo(size: 115.0),
                       ),
-                    ),
-                    Container(
-                      height: 22.0,
-                    ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Commencer',
-                          style: FlutterFlowTheme.of(context)
-                              .headlineMedium
-                              .override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.w800,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .headlineMedium
-                                      .fontStyle,
-                                ),
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                fontSize: 28.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w800,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .fontStyle,
-                                lineHeight: 1.2,
-                              ),
+                      const SizedBox(height: 18.0),
+
+                      // Titre "Bienvenue sur" / "Kitunga"
+                      Text(
+                        'Bienvenue sur',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.interTight(
+                          color: theme.primaryText,
+                          fontSize: 26.0,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
                         ),
-                        Text(
-                          'Choisissez un profile utilisateur pour démarrer votre aventure',
-                          style: FlutterFlowTheme.of(context)
-                              .bodyLarge
-                              .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.normal,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyLarge
-                                      .fontStyle,
-                                ),
-                                color:
-                                    FlutterFlowTheme.of(context).secondaryText,
-                                fontSize: 17.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.normal,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .bodyLarge
-                                    .fontStyle,
-                                lineHeight: 1.5,
-                              ),
+                      ),
+                      Text(
+                        'Kitunga',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.interTight(
+                          color: const Color(0xFFE51A1A),
+                          fontSize: 38.0,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                          letterSpacing: -0.5,
                         ),
-                      ].divide(SizedBox(height: 8.0)),
-                    ),
-                    Container(
-                      height: 24.0,
-                    ),
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () async {
-                        context.pushNamed(LoginWidget.routeName);
-                      },
-                      child: wrapWithModel(
-                        model: _model.itemModel1,
-                        updateCallback: () => safeSetState(() {}),
-                        child: ItemWidget(
-                          iconBg: FlutterFlowTheme.of(context).secondary,
-                          iconSymbol: Icon(
-                            Icons.person_sharp,
-                            color: Colors.white,
-                            size: 24.0,
+                      ),
+                      const SizedBox(height: 12.0),
+
+                      // Séparateur ─── 🛍️ ───
+                      const KitungaOrnamentDivider(),
+                      const SizedBox(height: 12.0),
+
+                      // Sous-titre
+                      Text(
+                        'Boutiques, restaurants et pharmacies\nprès de chez vous.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          color: theme.secondaryText,
+                          fontSize: 14.5,
+                          height: 1.45,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      const SizedBox(height: 28.0),
+
+                      // Carte 1 : "J'ai déjà un compte"
+                      Material(
+                        color: isDark ? const Color(0xFF1E242B) : Colors.white,
+                        borderRadius: BorderRadius.circular(24.0),
+                        elevation: 0.0,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24.0),
+                          onTap: () => context.pushNamed(LoginWidget.routeName),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24.0),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF2C3238) : const Color(0xFFF1F4F8),
+                                width: 1.2,
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x0C000000),
+                                  blurRadius: 14.0,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 48.0,
+                                  height: 48.0,
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF331D1D) : const Color(0xFFFFECEC),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                    color: Color(0xFFE51A1A),
+                                    size: 24.0,
+                                  ),
+                                ),
+                                const SizedBox(width: 14.0),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'J\'ai déjà un compte',
+                                        style: GoogleFonts.interTight(
+                                          color: theme.primaryText,
+                                          fontSize: 15.5,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3.0),
+                                      Text(
+                                        'Connectez-vous pour continuer',
+                                        style: GoogleFonts.inter(
+                                          color: theme.secondaryText,
+                                          fontSize: 12.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  width: 34.0,
+                                  height: 34.0,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE51A1A),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: Colors.white,
+                                    size: 22.0,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          title: 'Je suis un Utilisateur',
-                          subtitle: 'J\'ai un compte Kitunga ',
-                          action: () async {
+                        ),
+                      ),
+                      const SizedBox(height: 14.0),
+
+                      // Carte 2 : "Découvrir en visiteur"
+                      Material(
+                        color: isDark ? const Color(0xFF1E242B) : Colors.white,
+                        borderRadius: BorderRadius.circular(24.0),
+                        elevation: 0.0,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24.0),
+                          onTap: _continueAsVisitor,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24.0),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF2C3238) : const Color(0xFFF1F4F8),
+                                width: 1.2,
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x0C000000),
+                                  blurRadius: 14.0,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 48.0,
+                                  height: 48.0,
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF222830) : const Color(0xFFF1F5F9),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.explore_outlined,
+                                    color: theme.primaryText,
+                                    size: 24.0,
+                                  ),
+                                ),
+                                const SizedBox(width: 14.0),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Découvrir en visiteur',
+                                        style: GoogleFonts.interTight(
+                                          color: theme.primaryText,
+                                          fontSize: 15.5,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3.0),
+                                      Text(
+                                        'Parcourez sans compte',
+                                        style: GoogleFonts.inter(
+                                          color: theme.secondaryText,
+                                          fontSize: 12.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                _visitorLoading
+                                    ? const SizedBox(
+                                        width: 22.0,
+                                        height: 22.0,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.2,
+                                          color: Color(0xFFE51A1A),
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.chevron_right_rounded,
+                                        color: theme.secondaryText,
+                                        size: 24.0,
+                                      ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 26.0),
+
+                      // Séparateur ─── 🛍️ ───
+                      const KitungaOrnamentDivider(),
+                      const SizedBox(height: 14.0),
+
+                      // "Pas encore de compte ?"
+                      Text(
+                        'Pas encore de compte ?',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          color: theme.secondaryText,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 10.0),
+
+                      // Bouton capsule "Créer un compte >"
+                      Center(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(26.0),
+                          onTap: () {
                             context.pushNamed(
                               SignWidget.routeName,
                               queryParameters: {
-                                'accessibility': serializeParam(
-                                  'User',
-                                  ParamType.String,
-                                ),
+                                'accessibility': serializeParam('User', ParamType.String),
                               }.withoutNulls,
                             );
                           },
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () async {
-                        try {
-                          GoRouter.of(context).prepareAuthEvent();
-                          final user =
-                              await authManager.signInAnonymously(context);
-                          if (user == null) {
-                            return;
-                          }
-
-                          if (currentUserReference != null) {
-                            await currentUserReference!.update(createUserRecordData(
-                              role: 'Guest',
-                            ));
-                          }
-
-                          context.pushNamedAuth(
-                              HomeWidget.routeName, context.mounted);
-                        } catch (_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  'Impossible d\'accéder en mode visiteur. Vérifiez votre connexion internet.'),
-                            ),
-                          );
-                        }
-                      },
-                      child: wrapWithModel(
-                        model: _model.itemModel2,
-                        updateCallback: () => safeSetState(() {}),
-                        child: ItemWidget(
-                          iconBg: FlutterFlowTheme.of(context).tertiary,
-                          iconSymbol: Icon(
-                            Icons.remove_red_eye_rounded,
-                            color: Colors.white,
-                            size: 24.0,
-                          ),
-                          title: 'Je suis un Visiteur',
-                          subtitle: 'Je veux tester l\'appli gratuitement',
-                          action: () async {},
-                        ),
-                      ),
-                    ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Vous n\'avez pas de compte ?',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    fontSize: 15.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                    lineHeight: 1.45,
-                                  ),
-                            ),
-                            FFButtonWidget(
-                              onPressed: () async {
-                                context.pushNamed(
-                                  SignWidget.routeName,
-                                  queryParameters: {
-                                    'accessibility': serializeParam(
-                                      'User',
-                                      ParamType.String,
-                                    ),
-                                  }.withoutNulls,
-                                );
-                              },
-                              text: 'S\'enregistrer',
-                              options: FFButtonOptions(
-                                height: 44.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                color: Colors.transparent,
-                                textStyle: GoogleFonts.interTight(
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14.0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 13.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(26.0),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFFE51A1A),
+                                  Color(0xFFB70000),
+                                ],
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x35E51A1A),
+                                  blurRadius: 12.0,
+                                  offset: Offset(0, 4),
                                 ),
-                                elevation: 0.0,
-                                borderRadius: BorderRadius.circular(8.0),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Créer un compte',
+                                  style: GoogleFonts.interTight(
+                                    color: Colors.white,
+                                    fontSize: 15.0,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(width: 6.0),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: Colors.white,
+                                  size: 19.0,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18.0),
+
+                      // Conditions d'utilisation
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        children: [
+                          Text(
+                            'En continuant, vous acceptez nos ',
+                            style: GoogleFonts.inter(
+                              color: theme.hint,
+                              fontSize: 12.0,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () =>
+                                context.pushNamed(TermsConditionsWidget.routeName),
+                            child: Text(
+                              'conditions d\'utilisation',
+                              style: GoogleFonts.inter(
+                                color: theme.secondaryText,
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
                               ),
                             ),
-                          ].divide(SizedBox(width: 8.0)),
-                        ),
-                        Text(
-                          'En continuant, vous acceptez nos conditions d\'utilisation.',
-                          textAlign: TextAlign.center,
-                          style:
-                              FlutterFlowTheme.of(context).labelSmall.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .labelSmall
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context).hint,
-                                    fontSize: 11.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .labelSmall
-                                        .fontStyle,
-                                    lineHeight: 1.2,
-                                  ),
-                        ),
-                      ].divide(SizedBox(height: 16.0)),
-                    ),
-                  ],
+                          ),
+                          Text(
+                            '.',
+                            style: GoogleFonts.inter(
+                              color: theme.hint,
+                              fontSize: 12.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

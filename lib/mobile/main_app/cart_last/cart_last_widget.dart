@@ -1,6 +1,9 @@
+import '/flutter_flow/random_data_util.dart' as random_data;
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
+import '/backend/server_payment.dart';
+import '/backend/subscription.dart';
 import '/components/payment_method_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -9,16 +12,18 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/mobile/components/empty_card/empty_card_widget.dart';
+import '/mobile/components/kitunga_image/kitunga_image.dart';
+import '/mobile/components/product_card/product_card_widget.dart' show kitungaPrice;
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'cart_last_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'cart_last_model.dart';
 
 /// Page d'inscription utilisateur
@@ -81,6 +86,28 @@ class _CartLastWidgetState extends State<CartLastWidget> {
     return 1000.0;
   }
 
+  /// Lignes affichées, et donc payées, sur cet écran.
+  List<CartRecord> _cartLines = [];
+
+  /// Commerce de la commande : celui demandé à l'ouverture de l'écran, sinon
+  /// celui des lignes affichées (panier ouvert depuis le menu, l'accueil…).
+  DocumentReference? get _sellerRef =>
+      widget.sellerRef ?? _cartLines.firstOrNull?.sellerRef;
+
+  /// Une commande ne concerne qu'un seul commerce. Sans commerce précisé, on
+  /// garde celui du dernier article ajouté ; les autres articles restent dans
+  /// le panier et ne sont pas facturés.
+  List<CartRecord> _linesOfOneSeller(List<CartRecord> lines) {
+    if (widget.sellerRef != null || lines.isEmpty) return lines;
+    var latest = lines.first;
+    for (final line in lines) {
+      final at = line.createdAt;
+      final best = latest.createdAt;
+      if (at != null && (best == null || at.isAfter(best))) latest = line;
+    }
+    return lines.where((l) => l.sellerRef == latest.sellerRef).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -102,6 +129,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () {
@@ -110,9 +138,9 @@ class _CartLastWidgetState extends State<CartLastWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -146,7 +174,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
           title: Align(
             alignment: AlignmentDirectional(0.0, 0.0),
             child: Text(
-              'Pannier',
+              'Panier',
               style: FlutterFlowTheme.of(context).headlineMedium.override(
                     font: GoogleFonts.interTight(
                       fontWeight: FlutterFlowTheme.of(context)
@@ -169,23 +197,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Container(
-            width: () {
-              if (MediaQuery.sizeOf(context).width < kBreakpointSmall) {
-                return 400.0;
-              } else if (MediaQuery.sizeOf(context).width < kBreakpointMedium) {
-                return 400.0;
-              } else if (MediaQuery.sizeOf(context).width < kBreakpointLarge) {
-                return 500.0;
-              } else {
-                return 500.0;
-              }
-            }(),
-            height: MediaQuery.sizeOf(context).height * 0.85,
-            decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground,
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
             ),
             child: Stack(
               alignment: AlignmentDirectional(0.0, -1.0),
@@ -228,7 +247,8 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                               );
                             }
                             List<CartRecord> cartCartRecordList =
-                                snapshot.data!;
+                                _linesOfOneSeller(snapshot.data!);
+                            _cartLines = cartCartRecordList;
                             final currentSubtotal =
                                 functions.calculateSubtotal(cartCartRecordList.toList()) ?? 0.0;
                             final currentFee = getDeliveryFeeForZone(_model.zoneValue);
@@ -249,9 +269,9 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                             }
                             if (cartCartRecordList.isEmpty) {
                               return EmptyCardWidget(
-                                title: 'Pannier Vide !',
+                                title: 'Panier vide !',
                                 description:
-                                    'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
+                                    'Votre panier est vide. Parcourez les commerces pour choisir vos produits.',
                                 buttonText: 'Explorer',
                                 photo:
                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
@@ -267,7 +287,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                               hoverColor: Colors.transparent,
                               highlightColor: Colors.transparent,
                               onTap: () async {
-                                if (widget!.sellerRef ==
+                                if (_sellerRef ==
                                     cartCartRecordList.lastOrNull?.sellerRef) {
                                   FFAppState().totalCart =
                                       functions.calculateSubtotal(
@@ -283,9 +303,9 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                     context: context,
                                     builder: (alertDialogContext) {
                                       return AlertDialog(
-                                        title: Text('Commande non valide'),
+                                        title: Text('Un seul commerce par panier'),
                                         content: Text(
-                                            'Vous ne pouvez créer un pannier que pour un vendeur à la fois'),
+                                            'Votre panier contient déjà les articles d\'un autre commerce. Finalisez ou videz ce panier avant de commander ailleurs.'),
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(
@@ -296,7 +316,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                       );
                                     },
                                   );
-                                  await widget!.cartRef!.reference.delete();
+                                  await widget.cartRef?.reference.delete();
                                 }
                               },
                               child: Column(
@@ -360,21 +380,11 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                         BorderRadius.circular(
                                                             16.0),
                                                   ),
-                                                  child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 0),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 0),
-                                                    imageUrl: getCORSProxyUrl(
-                                                      valueOrDefault<String>(
-                                                        productProductRecord
-                                                            .prodImg,
-                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
-                                                      ),
-                                                    ),
+                                                  child: KitungaImage(
+                                                    productProductRecord.prodImg,
                                                     width: double.infinity,
                                                     height: double.infinity,
-                                                    fit: BoxFit.cover,
+                                                    fallbackIcon: Icons.image_outlined,
                                                   ),
                                                 ),
                                               ),
@@ -392,7 +402,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                       valueOrDefault<String>(
                                                         productProductRecord
                                                             .name,
-                                                        'Aucun produit Dispo',
+                                                        'Produit',
                                                       ),
                                                       maxLines: 1,
                                                       style:
@@ -427,6 +437,17 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                     ),
+                                                    // Options choisies par le client (taille, suppléments…).
+                                                    if (cartCartRecord.options.isNotEmpty)
+                                                      Text(
+                                                        cartCartRecord.options,
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: GoogleFonts.inter(
+                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                          fontSize: 12.5,
+                                                        ),
+                                                      ),
                                                     Row(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -442,7 +463,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                               String>(
                                                             productProductRecord
                                                                 .specifications,
-                                                            'Aucune specification',
+                                                            '',
                                                           ),
                                                           style: FlutterFlowTheme
                                                                   .of(context)
@@ -638,13 +659,8 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           MainAxisSize.min,
                                                       children: [
                                                         Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            productProductRecord
-                                                                .salePrice
-                                                                .toString(),
-                                                            '0',
-                                                          ),
+                                                          // Prix unitaire de la ligne (suppléments compris).
+                                                          cartCartRecord.price.round().toString(),
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .titleMedium
@@ -770,7 +786,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  'Addresse de Livraison',
+                                                  'Adresse de livraison',
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .titleSmall
@@ -1000,7 +1016,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                   .fontStyle,
                                                         ),
                                                     hintText:
-                                                        'Choisi ton quartier',
+                                                        'Choisissez votre quartier',
                                                     icon: Icon(
                                                       Icons
                                                           .keyboard_arrow_down_rounded,
@@ -1284,178 +1300,113 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                               : 'Brazzaville, République du Congo';
                                           await launchURL('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(q)}');
                                         },
-                                        child: Container(
-                                        width: double.infinity,
-                                        height: 320.0,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                          border: Border.all(
-                                            color: FlutterFlowTheme.of(context)
-                                                .tertiary,
-                                          ),
-                                        ),
                                         child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          child: Image.network(
-                                            getCORSProxyUrl(
-                                              valueOrDefault<String>(
-                                                () {
-                                                  if (_model.zone ==
-                                                      'Avenue de la Paix') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/96kbhp9scr8m/Av_Paix.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Bacongo') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/npi5151n0k1p/Bacongo.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Barrage') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h8ds3hm1wyjh/Barrage.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Batignolles') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/dwghivq9my60/batignole.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Centre sportif') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/q07gn73ny7ed/makelekele.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Centre-ville') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/kuoubno85ha9/ville-radisson.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Château d\'eau') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/wdvzqwoztlzg/chateau_deau.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Cité des 17') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/wtl9b9von4fm/cite_17.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Diata') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/g6cqd4p6yce7/diata.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Djiri') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/em9ct121bd0r/djiri.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Kibina') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/8p1lcrtnmey0/madibou.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Kingouari') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/nqkurjwggyfl/kigouari.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Kinsoundi') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cmair8547wl9/kisundi.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Kintélé') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ci5rgx41bbjp/kintele.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Kombo') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cr8izr9r7vnm/kombo.jpg';
-                                                  } else if (_model.zone ==
-                                                      'La Base') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/mhk3zbchor0e/la_base.jpg';
-                                                  } else if (_model.zone ==
-                                                      'La Tsiémé') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/qbjo4oa6z5fi/La_Tsieme.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Ma-Mboualé') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gbvtyd8pt6z4/mbouale.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Madibou') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/8p1lcrtnmey0/madibou.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mafouta') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/x572tglyd8om/mafouta.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Makabandilou') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/0c3ae54nh2df/Makabandilou.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Makélékélé') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/q07gn73ny7ed/makelekele.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mansimou') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/o5r47c7h6xy4/mansimou.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mapassi') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/l746lg8ewjw0/mapassi.png';
-                                                  } else if (_model.zone ==
-                                                      'Marché Moungali') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gitzv0f94pm7/mougali.png';
-                                                  } else if (_model.zone ==
-                                                      'Massengo') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/lecrnafgnwrr/massengo.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Massissia') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/uky530izfm3g/massissa.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mayanga') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/oi4vxr6thou2/mayanga.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mbouono') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/f4co5rqs7agc/mbouono.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mfilou') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/l0j1ul7cu4j4/mfilou.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mikalou') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/013eufdnn24t/mikalou.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Moukondo') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gwpsm4z8wefj/moukondo.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Moukoundzi-Ngouaka') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/96xe8p58wj0q/moukounzi_ngouaka.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Moungali') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gitzv0f94pm7/mougali.png';
-                                                  } else if (_model.zone ==
-                                                      'Moussosso') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ry4tfurzfzdd/moussosso.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mpila') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v54qgk9kgjt7/mpila.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Mpissa') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/pjdad8guzdwh/Mpiss.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Ngamakosso') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cmpi44hqlj9o/ngamakosso.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Nganga-Lingolo') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gnhw8yomipv0/ngangalingolo.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Ndjiri') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/em9ct121bd0r/djiri.jpg';
-                                                  } else if (_model.zone ==
-                                                      'O.C.H') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/856amc5on2z1/OCH.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Talangaï') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/x8iv4713ugv9/talangai.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Soprogie') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/u5civf1yxxes/SOPROGIE.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Sadelmi') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/b3jmepvevn7f/sadelmie.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Poto-Poto') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/embxmtiggnh9/poto_poto.png';
-                                                  } else if (_model.zone ==
-                                                      'Plateau des 15 ans') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/m9unb7oz8mkx/Plateau.jpg';
-                                                  } else if (_model.zone ==
-                                                      'Ouenzé') {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ryley3vutnl9/ouenze.png';
-                                                  } else {
-                                                    return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/azpygr5br5gj/aa1.jpg';
-                                                  }
-                                                }(),
-                                                'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/azpygr5br5gj/aa1.jpg',
-                                              ),
-                                            ),
-                                            width: 200.0,
-                                            height: 200.0,
-                                            fit: BoxFit.cover,
+                                          borderRadius: BorderRadius.circular(12.0),
+                                          child: KitungaImage(
+                                            () {
+                                              if (_model.zone == 'Avenue de la Paix') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/96kbhp9scr8m/Av_Paix.jpg';
+                                              } else if (_model.zone == 'Bacongo') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/npi5151n0k1p/Bacongo.jpg';
+                                              } else if (_model.zone == 'Barrage') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h8ds3hm1wyjh/Barrage.jpg';
+                                              } else if (_model.zone == 'Batignolles') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/dwghivq9my60/batignole.jpg';
+                                              } else if (_model.zone == 'Centre sportif') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/q07gn73ny7ed/makelekele.jpg';
+                                              } else if (_model.zone == 'Centre-ville') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/kuoubno85ha9/ville-radisson.jpg';
+                                              } else if (_model.zone == "Château d'eau") {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/wdvzqwoztlzg/chateau_deau.jpg';
+                                              } else if (_model.zone == "Cité des 17") {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/wtl9b9von4fm/cite_17.jpg';
+                                              } else if (_model.zone == 'Diata') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/g6cqd4p6yce7/diata.jpg';
+                                              } else if (_model.zone == 'Djiri') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/em9ct121bd0r/djiri.jpg';
+                                              } else if (_model.zone == 'Kibina') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/8p1lcrtnmey0/madibou.jpg';
+                                              } else if (_model.zone == 'Kingouari') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/nqkurjwggyfl/kigouari.jpg';
+                                              } else if (_model.zone == 'Kinsoundi') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cmair8547wl9/kisundi.jpg';
+                                              } else if (_model.zone == 'Kintélé') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ci5rgx41bbjp/kintele.jpg';
+                                              } else if (_model.zone == 'Kombo') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cr8izr9r7vnm/kombo.jpg';
+                                              } else if (_model.zone == 'La Base') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/mhk3zbchor0e/la_base.jpg';
+                                              } else if (_model.zone == 'La Tsiémé') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/qbjo4oa6z5fi/La_Tsieme.jpg';
+                                              } else if (_model.zone == 'Ma-Mboualé') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gbvtyd8pt6z4/mbouale.jpg';
+                                              } else if (_model.zone == 'Madibou') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/8p1lcrtnmey0/madibou.jpg';
+                                              } else if (_model.zone == 'Mafouta') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/x572tglyd8om/mafouta.jpg';
+                                              } else if (_model.zone == 'Makabandilou') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/0c3ae54nh2df/Makabandilou.jpg';
+                                              } else if (_model.zone == 'Makélékélé') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/q07gn73ny7ed/makelekele.jpg';
+                                              } else if (_model.zone == 'Mansimou') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/o5r47c7h6xy4/mansimou.jpg';
+                                              } else if (_model.zone == 'Mapassi') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/l746lg8ewjw0/mapassi.png';
+                                              } else if (_model.zone == 'Marché Moungali') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gitzv0f94pm7/mougali.png';
+                                              } else if (_model.zone == 'Massengo') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/lecrnafgnwrr/massengo.jpg';
+                                              } else if (_model.zone == 'Massissia') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/uky530izfm3g/massissa.jpg';
+                                              } else if (_model.zone == 'Mayanga') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/oi4vxr6thou2/mayanga.jpg';
+                                              } else if (_model.zone == 'Mbouono') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/f4co5rqs7agc/mbouono.jpg';
+                                              } else if (_model.zone == 'Mfilou') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/l0j1ul7cu4j4/mfilou.jpg';
+                                              } else if (_model.zone == 'Mikalou') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/013eufdnn24t/mikalou.jpg';
+                                              } else if (_model.zone == 'Moukondo') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gwpsm4z8wefj/moukondo.jpg';
+                                              } else if (_model.zone == 'Moukoundzi-Ngouaka') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/96xe8p58wj0q/moukounzi_ngouaka.jpg';
+                                              } else if (_model.zone == 'Moungali') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gitzv0f94pm7/mougali.png';
+                                              } else if (_model.zone == 'Moussosso') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ry4tfurzfzdd/moussosso.jpg';
+                                              } else if (_model.zone == 'Mpila') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v54qgk9kgjt7/mpila.jpg';
+                                              } else if (_model.zone == 'Mpissa') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/pjdad8guzdwh/Mpiss.jpg';
+                                              } else if (_model.zone == 'Ngamakosso') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cmpi44hqlj9o/ngamakosso.jpg';
+                                              } else if (_model.zone == 'Nganga-Lingolo') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gnhw8yomipv0/ngangalingolo.jpg';
+                                              } else if (_model.zone == 'Ndjiri') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/em9ct121bd0r/djiri.jpg';
+                                              } else if (_model.zone == 'O.C.H') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/856amc5on2z1/OCH.jpg';
+                                              } else if (_model.zone == 'Talangaï') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/x8iv4713ugv9/talangai.jpg';
+                                              } else if (_model.zone == 'Soprogie') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/u5civf1yxxes/SOPROGIE.jpg';
+                                              } else if (_model.zone == 'Sadelmi') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/b3jmepvevn7f/sadelmie.jpg';
+                                              } else if (_model.zone == 'Poto-Poto') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/embxmtiggnh9/poto_poto.png';
+                                              } else if (_model.zone == 'Plateau des 15 ans') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/m9unb7oz8mkx/Plateau.jpg';
+                                              } else if (_model.zone == 'Ouenzé') {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ryley3vutnl9/ouenze.png';
+                                              } else {
+                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/azpygr5br5gj/aa1.jpg';
+                                              }
+                                            }(),
+                                            width: double.infinity,
+                                            height: 150.0,
+                                            fallbackIcon: Icons.location_city_rounded,
                                           ),
                                         ),
-                                      ),
                                       ),
                                     ].divide(SizedBox(height: 10.0)),
                                   ),
@@ -1501,7 +1452,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                         AddPhoneNumberWidget.routeName);
                                   },
                                   child: Text(
-                                    'Changer le Numero',
+                                    'Changer le numéro',
                                     style: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .override(
@@ -1985,6 +1936,28 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                   Expanded(
                                                     child: FFButtonWidget(
                                                       onPressed: () async {
+                                                        // Lignes et commerce figés avant le paiement :
+                                                        // ce sont eux qui seront facturés puis retirés.
+                                                        final paidLines = List<CartRecord>.of(_cartLines);
+                                                        final orderSellerRef = _sellerRef;
+                                                        if (paidLines.isEmpty || orderSellerRef == null) {
+                                                          await showDialog(
+                                                            context: context,
+                                                            builder: (dialogCtx) => AlertDialog(
+                                                              title: Text(paidLines.isEmpty ? 'Panier vide' : 'Commerce introuvable'),
+                                                              content: Text(paidLines.isEmpty
+                                                                  ? 'Ajoutez un produit à votre panier avant de valider votre commande.'
+                                                                  : 'Retirez cet article du panier puis ajoutez-le de nouveau depuis la page du commerce.'),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed: () => Navigator.pop(dialogCtx),
+                                                                  child: Text('Ok'),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                          return;
+                                                        }
                                                         if (_model.zoneValue == null || _model.zoneValue!.trim().isEmpty) {
                                                           await showDialog(
                                                             context: context,
@@ -2017,6 +1990,51 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           return;
                                                         }
 
+                                                        if (!kitungaCanOrder()) {
+                                                          await showDialog(
+                                                            context: context,
+                                                            builder: (c) => AlertDialog(
+                                                              title: Text('Abonnement requis'),
+                                                              content: Text(kitungaSubscriptionRequired),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed: () => Navigator.pop(c),
+                                                                  child: Text('Compris'),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                          return;
+                                                        }
+                                                        String rawPhone = widget!.mtnNumber != null && widget!.mtnNumber!.trim().isNotEmpty
+                                                            ? widget!.mtnNumber!.trim()
+                                                            : currentPhoneNumber;
+                                                        String cleanedPhone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+                                                        if (cleanedPhone.startsWith('06') && cleanedPhone.length == 9) {
+                                                          cleanedPhone = '242$cleanedPhone';
+                                                        } else if (cleanedPhone.startsWith('6') && cleanedPhone.length == 8) {
+                                                          cleanedPhone = '2420$cleanedPhone';
+                                                        }
+                                                        if (cleanedPhone.isEmpty) {
+                                                          await showDialog(
+                                                            context: context,
+                                                            builder: (dialogCtx) => AlertDialog(
+                                                              title: Text('Numéro requis'),
+                                                              content: Text('Veuillez renseigner votre numéro MTN Mobile Money avant de valider votre commande.'),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed: () => Navigator.pop(dialogCtx),
+                                                                  child: Text('Ok'),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                          return;
+                                                        }
+                                                        if (kServerPayment) {
+                                                          await _payOnServer(cleanedPhone);
+                                                          return;
+                                                        }
                                                         showDialog(
                                                           context: context,
                                                           barrierDismissible: false,
@@ -2035,7 +2053,8 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                   ),
                                                                   SizedBox(height: 16.0),
                                                                   Text(
-                                                                    'Initialisation du paiement MoMo...',
+                                                                    'Validez le paiement sur votre téléphone\n(saisissez votre code PIN MTN)...',
+                                                                    textAlign: TextAlign.center,
                                                                     style: FlutterFlowTheme.of(context).bodyMedium,
                                                                   ),
                                                                 ],
@@ -2044,30 +2063,21 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           ),
                                                         );
 
-                                                        String rawPhone = widget!.mtnNumber != null && widget!.mtnNumber!.trim().isNotEmpty
-                                                            ? widget!.mtnNumber!.trim()
-                                                            : currentPhoneNumber;
-                                                        String cleanedPhone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
-                                                        if (cleanedPhone.startsWith('06') && cleanedPhone.length == 9) {
-                                                          cleanedPhone = '242$cleanedPhone';
-                                                        } else if (cleanedPhone.startsWith('6') && cleanedPhone.length == 8) {
-                                                          cleanedPhone = '2420$cleanedPhone';
-                                                        }
-                                                        if (cleanedPhone.isEmpty) {
-                                                          cleanedPhone = '242067199098';
-                                                        }
 
                                                         final currentFee = getDeliveryFeeForZone(_model.zoneValue);
                                                         FFAppState().fixedShippingFee = currentFee;
+                                                        FFAppState().totalCart =
+                                                            functions.calculateSubtotal(paidLines) ?? 0.0;
                                                         FFAppState().GrandTotalCart =
                                                             (FFAppState().totalCart) + currentFee;
                                                         final momoAmount = valueOrDefault<double>(
                                                           FFAppState().GrandTotalCart,
                                                           0.0,
                                                         );
-                                                        final momoOrderId = FFAppState().orderReferenceUnique.isNotEmpty
-                                                            ? FFAppState().orderReferenceUnique
-                                                            : 'ORD-${DateTime.now().millisecondsSinceEpoch}';
+                                                        // Référence propre à cette commande : les articles payés y sont
+                                                        // rattachés juste après le paiement (voir _linkOrderItems).
+                                                        final momoOrderId =
+                                                            'ORD-${DateTime.now().millisecondsSinceEpoch}-${random_data.randomString(6, 6, true, true, false)}';
 
                                                         ApiCallResponse momoResponse;
                                                         try {
@@ -2097,6 +2107,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                         Navigator.of(context, rootNavigator: true).pop();
 
                                                         if (!momoResponse.succeeded || MoMoCallCall.status(momoResponse.jsonBody) != 'success') {
+                                                          await _logPaiement(
+                                                            status: MoMoCallCall.status(momoResponse.jsonBody) == 'pending'
+                                                                ? 'En attente'
+                                                                : 'Echec',
+                                                            response: momoResponse,
+                                                            amount: momoAmount,
+                                                            orderId: momoOrderId,
+                                                          );
                                                           await showDialog(
                                                             context: context,
                                                             builder: (alertDialogContext) => AlertDialog(
@@ -2136,19 +2154,16 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                             0.0,
                                                           ),
                                                           sellerRef:
-                                                              widget!.sellerRef,
+                                                              orderSellerRef,
                                                           deliveryLocation: _model
                                                               .locationTextController
                                                               .text,
-                                                          orderId: FFAppState()
-                                                              .orderReferenceUnique,
+                                                          orderId: momoOrderId,
                                                           deliveryZone:
                                                               _model.zoneValue,
                                                           deliveryFees: FFAppState()
                                                               .fixedShippingFee,
-                                                          orderUniqueReference:
-                                                              FFAppState()
-                                                                  .orderReferenceUnique,
+                                                          orderUniqueReference: momoOrderId,
                                                           status: 'En attente',
                                                         ));
                                                         _model.orderReference =
@@ -2167,28 +2182,40 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                         .GrandTotalCart,
                                                                     0.0,
                                                                   ),
-                                                                  sellerRef: widget!
-                                                                      .sellerRef,
+                                                                  sellerRef:
+                                                                      orderSellerRef,
                                                                   deliveryLocation:
                                                                       _model
                                                                           .locationTextController
                                                                           .text,
-                                                                  orderId:
-                                                                      FFAppState()
-                                                                          .orderReferenceUnique,
+                                                                  orderId: momoOrderId,
                                                                   deliveryZone:
                                                                       _model
                                                                           .zoneValue,
                                                                   deliveryFees:
                                                                       FFAppState()
                                                                           .fixedShippingFee,
-                                                                  orderUniqueReference:
-                                                                      FFAppState()
-                                                                          .orderReferenceUnique,
+                                                                  orderUniqueReference: momoOrderId,
                                                                   status:
                                                                       'En attente',
                                                                 ),
                                                                 ordersRecordReference);
+                                                        await _linkOrderItems(paidLines, momoOrderId);
+                                                        try {
+                                                          await ordersRecordReference.update({
+                                                            'payment_reference': MoMoCallCall.referenceId(momoResponse.jsonBody),
+                                                            'payment_status': 'Réussi',
+                                                          });
+                                                        } catch (_) {
+                                                          // Le paiement est déjà encaissé : ne jamais interrompre la suite.
+                                                        }
+                                                        await _logPaiement(
+                                                          status: 'Réussi',
+                                                          response: momoResponse,
+                                                          amount: momoAmount,
+                                                          orderId: momoOrderId,
+                                                          orderRef: ordersRecordReference,
+                                                        );
                                                         await Future.wait([
                                                           Future(() async {
                                                             _model.orderRefs =
@@ -2210,10 +2237,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                             FFAppState()
                                                                 .orderReferenceUnique = '';
                                                             safeSetState(() {});
-                                                            await widget!
-                                                                .cartRef!
-                                                                .reference
-                                                                .delete();
+                                                            // Toutes les lignes payées quittent le panier.
+                                                            // La commande est déjà enregistrée : un échec
+                                                            // ici ne doit pas masquer la confirmation.
+                                                            for (final line in paidLines) {
+                                                              try {
+                                                                await line.reference.delete();
+                                                              } catch (_) {}
+                                                            }
                                                           }),
                                                         ]);
                                                         await showDialog(
@@ -2309,7 +2340,147 @@ class _CartLastWidgetState extends State<CartLastWidget> {
             ),
           ),
         ),
+        ),
       ),
     );
+  }
+
+  /// Rattache à la commande les articles réellement payés, avec leur quantité
+  /// et leur prix finaux. La commande est déjà enregistrée : un échec ici ne
+  /// doit pas interrompre le parcours.
+  Future<void> _linkOrderItems(
+      List<CartRecord> lines, String reference) async {
+    for (final line in lines) {
+      try {
+        final items = await queryOrderItemsRecordOnce(
+          queryBuilder: (q) => q
+              .where('user_ref', isEqualTo: currentUserReference)
+              .where('cart_ref', isEqualTo: line.reference),
+        );
+        for (final item in items) {
+          await item.reference.update({
+            'order_ref': reference,
+            'quantity': line.quantity,
+            'price_at_purchase': line.price,
+          });
+        }
+      } catch (_) {}
+    }
+  }
+
+  /// Paiement contrôlé par le serveur : prix, stock et commande calculés
+  /// par les Cloud Functions (voir lib/backend/server_payment.dart).
+  Future<void> _payOnServer(String phone) async {
+    final theme = FlutterFlowTheme.of(context);
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final router = GoRouter.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: EdgeInsets.all(24.0),
+          decoration: BoxDecoration(
+            color: theme.secondaryBackground,
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: theme.primary),
+              SizedBox(height: 16.0),
+              Text(
+                'Validez le paiement sur votre téléphone\n(saisissez votre code PIN MTN)...',
+                textAlign: TextAlign.center,
+                style: theme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    String title;
+    String message;
+    var paid = false;
+    try {
+      final r = await kitungaServerPay(
+        sellerRef: _sellerRef!,
+        zone: _model.zoneValue ?? '',
+        deliveryLocation: _model.locationTextController.text,
+        phone: phone,
+      );
+      switch (r.status) {
+        case 'paid':
+          paid = true;
+          title = 'Commande confirmée';
+          message =
+              'Paiement de ${kitungaPrice(r.amount)} reçu. Le commerce prépare votre commande, suivez-la dans « Mes commandes ».';
+        case 'paid_refund':
+          title = 'Article plus disponible';
+          message =
+              'Votre paiement a été reçu, mais un article n\'est plus disponible${r.reason?.isNotEmpty == true ? ' :\n${r.reason}' : '.'}\nLe support Kitunga va vous rembourser (contact@ntemoconsulting.com).';
+        case 'failed':
+          title = 'Paiement refusé';
+          message =
+              'MTN a refusé le paiement. Vérifiez votre solde puis réessayez.';
+        default:
+          title = 'Paiement en attente';
+          message =
+              'Nous n\'avons pas encore reçu la validation MTN. Si vous avez validé, votre commande apparaîtra dans « Mes commandes » dans quelques minutes.';
+      }
+    } on ServerPaymentException catch (e) {
+      title = 'Paiement impossible';
+      message = e.message;
+    }
+    navigator.pop();
+    if (!mounted) return;
+    if (paid) {
+      FFAppState().GrandTotalCart = 0.0;
+      FFAppState().totalCart = 0.0;
+      FFAppState().isSameOrder = false;
+      FFAppState().orderReferenceUnique = '';
+    }
+    await showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c), child: Text('Ok')),
+        ],
+      ),
+    );
+    if (paid) router.pushNamed(HomeWidget.routeName);
+  }
+
+  /// Trace chaque tentative de paiement MoMo dans la collection `Paiement`
+  /// (consultée par le tableau de bord NOC) pour pouvoir rapprocher les
+  /// paiements avec MTN en cas de litige.
+  Future _logPaiement({
+    required String status,
+    required ApiCallResponse response,
+    required double amount,
+    required String orderId,
+    DocumentReference? orderRef,
+  }) async {
+    // Erreur de saisie (numéro, montant) : aucune demande envoyée à MTN.
+    if (getJsonField(response.jsonBody, r'''$.step''') == 'validation') {
+      return;
+    }
+    try {
+      await PaiementRecord.collection.doc().set({
+        'status': status,
+        'reference_id': MoMoCallCall.referenceId(response.jsonBody),
+        'message': MoMoCallCall.message(response.jsonBody),
+        'amount': amount,
+        'order_id': orderId,
+        'order_ref': orderRef,
+        'user_ref': currentUserReference,
+        'operator': 'MTN',
+        'created_at': getCurrentTimestamp,
+      });
+    } catch (_) {
+      // La journalisation ne doit jamais bloquer le parcours d'achat.
+    }
   }
 }

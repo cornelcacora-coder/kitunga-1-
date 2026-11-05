@@ -20,6 +20,9 @@ import '/noc/noc_cta/noc_cta_widget.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
+import '/backend/order_status.dart';
+import '/noc/noc_missing_images/noc_missing_images_widget.dart';
+import '/mobile/components/kitunga_logo/kitunga_logo_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -105,13 +108,7 @@ class _SupervisionDashboardWidgetState
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Image.asset(
-                                      'assets/images/photo_2025-12-24_16-17-10-removebg-preview.png',
-                                      width: 60.0,
-                                      height: 40.0,
-                                      fit: BoxFit.cover,
-                                      alignment: Alignment(0.0, 0.0),
-                                    ),
+                                    KitungaLogo(size: 44.0),
                                     Column(
                                       mainAxisSize: MainAxisSize.min,
                                       mainAxisAlignment:
@@ -883,6 +880,100 @@ class _SupervisionDashboardWidgetState
                                 ),
                               ),
                             ),
+                            InkWell(
+                              splashColor: Colors.transparent,
+                              focusColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onTap: () async {
+                                await showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  enableDrag: false,
+                                  context: context,
+                                  builder: (context) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        FocusScope.of(context).unfocus();
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+                                      },
+                                      child: Padding(
+                                        padding:
+                                            MediaQuery.viewInsetsOf(context),
+                                        child: NOCMissingImagesWidget(),
+                                      ),
+                                    );
+                                  },
+                                ).then((value) => safeSetState(() {}));
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  shape: BoxShape.rectangle,
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.hide_image_outlined,
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryText,
+                                          size: 20.0,
+                                        ),
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            'À compléter',
+                                            maxLines: 1,
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  font: GoogleFonts.inter(
+                                                    fontWeight:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyMedium
+                                                            .fontWeight,
+                                                    fontStyle:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .bodyMedium
+                                                            .fontStyle,
+                                                  ),
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                  letterSpacing: 0.0,
+                                                  fontWeight:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .fontStyle,
+                                                  lineHeight: 1.5,
+                                                ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ].divide(SizedBox(width: 16.0)),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ].divide(SizedBox(height: 4.0)),
                         ),
                       ),
@@ -1104,7 +1195,7 @@ class _SupervisionDashboardWidgetState
                                             valueOrDefault<String>(
                                               dateTimeFormat("MMMMEEEEd",
                                                   getCurrentTimestamp),
-                                              'Tuesday, May 12',
+                                              '',
                                             ),
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
@@ -1420,7 +1511,7 @@ class _SupervisionDashboardWidgetState
                                                         .primaryText,
                                                   ),
                                                   bg: Color(0x4DB539D2),
-                                                  title: 'COMMERCIAUX ACTIF',
+                                                  title: 'COMMERCIAUX',
                                                   subtitle:
                                                       'Nombre de vendeurs',
                                                   quantity: valueOrDefault<int>(
@@ -1442,7 +1533,7 @@ class _SupervisionDashboardWidgetState
                                             queryBuilder: (ordersRecord) =>
                                                 ordersRecord.where(
                                               'status',
-                                              isEqualTo: 'Reçu',
+                                              whereIn: OrderStatus.successful,
                                             ),
                                           ),
                                           builder: (context, snapshot) {
@@ -1759,7 +1850,7 @@ class _SupervisionDashboardWidgetState
                                                                   ),
                                                             ),
                                                             Text(
-                                                              'Date de livraison',
+                                                              'Date de commande',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .labelSmall
@@ -1888,8 +1979,7 @@ class _SupervisionDashboardWidgetState
                                                                     ordersRecord
                                                                         .where(
                                                               'status',
-                                                              isNotEqualTo:
-                                                                  'Reçu',
+                                                              whereIn: OrderStatus.inProgress,
                                                             ),
                                                           ),
                                                           builder: (context,
@@ -1958,7 +2048,7 @@ class _SupervisionDashboardWidgetState
                                                                         String>(
                                                                       listedOrderOrdersRecord
                                                                           .deliveryZone,
-                                                                      'Talangai',
+                                                                      'Zone non précisée',
                                                                     ),
                                                                     orderId:
                                                                         listedOrderOrdersRecord
@@ -1970,79 +2060,9 @@ class _SupervisionDashboardWidgetState
                                                                       'En attente',
                                                                     ),
                                                                     statusBg:
-                                                                        valueOrDefault<
-                                                                            Color>(
-                                                                      () {
-                                                                        if (listedOrderOrdersRecord.status ==
-                                                                            'En attente') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .accent3;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Pret') {
-                                                                          return Color(
-                                                                              0x4DEEED60);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'encours') {
-                                                                          return Color(
-                                                                              0x4D3943D2);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Livrer') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .accent2;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Reçu') {
-                                                                          return Color(
-                                                                              0x4DAC39D2);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Non Reçu') {
-                                                                          return Color(
-                                                                              0x4DCB39D2);
-                                                                        } else {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .accent2;
-                                                                        }
-                                                                      }(),
-                                                                      FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .accent2,
-                                                                    ),
+                                                                        OrderStatus.color(listedOrderOrdersRecord.status),
                                                                     statuTextBg:
-                                                                        valueOrDefault<
-                                                                            Color>(
-                                                                      () {
-                                                                        if (listedOrderOrdersRecord.status ==
-                                                                            'En attente') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .primary;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Pret') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .warning;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'encours') {
-                                                                          return Color(
-                                                                              0xFF180FE0);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Livrer') {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .tertiary;
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Reçu') {
-                                                                          return Color(
-                                                                              0xFFB908EC);
-                                                                        } else if (listedOrderOrdersRecord.status ==
-                                                                            'Non Reçu') {
-                                                                          return Color(
-                                                                              0xFFF10DC3);
-                                                                        } else {
-                                                                          return FlutterFlowTheme.of(context)
-                                                                              .secondaryText;
-                                                                        }
-                                                                      }(),
-                                                                      FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .success,
-                                                                    ),
+                                                                        OrderStatus.color(listedOrderOrdersRecord.status),
                                                                     createdAt:
                                                                         listedOrderOrdersRecord
                                                                             .createdAt,
@@ -2091,7 +2111,9 @@ class _SupervisionDashboardWidgetState
                                                                               context)
                                                                           .tertiary,
                                                                     ),
-                                                                    viewDeliver:
+                                                                    refundToProcess: OrderStatus.refundToProcess(
+                                    listedOrderOrdersRecord.snapshotData),
+                                viewDeliver:
                                                                         () async {
                                                                       if (listedOrderOrdersRecord.delivererRef !=
                                                                               null &&
@@ -2230,7 +2252,7 @@ class _SupervisionDashboardWidgetState
                                                               .stretch,
                                                       children: [
                                                         Text(
-                                                          'HISTORIQUE DES LIVRAISONS',
+                                                          'HISTORIQUE DES COMMANDES',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .titleMedium
@@ -2270,7 +2292,7 @@ class _SupervisionDashboardWidgetState
                                                                     ordersRecord
                                                                         .where(
                                                               'status',
-                                                              isEqualTo: 'Reçu',
+                                                              whereIn: OrderStatus.finished,
                                                             ),
                                                           ),
                                                           builder: (context,
@@ -3141,7 +3163,12 @@ class _SupervisionDashboardWidgetState
                                                           ),
                                                           FutureBuilder<int>(
                                                             future:
-                                                                querySystemLogsRecordCount(),
+                                                                queryOrdersRecordCount(
+  queryBuilder: (ordersRecord) => ordersRecord.where(
+    'status',
+    isEqualTo: OrderStatus.notReceived,
+  ),
+),
                                                             builder: (context,
                                                                 snapshot) {
                                                               // Customize what your widget looks like when it's loading.

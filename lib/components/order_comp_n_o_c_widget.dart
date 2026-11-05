@@ -1,3 +1,4 @@
+import '/backend/order_status.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -20,6 +21,7 @@ class OrderCompNOCWidget extends StatefulWidget {
     this.status,
     Color? statusBg,
     this.iconSatut,
+    this.refundToProcess = false,
     this.statuTextBg,
     this.name,
     this.isReady,
@@ -39,6 +41,9 @@ class OrderCompNOCWidget extends StatefulWidget {
   final String? status;
   final Color statusBg;
   final Widget? iconSatut;
+
+  /// Affiche un rappel : remboursement demandé, pas encore envoyé.
+  final bool refundToProcess;
   final Color? statuTextBg;
   final String? name;
   final Widget? isReady;
@@ -136,7 +141,15 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                               } else if (widget!.status == 'Non Reçu') {
                                 return widget!.isNotDelivery!;
                               } else {
-                                return widget!.iconSatut!;
+                                // Statuts sans icône dédiée (préparation, refus, annulation).
+                                return widget!.iconSatut ??
+                                    Icon(
+                                      OrderStatus.isStopped(widget!.status ?? '')
+                                          ? Icons.block_rounded
+                                          : Icons.inventory_2_outlined,
+                                      color: OrderStatus.color(
+                                          widget!.status ?? ''),
+                                    );
                               }
                             }(),
                           ),
@@ -163,7 +176,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                     Text(
                       valueOrDefault<String>(
                         widget!.zone,
-                        'Talangai',
+                        'Zone non précisée',
                       ),
                       textAlign: TextAlign.start,
                       maxLines: 2,
@@ -191,7 +204,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                     Text(
                       valueOrDefault<String>(
                         dateTimeFormat("d/M/y", widget!.createdAt),
-                        ' 12/5/2026',
+                        '-',
                       ),
                       textAlign: TextAlign.start,
                       maxLines: 1,
@@ -270,10 +283,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                                 Flexible(
                                   flex: 1,
                                   child: Text(
-                                    valueOrDefault<String>(
-                                      widget!.status,
-                                      'Non Reçu',
-                                    ),
+                                    OrderStatus.label(widget!.status ?? ''),
                                     maxLines: 1,
                                     style: FlutterFlowTheme.of(context)
                                         .labelSmall
@@ -300,13 +310,20 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  color: valueOrDefault<Color>(
-                                    widget!.statuTextBg,
-                                    Color(0xFF2A47A2),
+                                Tooltip(
+                                  message: widget!.refundToProcess
+                                      ? 'Remboursement à traiter'
+                                      : '',
+                                  child: Icon(
+                                    widget!.refundToProcess
+                                        ? Icons.currency_exchange_rounded
+                                        : Icons.check_circle_rounded,
+                                    color: valueOrDefault<Color>(
+                                      widget!.statuTextBg,
+                                      Color(0xFF2A47A2),
+                                    ),
+                                    size: 20.0,
                                   ),
-                                  size: 20.0,
                                 ),
                               ],
                             ),

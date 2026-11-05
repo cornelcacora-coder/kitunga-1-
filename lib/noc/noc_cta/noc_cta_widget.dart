@@ -99,7 +99,7 @@ class _NocCtaWidgetState extends State<NocCtaWidget> {
                         ),
                   ),
                   Text(
-                    'Cette fonctionalités n\'est pas encore disponible. Elle est encours de developpement. Merci de revenir plus tard.',
+                    'Cette fonctionnalité n\'est pas encore disponible. Elle est en cours de développement. Merci de revenir plus tard.',
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).labelSmall.override(
                           font: GoogleFonts.inter(

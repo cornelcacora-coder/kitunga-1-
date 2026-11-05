@@ -8,11 +8,14 @@ import '/mobile/components/add_delivery_proof/add_delivery_proof_widget.dart';
 import '/mobile/components/empty_card/empty_card_widget.dart';
 import 'dart:ui';
 import '/index.dart';
+import '/backend/order_status.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '/mobile/seller/seller_orders.dart';
 import 'order_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'order_model.dart';
 
 /// Page d'inscription utilisateur
@@ -48,6 +51,7 @@ class _OrderWidgetState extends State<OrderWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -55,9 +59,9 @@ class _OrderWidgetState extends State<OrderWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           title: Align(
             alignment: AlignmentDirectional(0.0, -1.0),
@@ -85,7 +89,8 @@ class _OrderWidgetState extends State<OrderWidget> {
           centerTitle: false,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Stack(
             children: [
@@ -130,10 +135,10 @@ class _OrderWidgetState extends State<OrderWidget> {
                               return EmptyCardWidget(
                                 photo:
                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
-                                title: 'Aucun Ordre Disponible !',
+                                title: 'Aucune commande pour le moment',
                                 description:
-                                    'Ajouter un produit dans le pannier et confirmer la commande afin de le voir apparaitre ici',
-                                buttonText: 'Voir catalogue',
+                                    'Ajoutez des produits à votre panier et validez votre commande : vous pourrez la suivre ici.',
+                                buttonText: 'Découvrir les boutiques',
                                 action: () async {
                                   context.pushNamed(HomeWidget.routeName);
                                 },
@@ -398,18 +403,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      valueOrDefault<String>(
-                                                        orderListOrdersRecord
-                                                                        .status ==
-                                                                    null ||
-                                                                orderListOrdersRecord
-                                                                        .status ==
-                                                                    ''
-                                                            ? 'En attente'
-                                                            : orderListOrdersRecord
-                                                                .status,
-                                                        'En attente',
-                                                      ),
+                                                      OrderStatus.label(orderListOrdersRecord.status),
                                                       maxLines: 2,
                                                       style: FlutterFlowTheme
                                                               .of(context)
@@ -427,52 +421,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                       .fontStyle,
                                                             ),
                                                             color:
-                                                                valueOrDefault<
-                                                                    Color>(
-                                                              () {
-                                                                if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'En attente') {
-                                                                  return FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .error;
-                                                                } else if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'Pret') {
-                                                                  return FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .warning;
-                                                                } else if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'encours') {
-                                                                  return Color(
-                                                                      0xFF180FE0);
-                                                                } else if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'Livrer') {
-                                                                  return FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .success;
-                                                                } else if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'Reçu') {
-                                                                  return Color(
-                                                                      0xFFB908EC);
-                                                                } else if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'Non Reçu') {
-                                                                  return Color(
-                                                                      0xFFF10DC3);
-                                                                } else {
-                                                                  return FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryText;
-                                                                }
-                                                              }(),
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .secondaryText,
-                                                            ),
+                                                                OrderStatus.color(orderListOrdersRecord.status),
                                                             letterSpacing: 0.0,
                                                             fontWeight:
                                                                 FontWeight.w600,
@@ -544,608 +493,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                       );
                     } else if (valueOrDefault(currentUserDocument?.role, '') ==
                         'Seller') {
-                      return Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                        child: Container(
-                          width: () {
-                            if (MediaQuery.sizeOf(context).width <
-                                kBreakpointSmall) {
-                              return 400.0;
-                            } else if (MediaQuery.sizeOf(context).width <
-                                kBreakpointMedium) {
-                              return 400.0;
-                            } else if (MediaQuery.sizeOf(context).width <
-                                kBreakpointLarge) {
-                              return 500.0;
-                            } else {
-                              return 500.0;
-                            }
-                          }(),
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                          ),
-                          child: StreamBuilder<List<OrdersRecord>>(
-                            stream: queryOrdersRecord(
-                              queryBuilder: (ordersRecord) =>
-                                  ordersRecord.where(
-                                'seller_ref',
-                                isEqualTo: currentUserReference,
-                              ),
-                            ),
-                            builder: (context, snapshot) {
-                              // Customize what your widget looks like when it's loading.
-                              if (!snapshot.hasData) {
-                                return Center(
-                                  child: SizedBox(
-                                    width: 50.0,
-                                    height: 50.0,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        FlutterFlowTheme.of(context).primary,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                              List<OrdersRecord> orderListOrdersRecordList =
-                                  snapshot.data!;
-                              if (orderListOrdersRecordList.isEmpty) {
-                                return EmptyCardWidget(
-                                  photo:
-                                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
-                                  title: 'Aucun Ordre Disponible !',
-                                  description:
-                                      'Attendez qu\'un client passe une commande et elle apparaitra ici !',
-                                  buttonText: 'Voir mes produits',
-                                  action: () async {
-                                    context.pushNamed(HomeWidget.routeName);
-                                  },
-                                );
-                              }
-
-                              return ListView.separated(
-                                padding: EdgeInsets.zero,
-                                scrollDirection: Axis.vertical,
-                                itemCount: orderListOrdersRecordList.length,
-                                separatorBuilder: (_, __) =>
-                                    SizedBox(height: 20.0),
-                                itemBuilder: (context, orderListIndex) {
-                                  final orderListOrdersRecord =
-                                      orderListOrdersRecordList[orderListIndex];
-                                  return Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        15.0, 0.0, 15.0, 0.0),
-                                    child: InkWell(
-                                      splashColor: Colors.transparent,
-                                      focusColor: Colors.transparent,
-                                      hoverColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
-                                      onTap: () async {
-                                        context.pushNamed(
-                                          OrderViewSellerDeliverWidget
-                                              .routeName,
-                                          queryParameters: {
-                                            'orderRefer': serializeParam(
-                                              orderListOrdersRecord
-                                                  .orderUniqueReference,
-                                              ParamType.String,
-                                            ),
-                                            'deliveryZone': serializeParam(
-                                              orderListOrdersRecord
-                                                  .deliveryZone,
-                                              ParamType.String,
-                                            ),
-                                            'statu': serializeParam(
-                                              orderListOrdersRecord.status,
-                                              ParamType.String,
-                                            ),
-                                            'amount': serializeParam(
-                                              orderListOrdersRecord.totalAmount
-                                                  .toString(),
-                                              ParamType.String,
-                                            ),
-                                          }.withoutNulls,
-                                        );
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryBackground,
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                        ),
-                                        child: Padding(
-                                          padding: EdgeInsets.all(10.0),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          orderListOrdersRecord
-                                                              .orderId,
-                                                          '#0001',
-                                                        ),
-                                                        maxLines: 2,
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleMedium
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .interTight(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .titleMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .titleMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                  fontSize:
-                                                                      17.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                    ].divide(
-                                                        SizedBox(width: 20.0)),
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          dateTimeFormat(
-                                                              "d/M/y",
-                                                              orderListOrdersRecord
-                                                                  .createdAt),
-                                                          '21/3/2026',
-                                                        ),
-                                                        maxLines: 2,
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyLarge
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                      Container(
-                                                        width: 3.0,
-                                                        height: 3.0,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .textfiled,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                      ),
-                                                      Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        children: [
-                                                          Text(
-                                                            valueOrDefault<
-                                                                String>(
-                                                              orderListOrdersRecord
-                                                                  .totalAmount
-                                                                  .toString(),
-                                                              '0',
-                                                            ),
-                                                            maxLines: 2,
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyLarge
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                          Text(
-                                                            'CFA',
-                                                            maxLines: 2,
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyLarge
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ].divide(
-                                                        SizedBox(width: 4.0)),
-                                                  ),
-                                                  if (orderListOrdersRecord
-                                                          .status ==
-                                                      'En attente')
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
-                                                        Container(
-                                                          width: 3.0,
-                                                          height: 3.0,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryText,
-                                                            shape:
-                                                                BoxShape.circle,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            orderListOrdersRecord
-                                                                            .status ==
-                                                                        null ||
-                                                                    orderListOrdersRecord
-                                                                            .status ==
-                                                                        ''
-                                                                ? 'En attente'
-                                                                : orderListOrdersRecord
-                                                                    .status,
-                                                            'En attente',
-                                                          ),
-                                                          maxLines: 2,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyLarge
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                                color:
-                                                                    valueOrDefault<
-                                                                        Color>(
-                                                                  () {
-                                                                    if (orderListOrdersRecord
-                                                                            .status ==
-                                                                        'En attente') {
-                                                                      return FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .error;
-                                                                    } else if (orderListOrdersRecord
-                                                                            .status ==
-                                                                        'Pret') {
-                                                                      return FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .warning;
-                                                                    } else if (orderListOrdersRecord
-                                                                            .status ==
-                                                                        'encours') {
-                                                                      return Color(
-                                                                          0xFF180FE0);
-                                                                    } else if (orderListOrdersRecord
-                                                                            .status ==
-                                                                        'Livrer') {
-                                                                      return FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .success;
-                                                                    } else {
-                                                                      return Color(
-                                                                          0xFF2B2BB0);
-                                                                    }
-                                                                  }(),
-                                                                  Color(
-                                                                      0xFF2B2BB0),
-                                                                ),
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyLarge
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                      ].divide(
-                                                          SizedBox(width: 4.0)),
-                                                    ),
-                                                ].divide(SizedBox(height: 4.0)),
-                                              ),
-                                              if (orderListOrdersRecord
-                                                      .status ==
-                                                  'En attente')
-                                                FFButtonWidget(
-                                                  onPressed: () async {
-                                                    await orderListOrdersRecord
-                                                        .reference
-                                                        .update(
-                                                            createOrdersRecordData(
-                                                      status: 'Pret',
-                                                    ));
-                                                    await showDialog(
-                                                      context: context,
-                                                      builder:
-                                                          (alertDialogContext) {
-                                                        return AlertDialog(
-                                                          title: Text(
-                                                              'Commande Prete !'),
-                                                          content: Text(
-                                                              'Vous avez terminé la commande avec succès, patientez un livreur va venir chercher  la commande'),
-                                                          actions: [
-                                                            TextButton(
-                                                              onPressed: () =>
-                                                                  Navigator.pop(
-                                                                      alertDialogContext),
-                                                              child: Text('Ok'),
-                                                            ),
-                                                          ],
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-                                                  text: 'Pret à livrer',
-                                                  options: FFButtonOptions(
-                                                    height: 30.0,
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(16.0, 0.0,
-                                                                16.0, 0.0),
-                                                    iconPadding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 0.0,
-                                                                0.0, 0.0),
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .accent3,
-                                                    textStyle: FlutterFlowTheme
-                                                            .of(context)
-                                                        .titleSmall
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
-                                                          fontSize: 10.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .fontStyle,
-                                                        ),
-                                                    elevation: 0.0,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12.0),
-                                                  ),
-                                                ),
-                                              if (orderListOrdersRecord
-                                                      .status !=
-                                                  'En attente')
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Container(
-                                                      width: 3.0,
-                                                      height: 3.0,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryText,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      valueOrDefault<String>(
-                                                        orderListOrdersRecord
-                                                                        .status ==
-                                                                    null ||
-                                                                orderListOrdersRecord
-                                                                        .status ==
-                                                                    ''
-                                                            ? 'En attente'
-                                                            : orderListOrdersRecord
-                                                                .status,
-                                                        'En attente',
-                                                      ),
-                                                      maxLines: 2,
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyLarge
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontStyle,
-                                                            ),
-                                                            color:
-                                                                valueOrDefault<
-                                                                    Color>(
-                                                              () {
-                                                                if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'En attente') {
-                                                                  return FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .error;
-                                                                } else if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'Pret') {
-                                                                  return FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .warning;
-                                                                } else if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'encours') {
-                                                                  return Color(
-                                                                      0xFF180FE0);
-                                                                } else if (orderListOrdersRecord
-                                                                        .status ==
-                                                                    'Livrer') {
-                                                                  return FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .success;
-                                                                } else {
-                                                                  return Color(
-                                                                      0xFF2B2BB0);
-                                                                }
-                                                              }(),
-                                                              Color(0xFF2B2BB0),
-                                                            ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                    ),
-                                                  ].divide(
-                                                      SizedBox(width: 4.0)),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      );
+                      return SellerOrdersView();
                     } else if (valueOrDefault(currentUserDocument?.role, '') ==
                         'Deliver') {
                       return Align(
@@ -1383,7 +731,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                         dateTimeFormat(
                                                                             "d/M H:mm",
                                                                             listViewOrdersRecord.createdAt),
-                                                                        '26/3 14:53',
+                                                                        '-',
                                                                       ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
@@ -1512,12 +860,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                           18.0,
                                                                     ),
                                                                     Text(
-                                                                      valueOrDefault<
-                                                                          String>(
-                                                                        listViewOrdersRecord
-                                                                            .status,
-                                                                        'Pret',
-                                                                      ),
+                                                                      OrderStatus.label(listViewOrdersRecord.status),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .titleMedium
@@ -1618,7 +961,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                         String>(
                                                                       listViewOrdersRecord
                                                                           .deliveryZone,
-                                                                      'Talangai',
+                                                                      'Zone non précisée',
                                                                     ),
                                                                     maxLines: 1,
                                                                     style: FlutterFlowTheme.of(
@@ -1769,7 +1112,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: EmptyCardWidget(
                                                                                 photo: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gv3nx4dk4pps/boxicons-pXmQQk8IxaQ-unsplash.png',
-                                                                                title: 'Colis Non Reçu !',
+                                                                                title: 'Colis non reçu !',
                                                                                 description: 'Veuillez demandé une confirmation de l\'utilisateur afin de confirmer votre livraison ',
                                                                                 buttonText: 'Compris !',
                                                                                 action: () async {
@@ -1797,13 +1140,13 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                   } else if (listViewOrdersRecord
                                                                           .status ==
                                                                       'Non Reçu') {
-                                                                    return 'Non Reçu';
+                                                                    return 'Non reçue';
                                                                   } else if (listViewOrdersRecord
                                                                           .status ==
                                                                       'Reçu') {
-                                                                    return 'Reçu';
+                                                                    return 'Reçue';
                                                                   } else {
-                                                                    return 'Expirer';
+                                                                    return 'Clôturée';
                                                                   }
                                                                 }(),
                                                                 options:
@@ -1936,10 +1279,10 @@ class _OrderWidgetState extends State<OrderWidget> {
                             return EmptyCardWidget(
                               photo:
                                   'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
-                              title: 'Aucun Ordre Disponible !',
+                              title: 'Aucune commande pour le moment',
                               description:
-                                  'Ajouter un produit dans le pannier et confirmer la commande afin de le voir apparaitre ici',
-                              buttonText: 'Voir catalogue',
+                                  'Ajoutez des produits à votre panier et validez votre commande : vous pourrez la suivre ici.',
+                              buttonText: 'Découvrir les boutiques',
                               action: () async {
                                 context.pushNamed(HomeWidget.routeName);
                               },
@@ -2196,18 +1539,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    valueOrDefault<String>(
-                                                      adminOrderOrdersRecord
-                                                                      .status ==
-                                                                  null ||
-                                                              adminOrderOrdersRecord
-                                                                      .status ==
-                                                                  ''
-                                                          ? 'En attente'
-                                                          : adminOrderOrdersRecord
-                                                              .status,
-                                                      'En attente',
-                                                    ),
+                                                    OrderStatus.label(adminOrderOrdersRecord.status),
                                                     maxLines: 2,
                                                     style: FlutterFlowTheme.of(
                                                             context)
@@ -2223,42 +1555,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                     .bodyLarge
                                                                     .fontStyle,
                                                           ),
-                                                          color: valueOrDefault<
-                                                              Color>(
-                                                            () {
-                                                              if (adminOrderOrdersRecord
-                                                                      .status ==
-                                                                  'En attente') {
-                                                                return FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .error;
-                                                              } else if (adminOrderOrdersRecord
-                                                                      .status ==
-                                                                  'Pret') {
-                                                                return FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .warning;
-                                                              } else if (adminOrderOrdersRecord
-                                                                      .status ==
-                                                                  'encours') {
-                                                                return Color(
-                                                                    0xFF180FE0);
-                                                              } else if (adminOrderOrdersRecord
-                                                                      .status ==
-                                                                  'Livrer') {
-                                                                return FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .success;
-                                                              } else {
-                                                                return FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .secondaryText;
-                                                              }
-                                                            }(),
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryText,
-                                                          ),
+                                                          color: OrderStatus.color(adminOrderOrdersRecord.status),
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w600,
@@ -2328,10 +1625,10 @@ class _OrderWidgetState extends State<OrderWidget> {
                               child: EmptyCardWidget(
                                 photo:
                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
-                                title: 'Accès refusé !',
+                                title: 'Créez votre compte',
                                 description:
-                                    'Veuillez vous abonné pour accéder au journanl des commandes',
-                                buttonText: 'S\'abonner',
+                                    'Créez votre compte Kitunga pour accéder à l\'historique de vos commandes.',
+                                buttonText: 'Créer un compte',
                                 action: () async {
                                   context.pushNamed(
                                     SignWidget.routeName,
@@ -2354,6 +1651,7 @@ class _OrderWidgetState extends State<OrderWidget> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

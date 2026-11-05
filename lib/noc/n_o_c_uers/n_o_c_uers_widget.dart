@@ -1,3 +1,4 @@
+import '/backend/subscription.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -261,10 +262,6 @@ class _NOCUersWidgetState extends State<NOCUersWidget> {
                               .where(
                                 'role',
                                 isEqualTo: 'User',
-                              )
-                              .where(
-                                'is_subscribed',
-                                isEqualTo: _model.subscribFilter,
                               ),
                         ),
                         builder: (context, snapshot) {
@@ -282,8 +279,13 @@ class _NOCUersWidgetState extends State<NOCUersWidget> {
                               ),
                             );
                           }
-                          List<UserRecord> listViewUserRecordList =
-                              snapshot.data!;
+                          // Abonnés / non abonnés : selon la date de fin, comme sur le mobile.
+                        List<UserRecord> listViewUserRecordList = snapshot.data!
+                            .where((u) =>
+                                _model.subscribFilter == null ||
+                                kitungaUserSubscribed(u) ==
+                                    _model.subscribFilter)
+                            .toList();
 
                           return ListView.builder(
                             padding: EdgeInsets.zero,
@@ -314,9 +316,8 @@ class _NOCUersWidgetState extends State<NOCUersWidget> {
                                         : listViewUserRecord.category,
                                     'USER',
                                   ),
-                                  subscribType:
-                                      listViewUserRecord.subscribeType,
-                                  isSubscrib: listViewUserRecord.isSubscribed,
+                                  subscribType: kitungaSubscriptionLabel(listViewUserRecord),
+                                  isSubscrib: kitungaUserSubscribed(listViewUserRecord),
                                 ),
                               );
                             },

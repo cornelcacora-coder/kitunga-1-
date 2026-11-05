@@ -15,9 +15,12 @@
     "@langchain/langgraph": "^0.2.23",
     "@langchain/openai": "^0.3.14",
     "@langchain/google-genai": "^0.0.8",
-    "@langchain/anthropic": "^0.1.1"
+    "@langchain/anthropic": "^0.1.1",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.4",
+    "firebase": "^10.14.1",
     "eslint": "^6.8.0",
     "eslint-plugin-promise": "^4.2.1"
   },

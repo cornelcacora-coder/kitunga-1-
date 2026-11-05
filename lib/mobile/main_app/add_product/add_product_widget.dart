@@ -9,14 +9,15 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/upload_data.dart';
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import 'dart:ui';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'add_product_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'add_product_model.dart';
 
 class AddProductWidget extends StatefulWidget {
@@ -60,10 +61,12 @@ class _AddProductWidgetState extends State<AddProductWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
-      body: SafeArea(
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      body: KitungaScaffoldBackground(
+        child: SafeArea(
         top: true,
         child: Container(
           child: Padding(
@@ -83,22 +86,23 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12.0),
-                            child: CachedNetworkImage(
-                              fadeInDuration: Duration(milliseconds: 0),
-                              fadeOutDuration: Duration(milliseconds: 0),
-                              imageUrl: getCORSProxyUrl(
-                                valueOrDefault<String>(
-                                  _model.uploadedFileUrl_prodImg != null &&
-                                          _model.uploadedFileUrl_prodImg != ''
-                                      ? _model.uploadedFileUrl_prodImg
-                                      : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
-                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
-                                ),
-                              ),
-                              width: double.infinity,
-                              height: 250.0,
-                              fit: BoxFit.cover,
-                            ),
+                            child: (_model.uploadedFileUrl_prodImg?.isNotEmpty ?? false)
+                                ? KitungaImage(
+                                    _model.uploadedFileUrl_prodImg!,
+                                    width: double.infinity,
+                                    height: 250.0,
+                                    fallbackIcon: Icons.add_a_photo_rounded,
+                                  )
+                                : Container(
+                                    width: double.infinity,
+                                    height: 250.0,
+                                    color: Colors.black26,
+                                    child: const Icon(
+                                      Icons.add_a_photo_rounded,
+                                      color: Colors.white54,
+                                      size: 48.0,
+                                    ),
+                                  ),
                           ),
                           Container(
                             width: double.infinity,
@@ -151,8 +155,8 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                         .primaryBackground,
                                                 size: 24.0,
                                               ),
-                                              onPressed: () {
-                                                print('IconButton pressed ...');
+                                              onPressed: () async {
+                                                context.safePop();
                                               },
                                             ),
                                             Text(
@@ -190,8 +194,21 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                         .primaryBackground,
                                                 size: 24.0,
                                               ),
-                                              onPressed: () {
-                                                print('IconButton pressed ...');
+                                              onPressed: () async {
+                                                await showDialog(
+                                                  context: context,
+                                                  builder: (alertDialogContext) => AlertDialog(
+                                                    title: Text('Ajouter un produit'),
+                                                    content: Text(
+                                                        'Renseignez le nom, la description, le prix et la quantité de votre produit, ajoutez une photo, puis appuyez sur « Publier le produit ».'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(alertDialogContext),
+                                                        child: Text('Compris'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
                                               },
                                             ),
                                           ],
@@ -1068,6 +1085,15 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                               children: [
                                 FFButtonWidget(
                                   onPressed: () async {
+                                    // Photo obligatoire : un produit sans photo ne se vend pas.
+                                    if (_model.uploadedFileUrl_prodImg.isEmpty) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Ajoutez une photo du produit avant de le publier.')),
+                                      );
+                                      return;
+                                    }
                                     await ProductRecord.collection
                                         .doc()
                                         .set(createProductRecordData(
@@ -1140,6 +1166,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

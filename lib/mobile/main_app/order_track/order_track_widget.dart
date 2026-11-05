@@ -15,6 +15,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'order_track_model.dart';
+import '/mobile/components/form_styles/form_styles.dart';
 export 'order_track_model.dart';
 
 /// Page d'inscription utilisateur
@@ -202,6 +203,7 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -209,9 +211,9 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
         appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -249,7 +251,8 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
           centerTitle: true,
           elevation: 0.0,
         ),
-        body: SafeArea(
+        body: KitungaScaffoldBackground(
+          child: SafeArea(
           top: true,
           child: Align(
             alignment: AlignmentDirectional(0.0, 0.0),
@@ -1149,7 +1152,7 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
                                                                 return 'En attente livraison';
                                                               }
                                                             }(),
-                                                            'Colis Livrer',
+                                                            'Colis livré',
                                                           ),
                                                           textAlign:
                                                               TextAlign.start,
@@ -1248,7 +1251,7 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
                                             context: context,
                                             builder: (alertDialogContext) {
                                               return AlertDialog(
-                                                title: Text('Commande Reçu !'),
+                                                title: Text('Commande reçue !'),
                                                 content: Text(
                                                     'Vous avez confirmé la reception de la commande. Merci pour votre confiance aux service Kitunga '),
                                                 actions: [
@@ -1380,7 +1383,7 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
                                             builder: (alertDialogContext) {
                                               return AlertDialog(
                                                 title:
-                                                    Text('Commande Non Reçu !'),
+                                                    Text('Commande non reçue !'),
                                                 content: Text(
                                                     'Merci de nous avoir signalé ce problème. Nous allons traité votre problème et vous revenir dans un bref delais. En absnce de réponse, veuillez svp, contacté notre service clien tau +242068039120'),
                                                 actions: [
@@ -1500,6 +1503,7 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
               ),
             ),
           ),
+        ),
         ),
       ),
     );

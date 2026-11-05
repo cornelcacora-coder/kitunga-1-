@@ -6,6 +6,7 @@ import '/backend/schema/util/firestore_util.dart';
 import '/backend/schema/util/schema_util.dart';
 
 import 'index.dart';
+import '/backend/kitunga_options.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 /// List of products displaying by shop (sellers)
@@ -77,6 +78,27 @@ class ProductRecord extends FirestoreRecord {
   int get salePrice => _salePrice ?? 0;
   bool hasSalePrice() => _salePrice != null;
 
+  // "section" field : rubrique du menu ou rayon (facultatif).
+  String? _section;
+  String get section => _section ?? '';
+  bool hasSection() => _section != null;
+
+  // "unit" field : unité de vente (pièce, kg, litre…), facultatif.
+  String? _unit;
+  String get unit => _unit ?? '';
+  bool hasUnit() => _unit != null;
+
+  // "requires_prescription" field : médicament sur ordonnance.
+  bool? _requiresPrescription;
+  bool get requiresPrescription => _requiresPrescription ?? false;
+  bool hasRequiresPrescription() => _requiresPrescription != null;
+
+  // "options" field : groupes d'options (tailles, suppléments…)
+  List<dynamic>? _optionsRaw;
+  List<dynamic> get optionsRaw => _optionsRaw ?? const [];
+  List<KitungaOptionGroup> get options => parseOptionGroups(_optionsRaw);
+  bool hasOptionsRaw() => _optionsRaw != null;
+
   void _initializeFields() {
     _name = snapshotData['name'] as String?;
     _description = snapshotData['description'] as String?;
@@ -90,6 +112,10 @@ class ProductRecord extends FirestoreRecord {
     _prodImg = snapshotData['prod_img'] as String?;
     _instantDisponibilty = snapshotData['instant_disponibilty'] as bool?;
     _salePrice = castToType<int>(snapshotData['sale_price']);
+    _section = snapshotData['section'] as String?;
+    _unit = snapshotData['unit'] as String?;
+    _requiresPrescription = snapshotData['requires_prescription'] as bool?;
+    _optionsRaw = snapshotData['options'] as List<dynamic>?;
   }
 
   static CollectionReference get collection =>
@@ -139,6 +165,10 @@ Map<String, dynamic> createProductRecordData({
   String? prodImg,
   bool? instantDisponibilty,
   int? salePrice,
+  String? section,
+  String? unit,
+  bool? requiresPrescription,
+  List<Map<String, dynamic>>? optionsRaw,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -154,6 +184,10 @@ Map<String, dynamic> createProductRecordData({
       'prod_img': prodImg,
       'instant_disponibilty': instantDisponibilty,
       'sale_price': salePrice,
+      'section': section,
+      'unit': unit,
+      'requires_prescription': requiresPrescription,
+      'options': optionsRaw,
     }.withoutNulls,
   );
 
@@ -176,7 +210,10 @@ class ProductRecordDocumentEquality implements Equality<ProductRecord> {
         e1?.sellerRef == e2?.sellerRef &&
         e1?.prodImg == e2?.prodImg &&
         e1?.instantDisponibilty == e2?.instantDisponibilty &&
-        e1?.salePrice == e2?.salePrice;
+        e1?.salePrice == e2?.salePrice &&
+        e1?.section == e2?.section &&
+        e1?.unit == e2?.unit &&
+        e1?.requiresPrescription == e2?.requiresPrescription;
   }
 
   @override
@@ -192,7 +229,10 @@ class ProductRecordDocumentEquality implements Equality<ProductRecord> {
         e?.sellerRef,
         e?.prodImg,
         e?.instantDisponibilty,
-        e?.salePrice
+        e?.salePrice,
+        e?.section,
+        e?.unit,
+        e?.requiresPrescription
       ]);
 
   @override

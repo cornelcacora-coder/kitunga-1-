@@ -257,8 +257,8 @@ class _OrderCardWidgetState extends State<OrderCardWidget> {
                             ),
                             Text(
                               valueOrDefault<String>(
-                                dateTimeFormat("M/d H:mm", widget!.createdAt),
-                                '3/21 13:03',
+                                dateTimeFormat("d/M H:mm", widget!.createdAt),
+                                '-',
                               ),
                               style: FlutterFlowTheme.of(context)
                                   .titleMedium
@@ -372,7 +372,7 @@ class _OrderCardWidgetState extends State<OrderCardWidget> {
                             EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                         color: valueOrDefault<Color>(
                           widget!.statusBtnColor,
-                          Color(0xFFFF2D87),
+                          Color(0xFFE30613),
                         ),
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
