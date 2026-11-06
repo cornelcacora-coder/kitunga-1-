@@ -20,12 +20,18 @@ function toDate(v) {
   return typeof v.toDate === "function" ? v.toDate() : new Date(v);
 }
 
-/** Seuls les clients (rôle User) doivent être abonnés pour commander. */
+/** Rôles qui commandent sans abonnement (comptes créés par l'admin). */
+const ROLES_WITHOUT_SUBSCRIPTION = ["Seller", "Deliver", "Admin"];
+
+/**
+ * Droit de commander : les rôles listés ci-dessus, ou un client (rôle User)
+ * abonné. Tout autre rôle (Guest, Commercial, rôle inconnu) est refusé.
+ */
 function subscriptionActive(user, now = new Date()) {
   if (!user || !user.exists) return false;
   const role = user.get("role") || "User";
-  if (role === "Guest") return false;
-  if (role !== "User") return true;
+  if (ROLES_WITHOUT_SUBSCRIPTION.includes(role)) return true;
+  if (role !== "User") return false;
   const until = toDate(user.get("subscribe_close_at"));
   return until != null && until > now;
 }
@@ -112,5 +118,5 @@ async function confirmSubscription({db, momo, uid, referenceId}) {
   });
 }
 
-module.exports = {PLANS, subscriptionActive, startSubscription,
+module.exports = {PLANS, ROLES_WITHOUT_SUBSCRIPTION, subscriptionActive, startSubscription,
   confirmSubscription};

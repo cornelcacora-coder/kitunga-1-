@@ -254,6 +254,20 @@ test("abonnement : sans abonnement ou en visiteur, pas de commande", async () =>
   }
 });
 
+test("commercial ou rôle inconnu : ni panier ni commande", async () => {
+  await seed({}, {sales: {role: "Commercial"}, odd: {role: "Inconnu"}});
+  for (const uid of ["sales", "odd"]) {
+    const d = db(uid);
+    await assertFails(setDoc(doc(d, "Orders/x"),
+        newOrder(d, {user_ref: doc(d, `User/${uid}`)})));
+    await assertFails(setDoc(doc(d, "Cart/x"),
+        {user_ref: doc(d, `User/${uid}`), quantity: 1}));
+  }
+  const s = db("seller");
+  await assertSucceeds(setDoc(doc(s, "Cart/y"),
+      {user_ref: doc(s, "User/seller"), quantity: 1}));
+});
+
 test("création : commande déjà marquée payée ou à rembourser", async () => {
   await seed();
   const d = db("buyer");

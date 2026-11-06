@@ -108,6 +108,135 @@ exports.kitungaCreatePartner = functions.region("us-west1")
       }
     });
 
+// ── Module commercial (voir README-ACQUISITION.md) ────────────────────────
+const {AcquisitionError} = require("./kitunga/acquisition/model");
+const agents = require("./kitunga/acquisition/agents");
+
+/** Fonction appelable du module commercial (erreurs métier lisibles). */
+function acquisitionCallable(handler, secrets = []) {
+  return functions.region("us-west1")
+      .runWith({secrets, timeoutSeconds: 60})
+      .https.onCall(async (data, context) => {
+        try {
+          return await handler(data || {}, context.auth && context.auth.uid);
+        } catch (e) {
+          if (e instanceof AcquisitionError || e instanceof payments.PaymentError) {
+            throw new functions.https.HttpsError(e.code, e.message);
+          }
+          console.error(e);
+          throw new functions.https.HttpsError("internal",
+              "L'opération n'a pas pu aboutir. Réessayez.");
+        }
+      });
+}
+
+/** Création d'un commercial par un administrateur. */
+exports.kitungaCreateSalesAgent = acquisitionCallable((data, uid) =>
+  agents.createSalesAgent({db: admin.firestore(), auth: admin.auth(), uid,
+    data, identitySecret: process.env.ACQ_IDENTITY_KEY}), ["ACQ_IDENTITY_KEY"]);
+
+/** Modification d'un commercial (nom, téléphone, moyen de paiement). */
+exports.kitungaUpdateSalesAgent = acquisitionCallable((data, uid) =>
+  agents.updateSalesAgent({db: admin.firestore(), uid, data,
+    identitySecret: process.env.ACQ_IDENTITY_KEY}), ["ACQ_IDENTITY_KEY"]);
+
+/** Suspension, réactivation ou archivage d'un commercial. */
+exports.kitungaSetSalesAgentStatus = acquisitionCallable((data, uid) =>
+  agents.setSalesAgentStatus({db: admin.firestore(), auth: admin.auth(), uid,
+    data}));
+
+const campaigns = require("./kitunga/acquisition/campaigns");
+const campaignCall = (name) => acquisitionCallable((data, uid) =>
+  campaigns[name]({db: admin.firestore(), uid, data}));
+
+/** Barème de commission figé (montants en FCFA). */
+exports.kitungaCreateCommissionRule = campaignCall("createCommissionRule");
+/** Campagnes : création, modification, changement de statut. */
+exports.kitungaCreateCampaign = campaignCall("createCampaign");
+exports.kitungaUpdateCampaign = campaignCall("updateCampaign");
+exports.kitungaSetCampaignStatus = campaignCall("setCampaignStatus");
+/** Affectation d'un commercial à une campagne (code unique généré). */
+exports.kitungaAssignAgent = campaignCall("assignAgent");
+exports.kitungaEndAssignment = campaignCall("endAssignment");
+
+/** Active et clôture les campagnes à leurs dates ; ferme les affectations. */
+exports.kitungaCampaignSchedule = functions.region("us-west1")
+    .pubsub.schedule("every 15 minutes")
+    .onRun(() => campaigns.runCampaignSchedule({db: admin.firestore()}));
+
+const links = require("./kitunga/acquisition/links");
+
+/** Lien commercial /r/{code} (Firebase Hosting) : clic puis Google Play. */
+exports.kitungaReferralRedirect = functions.region("us-west1")
+    .runWith({secrets: ["ACQ_IDENTITY_KEY"], timeoutSeconds: 15})
+    .https.onRequest((req, res) => links.handleReferralClick(req, res,
+        {db: admin.firestore(), secret: process.env.ACQ_IDENTITY_KEY}));
+
+/** Premier contact d'un appareil, envoyé par l'application. */
+exports.kitungaRecordTouch = acquisitionCallable((data, uid) =>
+  links.recordTouch({db: admin.firestore(), uid, data}));
+
+const attribution = require("./kitunga/acquisition/attribution");
+
+/** Confirme l'attribution d'un nouveau client à l'inscription. */
+exports.kitungaClaimAttribution = acquisitionCallable((data, uid) =>
+  attribution.claimAttribution({db: admin.firestore(), auth: admin.auth(), uid,
+    data, identitySecret: process.env.ACQ_IDENTITY_KEY}), ["ACQ_IDENTITY_KEY"]);
+
+const activations = require("./kitunga/acquisition/activations");
+
+/**
+ * Activation d'une installation, attestée par App Check (Play Integrity).
+ * Jeton consommé : un jeton rejoué n'est jamais accepté comme vérifié.
+ */
+exports.kitungaRecordActivation = functions.region("us-west1")
+    .runWith({timeoutSeconds: 30, consumeAppCheckToken: true})
+    .https.onCall(async (data, context) => {
+      try {
+        return await activations.recordActivation({db: admin.firestore(),
+          uid: context.auth && context.auth.uid, app: context.app,
+          data: data || {}});
+      } catch (e) {
+        if (e instanceof AcquisitionError) {
+          throw new functions.https.HttpsError(e.code, e.message);
+        }
+        console.error(e);
+        throw new functions.https.HttpsError("internal",
+            "L'opération n'a pas pu aboutir. Réessayez.");
+      }
+    });
+
+const commissions = require("./kitunga/acquisition/commissions");
+
+/** Abonnement payé (vérifié chez MTN) : commission « premier abonnement ». */
+exports.kitungaOnSubscriptionPaid = functions.region("us-west1")
+    .runWith({secrets: ["ACQ_IDENTITY_KEY"]})
+    .firestore.document("Paiement/{paymentId}")
+    .onUpdate((change, context) => commissions.processSubscriptionPayment({
+      db: admin.firestore(), paymentId: context.params.paymentId,
+      before: change.before.data(), after: change.after.data(),
+      identitySecret: process.env.ACQ_IDENTITY_KEY}));
+
+/** Nouvelle attribution : commission d'activation si déjà attestée. */
+exports.kitungaOnAttributionCreated = functions.region("us-west1")
+    .firestore.document("acquisition_attributions/{clientUid}")
+    .onCreate((snap, context) => commissions.tryActivationCommission({
+      db: admin.firestore(), clientUid: context.params.clientUid}));
+
+/** Activation devenue vérifiée : commission d'activation des clients liés. */
+exports.kitungaOnActivationVerified = functions.region("us-west1")
+    .firestore.document("app_activations/{installation}")
+    .onWrite((change, context) => {
+      const after = change.after.exists ? change.after.data() : null;
+      const before = change.before.exists ? change.before.data() : null;
+      if (!after || after.verified !== true ||
+        (before && before.verified === true)) {
+        return null;
+      }
+      return commissions.activationCommissionsForInstallation({
+        db: admin.firestore(), installation: context.params.installation});
+    });
+
 /** Démarre un paiement MoMo : montant recalculé par le serveur. */
 exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,

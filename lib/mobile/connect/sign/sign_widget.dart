@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'sign_model.dart';
+import '/backend/acquisition.dart';
 export 'sign_model.dart';
 
 /// Page d'inscription utilisateur
@@ -39,10 +40,21 @@ class _SignWidgetState extends State<SignWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // Code commercial : prérempli et verrouillé s'il a été reçu à l'installation.
+  final _referralCodeController = TextEditingController();
+  bool _referralCodeLocked = false;
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => SignModel());
+    KitungaAcquisition.savedCode().then((code) {
+      if (code == null || !mounted) return;
+      safeSetState(() {
+        _referralCodeController.text = code;
+        _referralCodeLocked = true;
+      });
+    });
 
     _model.businessNameTextController ??= TextEditingController();
     _model.businessNameFocusNode ??= FocusNode();
@@ -85,6 +97,7 @@ class _SignWidgetState extends State<SignWidget> {
 
   @override
   void dispose() {
+    _referralCodeController.dispose();
     _model.dispose();
 
     super.dispose();
@@ -130,6 +143,13 @@ class _SignWidgetState extends State<SignWidget> {
             isSubscribed: false,
             subscribeType: _model.subscribTypeUserValue,
           ));
+
+      // Module commercial : attribution au commercial (sans attendre).
+      final referralCode = _referralCodeController.text.trim();
+      if (referralCode.isNotEmpty && !_referralCodeLocked) {
+        await KitungaAcquisition.rememberManualCode(referralCode);
+      }
+      KitungaAcquisition.syncNow();
 
       await showDialog(
         context: context,
@@ -318,6 +338,34 @@ class _SignWidgetState extends State<SignWidget> {
                     '06 XXX XX XX',
                     Icons.phone_outlined,
                   ),
+                ),
+                const SizedBox(height: 16.0),
+
+                // Code commercial (module commercial), facultatif
+                const KitungaFieldLabel('Code commercial (facultatif)'),
+                TextFormField(
+                  controller: _referralCodeController,
+                  readOnly: _referralCodeLocked,
+                  textCapitalization: TextCapitalization.characters,
+                  textInputAction: TextInputAction.next,
+                  style: fieldStyle,
+                  decoration: kitungaInputDecoration(
+                    context,
+                    'Ex. KTG001-X7P9',
+                    Icons.badge_outlined,
+                  ).copyWith(
+                    helperText: _referralCodeLocked
+                        ? 'Code reçu à l\'installation de l\'application.'
+                        : 'Donné par le commercial qui vous a présenté Kitunga.',
+                  ),
+                  validator: (value) {
+                    final code = (value ?? '').trim();
+                    if (code.isEmpty ||
+                        KitungaAcquisition.isValidCode(code)) {
+                      return null;
+                    }
+                    return 'Code invalide (exemple : KTG001-X7P9).';
+                  },
                 ),
                 const SizedBox(height: 16.0),
 

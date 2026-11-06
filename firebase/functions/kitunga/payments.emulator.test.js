@@ -190,6 +190,14 @@ test("visiteur : ne peut pas commander", async () => {
   await assert.rejects(start, /abonnement Kitunga actif/);
 });
 
+test("commercial ou rôle inconnu : pas de commande sans abonnement", async () => {
+  for (const role of ["Commercial", "Inconnu"]) {
+    await seed("Taille : Normal", 1);
+    await db.doc("User/buyer").update({role, subscribe_close_at: null});
+    await assert.rejects(start, /abonnement Kitunga actif/);
+  }
+});
+
 test("paiement refusé par MTN : échec enregistré", async () => {
   await seed("Taille : Normal", 1);
   const s = await start();

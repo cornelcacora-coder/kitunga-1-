@@ -27,8 +27,8 @@ typedef ServerPaymentResult = ({
 });
 
 /// Appel d'une fonction « onCall » par HTTP (protocole callable Firebase).
-Future<Map<String, dynamic>> _call(
-    String name, Map<String, dynamic> data) async {
+Future<Map<String, dynamic>> _call(String name, Map<String, dynamic> data,
+    {String? appCheckToken}) async {
   final token = await FirebaseAuth.instance.currentUser?.getIdToken();
   if (token == null) throw ServerPaymentException('Connexion requise.');
   final http.Response res;
@@ -39,6 +39,7 @@ Future<Map<String, dynamic>> _call(
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
+            if (appCheckToken != null) 'X-Firebase-AppCheck': appCheckToken,
           },
           body: jsonEncode({'data': data}),
         )
@@ -63,9 +64,10 @@ Future<Map<String, dynamic>> _call(
 
 /// Appelle une Cloud Function Kitunga. Les erreurs sont levées en
 /// [ServerPaymentException], avec un message à montrer tel quel.
+/// [appCheckToken] : jeton App Check facultatif (module commercial).
 Future<Map<String, dynamic>> kitungaCallFunction(
-        String name, Map<String, dynamic> data) =>
-    _call(name, data);
+        String name, Map<String, dynamic> data, {String? appCheckToken}) =>
+    _call(name, data, appCheckToken: appCheckToken);
 
 /// Lance le paiement puis attend la validation du client (code PIN MTN).
 /// Le serveur recalcule prix, frais et stock ; il crée la commande.

@@ -15,6 +15,11 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rxdart/rxdart.dart';
+import '/backend/backend.dart';
+import '/sales/sales_home_widget.dart';
+import '/backend/acquisition.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +27,8 @@ void main() async {
   usePathUrlStrategy();
 
   await initFirebase();
+  // Module commercial : code reçu à l'installation (sans attendre).
+  KitungaAcquisition.start();
 
   // Données de formatage des dates en français (voir dateTimeFormat).
   await initializeDateFormatting('fr');
@@ -158,6 +165,15 @@ class _NavBarPageState extends State<NavBarPage> {
   String _currentPageName = 'Home';
   late Widget? _currentPage;
 
+  // Rôle relu dans Firestore : un compte Commercial a son propre accueil.
+  late final Stream<String> _role = FirebaseAuth.instance
+      .authStateChanges()
+      .switchMap<String>((user) => user == null
+          ? Stream.value('')
+          : UserRecord.getDocument(UserRecord.collection.doc(user.uid))
+              .map((u) => u.role)
+              .handleError((_) {}));
+
   @override
   void initState() {
     super.initState();
@@ -234,6 +250,15 @@ class _NavBarPageState extends State<NavBarPage> {
 
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder<String>(
+      stream: _role,
+      builder: (context, snapshot) => snapshot.data == 'Commercial'
+          ? const SalesHomeWidget()
+          : _buildTabs(context),
+    );
+  }
+
+  Widget _buildTabs(BuildContext context) {
     final tabs = {
       'Home': HomeWidget(),
       'Order': OrderWidget(),

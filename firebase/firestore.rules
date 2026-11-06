@@ -26,13 +26,16 @@ service cloud.firestore {
       return role in ['User', 'Guest'];
     }
 
-    // Abonnement client obligatoire pour commander : la date de fin
-    // (subscribe_close_at) n'est prolongée que par le serveur après paiement.
+    // Droit de commander : vendeurs, livreurs et admins, ou client abonné
+    // (subscribe_close_at n'est prolongée que par le serveur après paiement).
+    // Tout autre rôle (Guest, Commercial, rôle inconnu) est refusé. Même liste
+    // que ROLES_WITHOUT_SUBSCRIPTION (subscriptions.js) et kitungaCanOrder.
     function canOrder() {
       let u = get(me()).data;
-      return u.get('role', 'User') != 'Guest'
-        && (u.get('role', 'User') != 'User'
-            || u.get('subscribe_close_at', timestamp.value(0)) > request.time);
+      let role = u.get('role', 'User');
+      return role in ['Seller', 'Deliver', 'Admin']
+        || ((role == 'User' || role == '')
+            && u.get('subscribe_close_at', timestamp.value(0)) > request.time);
     }
 
     // Le rôle se choisit une seule fois : à l'inscription (profil encore sans
@@ -218,6 +221,113 @@ service cloud.firestore {
       allow read: if isAdmin() || (signedIn() && resource.data.get('user_ref', null) == me());
       allow update: if false;
       allow delete: if isAdmin();
+    }
+
+    // ── Module commercial (voir functions/README-ACQUISITION.md) ────────────
+    // Tout est écrit par le serveur (Admin SDK) : aucune application ne peut
+    // créer, modifier ou supprimer ces documents, pas même l'admin depuis le
+    // tableau de bord (ses actions passent par des fonctions qui vérifient et
+    // journalisent). Un commercial ne lit que les documents qui portent son
+    // identifiant (agent_uid) ; ses requêtes doivent filtrer sur ce champ.
+    function isCommercial() {
+      return signedIn() && myRole() == 'Commercial';
+    }
+
+    function isOwnAgentData() {
+      return isCommercial()
+        && resource.data.get('agent_uid', '') == request.auth.uid;
+    }
+
+    match /sales_agents/{agentUid} {
+      allow read: if isAdmin() || (isCommercial() && request.auth.uid == agentUid);
+      allow write: if false;
+    }
+
+    match /acquisition_campaigns/{id} {
+      allow read: if isAdmin() || isCommercial();
+      allow write: if false;
+    }
+
+    match /commission_rules/{id} {
+      allow read: if isAdmin() || isCommercial();
+      allow write: if false;
+    }
+
+    match /campaign_agents/{id} {
+      allow read: if isAdmin() || isOwnAgentData();
+      allow write: if false;
+    }
+
+    match /referral_codes/{code} {
+      allow read: if isAdmin() || isOwnAgentData();
+      allow write: if false;
+    }
+
+    // Fiche client réduite (pas de téléphone, d'email ni de commande).
+    match /acquisition_attributions/{clientUid} {
+      allow read: if isAdmin() || isOwnAgentData();
+      allow write: if false;
+    }
+
+    match /commission_transactions/{id} {
+      allow read: if isAdmin() || isOwnAgentData();
+      allow write: if false;
+    }
+
+    match /commission_payouts/{id} {
+      allow read: if isAdmin() || isOwnAgentData();
+      allow write: if false;
+
+      match /items/{itemId} {
+        allow read: if isAdmin() || isOwnAgentData();
+        allow write: if false;
+      }
+    }
+
+    // Données de suivi et de contrôle : administrateur seulement.
+    match /sales_agent_keys/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /acquisition_touches/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /app_activations/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /attribution_identity_keys/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /acquisition_events/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /audit_logs/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /commission_payer_keys/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /acquisition_limits/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /acquisition_counters/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
   }
 }

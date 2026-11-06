@@ -22,11 +22,16 @@ String kitungaSubscriptionLabel(UserRecord user) {
   return user.subscribeType.isNotEmpty ? user.subscribeType : 'Abonné';
 }
 
+/// Rôles qui commandent sans abonnement : même liste que les règles
+/// Firestore (canOrder) et le serveur (ROLES_WITHOUT_SUBSCRIPTION).
+const kRolesWithoutSubscription = ['Seller', 'Deliver', 'Admin'];
+
 bool kitungaCanOrder() {
   if (currentUserReference == null) return false;
   final role = valueOrDefault(currentUserDocument?.role, 'User');
-  if (role == 'Guest') return false;
-  return role != 'User' || kitungaSubscriptionActive();
+  if (kRolesWithoutSubscription.contains(role)) return true;
+  // Guest, Commercial ou rôle inconnu : pas de commande.
+  return role == 'User' && kitungaSubscriptionActive();
 }
 
 /// Message affiché à un client sans abonnement actif. Aucun lien vers la
