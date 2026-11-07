@@ -198,6 +198,17 @@ test("commercial ou rôle inconnu : pas de commande sans abonnement", async () =
   }
 });
 
+test("confirmation : non connecté ou référence invalide, refus propre", async () => {
+  for (const confirm of [confirmPayment, confirmSubscription]) {
+    await assert.rejects(confirm({db, momo, uid: null, referenceId: "abc12345"}),
+        /Connexion requise/);
+    for (const bad of ["", "a/b/c", "x"]) {
+      await assert.rejects(confirm({db, momo, uid: "buyer", referenceId: bad}),
+          /Paiement introuvable/);
+    }
+  }
+});
+
 test("paiement refusé par MTN : échec enregistré", async () => {
   await seed("Taille : Normal", 1);
   const s = await start();

@@ -93,6 +93,10 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
  * Renvoie {status: 'pending'|'failed'|'paid'|'paid_refund', orderPath?}.
  */
 async function confirmPayment({db, momo, uid, referenceId}) {
+  if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
+  if (!/^[A-Za-z0-9-]{8,64}$/.test(String(referenceId || ""))) {
+    throw new PaymentError("not-found", "Paiement introuvable.");
+  }
   const payRef = db.doc(`Paiement/${referenceId}`);
   const pay = await payRef.get();
   if (!pay.exists || pay.get("user_ref").id !== uid ||

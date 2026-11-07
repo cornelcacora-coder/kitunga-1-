@@ -76,6 +76,10 @@ async function startSubscription({db, momo, uid, plan, phone}) {
  * Renvoie {status: 'pending'|'failed'|'paid', until?}.
  */
 async function confirmSubscription({db, momo, uid, referenceId}) {
+  if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
+  if (!/^[A-Za-z0-9-]{8,64}$/.test(String(referenceId || ""))) {
+    throw new PaymentError("not-found", "Paiement introuvable.");
+  }
   const payRef = db.doc(`Paiement/${referenceId}`);
   const pay = await payRef.get();
   if (!pay.exists || pay.get("kind") !== "subscription" ||

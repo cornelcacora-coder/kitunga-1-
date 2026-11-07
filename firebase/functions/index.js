@@ -67,15 +67,21 @@ const subscriptions = require("./kitunga/subscriptions");
 const partners = require("./kitunga/partners");
 const {reconcilePending} = require("./kitunga/reconcile");
 
-const MOMO_SECRETS = [
+// Encaissement (Collection) : paiements et abonnements. Remboursements
+// (Disbursement) : seulement kitungaRefundOrder, qui exige un compte MTN
+// Disbursement approvisionné.
+const COLLECTION_SECRETS = [
   "MOMO_COLLECTION_USER", "MOMO_COLLECTION_KEY", "MOMO_COLLECTION_SUBSCRIPTION",
+];
+const MOMO_SECRETS = [
+  ...COLLECTION_SECRETS,
   "MOMO_DISBURSEMENT_USER", "MOMO_DISBURSEMENT_KEY",
   "MOMO_DISBURSEMENT_SUBSCRIPTION",
 ];
 
 function callable(handler) {
   return functions.region("us-west1")
-      .runWith({secrets: MOMO_SECRETS, timeoutSeconds: 60})
+      .runWith({secrets: COLLECTION_SECRETS, timeoutSeconds: 60})
       .https.onCall(async (data, context) => {
         try {
           return await handler(data || {}, context.auth && context.auth.uid);
@@ -265,7 +271,7 @@ exports.kitungaConfirmSubscription = callable((data, uid) =>
 
 /** Termine les paiements validés chez MTN mais jamais confirmés. */
 exports.kitungaReconcilePayments = functions.region("us-west1")
-    .runWith({secrets: MOMO_SECRETS})
+    .runWith({secrets: COLLECTION_SECRETS})
     .pubsub.schedule("every 5 minutes")
     .onRun(() => reconcilePending({db: admin.firestore(), momo}));
 
