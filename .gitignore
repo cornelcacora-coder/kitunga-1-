@@ -24,3 +24,6 @@ logs/
 *.log
 .firebase/
 users_temp.json
+
+# Dépendances Node (Cloud Functions)
+node_modules/
