@@ -2,6 +2,7 @@ import 'dart:async';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_categories.dart';
+import '/backend/kitunga_banners.dart';
 import '/mobile/main_app/search/kitunga_search_page.dart' show openKitungaSearch;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -41,11 +42,13 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
   @override
   void initState() {
     super.initState();
+    KitungaBannerStore.instance.addListener(_onBanners);
     // Auto-scroll toutes les 4 secondes
     _bannerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted) return;
-      if (_bannerController.hasClients) {
-        final next = (_bannerPage + 1) % _bannerSlides.length;
+      final count = _bannerSlides.length;
+      if (count > 1 && _bannerController.hasClients) {
+        final next = (_bannerPage + 1) % count;
         _bannerController.animateToPage(
           next,
           duration: const Duration(milliseconds: 600),
@@ -55,27 +58,18 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     });
   }
 
-  // Données des slides du carrousel d'accueil (photos adaptées à la maquette)
-  static const _bannerSlides = [
-    (
-      image: 'assets/images/Girl_Bag2.jpg',
-      title1: 'Tout au même',
-      title2: 'endroit',
-      subtitle: 'Boutiques, restaurants\net pharmacies',
-    ),
-    (
-      image: 'assets/images/youngAfrican.jpg',
-      title1: 'Livraison',
-      title2: 'rapide',
-      subtitle: 'Recevez vos commandes\nà domicile',
-    ),
-    (
-      image: 'assets/images/Gemini_Generated_Image_xb96ubxb96ubxb96.png',
-      title1: 'Produits',
-      title2: 'frais',
-      subtitle: 'Alimentation, marché\net épicerie',
-    ),
-  ];
+  // Publicités et promotions du carrousel, gérées par l'admin (page
+  // « Publicités ») ; les 3 bannières d'origine tant qu'elles ne sont pas
+  // chargées.
+  List<KitungaBanner> get _bannerSlides => KitungaBannerStore.instance.list;
+
+  void _onBanners() {
+    if (!mounted) return;
+    setState(() {
+      final count = _bannerSlides.length;
+      if (_bannerPage >= count) _bannerPage = 0;
+    });
+  }
 
   /// Catégories gérées par l'admin (les 5 d'origine en secours).
   static List<KitungaCategory> get _categories =>
@@ -90,6 +84,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
   @override
   void dispose() {
     _bannerTimer?.cancel();
+    KitungaBannerStore.instance.removeListener(_onBanners);
     _searchController.dispose();
     _bannerController.dispose();
     super.dispose();
@@ -530,6 +525,8 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
 
   /// Bannière Hero carrousel avec PageView et points de pagination
   Widget _buildHeroBanner(BuildContext context) {
+    // Aucune bannière diffusée (toutes désactivées par l'admin).
+    if (_bannerSlides.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
@@ -557,11 +554,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     fit: StackFit.expand,
                     children: [
                       // Photo de fond
-                      Image.asset(
-                        slide.image,
-                        fit: BoxFit.cover,
-                        alignment: Alignment.centerRight,
-                      ),
+                      KitungaBannerImage(slide.image, color: slide.color),
 
                       // Dégradé rouge sur la gauche
                       DecoratedBox(
@@ -570,10 +563,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                             colors: [
-                              const Color(0xFFD60808),
-                              const Color(0xFFE51A1A),
-                              const Color(0xFFE51A1A).withOpacity(0.92),
-                              const Color(0xFFE51A1A).withOpacity(0.35),
+                              Color.lerp(slide.color, Colors.black, 0.08)!,
+                              slide.color,
+                              slide.color.withOpacity(0.92),
+                              slide.color.withOpacity(0.35),
                               Colors.transparent,
                             ],
                             stops: const [0.0, 0.35, 0.52, 0.70, 0.88],
@@ -595,6 +588,25 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                if (slide.badge.isNotEmpty)
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 4.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0, vertical: 2.0),
+                                    decoration: BoxDecoration(
+                                      color: slide.accent,
+                                      borderRadius: BorderRadius.circular(6.0),
+                                    ),
+                                    child: Text(
+                                      slide.badge,
+                                      style: GoogleFonts.inter(
+                                        color: slide.color,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                if (slide.title1.isNotEmpty)
                                 Text(
                                   slide.title1,
                                   maxLines: 1,
@@ -606,11 +618,12 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                     height: 1.1,
                                   ),
                                 ),
+                                if (slide.title2.isNotEmpty)
                                 Text(
                                   slide.title2,
                                   maxLines: 1,
                                   style: GoogleFonts.interTight(
-                                    color: const Color(0xFFFFD200),
+                                    color: slide.accent,
                                     fontSize: 29.0,
                                     fontWeight: FontWeight.w900,
                                     fontStyle: FontStyle.italic,
@@ -631,9 +644,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                               ],
                             ),
                             InkWell(
-                              onTap: () {
-                                context.pushNamed(ShopsWidget.routeName);
-                              },
+                              onTap: () => openKitungaBanner(context, slide),
                               borderRadius: BorderRadius.circular(20.0),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
@@ -653,17 +664,17 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'Découvrir',
+                                      slide.button,
                                       style: GoogleFonts.inter(
-                                        color: const Color(0xFFE51A1A),
+                                        color: slide.color,
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     const SizedBox(width: 4.0),
-                                    const Icon(
+                                    Icon(
                                       Icons.chevron_right_rounded,
-                                      color: Color(0xFFE51A1A),
+                                      color: slide.color,
                                       size: 16.0,
                                     ),
                                   ],

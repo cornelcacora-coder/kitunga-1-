@@ -350,6 +350,25 @@ exports.kitungaReportDeliveryIssue = acquisitionCallable((data, uid) =>
 exports.kitungaOrderReceipt = acquisitionCallable((data, uid) =>
   delivery.orderReceipt({db: admin.firestore(), uid, data}));
 
+// ── Publicités et promotions (carrousel d'accueil) ──────────────────────
+const banners = require("./kitunga/banners");
+
+exports.kitungaListBanners = acquisitionCallable((data, uid) =>
+  banners.listBanners({db: admin.firestore(), uid}));
+exports.kitungaSaveBanner = acquisitionCallable((data, uid) =>
+  banners.saveBanner({db: admin.firestore(), uid, data}));
+exports.kitungaSetBannerActive = acquisitionCallable((data, uid) =>
+  banners.setBannerActive({db: admin.firestore(), uid, data}));
+exports.kitungaReorderBanners = acquisitionCallable((data, uid) =>
+  banners.reorderBanners({db: admin.firestore(), uid, data}));
+exports.kitungaDeleteBanner = acquisitionCallable((data, uid) =>
+  banners.deleteBanner({db: admin.firestore(), uid, data}));
+/** Bannières diffusées, lues par l'application (sans connexion). */
+exports.kitungaPublicBanners = acquisitionCallable(() =>
+  banners.publicBanners({db: admin.firestore()}));
+exports.kitungaBannerClick = acquisitionCallable((data) =>
+  banners.bannerClick({db: admin.firestore(), data}));
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));

@@ -29,9 +29,11 @@ typedef ServerPaymentResult = ({
 
 /// Appel d'une fonction « onCall » par HTTP (protocole callable Firebase).
 Future<Map<String, dynamic>> _call(String name, Map<String, dynamic> data,
-    {String? appCheckToken}) async {
+    {String? appCheckToken, bool public = false}) async {
   final token = await FirebaseAuth.instance.currentUser?.getIdToken();
-  if (token == null) throw ServerPaymentException('Connexion requise.');
+  if (token == null && !public) {
+    throw ServerPaymentException('Connexion requise.');
+  }
   final http.Response res;
   try {
     res = await http
@@ -39,7 +41,7 @@ Future<Map<String, dynamic>> _call(String name, Map<String, dynamic> data,
           Uri.parse('$_functionsUrl/$name'),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
+            if (token != null) 'Authorization': 'Bearer $token',
             if (appCheckToken != null) 'X-Firebase-AppCheck': appCheckToken,
           },
           body: jsonEncode({'data': data}),
@@ -70,6 +72,11 @@ Future<Map<String, dynamic>> kitungaCallFunction(
         String name, Map<String, dynamic> data,
         {String? appCheckToken}) =>
     _call(name, data, appCheckToken: appCheckToken);
+
+/// Lecture publique (ex. bannières d'accueil) : possible sans être connecté.
+Future<Map<String, dynamic>> kitungaCallPublicFunction(
+        String name, Map<String, dynamic> data) =>
+    _call(name, data, public: true);
 
 /// Lance le paiement puis attend la validation du client (code PIN MTN).
 /// Le serveur recalcule prix, frais et stock ; il crée la commande.

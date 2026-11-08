@@ -23,6 +23,7 @@ const _webAdminPaths = {
   '/commercial',
   '/gestion',
   '/categories',
+  '/publicites',
   '/produits',
   '/commercants',
   '/livreurs',

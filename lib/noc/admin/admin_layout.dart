@@ -35,6 +35,7 @@ class AdminNavGroup {
 class AdminPaths {
   static const dashboard = '/supervisionDashboard';
   static const categories = '/categories';
+  static const banners = '/publicites';
   static const products = '/produits';
   static const sellers = '/commercants';
   static const delivers = '/livreurs';
@@ -70,6 +71,10 @@ const List<AdminNavGroup> kAdminMenu = [
         path: AdminPaths.products),
     AdminNavItem('missing', 'Produits sans photo', Icons.hide_image_rounded,
         path: AdminPaths.missingImages),
+  ]),
+  const AdminNavGroup('Marketing', Icons.campaign_rounded, [
+    AdminNavItem('banners', 'Publicités & promotions', Icons.view_carousel_rounded,
+        path: AdminPaths.banners),
   ]),
   const AdminNavGroup('Partenaires', Icons.handshake_rounded, [
     AdminNavItem('sellers', 'Commerçants & boutiques', Icons.storefront_rounded,
