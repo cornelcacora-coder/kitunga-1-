@@ -437,8 +437,12 @@ class _NOCSellersWidgetState extends State<NOCSellersWidget> {
                       padding: EdgeInsets.all(20.0),
                       child: StreamBuilder<List<UserRecord>>(
                         stream: queryUserRecord(
-                          queryBuilder: (userRecord) => userRecord.where(
-                            'category',
+                          queryBuilder: (userRecord) => userRecord
+                  // Commerçants seulement (« Tous » ne doit pas afficher
+                  // les clients ni les administrateurs).
+                  .where('role', isEqualTo: 'Seller')
+                  .where(
+                    'category',
                             isEqualTo:
                                 _model.category != '' ? _model.category : null,
                           ),

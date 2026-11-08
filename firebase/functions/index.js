@@ -267,6 +267,22 @@ const agentQuery = require("./kitunga/acquisition/agent_query");
 exports.kitungaSalesAgentQuery = acquisitionCallable((data, uid) =>
   agentQuery.salesAgentQuery({db: admin.firestore(), uid, data}));
 
+// ── Gestion (admin) : remboursements, abonnements, comptes ─────────────────
+const adminOps = require("./kitunga/admin_ops");
+
+exports.kitungaAdminOpsQuery = acquisitionCallable((data, uid) =>
+  adminOps.adminOpsQuery({db: admin.firestore(), uid, data}));
+/** Remboursement fait à la main par l'admin (référence du transfert). */
+exports.kitungaMarkRefunded = acquisitionCallable((data, uid) =>
+  adminOps.markRefunded({db: admin.firestore(), uid, data}));
+/** Abonnement client offert ou prolongé (sans paiement, sans commission). */
+exports.kitungaGrantSubscription = acquisitionCallable((data, uid) =>
+  adminOps.grantSubscription({db: admin.firestore(), uid, data}));
+/** Suspension ou réactivation d'un client, commerçant ou livreur. */
+exports.kitungaSetAccountStatus = acquisitionCallable((data, uid) =>
+  adminOps.setAccountStatus({db: admin.firestore(), auth: admin.auth(), uid,
+    data}));
+
 /** Démarre un paiement MoMo : montant recalculé par le serveur. */
 exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,

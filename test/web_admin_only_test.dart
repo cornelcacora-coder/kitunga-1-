@@ -9,6 +9,7 @@ void main() {
       '/admin',
       '/supervisionDashboard',
       '/commercial',
+      '/gestion',
       '/forgotPassword',
       '/forgotPasswordLink',
       '/sign?accessibility=Admin',

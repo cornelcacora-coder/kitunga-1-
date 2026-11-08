@@ -1,6 +1,7 @@
 import '/noc/admin_guard.dart';
 import '/noc/admin_login/admin_login_widget.dart';
 import '/noc/sales/sales_admin_widget.dart';
+import '/noc/ops/admin_ops_widget.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'web_admin_only.dart';
 import 'dart:async';
@@ -123,6 +124,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: SalesAdminWidget.routePath,
           builder: (context, params) =>
               KitungaAdminGuard(child: SalesAdminWidget()),
+        ),
+        FFRoute(
+          name: AdminOpsWidget.routeName,
+          path: AdminOpsWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminOpsWidget()),
         ),
         FFRoute(
           name: TemplateWidget.routeName,

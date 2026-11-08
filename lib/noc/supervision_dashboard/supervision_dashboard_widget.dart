@@ -1,6 +1,7 @@
 import '/noc/ops_alerts.dart';
 import '/noc/ops_panels.dart';
 import '/noc/sales/sales_admin_widget.dart';
+import '/noc/ops/admin_ops_widget.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/alert_card_widget.dart';
@@ -974,6 +975,34 @@ class _SupervisionDashboardWidgetState
                                       ].divide(SizedBox(width: 16.0)),
                                     ),
                                   ),
+                                ),
+                              ),
+                            ),
+                            // Gestion : remboursements, abonnements, comptes.
+                            InkWell(
+                              borderRadius: BorderRadius.circular(8.0),
+                              onTap: () =>
+                                  context.pushNamed(AdminOpsWidget.routeName),
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.admin_panel_settings_outlined,
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryText,
+                                      size: 20.0,
+                                    ),
+                                    SizedBox(width: 12.0),
+                                    Expanded(
+                                      child: Text(
+                                        'Gestion',
+                                        maxLines: 1,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
