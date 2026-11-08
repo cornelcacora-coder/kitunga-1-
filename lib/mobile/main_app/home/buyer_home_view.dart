@@ -1,6 +1,7 @@
 import 'dart:async';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/backend/kitunga_categories.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -75,33 +76,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     ),
   ];
 
-  static const _categories = [
-    (
-      name: 'Boutique',
-      image: 'assets/images/categories/boutique.png',
-      bg: Color(0xFFFFE4E1),
-    ),
-    (
-      name: 'Restaurant',
-      image: 'assets/images/categories/restaurant.png',
-      bg: Color(0xFFFFEBD6),
-    ),
-    (
-      name: 'Pharmacie',
-      image: 'assets/images/categories/pharmacie.png',
-      bg: Color(0xFFE2F5E9),
-    ),
-    (
-      name: 'Magasin',
-      image: 'assets/images/categories/magasin.png',
-      bg: Color(0xFFE2EDFB),
-    ),
-    (
-      name: 'Fast Food',
-      image: 'assets/images/categories/fastfood.png',
-      bg: Color(0xFFFFF3D1),
-    ),
-  ];
+  /// Catégories gérées par l'admin (les 5 d'origine en secours).
+  static List<KitungaCategory> get _categories =>
+      KitungaCategoryStore.instance.list;
 
   static const _rows = [
     (category: 'Boutique', title: 'Boutiques à la une'),
@@ -801,7 +778,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
         const SizedBox(height: 14.0),
         SizedBox(
           height: 104.0,
-          child: ListView.separated(
+          // Reconstruit quand la liste de l'admin arrive du serveur.
+          child: ListenableBuilder(
+            listenable: KitungaCategoryStore.instance,
+            builder: (context, _) => ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             itemCount: _categories.length,
@@ -818,10 +798,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                       height: 66.0,
                       padding: const EdgeInsets.all(11.0),
                       decoration: BoxDecoration(
-                        color: c.bg,
+                        color: c.pastel,
                         borderRadius: BorderRadius.circular(18.0),
                       ),
-                      child: Image.asset(c.image, fit: BoxFit.contain),
+                      child: KitungaCategoryImage(c.image),
                     ),
                     const SizedBox(height: 6.0),
                     Text(
@@ -836,6 +816,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                 ),
               );
             },
+          ),
           ),
         ),
       ],

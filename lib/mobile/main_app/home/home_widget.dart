@@ -16,6 +16,7 @@ import '/mobile/components/user_card/user_card_widget.dart';
 import 'dart:math';
 import 'dart:ui';
 import '/index.dart';
+import '/backend/kitunga_categories.dart' show kitungaShopIsActive;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -132,7 +133,9 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
             ),
           );
         }
-        List<UserRecord> homeUserRecordList = snapshot.data!;
+        // Commerces désactivés par l'admin : masqués.
+        List<UserRecord> homeUserRecordList =
+            snapshot.data!.where(kitungaShopIsActive).toList();
 
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return GestureDetector(

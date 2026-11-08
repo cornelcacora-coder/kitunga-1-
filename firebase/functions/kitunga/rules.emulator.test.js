@@ -336,3 +336,26 @@ test("Paiement : champs réservés au serveur interdits", async () => {
   }
   await assertFails(updateDoc(doc(d, "Paiement/real-mtn-ref"), {status: "Réussi"}));
 });
+
+test("catégories : lecture publique, écriture par le serveur seulement",
+    async () => {
+      await seed();
+      await env.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), "Categories/c1"), {name: "Boutique"});
+      });
+      const anon = env.unauthenticatedContext().firestore();
+      await assertSucceeds(getDoc(doc(anon, "Categories/c1")));
+      await assertSucceeds(getDocs(collection(db("buyer"), "Categories")));
+      for (const uid of ["buyer", "seller", "admin"]) {
+        await assertFails(setDoc(doc(db(uid), "Categories/c2"), {name: "X"}));
+        await assertFails(updateDoc(doc(db(uid), "Categories/c1"),
+            {name: "Y"}));
+      }
+    });
+
+test("commerces désactivés : la liste publique reste lisible", async () => {
+  await seed({}, {shop2: {role: "Seller", account_status: "suspended"}});
+  await assertSucceeds(getDocs(query(collection(db("buyer"), "User"),
+      where("role", "==", "Seller"),
+      where("account_status", "==", "suspended"))));
+});

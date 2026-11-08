@@ -57,7 +57,8 @@ class _KitungaCategoriesPageState extends State<KitungaCategoriesPage> {
                 builder: (context, snapshot) {
                   if (snapshot.hasError) return _errorState(theme);
                   if (!snapshot.hasData) return _loadingState(theme);
-                  return _content(theme, snapshot.data!);
+                  return _content(theme,
+                      snapshot.data!.where(kitungaShopIsActive).toList());
                 },
               ),
             ),
@@ -345,7 +346,7 @@ class _CategoryCard extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(4.0),
-                  child: Image.asset(image, fit: BoxFit.contain),
+                  child: KitungaCategoryImage(image),
                 ),
               ),
               SizedBox(height: 8.0),

@@ -1,4 +1,6 @@
 import '/backend/backend.dart';
+import '/backend/kitunga_categories.dart';
+export '/backend/kitunga_categories.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -7,34 +9,10 @@ import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Types de commerce : image correspondante et fond pastel distinct.
-const kitungaCategories = [
-  (
-    name: 'Boutique',
-    image: 'assets/images/categories/boutique.png',
-    pastel: Color(0xFFFFE4E1),
-  ),
-  (
-    name: 'Restaurant',
-    image: 'assets/images/categories/restaurant.png',
-    pastel: Color(0xFFFFEBD6),
-  ),
-  (
-    name: 'Pharmacie',
-    image: 'assets/images/categories/pharmacie.png',
-    pastel: Color(0xFFE2F5E9),
-  ),
-  (
-    name: 'Magasin',
-    image: 'assets/images/categories/magasin.png',
-    pastel: Color(0xFFE2EDFB),
-  ),
-  (
-    name: 'Fast Food',
-    image: 'assets/images/categories/fastfood.png',
-    pastel: Color(0xFFFFF3D1),
-  ),
-];
+/// Types de commerce : image et fond pastel. Gérés par l'admin ; les 5
+/// d'origine tant que la liste n'est pas chargée (voir kitunga_categories.dart).
+List<KitungaCategory> get kitungaCategories =>
+    KitungaCategoryStore.instance.list;
 
 /// Fond pastel d'une catégorie (atténué en mode sombre).
 Color kitungaCategoryBackground(BuildContext context, String name) {
@@ -169,7 +147,7 @@ class KitungaCategoryTile extends StatelessWidget {
                 color: kitungaCategoryBackground(context, name),
                 borderRadius: BorderRadius.circular(size * 0.28),
               ),
-              child: Image.asset(image, fit: BoxFit.contain),
+              child: KitungaCategoryImage(image),
             ),
             SizedBox(height: 8.0),
             Text(
@@ -444,7 +422,10 @@ class KitungaProductListPage extends StatelessWidget {
     return _SeeMoreScaffold(
       title: 'Nos produits',
       subtitle: 'Les derniers articles ajoutés par nos commerçants',
-      child: StreamBuilder<List<ProductRecord>>(
+      child: StreamBuilder<Set<String>>(
+        stream: kitungaSuspendedShopPaths(),
+        // En cas d'erreur de lecture, rien n'est masqué en plus.
+        builder: (context, suspended) => StreamBuilder<List<ProductRecord>>(
         stream: queryProductRecord(
           queryBuilder: (q) => q.orderBy('created_at', descending: true),
           limit: 60,
@@ -454,7 +435,11 @@ class KitungaProductListPage extends StatelessWidget {
             return Center(
                 child: CircularProgressIndicator(color: theme.primary));
           }
-          final products = snapshot.data!.where(kitungaIsPublished).toList();
+          final hidden = suspended.data ?? const <String>{};
+          final products = snapshot.data!
+              .where(kitungaIsPublished)
+              .where((p) => !hidden.contains(p.sellerRef?.path))
+              .toList();
           return KitungaPagedGrid<ProductRecord>(
             items: products,
             itemExtent: KitungaProductCard.gridExtent,
@@ -464,6 +449,7 @@ class KitungaProductListPage extends StatelessWidget {
             ),
           );
         },
+        ),
       ),
     );
   }

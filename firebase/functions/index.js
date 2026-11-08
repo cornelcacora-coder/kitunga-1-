@@ -283,6 +283,25 @@ exports.kitungaSetAccountStatus = acquisitionCallable((data, uid) =>
   adminOps.setAccountStatus({db: admin.firestore(), auth: admin.auth(), uid,
     data}));
 
+// ── Catalogue (admin) : catégories, produits, commerçants et livreurs ───────
+const catalog = require("./kitunga/catalog");
+
+exports.kitungaCatalogQuery = acquisitionCallable((data, uid) =>
+  catalog.catalogQuery({db: admin.firestore(), uid, data}));
+exports.kitungaSaveCategory = acquisitionCallable((data, uid) =>
+  catalog.saveCategory({db: admin.firestore(), uid, data}));
+exports.kitungaDeleteCategory = acquisitionCallable((data, uid) =>
+  catalog.deleteCategory({db: admin.firestore(), uid, data}));
+exports.kitungaSaveProduct = acquisitionCallable((data, uid) =>
+  catalog.saveProduct({db: admin.firestore(), uid, data}));
+exports.kitungaDeleteProduct = acquisitionCallable((data, uid) =>
+  catalog.deleteProduct({db: admin.firestore(), uid, data}));
+exports.kitungaSavePartner = acquisitionCallable((data, uid) =>
+  catalog.savePartner({db: admin.firestore(), uid, data}));
+/** Catégories visibles, lues par l'application mobile. */
+exports.kitungaPublicCategories = acquisitionCallable(() =>
+  catalog.publicCategories({db: admin.firestore()}));
+
 /** Démarre un paiement MoMo : montant recalculé par le serveur. */
 exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,

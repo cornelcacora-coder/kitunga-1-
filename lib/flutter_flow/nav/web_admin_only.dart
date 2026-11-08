@@ -13,6 +13,11 @@ const _webAdminPaths = {
   '/supervisionDashboard',
   '/commercial',
   '/gestion',
+  '/categories',
+  '/produits',
+  '/commercants',
+  '/livreurs',
+  '/clients',
   '/forgotPassword',
   '/forgotPasswordLink',
 };

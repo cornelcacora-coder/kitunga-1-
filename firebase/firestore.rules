@@ -87,6 +87,12 @@ service cloud.firestore {
       allow delete: if signedIn() && (resource.data.seller_ref == me() || isAdmin());
     }
 
+    // ── Categories (gérées par l'admin via les fonctions serveur) ─────────
+    match /Categories/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // ── Cart ───────────────────────────────────────────────────────────────
     match /Cart/{document} {
       allow create: if signedIn() && request.resource.data.user_ref == me()

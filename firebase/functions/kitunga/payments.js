@@ -46,6 +46,12 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
         "Un abonnement Kitunga actif est nécessaire pour commander.");
   }
   const sellerRef = db.doc(sellerPath);
+  // Commerce désactivé par l'admin : plus de commande possible.
+  const seller = await sellerRef.get();
+  if (seller.exists && seller.get("account_status") === "suspended") {
+    throw new PaymentError("failed-precondition",
+        "Ce commerce n'est plus disponible sur Kitunga.");
+  }
   const carts = await loadCart(db, userRef, sellerRef);
   if (carts.length === 0) {
     throw new PaymentError("failed-precondition", "Votre panier est vide.");

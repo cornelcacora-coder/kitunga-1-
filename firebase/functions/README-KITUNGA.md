@@ -101,3 +101,31 @@ L'écran de paiement est déjà prêt (`lib/backend/server_payment.dart`).
 Après le déploiement et la configuration des secrets, passer
 `const kServerPayment = false;` à `true`, recompiler et publier.
 L'ancien paiement direct reste utilisé tant que la valeur est `false`.
+
+## Administration : catalogue et partenaires (kitunga/catalog.js)
+
+Pages web admin (menu latéral à sections dépliables, `lib/noc/admin/`) :
+`/categories`, `/produits`, `/commercants`, `/livreurs`, `/clients`, en plus
+de `/gestion` et `/commercial`. Toutes les écritures passent par ces fonctions,
+réservées à l'admin et journalisées dans `audit_logs` :
+
+- `kitungaCatalogQuery` : lectures (vues `categories`, `products`, `partners`,
+  `clients`). À la première ouverture, les 5 catégories d'origine sont
+  recopiées dans la collection `Categories`.
+- `kitungaSaveCategory`, `kitungaDeleteCategory` : renommer une catégorie
+  met à jour `User.category` de ses commerces ; une catégorie utilisée ne se
+  supprime qu'en indiquant où déplacer ses commerces (`reassignTo`).
+- `kitungaSaveProduct`, `kitungaDeleteProduct` : mêmes champs que
+  l'application vendeur (`on_sale` = publié, photo obligatoire pour publier ;
+  `sale_price` = prix de vente ; `instant_disponibilty` = livraison express ;
+  `specifications` = mise en avant). La suppression retire le produit des
+  paniers non commandés ; les commandes gardent leur copie.
+- `kitungaSavePartner` : fiche d'un commerçant, d'un livreur ou d'un client
+  (client : nom et téléphone seulement). Création : `kitungaCreatePartner`.
+  « Supprimer » un compte = `kitungaSetAccountStatus` (désactivé, réactivable).
+- `kitungaPublicCategories` : catégories visibles, lues par l'application
+  mobile (`lib/backend/kitunga_categories.dart`), avec les 5 d'origine en
+  secours. L'application masque les commerces désactivés et leurs produits.
+
+Images : envoyées par l'interface dans le dossier Storage de l'admin ; le
+serveur n'accepte que des adresses Firebase Storage ou `asset:assets/…`.

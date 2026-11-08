@@ -93,7 +93,7 @@ class _ShopsWidgetState extends State<ShopsWidget> {
         child: StreamBuilder<List<UserRecord>>(
           stream: _shops,
           builder: (context, snapshot) {
-            final all = snapshot.data ?? [];
+            final all = (snapshot.data ?? []).where(kitungaShopIsActive).toList();
             final q = _norm(_query.trim());
             final shown = all.where((s) {
               if (q.isNotEmpty &&
@@ -202,7 +202,7 @@ class _ShopsWidgetState extends State<ShopsWidget> {
               color: kitungaCategoryBackground(context, _category),
               borderRadius: BorderRadius.circular(14.0),
             ),
-            child: Image.asset(image, fit: BoxFit.contain),
+            child: KitungaCategoryImage(image),
           ),
           SizedBox(width: 12.0),
           Expanded(
