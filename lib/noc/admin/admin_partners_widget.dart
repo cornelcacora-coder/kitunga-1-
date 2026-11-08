@@ -9,6 +9,7 @@ import 'admin_products_widget.dart' show loadAdminPartners;
 import 'admin_shell.dart';
 import '/backend/kitunga_cuisines.dart';
 import 'admin_menu_import.dart';
+import 'admin_launch_partners.dart';
 import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 
@@ -727,6 +728,7 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
   String _cover = '';
   bool _verified = false;
   final Set<String> _cuisines = {};
+  LaunchPartner? _template;
   bool _showPassword = false;
   bool _saving = false;
   String? _error;
@@ -754,6 +756,9 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
     });
     final messenger = ScaffoldMessenger.of(context);
     try {
+      // Fiche prête : logo intégré envoyé s'il n'a pas été remplacé.
+      final t = _template;
+      if (t != null && _photo.isEmpty) _photo = await uploadLaunchLogo(t) ?? '';
       final created = await salesCall('kitungaCreatePartner', {
         'email': _email.text.trim(),
         'password': _password.text,
@@ -776,8 +781,33 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
           if (_cuisines.isNotEmpty) 'cuisines': _cuisines.toList(),
         });
       }
+      // Fiche prête avec menu : plats créés tout de suite.
+      var menuNote = '';
+      if (t != null && t.menu.isNotEmpty) {
+        final lines = parseMenuText(t.menu).lines;
+        final sides = [
+          for (final l in lines)
+            if (l.section.toLowerCase().contains('accompagnement')) l,
+        ];
+        final r = await salesCall('kitungaImportMenu', {
+          'sellerUid': created['uid'],
+          'portions': 50,
+          'items': [
+            for (final l in lines)
+              {'section': l.section, 'name': l.name, 'price': l.price},
+          ],
+          if (sides.isNotEmpty)
+            'sideOption': {
+              'name': 'Accompagnement',
+              'choices': [
+                for (final s in sides) {'label': s.name, 'price': s.price},
+              ],
+            },
+        });
+        menuNote = ' · ${r['created']} plats ajoutés';
+      }
       messenger.showSnackBar(SnackBar(
-          content: Text(_seller ? 'Commerce créé' : 'Livreur créé'),
+          content: Text((_seller ? 'Commerce créé' : 'Livreur créé') + menuNote),
           backgroundColor: const Color(0xFF136B3D)));
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
@@ -787,6 +817,20 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         _error = '$e';
       });
     }
+  }
+
+  void _applyTemplate(LaunchPartner p) {
+    setState(() {
+      _template = p;
+      _name.text = p.name;
+      if (p.phone.isNotEmpty) _phone.text = p.phone;
+      _bio.text = p.bio;
+      if (p.hours.isNotEmpty) _hours.text = p.hours;
+      if (widget.categories.contains('Restaurant')) _category = 'Restaurant';
+      _cuisines
+        ..clear()
+        ..addAll(p.cuisines);
+    });
   }
 
   @override
@@ -802,6 +846,32 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
             'Le partenaire se connectera à l\'application mobile avec cet email '
             'et ce mot de passe. Communiquez-les-lui de façon sûre.',
             style: salesBody()),
+        if (_seller)
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text('Fiche prête :', style: salesBody()),
+              for (final p in kLaunchPartners)
+                ChoiceChip(
+                  avatar: CircleAvatar(
+                      backgroundImage: AssetImage(p.logoAsset)),
+                  label: Text(p.name),
+                  selected: _template == p,
+                  onSelected: _saving ? null : (_) => _applyTemplate(p),
+                ),
+            ],
+          ),
+        if (_template != null)
+          Text(
+              _template!.menu.isEmpty
+                  ? 'Logo, présentation et cuisines remplis. Le menu sera '
+                      'ajouté ensuite (« Importer un menu »).'
+                  : 'Logo, présentation, cuisines et menu '
+                      '(${parseMenuText(_template!.menu).lines.length} plats) '
+                      'ajoutés à la création.',
+              style: salesBody()),
         TextField(
           controller: _name,
           maxLength: 80,
@@ -835,6 +905,7 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
           ),
           if (_seller)
             DropdownButtonFormField<String>(
+              key: ValueKey('category-$_category'),
               initialValue: _category,
               isExpanded: true,
               decoration: salesInput('Catégorie'),

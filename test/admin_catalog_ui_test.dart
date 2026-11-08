@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:kitunga/backend/kitunga_categories.dart';
 import 'package:kitunga/noc/admin/admin_categories_widget.dart';
 import 'package:kitunga/noc/admin/admin_clients_widget.dart';
+import 'package:kitunga/noc/admin/admin_launch_partners.dart';
 import 'package:kitunga/noc/admin/admin_partners_widget.dart';
 import 'package:kitunga/noc/admin/admin_products_widget.dart';
 import 'package:kitunga/noc/admin/admin_shell.dart';
@@ -292,6 +293,9 @@ void main() {
       await tester.tap(find.text('Créer le compte'));
       await tester.pumpAndSettle();
       expect(find.text('Choisissez la catégorie.'), findsOneWidget);
+      await tester.ensureVisible(find.widgetWithText(
+          DropdownButtonFormField<String>, 'Catégorie'));
+      await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(
           DropdownButtonFormField<String>, 'Catégorie'));
       await tester.pumpAndSettle();
@@ -304,6 +308,30 @@ void main() {
       expect(created['email'], 'eclat@test.cg');
       expect(created['category'], 'Boutique');
       expect(created['subscribeType'], 'Mensuel - 250F');
+      expect(tester.takeException(), isNull);
+
+      // Fiche prête : Le Crisp'nCroc, avec logo, cuisines et menu.
+      launchLogoUploadOverride = (_) async => img;
+      addTearDown(() => launchLogoUploadOverride = null);
+      await tester.tap(find.text('Nouveau commerce'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Le Crisp\'nCroc'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('menu (30 plats)'), findsOneWidget);
+      final g = dialogFields();
+      await tester.enterText(g.at(1), 'crisp@test.cg');
+      await tester.enterText(g.at(2), 'secret12');
+      await tester.tap(find.text('Créer le compte'));
+      await tester.pumpAndSettle();
+      final crisp = last('kitungaCreatePartner').$2;
+      expect(crisp['displayName'], 'Le Crisp\'nCroc');
+      expect(crisp['category'], 'Restaurant');
+      final profile = last('kitungaSavePartner').$2;
+      expect(profile['photoUrl'], img);
+      expect(profile['cuisines'], contains('Congolaise (Brazzaville)'));
+      final menu = last('kitungaImportMenu').$2;
+      expect((menu['items'] as List).length, 30);
+      expect(((menu['sideOption'] as Map)['choices'] as List).length, 7);
       expect(tester.takeException(), isNull);
     });
 
