@@ -1789,7 +1789,7 @@ class _SupervisionDashboardWidgetState
                                                                   .center,
                                                           children: [
                                                             Text(
-                                                              'Etat',
+                                                              'État',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .labelSmall

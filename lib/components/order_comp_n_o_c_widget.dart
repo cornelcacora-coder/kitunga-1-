@@ -83,6 +83,24 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
     super.dispose();
   }
 
+  /// Icône du statut, blanche sur la couleur du statut.
+  Widget _statusIcon() {
+    final status = widget.status ?? '';
+    return Icon(
+      switch (status) {
+        OrderStatus.pending || '' => Icons.hourglass_top_rounded,
+        OrderStatus.ready => Icons.inventory_rounded,
+        OrderStatus.delivering => Icons.delivery_dining_rounded,
+        OrderStatus.delivered || OrderStatus.received => Icons.check_rounded,
+        OrderStatus.notReceived => Icons.report_problem_rounded,
+        _ when OrderStatus.isStopped(status) => Icons.block_rounded,
+        _ => Icons.inventory_2_outlined,
+      },
+      color: Colors.white,
+      size: 20.0,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -129,27 +147,20 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                             alignment: AlignmentDirectional(0.0, 0.0),
                             child: () {
                               if (widget!.status == 'En attente') {
-                                return widget!.isWaiting!;
+                                return widget!.isWaiting ?? _statusIcon();
                               } else if (widget!.status == 'Pret') {
-                                return widget!.isReady!;
+                                return widget!.isReady ?? _statusIcon();
                               } else if (widget!.status == 'encours') {
-                                return widget!.inProgress!;
+                                return widget!.inProgress ?? _statusIcon();
                               } else if (widget!.status == 'Livrer') {
-                                return widget!.isCompleted!;
+                                return widget!.isCompleted ?? _statusIcon();
                               } else if (widget!.status == 'Reçu') {
-                                return widget!.isDelivery!;
+                                return widget!.isDelivery ?? _statusIcon();
                               } else if (widget!.status == 'Non Reçu') {
-                                return widget!.isNotDelivery!;
+                                return widget!.isNotDelivery ?? _statusIcon();
                               } else {
                                 // Statuts sans icône dédiée (préparation, refus, annulation).
-                                return widget!.iconSatut ??
-                                    Icon(
-                                      OrderStatus.isStopped(widget!.status ?? '')
-                                          ? Icons.block_rounded
-                                          : Icons.inventory_2_outlined,
-                                      color: OrderStatus.color(
-                                          widget!.status ?? ''),
-                                    );
+                                return widget!.iconSatut ?? _statusIcon();
                               }
                             }(),
                           ),
@@ -260,8 +271,8 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Container(
-                      width: 130.0,
-                      height: 32.0,
+                  width: 180.0,
+                  height: 32.0,
                       child: Container(
                         decoration: BoxDecoration(
                           color: valueOrDefault<Color>(
@@ -295,10 +306,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                                                     .labelSmall
                                                     .fontStyle,
                                           ),
-                                          color: valueOrDefault<Color>(
-                                            widget!.statuTextBg,
-                                            Color(0xFF2A47A2),
-                                          ),
+                                          color: Colors.white,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.bold,
                                           fontStyle:
@@ -318,10 +326,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                                     widget!.refundToProcess
                                         ? Icons.currency_exchange_rounded
                                         : Icons.check_circle_rounded,
-                                    color: valueOrDefault<Color>(
-                                      widget!.statuTextBg,
-                                      Color(0xFF2A47A2),
-                                    ),
+                                    color: Colors.white,
                                     size: 20.0,
                                   ),
                                 ),

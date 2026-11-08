@@ -154,7 +154,9 @@ class _NOCDeliveryWidgetState extends State<NOCDeliveryWidget> {
                         List<OrdersRecord> columnOrdersRecordList =
                             snapshot.data!;
 
-                        return Wrap(
+                        // Défile dans son cadre (les lignes débordaient sur la page).
+                        return SingleChildScrollView(
+                          child: Wrap(
                           spacing: 0.0,
                           runSpacing: 0.0,
                           alignment: WrapAlignment.start,
@@ -183,6 +185,7 @@ class _NOCDeliveryWidgetState extends State<NOCDeliveryWidget> {
                               ),
                             );
                           }),
+                        ),
                         );
                       },
                     ),

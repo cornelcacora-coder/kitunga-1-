@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/backend/subscription.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -123,15 +124,10 @@ class _ViewDeliverWidgetState extends State<ViewDeliverWidget> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                             ),
-                            child: Image.network(
-                              getCORSProxyUrl(
-                                valueOrDefault<String>(
-                                  containerUserRecord.photoUrl,
-                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h5ta1mt8rram/UserIcon.png',
-                                ),
-                              ),
-                              fit: BoxFit.cover,
-                            ),
+                            child: KitungaImage(containerUserRecord.photoUrl,
+                              width: 75.0,
+                              height: 75.0,
+                              fallbackIcon: Icons.delivery_dining_rounded),
                           ),
                         ),
                         Text(

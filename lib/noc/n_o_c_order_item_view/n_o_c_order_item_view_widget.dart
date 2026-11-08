@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -379,31 +380,8 @@ class _NOCOrderItemViewWidgetState extends State<NOCOrderItemViewWidget> {
                                                                     .rectangle,
                                                               ),
                                                               child:
-                                                                  CachedNetworkImage(
-                                                                fadeInDuration:
-                                                                    Duration(
-                                                                        milliseconds:
-                                                                            0),
-                                                                fadeOutDuration:
-                                                                    Duration(
-                                                                        milliseconds:
-                                                                            0),
-                                                                imageUrl:
-                                                                    getCORSProxyUrl(
-                                                                  valueOrDefault<
-                                                                      String>(
-                                                                    orderItemsProductRecord
-                                                                        .prodImg,
-                                                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
-                                                                  ),
-                                                                ),
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                                alignment:
-                                                                    Alignment(
-                                                                        0.0,
-                                                                        0.0),
-                                                              ),
+                                                                  KitungaImage(orderItemsProductRecord.prodImg,
+ fallbackIcon: Icons.shopping_bag_outlined),
                                                             ),
                                                           ),
                                                           Column(

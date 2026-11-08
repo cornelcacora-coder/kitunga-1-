@@ -131,7 +131,7 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          'Livreur',
+                          'État',
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
@@ -261,7 +261,7 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                               ),
                         ),
                         Text(
-                          'Statu de la livraison',
+                          'Statut de la livraison',
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
@@ -320,7 +320,9 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                         List<OrdersRecord> listedOrderOrdersRecordList =
                             snapshot.data!;
 
-                        return Wrap(
+                        // Défile dans son cadre (les lignes débordaient sur la page).
+                        return SingleChildScrollView(
+                          child: Wrap(
                           spacing: 0.0,
                           runSpacing: 0.0,
                           alignment: WrapAlignment.start,
@@ -450,6 +452,7 @@ class _NOCOrdersWidgetState extends State<NOCOrdersWidget> {
                               ),
                             );
                           }),
+                        ),
                         );
                       },
                     ),

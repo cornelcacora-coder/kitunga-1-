@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -87,15 +88,10 @@ class _UserRowNOCWidgetState extends State<UserRowNOCWidget> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                         ),
-                        child: Image.network(
-                          getCORSProxyUrl(
-                            valueOrDefault<String>(
-                              widget!.img,
-                              'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h5ta1mt8rram/UserIcon.png',
-                            ),
-                          ),
-                          fit: BoxFit.cover,
-                        ),
+                        child: KitungaImage(widget!.img ?? '',
+                            width: 40.0,
+                            height: 40.0,
+                            fallbackIcon: Icons.person_rounded),
                       ),
                       Column(
                         mainAxisSize: MainAxisSize.max,
