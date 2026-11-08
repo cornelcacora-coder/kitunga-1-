@@ -11,7 +11,7 @@ const kSalesRed = Color(0xFFE51A1A);
 const kSalesDeepRed = Color(0xFF9E0E0E);
 const kSalesInk = Color(0xFF17181C);
 const kSalesMuted = Color(0xFF6B6F76);
-const kSalesSurface = Color(0xFFF6F6F8);
+const kSalesSurface = Color(0xFFF2F3F7); // fond des pages admin (charte)
 
 // ── Serveur ──────────────────────────────────────────────────────────────
 
@@ -172,20 +172,23 @@ class SalesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16.0),
-      elevation: 0.0,
-      child: InkWell(
+    // Carte de la charte admin : blanche, arrondie, ombre douce.
+    return DecoratedBox(
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.0),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16.0),
-            border: Border.all(color: const Color(0xFFE9E9EE)),
-          ),
-          child: child,
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x0A1B2340), blurRadius: 18.0, offset: Offset(0, 3)),
+        ],
+      ),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          hoverColor: const Color(0xFFF7F8FB),
+          child: Padding(padding: const EdgeInsets.all(16.0), child: child),
         ),
       ),
     );
@@ -382,11 +385,15 @@ InputDecoration salesInput(String label, {String? hint, String? helper}) =>
       helperText: helper,
       helperMaxLines: 3,
       filled: true,
-      fillColor: kSalesSurface,
+      fillColor: const Color(0xFFF7F8FB),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: Color(0xFFE6E8EE))),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: Color(0xFFE6E8EE))),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(12.0),
         borderSide: const BorderSide(color: kSalesRed, width: 1.5),
       ),
     );

@@ -76,6 +76,8 @@ void main() {
       return fake(function, data);
     };
     adminImagePickerOverride = () async => img;
+    adminPendingOrders = () => Stream.value(0);
+    adminDisplayName = () => 'Admin';
   });
   setUp(calls.clear);
 
@@ -116,7 +118,7 @@ void main() {
     testWidgets('menu : sections dépliables ($w px)', (tester) async {
       await open(tester, const AdminCategoriesWidget(), size);
       if (size.width < AdminShell.wideBreakpoint) {
-        await tester.tap(find.byIcon(Icons.menu));
+        await tester.tap(find.byTooltip('Menu'));
         await tester.pumpAndSettle();
       }
       // Section de la page ouverte dépliée, les autres repliées.
