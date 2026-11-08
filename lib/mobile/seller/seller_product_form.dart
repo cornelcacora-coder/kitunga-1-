@@ -7,6 +7,7 @@ import '/flutter_flow/upload_data.dart';
 import '/mobile/components/form_styles/form_styles.dart';
 import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/backend/kitunga_options.dart';
+import '/backend/kitunga_cuisines.dart';
 import 'seller_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +36,13 @@ class SellerProductFormPage extends StatefulWidget {
 class _SellerProductFormPageState extends State<SellerProductFormPage> {
   final _formKey = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.product?.name ?? '');
+  final _nameFocus = FocusNode();
+
+  /// Cuisines du restaurant (suggestions de plats en premier).
+  List<String> get _cuisines => [
+        for (final c in (widget.shop.snapshotData['cuisines'] as List? ?? const []))
+          '$c',
+      ];
   late final _description =
       TextEditingController(text: widget.product?.description ?? '');
   late final _price = TextEditingController(
@@ -66,6 +74,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
   @override
   void dispose() {
     _name.dispose();
+    _nameFocus.dispose();
     _description.dispose();
     _price.dispose();
     _stock.dispose();
@@ -97,7 +106,8 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
 
   Future<void> _save({required bool publish}) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (publish && _photoUrl.isEmpty) {
+    // Restaurants : un plat peut être publié sans photo.
+    if (publish && _photoUrl.isEmpty && !hasCuisines(_category)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Ajoutez une photo avant de publier ce produit.')));
       return;
@@ -272,14 +282,57 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
             ),
             SizedBox(height: 20.0),
             KitungaFieldLabel('Nom du $item'),
-            TextFormField(
-              controller: _name,
-              textCapitalization: TextCapitalization.sentences,
-              style: fieldStyle,
-              decoration: kitungaInputDecoration(
-                  context, 'Ex : ${_example()}', Icons.label_outline_rounded),
-              validator: (v) =>
-                  (v ?? '').trim().isEmpty ? 'Le nom est obligatoire.' : null,
+            // Restaurants : suggestions de plats (cuisines du commerce
+            // d'abord) ; le plat choisi remplit aussi la rubrique.
+            RawAutocomplete<KitungaDish>(
+              textEditingController: _name,
+              focusNode: _nameFocus,
+              displayStringForOption: (d) => d.name,
+              optionsBuilder: (v) => hasCuisines(_category)
+                  ? dishSuggestions(v.text, cuisines: _cuisines)
+                  : const <KitungaDish>[],
+              onSelected: (d) {
+                if (_section.text.trim().isEmpty) _section.text = d.section;
+                setState(() {});
+              },
+              fieldViewBuilder: (context, controller, focus, onSubmit) =>
+                  TextFormField(
+                controller: controller,
+                focusNode: focus,
+                textCapitalization: TextCapitalization.sentences,
+                style: fieldStyle,
+                decoration: kitungaInputDecoration(
+                    context, 'Ex : ${_example()}', Icons.label_outline_rounded),
+                validator: (v) =>
+                    (v ?? '').trim().isEmpty ? 'Le nom est obligatoire.' : null,
+              ),
+              optionsViewBuilder: (context, onSelected, options) => Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 6.0,
+                  borderRadius: BorderRadius.circular(14.0),
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints(maxHeight: 280.0, maxWidth: 360.0),
+                    child: ListView(
+                      padding: EdgeInsets.symmetric(vertical: 6.0),
+                      shrinkWrap: true,
+                      children: [
+                        for (final d in options)
+                          ListTile(
+                            dense: true,
+                            leading: Icon(Icons.restaurant_menu_rounded,
+                                color: FlutterFlowTheme.of(context).primary),
+                            title: Text(d.name),
+                            subtitle: Text(d.section),
+                            onTap: () => onSelected(d),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
             SizedBox(height: 16.0),
             KitungaFieldLabel('Description'),
@@ -504,7 +557,13 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
 
   List<KitungaOptionGroup> get _presets => switch (_category) {
         'Restaurant' => [
-            KitungaOptionGroup(name: 'Accompagnement', required: true),
+            KitungaOptionGroup(
+                name: 'Accompagnement',
+                required: true,
+                choices: [
+                  for (final s in kCommonSides.take(8))
+                    KitungaOptionChoice(label: s),
+                ]),
             KitungaOptionGroup(name: 'Cuisson', required: true),
             KitungaOptionGroup(name: 'Suppléments', max: 0),
           ],

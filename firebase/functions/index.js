@@ -298,6 +298,9 @@ exports.kitungaDeleteProduct = acquisitionCallable((data, uid) =>
   catalog.deleteProduct({db: admin.firestore(), uid, data}));
 exports.kitungaSavePartner = acquisitionCallable((data, uid) =>
   catalog.savePartner({db: admin.firestore(), uid, data}));
+/** Import d'un menu complet pour un commerce (admin). */
+exports.kitungaImportMenu = acquisitionCallable((data, uid) =>
+  catalog.importMenu({db: admin.firestore(), uid, data}));
 // ── Commandes (admin) : annuler, attribuer un livreur, livrer, clôturer ────
 const adminOrders = require("./kitunga/admin_orders");
 

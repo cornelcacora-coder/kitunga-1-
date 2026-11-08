@@ -34,6 +34,7 @@ class ProductFilter {
     this.maxPrice,
     this.inStock = false,
     this.express = false,
+    this.cuisine,
     this.tag,
     this.sort = ProductSort.relevance,
   });
@@ -45,6 +46,9 @@ class ProductFilter {
   final bool inStock;
   final bool express;
 
+  /// Cuisine du restaurant (champ cuisines du commerce).
+  final String? cuisine;
+
   /// « Nouveauté » ou « Tendance » (champ specifications).
   final String? tag;
   final ProductSort sort;
@@ -55,6 +59,7 @@ class ProductFilter {
         minPrice != null || maxPrice != null,
         inStock,
         express,
+        cuisine != null,
         tag != null,
       ].where((b) => b).length;
 
@@ -65,6 +70,7 @@ class ProductFilter {
     int? Function()? maxPrice,
     bool? inStock,
     bool? express,
+    String? Function()? cuisine,
     String? Function()? tag,
     ProductSort? sort,
   }) =>
@@ -75,6 +81,7 @@ class ProductFilter {
         maxPrice: maxPrice != null ? maxPrice() : this.maxPrice,
         inStock: inStock ?? this.inStock,
         express: express ?? this.express,
+        cuisine: cuisine != null ? cuisine() : this.cuisine,
         tag: tag != null ? tag() : this.tag,
         sort: sort ?? this.sort,
       );
@@ -89,28 +96,34 @@ class ShopFilter {
     this.category,
     this.openNow = false,
     this.verified = false,
+    this.cuisine,
     this.sort = ShopSort.relevance,
   });
 
   final String query;
   final String? category;
+  final String? cuisine;
   final bool openNow;
   final bool verified;
   final ShopSort sort;
 
   int get activeCount =>
-      [category != null, openNow, verified].where((b) => b).length;
+      [category != null, cuisine != null, openNow, verified]
+          .where((b) => b)
+          .length;
 
   ShopFilter copyWith({
     String? query,
     String? Function()? category,
     bool? openNow,
     bool? verified,
+    String? Function()? cuisine,
     ShopSort? sort,
   }) =>
       ShopFilter(
         query: query ?? this.query,
         category: category != null ? category() : this.category,
+        cuisine: cuisine != null ? cuisine() : this.cuisine,
         openNow: openNow ?? this.openNow,
         verified: verified ?? this.verified,
         sort: sort ?? this.sort,
@@ -118,6 +131,11 @@ class ShopFilter {
 
   ShopFilter cleared() => ShopFilter(query: query, sort: sort);
 }
+
+/// Cuisines d'un restaurant (champ cuisines).
+List<String> shopCuisines(UserRecord s) => [
+      for (final c in (s.snapshotData['cuisines'] as List? ?? const [])) '$c',
+    ];
 
 /// Texte comparable : minuscules, sans accents.
 String searchNorm(String v) => v
@@ -164,6 +182,7 @@ List<ProductRecord> filterProducts(List<ProductRecord> products,
     final shop = shopsByPath[p.sellerRef?.path];
     if (shop == null || !kitungaShopIsActive(shop)) continue;
     if (f.category != null && shop.category != f.category) continue;
+    if (f.cuisine != null && !shopCuisines(shop).contains(f.cuisine)) continue;
     final price = productPrice(p);
     if (f.minPrice != null && price < f.minPrice!) continue;
     if (f.maxPrice != null && price > f.maxPrice!) continue;
@@ -203,6 +222,7 @@ List<UserRecord> filterShops(List<UserRecord> shops, ShopFilter f,
   for (final s in shops) {
     if (!kitungaShopIsActive(s)) continue;
     if (f.category != null && s.category != f.category) continue;
+    if (f.cuisine != null && !shopCuisines(s).contains(f.cuisine)) continue;
     if (f.verified && !s.verified) continue;
     if (f.openNow &&
         kitungaOpeningStatus(s.horraire, now)?.open != true) {

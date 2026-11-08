@@ -154,8 +154,14 @@ test("produits : ajout, modification (options gardées), contrôles", async () =
     quantity: undefined}}), /Stock/);
   await assert.rejects(cat.saveProduct({db, uid: "admin", data: {...base,
     tag: "Promo"}}), /Mise en avant/);
+  // Pharmacie : photo obligatoire pour publier.
   await assert.rejects(cat.saveProduct({db, uid: "admin", data: {...base,
-    prodImg: ""}}), /photo avant de publier/);
+    sellerUid: "shop2", prodImg: ""}}), /photo avant de publier/);
+  // Restaurant : un plat peut être publié sans photo.
+  const {id: noPhoto} = await cat.saveProduct({db, uid: "admin", data: {
+    ...base, name: "Riz sauté", prodImg: ""}});
+  assert.strictEqual((await db.doc(`Product/${noPhoto}`).get())
+      .get("on_sale"), true);
   // Brouillon sans photo : accepté (non publié).
   await cat.saveProduct({db, uid: "admin", data: {...base, prodImg: "",
     published: false}});
@@ -280,3 +286,48 @@ test("catégories pour l'application : d'origine, puis visibles seulement",
       assert.deepStrictEqual(b, {name: "Boulangerie", image: IMG,
         color: "#F2F2F5"});
     });
+
+test("cuisines d'un restaurant", async () => {
+  await categories();
+  await cat.savePartner({db, uid: "admin", data: {uid: "shop",
+    cuisines: ["Congolaise (Brazzaville)", "Grillades & braisés",
+      "Grillades & braisés"]}});
+  assert.deepStrictEqual((await db.doc("User/shop").get()).get("cuisines"),
+      ["Congolaise (Brazzaville)", "Grillades & braisés"]);
+  await assert.rejects(cat.savePartner({db, uid: "admin", data: {uid: "shop",
+    cuisines: Array(9).fill("x")}}), /8 au maximum/);
+  const {partners} = await cat.catalogQuery({db, uid: "admin",
+    data: {view: "partners", role: "Seller"}});
+  assert.deepStrictEqual(partners.find((p) => p.uid === "shop").cuisines,
+      ["Congolaise (Brazzaville)", "Grillades & braisés"]);
+});
+
+test("import d'un menu : plats, doublons, option accompagnement", async () => {
+  const side = {name: "Accompagnement (+500 F)", choices: [
+    {label: "Riz gras", price: 500}, {label: "Frites", price: 500}]};
+  await assert.rejects(cat.importMenu({db, uid: "marie", data: {
+    sellerUid: "shop", items: [{name: "A", price: 1}]}}), /administrateurs/);
+  await assert.rejects(cat.importMenu({db, uid: "admin", data: {
+    sellerUid: "shop", items: [{name: "A", price: 0}]}}), /prix manquant/);
+  const r = await cat.importMenu({db, uid: "admin", data: {sellerUid: "shop",
+    sideOption: side, items: [
+      {section: "Grillades", name: "Brochette de bœuf", price: 2500},
+      {section: "Plats africains", name: "Poulet DG", price: 5000},
+      {section: "Accompagnements", name: "Frites", price: 500},
+    ]}});
+  // « Poulet DG » existe déjà dans ce commerce.
+  assert.deepStrictEqual(r, {created: 2, skipped: ["Poulet DG"],
+    published: true});
+  const all = (await db.collection("Product")
+      .where("seller_ref", "==", db.doc("User/shop")).get()).docs
+      .map((d) => d.data());
+  const brochette = all.find((p) => p.name === "Brochette de bœuf");
+  assert.strictEqual(brochette.price, 2500);
+  assert.strictEqual(brochette.on_sale, true);
+  assert.strictEqual(brochette.options[0].choices.length, 2);
+  assert.deepStrictEqual(all.find((p) => p.name === "Frites").options, []);
+  // Pharmacie : importés en brouillon (photo obligatoire).
+  const ph = await cat.importMenu({db, uid: "admin", data: {
+    sellerUid: "shop2", items: [{name: "Paracétamol", price: 800}]}});
+  assert.strictEqual(ph.published, false);
+});

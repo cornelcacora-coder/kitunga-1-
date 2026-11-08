@@ -17,6 +17,8 @@ const iso = (v) => {
   return d ? d.toISOString() : null;
 };
 const CATEGORIES = "Categories";
+/** Catégories où un produit peut être publié sans photo (menus). */
+const PHOTO_OPTIONAL = ["Restaurant", "Fast Food"];
 const BATCH = 400;
 
 /** Catégories d'origine de l'application (images incluses dans l'appli). */
@@ -259,7 +261,12 @@ async function saveProduct({db, uid, data}) {
   values.prod_img = data.prodImg === undefined && current ?
     current.get("prod_img") || "" :
     imageOf(data.prodImg, {keep: current ? current.get("prod_img") : null});
-  if (published && !values.prod_img) {
+  const sellerDoc = current ?
+    await current.get("seller_ref").get() :
+    await sellerOf(db, data.sellerUid);
+  // Restaurants : un plat peut être publié sans photo (vignette affichée).
+  if (published && !values.prod_img &&
+    !PHOTO_OPTIONAL.includes(sellerDoc.get("category"))) {
     throw err("invalid-argument",
         "Ajoutez une photo avant de publier ce produit.");
   }
@@ -380,6 +387,7 @@ async function listPartners(db, data) {
       accountStatus: u.account_status || "active",
       accountStatusReason: u.account_status_reason || null,
       createdAt: iso(u.created_time),
+      cuisines: Array.isArray(u.cuisines) ? u.cuisines : [],
       products: role === "Seller" ? counts[i].data().count : null};
   });
   list.sort((a, b) => a.displayName.localeCompare(b.displayName, "fr"));
@@ -429,6 +437,13 @@ async function savePartner({db, uid, data}) {
         {keep: u.get("Business_cover")});
   }
   if (data.verified !== undefined) changes.verified = data.verified === true;
+  if (data.cuisines !== undefined && role === "Seller") {
+    if (!Array.isArray(data.cuisines) || data.cuisines.length > 8) {
+      throw err("invalid-argument", "Cuisines : 8 au maximum.");
+    }
+    changes.cuisines = [...new Set(data.cuisines
+        .map((c) => text(c, 40)).filter(Boolean))];
+  }
   if (Object.keys(changes).length === 0) {
     throw err("invalid-argument", "Aucune modification.");
   }
@@ -486,5 +501,83 @@ async function catalogQuery({db, uid, data}) {
   }
 }
 
-module.exports = {catalogQuery, publicCategories, seedCategories, saveCategory, deleteCategory,
+/**
+ * Import d'un menu (admin) : crée les plats d'un commerce en une fois.
+ * items : [{section, name, price, description?}] ; les plats déjà présents
+ * (même nom) sont ignorés. sideOption : groupe d'options ajouté aux plats
+ * (hors accompagnements et boissons), ex. « Accompagnement (+500 F) ».
+ */
+async function importMenu({db, uid, data}) {
+  const adminUid = await requireAdmin(db, uid);
+  const seller = await sellerOf(db, data.sellerUid);
+  const items = Array.isArray(data.items) ? data.items : [];
+  if (items.length === 0 || items.length > 300) {
+    throw err("invalid-argument", "Menu vide ou trop long (300 plats au plus).");
+  }
+  const clean = items.map((it, i) => {
+    const name = text(it && it.name, 120);
+    if (!name) throw err("invalid-argument", `Ligne ${i + 1} : nom manquant.`);
+    const price = amountOf(it.price, `Ligne ${i + 1} (${name}) : prix`);
+    if (price === 0) {
+      throw err("invalid-argument", `Ligne ${i + 1} (${name}) : prix manquant.`);
+    }
+    return {name, price, section: text(it.section, 60),
+      description: text(it.description, 2000)};
+  });
+  let option = null;
+  if (data.sideOption) {
+    const o = data.sideOption;
+    const choices = (Array.isArray(o.choices) ? o.choices : [])
+        .map((c) => ({label: text(c.label, 60),
+          price: amountOf(c.price, "Option : prix")}))
+        .filter((c) => c.label);
+    if (choices.length === 0) {
+      throw err("invalid-argument", "Option : aucun choix.");
+    }
+    option = {name: text(o.name, 60) || "Accompagnement", required: false,
+      max: 0, choices};
+  }
+  const photoOptional = PHOTO_OPTIONAL.includes(seller.get("category"));
+  const existing = await db.collection("Product")
+      .where("seller_ref", "==", seller.ref).get();
+  const known = new Set(existing.docs
+      .map((d) => String(d.get("name") || "").trim().toLowerCase()));
+  const noOption = /accompagnement|boisson|sauce|dessert/i;
+  const created = [];
+  const skipped = [];
+  let batch = db.batch();
+  let n = 0;
+  for (const it of clean) {
+    const key = it.name.toLowerCase();
+    if (known.has(key)) {
+      skipped.push(it.name);
+      continue;
+    }
+    known.add(key);
+    const ref = db.collection("Product").doc();
+    batch.set(ref, {
+      name: it.name, description: it.description, specifications: "",
+      price: it.price, sale_price: it.price, section: it.section, unit: "",
+      prod_img: "", requires_prescription: false,
+      instant_disponibilty: false,
+      // Sans photo, publié seulement pour les restaurants.
+      on_sale: photoOptional,
+      options: option && !noOption.test(it.section) ? [option] : [],
+      seller_ref: seller.ref, created_at: ts(), modified_at: ts(),
+    });
+    created.push(it.name);
+    if (++n % 400 === 0) {
+      await batch.commit();
+      batch = db.batch();
+    }
+  }
+  await batch.commit();
+  await db.collection("audit_logs").add({actor_uid: adminUid,
+    actor_role: "Admin", action: "product.import", target: seller.ref.path,
+    details: {created: created.length, skipped: skipped.length},
+    created_at: ts()});
+  return {created: created.length, skipped, published: photoOptional};
+}
+
+module.exports = {catalogQuery, importMenu, publicCategories, seedCategories, saveCategory, deleteCategory,
   saveProduct, deleteProduct, savePartner, DEFAULT_CATEGORIES, imageOf};

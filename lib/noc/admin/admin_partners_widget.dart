@@ -7,6 +7,8 @@ import '/noc/sales/sales_common.dart';
 import 'admin_categories_widget.dart' show loadAdminCategories;
 import 'admin_products_widget.dart' show loadAdminPartners;
 import 'admin_shell.dart';
+import '/backend/kitunga_cuisines.dart';
+import 'admin_menu_import.dart';
 import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 
@@ -441,6 +443,16 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
             onTap: () => context.go(Uri(
                 path: AdminPaths.products,
                 queryParameters: {'commerce': p['uid']}).toString())),
+      if (_sellers && hasCuisines('${p['category'] ?? ''}'))
+        AdminActionDot(
+            icon: Icons.restaurant_menu_rounded,
+            tooltip: 'Importer un menu',
+            tone: kToneGreen,
+            onTap: () async {
+              await showMenuImport(context,
+                  sellerUid: p['uid'] as String, sellerName: _name(p));
+              _reload();
+            }),
       suspended
           ? AdminActionDot(
               icon: Icons.restore_rounded,
@@ -467,7 +479,7 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
           title: _sellers ? 'Aucun commerce' : 'Aucun livreur',
           message: 'Aucun compte ne correspond à cette recherche.'),
       onTap: _view,
-      actionsWidth: _sellers ? 164.0 : 124.0,
+      actionsWidth: _sellers ? 206.0 : 124.0,
       actions: _actions,
       columns: [
         AdminColumn(
@@ -558,6 +570,9 @@ class _PartnerFormState extends State<_PartnerForm> {
   late String _photo = _p['photoUrl'] ?? '';
   late String _cover = _p['businessCover'] ?? '';
   late bool _verified = _p['verified'] == true;
+  late final Set<String> _cuisines = {
+    for (final c in (_p['cuisines'] as List? ?? const [])) '$c',
+  };
   bool _saving = false;
   String? _error;
 
@@ -593,6 +608,7 @@ class _PartnerFormState extends State<_PartnerForm> {
                 'category': _category,
                 'horraire': _hours.text.trim(),
                 'businessCover': _cover,
+                if (hasCuisines(_category ?? '')) 'cuisines': _cuisines.toList(),
               },
             }),
         'Fiche enregistrée');
@@ -664,6 +680,11 @@ class _PartnerFormState extends State<_PartnerForm> {
           maxLength: 500,
           decoration: salesInput('Présentation'),
         ),
+        if (_seller && hasCuisines(_category ?? ''))
+          CuisinePicker(
+            selected: _cuisines,
+            onChanged: () => setState(() {}),
+          ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           activeThumbColor: kSalesRed,
@@ -705,6 +726,7 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
   String _photo = '';
   String _cover = '';
   bool _verified = false;
+  final Set<String> _cuisines = {};
   bool _showPassword = false;
   bool _saving = false;
   String? _error;
@@ -746,11 +768,12 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         'subscribeType': _seller ? _plan : '',
       });
       // Logo et couverture : ajoutés à la fiche juste après la création.
-      if (_photo.isNotEmpty || _cover.isNotEmpty) {
+      if (_photo.isNotEmpty || _cover.isNotEmpty || _cuisines.isNotEmpty) {
         await salesCall('kitungaSavePartner', {
           'uid': created['uid'],
           if (_photo.isNotEmpty) 'photoUrl': _photo,
           if (_cover.isNotEmpty) 'businessCover': _cover,
+          if (_cuisines.isNotEmpty) 'cuisines': _cuisines.toList(),
         });
       }
       messenger.showSnackBar(SnackBar(
@@ -862,6 +885,11 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
           maxLength: 500,
           decoration: salesInput('Présentation'),
         ),
+        if (_seller && hasCuisines(_category ?? ''))
+          CuisinePicker(
+            selected: _cuisines,
+            onChanged: () => setState(() {}),
+          ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           activeThumbColor: kSalesRed,
@@ -870,6 +898,45 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
           title: const Text('Compte certifié'),
         ),
         if (_error != null) Text(_error!, style: salesBody(color: kSalesRed)),
+      ],
+    );
+  }
+}
+
+/// Choix des cuisines d'un restaurant (pastilles).
+class CuisinePicker extends StatelessWidget {
+  const CuisinePicker(
+      {super.key, required this.selected, required this.onChanged});
+
+  final Set<String> selected;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Cuisines proposées (${selected.length}/8)',
+            style: salesBody(color: kSalesInk)),
+        const SizedBox(height: 8.0),
+        Wrap(
+          spacing: 6.0,
+          runSpacing: 6.0,
+          children: [
+            for (final c in kCuisines)
+              FilterChip(
+                label: Text(c),
+                selected: selected.contains(c),
+                selectedColor: AdminColors.redSoft,
+                checkmarkColor: AdminColors.red,
+                onSelected: (v) {
+                  if (v && selected.length >= 8) return;
+                  v ? selected.add(c) : selected.remove(c);
+                  onChanged();
+                },
+              ),
+          ],
+        ),
       ],
     );
   }

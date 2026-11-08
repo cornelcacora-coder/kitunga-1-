@@ -84,6 +84,9 @@ class _KitungaSearchPageState extends State<KitungaSearchPage>
       backgroundColor: Colors.transparent,
       builder: (_) => _FilterSheet(
         shops: _onShops,
+        // Cuisines réellement proposées par les restaurants inscrits.
+        cuisines: ({for (final s in shops) ...shopCuisines(s)}.toList()
+          ..sort()),
         product: _pf,
         shop: _sf,
         countProducts: (f) => filterProducts(products, shopsByPath, f).length,
@@ -264,6 +267,9 @@ class _KitungaSearchPageState extends State<KitungaSearchPage>
               priceRangeLabel(_pf.minPrice, _pf.maxPrice),
               () => setState(() => _pf =
                   _pf.copyWith(minPrice: () => null, maxPrice: () => null))),
+        if (_pf.cuisine != null)
+          _chip(theme, _pf.cuisine!,
+              () => setState(() => _pf = _pf.copyWith(cuisine: () => null))),
         if (_pf.inStock)
           _chip(theme, 'Disponibles',
               () => setState(() => _pf = _pf.copyWith(inStock: false))),
@@ -277,6 +283,9 @@ class _KitungaSearchPageState extends State<KitungaSearchPage>
         if (_sf.category != null)
           _chip(theme, _sf.category!,
               () => setState(() => _sf = _sf.copyWith(category: () => null))),
+        if (_sf.cuisine != null)
+          _chip(theme, _sf.cuisine!,
+              () => setState(() => _sf = _sf.copyWith(cuisine: () => null))),
         if (_sf.openNow)
           _chip(theme, 'Ouvert maintenant',
               () => setState(() => _sf = _sf.copyWith(openNow: false))),
@@ -397,6 +406,7 @@ const kPriceRanges = <(int?, int?)>[
 class _FilterSheet extends StatefulWidget {
   const _FilterSheet({
     required this.shops,
+    required this.cuisines,
     required this.product,
     required this.shop,
     required this.countProducts,
@@ -405,6 +415,7 @@ class _FilterSheet extends StatefulWidget {
   });
 
   final bool shops;
+  final List<String> cuisines;
   final ProductFilter product;
   final ShopFilter shop;
   final int Function(ProductFilter) countProducts;
@@ -538,6 +549,28 @@ class _FilterSheetState extends State<_FilterSheet> {
                                   _s = _s.copyWith(category: () => c);
                                 })),
                     ]),
+                    if (widget.cuisines.isNotEmpty) ...[
+                      _title(theme, 'Cuisine'),
+                      Wrap(spacing: 8.0, runSpacing: 8.0, children: [
+                        _choice(
+                            theme,
+                            'Toutes',
+                            (widget.shops ? _s.cuisine : _p.cuisine) == null,
+                            () => setState(() {
+                                  _p = _p.copyWith(cuisine: () => null);
+                                  _s = _s.copyWith(cuisine: () => null);
+                                })),
+                        for (final c in widget.cuisines)
+                          _choice(
+                              theme,
+                              c,
+                              (widget.shops ? _s.cuisine : _p.cuisine) == c,
+                              () => setState(() {
+                                    _p = _p.copyWith(cuisine: () => c);
+                                    _s = _s.copyWith(cuisine: () => c);
+                                  })),
+                      ]),
+                    ],
                     if (!widget.shops) ...[
                       _title(theme, 'Prix'),
                       Wrap(spacing: 8.0, runSpacing: 8.0, children: [

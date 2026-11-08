@@ -1,6 +1,8 @@
 /// Réglages de l'espace vendeur selon l'activité du commerce.
 library;
 
+import '/backend/kitunga_cuisines.dart';
+
 /// Nom donné au classement des produits.
 String sellerSectionLabel(String category) => switch (category) {
       'Restaurant' || 'Fast Food' => 'Rubrique du menu',
@@ -18,14 +20,7 @@ String sellerSectionsTitle(String category) => switch (category) {
 
 /// Suggestions proposées au vendeur (il peut saisir les siennes).
 List<String> sellerSectionSuggestions(String category) => switch (category) {
-      'Restaurant' => [
-          'Entrées',
-          'Plats principaux',
-          'Grillades',
-          'Accompagnements',
-          'Desserts',
-          'Boissons',
-        ],
+      'Restaurant' => kRestaurantSections,
       'Fast Food' => [
           'Menus',
           'Burgers',

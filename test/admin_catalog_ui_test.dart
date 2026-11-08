@@ -222,10 +222,7 @@ void main() {
       await tester.enterText(fields.at(0), 'Riz parfumé');
       await tester.enterText(fields.at(1), '1 500');
       await tester.enterText(fields.at(2), '20');
-      await tester.tap(find.text('Enregistrer'));
-      await tester.pumpAndSettle();
-      expect(find.text('Ajoutez une photo avant de publier ce produit.'),
-          findsOneWidget);
+      // Restaurant : la photo n'est pas obligatoire pour publier.
       await tester.tap(find.text('Ajouter une image'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Enregistrer'));

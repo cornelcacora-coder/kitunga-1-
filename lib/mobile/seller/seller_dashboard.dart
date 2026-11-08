@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/backend/kitunga_cuisines.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -633,7 +634,8 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
           quantity: quantity, modifiedAt: getCurrentTimestamp));
 
   Future<void> _setPublished(ProductRecord p, bool publish) async {
-    if (publish && p.prodImg.isEmpty) {
+    // Restaurants : un plat peut être publié sans photo.
+    if (publish && p.prodImg.isEmpty && !hasCuisines(widget.shop.category)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content:
               Text('Ajoutez une photo à ce produit avant de le publier.')));
@@ -799,6 +801,12 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   late final _hours = TextEditingController(text: widget.shop.horraire);
   bool _saving = false;
 
+  /// Cuisines du restaurant (filtre « Cuisine » des clients, suggestions).
+  late final Set<String> _cuisines = {
+    for (final c in (widget.shop.snapshotData['cuisines'] as List? ?? const []))
+      '$c',
+  };
+
   @override
   void dispose() {
     _bio.dispose();
@@ -809,10 +817,13 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      await widget.shop.reference.update(createUserRecordData(
-        bio: _bio.text.trim(),
-        horraire: _hours.text.trim(),
-      ));
+      await widget.shop.reference.update({
+        ...createUserRecordData(
+          bio: _bio.text.trim(),
+          horraire: _hours.text.trim(),
+        ),
+        if (hasCuisines(widget.shop.category)) 'cuisines': _cuisines.toList(),
+      });
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
       Navigator.of(context).pop();
@@ -829,7 +840,8 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
     final status = kitungaOpeningStatus(_hours.text);
     return Scaffold(
       backgroundColor: theme.secondaryBackground,
-      appBar: _appBar(context, 'Horaires et profil'),
+      appBar: _appBar(context,
+          hasCuisines(widget.shop.category) ? 'Profil et cuisines' : 'Horaires et profil'),
       body: ListView(
         padding: EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 32.0),
         children: [
@@ -864,6 +876,39 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
               fontSize: 12.5,
             ),
           ),
+          if (hasCuisines(widget.shop.category)) ...[
+            SizedBox(height: 20.0),
+            KitungaFieldLabel('Vos cuisines (${_cuisines.length}/8)'),
+            Text(
+              'Les clients pourront trouver votre restaurant avec le filtre « Cuisine ».',
+              style: GoogleFonts.inter(
+                  color: theme.secondaryText, fontSize: 12.5),
+            ),
+            SizedBox(height: 10.0),
+            Wrap(
+              spacing: 6.0,
+              runSpacing: 6.0,
+              children: [
+                for (final c in kCuisines)
+                  FilterChip(
+                    label: Text(c),
+                    selected: _cuisines.contains(c),
+                    showCheckmark: false,
+                    selectedColor: theme.primary,
+                    labelStyle: GoogleFonts.inter(
+                        color: _cuisines.contains(c)
+                            ? Colors.white
+                            : theme.primaryText,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600),
+                    onSelected: (v) => setState(() {
+                      if (v && _cuisines.length < 8) _cuisines.add(c);
+                      if (!v) _cuisines.remove(c);
+                    }),
+                  ),
+              ],
+            ),
+          ],
           SizedBox(height: 28.0),
           KitungaPrimaryButton(
               text: 'Enregistrer', loading: _saving, onPressed: _save),

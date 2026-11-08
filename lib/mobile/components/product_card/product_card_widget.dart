@@ -108,6 +108,7 @@ class KitungaProductCard extends StatelessWidget {
                         width: double.infinity,
                         height: 130.0,
                         fallbackIcon: Icons.image_outlined,
+                        placeholder: kitungaNoPhoto(theme, p, 130.0),
                       ),
                     ),
                   ),
@@ -325,6 +326,7 @@ class KitungaProductRow extends StatelessWidget {
                       width: 96.0,
                       height: 96.0,
                       fallbackIcon: Icons.image_outlined,
+                      placeholder: kitungaNoPhoto(theme, p, 96.0),
                     ),
                   ),
                 ),
@@ -361,3 +363,49 @@ class KitungaProductRow extends StatelessWidget {
 /// Visible par les clients : publié par le vendeur. Les anciens produits
 /// sans le champ « on_sale » restent visibles.
 bool kitungaIsPublished(ProductRecord p) => !p.hasOnSale() || p.onSale;
+
+/// Vignette d'un produit sans photo (plats de restaurant notamment) :
+/// fond chaud, icône de la rubrique et nom du produit.
+Widget kitungaNoPhoto(FlutterFlowTheme theme, ProductRecord p, double size) {
+  final section = p.section.toLowerCase();
+  final icon = section.contains('boisson')
+      ? Icons.local_drink_rounded
+      : section.contains('dessert')
+          ? Icons.icecream_rounded
+          : section.contains('grill')
+              ? Icons.outdoor_grill_rounded
+              : section.contains('accompagnement')
+                  ? Icons.rice_bowl_rounded
+                  : section.contains('petit')
+                      ? Icons.free_breakfast_rounded
+                      : Icons.restaurant_menu_rounded;
+  return Container(
+    width: double.infinity,
+    height: size,
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFFFF1E6), Color(0xFFFFE0D2)],
+      ),
+    ),
+    padding: EdgeInsets.all(size > 100 ? 12.0 : 6.0),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: const Color(0xFFE8710A), size: size * 0.32),
+        if (size > 100) ...[
+          const SizedBox(height: 6.0),
+          Text(p.name,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.interTight(
+                  color: const Color(0xFF8A4A12),
+                  fontSize: 13.0,
+                  fontWeight: FontWeight.w700)),
+        ],
+      ],
+    ),
+  );
+}

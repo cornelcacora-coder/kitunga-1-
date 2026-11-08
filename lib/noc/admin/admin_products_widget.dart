@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '/noc/sales/sales_common.dart';
 import 'admin_categories_widget.dart' show loadAdminCategories;
 import 'admin_shell.dart';
+import '/backend/kitunga_cuisines.dart' show hasCuisines;
 import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 
@@ -546,7 +547,11 @@ class _ProductFormState extends State<_ProductForm> {
     if (quantity == null || quantity < 0) {
       error ??= 'Indiquez le stock (nombre entier).';
     }
-    if (_published && _image.isEmpty) {
+    // Restaurants : un plat peut être publié sans photo.
+    final category = _isNew
+        ? '${widget.sellers.firstWhere((x) => x['uid'] == _seller, orElse: () => const {})['category'] ?? ''}'
+        : '${(_p['seller'] as Map?)?['category'] ?? ''}';
+    if (_published && _image.isEmpty && !hasCuisines(category)) {
       error ??= 'Ajoutez une photo avant de publier ce produit.';
     }
     if (error != null) return setState(() => _error = error);

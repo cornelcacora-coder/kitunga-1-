@@ -110,8 +110,14 @@ class KitungaShopCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final s = shop;
+    // Restaurant : sa cuisine principale (« Congolaise ») plutôt que la
+    // catégorie, quand elle est renseignée.
+    final cuisines = (s.snapshotData['cuisines'] as List? ?? const []);
+    final kind = cuisines.isNotEmpty
+        ? 'Cuisine ${'${cuisines.first}'.split(' (').first.toLowerCase()}'
+        : s.category;
     final subtitle =
-        [s.category, s.horraire].where((e) => e.trim().isNotEmpty).join(' · ');
+        [kind, s.horraire].where((e) => e.trim().isNotEmpty).join(' · ');
     return SizedBox(
       width: width,
       child: Material(
