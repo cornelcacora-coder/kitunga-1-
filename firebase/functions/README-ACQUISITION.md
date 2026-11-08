@@ -107,6 +107,11 @@ de deuxième système d'abonnement.
 | `kitungaOnSubscriptionPaid` | déclencheur `Paiement/{id}` | Abonnement passé à « Réussi » (vérifié chez MTN) : commission « premier abonnement » |
 | `kitungaOnAttributionCreated` | déclencheur `acquisition_attributions/{uid}` | Commission d'activation si l'activation est déjà attestée |
 | `kitungaOnActivationVerified` | déclencheur `app_activations/{id}` | Activation devenue vérifiée : commission d'activation des clients liés |
+| `kitungaReviewCommission` | admin | Valider (après `eligible_at` ; note obligatoire si signalée), rejeter ou annuler une commission |
+| `kitungaRequestPayout` | admin ou le commercial lui-même | Regroupe les commissions validées (contrepassations déduites) dans un versement « demandé » |
+| `kitungaDecidePayout` | admin | Valider, refuser (motif) ou marquer payé (référence du virement) |
+| `kitungaSalesAdminQuery` | admin | Lectures de l'interface admin : vue d'ensemble filtrée, listes, historique |
+| `kitungaSalesAgentQuery` | commercial | Ses propres données : accueil, clients (version réduite), commissions, versements |
 | `kitungaCampaignSchedule` | automatique (15 min) | Active les campagnes programmées, clôture les campagnes et affectations arrivées à leur fin |
 
 ### Règles des campagnes
@@ -129,7 +134,7 @@ Déploiement (après avoir créé le secret `ACQ_IDENTITY_KEY`) :
 ```bash
 cd firebase
 firebase functions:secrets:set ACQ_IDENTITY_KEY -P kitunga-xtvpe4
-firebase deploy --only firestore:indexes,functions:kitungaOnSubscriptionPaid,functions:kitungaOnAttributionCreated,functions:kitungaOnActivationVerified,functions:kitungaRecordActivation,functions:kitungaClaimAttribution,functions:kitungaReferralRedirect,functions:kitungaRecordTouch,functions:kitungaCreateSalesAgent,functions:kitungaUpdateSalesAgent,functions:kitungaSetSalesAgentStatus,functions:kitungaCreateCommissionRule,functions:kitungaCreateCampaign,functions:kitungaUpdateCampaign,functions:kitungaSetCampaignStatus,functions:kitungaAssignAgent,functions:kitungaEndAssignment,functions:kitungaCampaignSchedule -P kitunga-xtvpe4
+firebase deploy --only firestore:indexes,functions:kitungaReviewCommission,functions:kitungaRequestPayout,functions:kitungaDecidePayout,functions:kitungaSalesAdminQuery,functions:kitungaSalesAgentQuery,functions:kitungaOnSubscriptionPaid,functions:kitungaOnAttributionCreated,functions:kitungaOnActivationVerified,functions:kitungaRecordActivation,functions:kitungaClaimAttribution,functions:kitungaReferralRedirect,functions:kitungaRecordTouch,functions:kitungaCreateSalesAgent,functions:kitungaUpdateSalesAgent,functions:kitungaSetSalesAgentStatus,functions:kitungaCreateCommissionRule,functions:kitungaCreateCampaign,functions:kitungaUpdateCampaign,functions:kitungaSetCampaignStatus,functions:kitungaAssignAgent,functions:kitungaEndAssignment,functions:kitungaCampaignSchedule -P kitunga-xtvpe4
 ```
 
 ## Liens, QR codes et premier contact
@@ -236,6 +241,30 @@ avec l'empreinte SHA-256 de la clé de signature Google Play.
 - Remboursement d'un abonnement : il n'existe pas de remboursement
   automatique des abonnements ; la contrepassation sera une action admin
   (phase 8).
+
+## Versements
+
+1. Commission `pending` → `approved` par l'admin, pas avant `eligible_at`.
+2. Demande de versement : toutes les commissions `approved` du commercial
+   (200 au plus) passent à `reserved` ; total > 0 et moyen de paiement
+   requis ; un seul versement en cours par commercial.
+3. L'admin valide, puis effectue lui-même le virement (Mobile Money ou
+   banque) et marque le versement payé avec la référence : commissions
+   `paid`. Refus : les commissions redeviennent `approved`.
+4. Commission payée puis à annuler : contrepassation `reversal_{id}`
+   (montant négatif, validée), déduite du versement suivant.
+
+## Interfaces
+
+- **Admin** (web, `/commercial`, entrée « Module commercial » du tableau de
+  bord) : vue d'ensemble (aujourd'hui, semaine, mois, période ; par campagne
+  et commercial), commerciaux, campagnes (barèmes, statuts, affectations, QR
+  codes et liens), commissions, versements, historique.
+- **Commercial** (application mobile, rôle Commercial) : campagne en cours,
+  QR code et lien, chiffres, soldes, demande de versement, clients,
+  commissions et versements.
+- Les deux lisent par le serveur (fonctions ci-dessus) : elles fonctionnent
+  sans dépendre des règles Firestore déployées.
 
 ### Limites du suivi
 
