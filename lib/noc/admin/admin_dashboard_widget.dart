@@ -141,6 +141,7 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
         AdminSplit(
           flex: (3, 2),
           breakpoint: 1000.0,
+          height: 430.0,
           left: _ordersChart(orders, now),
           right: _statusCard(inPeriod),
         ),
@@ -287,21 +288,30 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
 
   Widget _statusCard(List<DashOrder> inPeriod) {
     final groups = statusBreakdown(inPeriod);
+    final header = AdminCardHeader(
+        title: 'Statuts des commandes', subtitle: _periods[_days]);
+    final donut = AdminDonut(
+      centerLabel: 'commandes',
+      size: 168.0,
+      slices: [
+        for (final g in groups)
+          (label: g.label, value: g.count.toDouble(), color: g.color),
+      ],
+    );
     return AdminCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AdminCardHeader(
-              title: 'Statuts des commandes', subtitle: _periods[_days]),
-          AdminDonut(
-            centerLabel: 'commandes',
-            size: 168.0,
-            slices: [
-              for (final g in groups)
-                (label: g.label, value: g.count.toDouble(), color: g.color),
-            ],
-          ),
-        ],
+      // Hauteur imposée (grand écran) : l'anneau est centré dans la carte,
+      // à la même hauteur que la courbe voisine.
+      child: LayoutBuilder(
+        builder: (context, c) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            header,
+            if (c.hasBoundedHeight)
+              Expanded(child: Center(child: donut))
+            else
+              donut,
+          ],
+        ),
       ),
     );
   }

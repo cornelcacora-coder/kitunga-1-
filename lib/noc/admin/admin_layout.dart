@@ -875,7 +875,7 @@ class AdminScroll extends StatelessWidget {
       children: [
         Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1400.0),
+            constraints: const BoxConstraints(maxWidth: 2200.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: children,
@@ -928,7 +928,11 @@ class AdminSplit extends StatelessWidget {
     this.flex = const (3, 2),
     this.breakpoint = 900.0,
     this.spacing = 20.0,
+    this.height,
   });
+
+  /// Hauteur commune des deux colonnes sur grand écran (cartes alignées).
+  final double? height;
 
   final Widget left;
   final Widget right;
@@ -945,14 +949,16 @@ class AdminSplit extends StatelessWidget {
           children: [left, SizedBox(height: spacing), right],
         );
       }
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      final row = Row(
+        crossAxisAlignment:
+            height == null ? CrossAxisAlignment.start : CrossAxisAlignment.stretch,
         children: [
           Expanded(flex: flex.$1, child: left),
           SizedBox(width: spacing),
           Expanded(flex: flex.$2, child: right),
         ],
       );
+      return height == null ? row : SizedBox(height: height, child: row);
     });
   }
 }

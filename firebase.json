@@ -30,6 +30,24 @@
         ]
       },
       {
+        "source": "**/*.@(otf|ttf|woff|woff2)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
         "source": "**/*.@(html|js|json|mjs)",
         "headers": [
           {

@@ -28,7 +28,9 @@ le montant ni commander un article épuisé.
   de paiement d'abonnement : il faut communiquer l'adresse aux clients
   (SMS, WhatsApp, réseaux sociaux).
 - La page est publiée avec l'hébergement Firebase :
-  `flutter build web && firebase deploy --only hosting -P kitunga-xtvpe4`
+  `flutter build web --no-tree-shake-icons && firebase deploy --only hosting -P kitunga-xtvpe4`
+  (`--no-tree-shake-icons` : police d'icônes complète, sinon un navigateur qui garde
+  l'ancienne en cache affiche des cases vides à la place des nouvelles icônes)
   puis `https://kitunga-xtvpe4.web.app/abonnement.html`.
 - Les clients déjà inscrits n'ont pas de date de fin : ils doivent payer
   avant de commander. Pour offrir une période (ex. 30 jours de lancement),

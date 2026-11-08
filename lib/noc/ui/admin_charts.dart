@@ -306,6 +306,7 @@ class AdminDonut extends StatelessWidget {
       ),
     );
     final legend = Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (final s in slices)
@@ -341,7 +342,7 @@ class AdminDonut extends StatelessWidget {
       ],
     );
     return LayoutBuilder(builder: (context, c) {
-      if (c.maxWidth < 420.0) {
+      if (c.maxWidth < 340.0) {
         return Column(
           children: [ring, const SizedBox(height: 18.0), legend],
         );
