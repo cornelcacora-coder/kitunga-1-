@@ -8,6 +8,7 @@ import '/noc/ops_alerts.dart'
     show OpsThresholds, paymentFailureRate, countLevel, rateLevel, OpsLevel;
 import '/noc/sales/sales_common.dart' show fcfa;
 import '/noc/ui/admin_charts.dart';
+import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 import 'admin_dashboard_data.dart';
 import 'admin_order_detail.dart';
@@ -66,6 +67,70 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
       _src.payments(_now.subtract(OpsThresholds.paymentWindow));
   Timer? _tick;
 
+  /// Dernières listes affichées (pour l'export).
+  ({
+    List<DashOrder> late,
+    List<DashOrder> silent,
+    List<DashOrder> notReceived,
+    List<Map<String, dynamic>> failed,
+  })? _last;
+
+  AdminExportData? _export() {
+    final l = _last;
+    if (l == null) return null;
+    final now = _now;
+    String since(DashOrder o) => o.createdAt == null
+        ? ''
+        : adminDuration(now.difference(o.createdAt!));
+    List<Object?> order(String type, DashOrder o) => [
+          type,
+          o.reference,
+          _date(o.createdAt),
+          since(o),
+          nameOf(o.userPath),
+          nameOf(o.sellerPath),
+          people[o.sellerPath]?.phone ?? '',
+          orderStatusShort(o.status),
+          o.total,
+        ];
+    final total = l.late.length +
+        l.silent.length +
+        l.notReceived.length +
+        l.failed.length;
+    return AdminExportData(
+      title: 'Alertes',
+      subtitle: '${l.late.length} en retard · ${l.silent.length} sans réponse'
+          ' · ${l.notReceived.length} non reçues (30 j)'
+          ' · ${l.failed.length} paiements échoués (7 j)',
+      fileName: 'alertes',
+      headers: ['Alerte', 'Référence', 'Date', 'Depuis', 'Client', 'Commerce',
+        'Téléphone commerce', 'Statut / motif', 'Montant'],
+      flex: [3, 3, 3, 2, 3, 3, 3, 3, 2],
+      moneyColumns: {8},
+      rows: total == 0
+          ? const []
+          : [
+              for (final o in l.late) order('En retard (+2 h)', o),
+              for (final o in l.silent) order('Sans réponse (+15 min)', o),
+              for (final o in l.notReceived) order('Non reçue', o),
+              for (final p in l.failed)
+                [
+                  'Paiement échoué',
+                  (p['order_id'] as String?) ?? '',
+                  _date(p['created_at'] as DateTime?),
+                  '',
+                  nameOf(p['user_path'] as String?),
+                  '',
+                  '',
+                  ((p['message'] as String?) ?? '').trim().isEmpty
+                      ? 'Non précisé'
+                      : p['message'] as String,
+                  p['amount'] is num ? p['amount'] as num : null,
+                ],
+            ],
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -86,6 +151,7 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
       current: 'alerts',
       title: 'Alertes',
       subtitle: 'Ce qui demande une action, mis à jour chaque minute',
+      actions: [AdminExportButton(data: _export)],
       body: StreamBuilder<List<DashOrder>>(
         stream: _inProgress,
         builder: (context, live) => StreamBuilder<List<DashOrder>>(
@@ -120,6 +186,7 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
         recent.where((o) => o.status == OrderStatus.notReceived).toList();
     final failed = pays.where((p) => p['status'] == 'Echec').toList();
     final rate = paymentFailureRate(pays.map((p) => p['status'] as String?));
+    _last = (late: late, silent: silent, notReceived: notReceived, failed: failed);
     ensureNames(_src, [
       for (final o in [...late, ...silent, ...notReceived]) ...[
         o.userPath,
@@ -426,6 +493,24 @@ class _AdminZonesWidgetState extends State<AdminZonesWidget> {
   late final Stream<List<DashOrder>> _live = _src.inProgress();
   late final Stream<List<DashOrder>> _month =
       _src.ordersSince(_now.subtract(const Duration(days: 30)));
+  List<ZoneRow>? _rows;
+
+  AdminExportData? _export() {
+    final rows = _rows;
+    if (rows == null) return null;
+    return AdminExportData(
+      title: 'Livraisons par zone',
+      subtitle: 'Commandes en cours et 30 derniers jours · ${rows.length} zones',
+      fileName: 'zones',
+      headers: ['Zone', 'En cours', 'En livraison', 'Commandes (30 j)',
+        'Livrées (30 j)', 'Délai moyen (min)'],
+      flex: [4, 2, 2, 2, 2, 2],
+      rows: [
+        for (final r in rows)
+          [r.zone, r.live, r.delivering, r.month, r.delivered, r.avgMinutes],
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -433,6 +518,7 @@ class _AdminZonesWidgetState extends State<AdminZonesWidget> {
       current: 'zones',
       title: 'Livraisons par zone',
       subtitle: 'Quartiers de livraison : en cours et 30 derniers jours',
+      actions: [AdminExportButton(data: _export)],
       body: StreamBuilder<List<DashOrder>>(
         stream: _live,
         builder: (context, live) => StreamBuilder<List<DashOrder>>(
@@ -442,6 +528,7 @@ class _AdminZonesWidgetState extends State<AdminZonesWidget> {
               return const AdminLoading(height: 320.0);
             }
             final rows = zoneRows(live.data!, month.data!);
+            _rows = rows;
             final maxLive = rows.fold(0, (m, r) => r.live > m ? r.live : m);
             final maxMonth = rows.fold(0, (m, r) => r.month > m ? r.month : m);
             return AdminScroll(

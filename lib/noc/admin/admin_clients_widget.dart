@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '/noc/sales/sales_common.dart';
 import 'admin_shell.dart';
+import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 
 /// Clients (adresse /clients) : voir la fiche, modifier (nom, téléphone),
@@ -56,57 +57,42 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
                   : 'Client sans nom';
 
   void _view(Map<String, dynamic> c) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            ClipOval(
-              child: AdminImage(c['photoUrl'] ?? '',
-                  width: 48.0, height: 48.0, icon: Icons.person_outline),
-            ),
-            const SizedBox(width: 12.0),
-            Expanded(child: Text(_name(c), style: salesTitle(18.0))),
-          ],
+    final suspended = c['accountStatus'] == 'suspended';
+    showAdminDetail(
+      context,
+      title: _name(c),
+      subtitle: 'Client Kitunga',
+      avatar: AdminAvatar(name: _name(c), photo: c['photoUrl'], size: 68.0),
+      badges: [
+        suspended
+            ? const AdminBadge('Suspendu', tone: kToneOrange)
+            : const AdminBadge('Actif', tone: kToneGreen),
+        isSubscribed(c)
+            ? const AdminBadge('Abonné', tone: kToneBlue)
+            : const AdminBadge('Non abonné', tone: kToneGrey),
+      ],
+      facts: [
+        fact('Email', c['email'] ?? '', Icons.alternate_email_rounded),
+        fact('Téléphone', c['phone'] ?? '', Icons.phone_rounded),
+        fact(
+            'Abonnement',
+            isSubscribed(c)
+                ? 'Jusqu\'au ${dateFr(c['subscribeCloseAt'])}'
+                : c['subscribeCloseAt'] == null
+                    ? 'Aucun'
+                    : 'Expiré le ${dateFr(c['subscribeCloseAt'])}',
+            Icons.workspace_premium_rounded),
+        fact('Inscrit le', dateFr(c['createdAt']), Icons.event_rounded),
+      ],
+      actions: [
+        (
+          label: 'Offrir un abonnement',
+          icon: Icons.card_giftcard_rounded,
+          onTap: () => _grant(c),
+          primary: false
         ),
-        content: SizedBox(
-          width: 400.0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: StatusChip(accountStatusStyle[c['accountStatus']]),
-              ),
-              AdminInfoRow('Email', c['email'] ?? ''),
-              AdminInfoRow('Téléphone', c['phone'] ?? ''),
-              AdminInfoRow(
-                  'Abonnement',
-                  isSubscribed(c)
-                      ? 'Actif jusqu\'au ${dateFr(c['subscribeCloseAt'])}'
-                      : c['subscribeCloseAt'] == null
-                          ? 'Aucun'
-                          : 'Expiré le ${dateFr(c['subscribeCloseAt'])}'),
-              AdminInfoRow('Inscrit le', dateFr(c['createdAt'])),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _edit(c);
-            },
-            child: const Text('Modifier'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: kSalesRed),
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fermer'),
-          ),
-        ],
-      ),
+        (label: 'Modifier', icon: Icons.edit_rounded, onTap: () => _edit(c), primary: true),
+      ],
     );
   }
 
@@ -167,6 +153,7 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
       title: 'Clients',
       subtitle: 'Comptes clients de l\'application',
       actions: [
+        AdminExportButton(data: _export),
         OutlinedButton.icon(
             onPressed: _reload,
             icon: const Icon(Icons.refresh_rounded, size: 18.0),
@@ -207,6 +194,7 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
                       );
                     }
                     final list = listOf(snap.data!['clients']);
+                    _shown = list;
                     final total =
                         (snap.data!['total'] as num? ?? list.length).toInt();
                     return Column(
@@ -230,6 +218,36 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
           ),
         ],
       ),
+    );
+  }
+
+  List<Map<String, dynamic>>? _shown;
+
+  AdminExportData? _export() {
+    final list = _shown;
+    if (list == null) return null;
+    return AdminExportData(
+      title: 'Clients',
+      subtitle: [
+        if (_q.isNotEmpty) 'recherche « $_q »',
+        '${list.length} client${list.length > 1 ? 's' : ''}',
+      ].join(' · '),
+      fileName: 'clients',
+      headers: ['Client', 'Email', 'Téléphone', 'Inscrit le', 'Abonnement',
+        'Fin d\'abonnement', 'Statut'],
+      flex: [4, 4, 2, 2, 2, 2, 2],
+      rows: [
+        for (final c in list)
+          [
+            _name(c),
+            c['email'] ?? '',
+            c['phone'] ?? '',
+            dateFr(c['createdAt']),
+            isSubscribed(c) ? 'Abonné' : 'Non abonné',
+            c['subscribeCloseAt'] == null ? '' : dateFr(c['subscribeCloseAt']),
+            c['accountStatus'] == 'suspended' ? 'Suspendu' : 'Actif',
+          ],
+      ],
     );
   }
 

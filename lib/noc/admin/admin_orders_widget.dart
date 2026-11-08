@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '/backend/order_status.dart';
 import '/noc/sales/sales_common.dart' show fcfa;
+import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 import 'admin_dashboard_data.dart';
 import 'admin_order_detail.dart';
@@ -115,6 +116,10 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
   final _People _people = {};
   final Set<String> _asked = {};
 
+  /// Lignes affichées (onglet, filtres) pour l'export.
+  List<DashOrder>? _shown;
+  String _shownTab = '';
+
   Stream<List<DashOrder>> _load() => _src.ordersSince(_days == 0
       ? DateTime(2020)
       : _now.subtract(Duration(days: _days)));
@@ -171,6 +176,7 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
           ? 'Suivi des livreurs, de la prise en charge à la remise'
           : 'Toutes les commandes passées sur Kitunga',
       actions: [
+        AdminExportButton(data: _export),
         AdminSelect<int>(
           value: _days,
           items: _periods,
@@ -207,6 +213,8 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
     final base = all.where(_matches).toList();
     final tab = _tabs.firstWhere((t) => t.key == _tab);
     final rows = base.where(tab.test).toList();
+    _shown = rows;
+    _shownTab = tab.label;
     final zones = {
       for (final o in all)
         if (o.zone.trim().isNotEmpty) o.zone.trim(),
@@ -262,6 +270,69 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  // ── Export ─────────────────────────────────────────────────────────────
+
+  AdminExportData? _export() {
+    final rows = _shown;
+    if (rows == null) return null;
+    final sorted = [...rows]..sort((a, b) =>
+        (b.createdAt ?? DateTime(2000)).compareTo(a.createdAt ?? DateTime(2000)));
+    final filters = [
+      _periods[_days]!,
+      'onglet « $_shownTab »',
+      if (_zone != null) 'zone $_zone',
+      if (_q.trim().isNotEmpty) 'recherche « ${_q.trim()} »',
+      '${rows.length} commande${rows.length > 1 ? 's' : ''}',
+    ].join(' · ');
+    String addr(DashOrder o) =>
+        [o.zone, o.location].where((s) => s.trim().isNotEmpty).join(' · ');
+    if (_deliveries) {
+      return AdminExportData(
+        title: 'Livraisons',
+        subtitle: filters,
+        fileName: 'livraisons',
+        headers: ['Référence', 'Commandée le', 'Livreur', 'Commerce',
+          'Adresse', 'Durée (min)', 'Livrée le', 'Statut'],
+        flex: [3, 3, 3, 3, 4, 2, 3, 2],
+        rows: [
+          for (final o in sorted)
+            [
+              o.reference,
+              _date(o.createdAt),
+              _name(o.delivererPath, none: 'Non attribué'),
+              _name(o.sellerPath),
+              addr(o),
+              _elapsed(o)?.inMinutes,
+              o.deliveredAt == null ? '' : _date(o.deliveredAt),
+              orderStatusShort(o.status),
+            ],
+        ],
+      );
+    }
+    return AdminExportData(
+      title: 'Commandes',
+      subtitle: filters,
+      fileName: 'commandes',
+      headers: ['Référence', 'Date', 'Client', 'Téléphone client', 'Commerce',
+        'Adresse', 'Montant', 'Statut'],
+      flex: [3, 3, 3, 2, 3, 4, 2, 2],
+      moneyColumns: {6},
+      rows: [
+        for (final o in sorted)
+          [
+            o.reference,
+            _date(o.createdAt),
+            _name(o.userPath),
+            _people[o.userPath]?.phone ?? '',
+            _name(o.sellerPath),
+            addr(o),
+            o.total,
+            orderStatusShort(o.status),
+          ],
       ],
     );
   }

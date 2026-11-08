@@ -456,3 +456,208 @@ class AdminFieldRow extends StatelessWidget {
 
 /// Dernière mise à jour d'une donnée (pour les en-têtes de liste).
 String nowLabel() => 'Mis à jour à ${DateFormat('HH:mm', 'fr').format(DateTime.now())}';
+
+// ── Fiche détaillée ──────────────────────────────────────────────────────
+
+/// Information d'une fiche : libellé et valeur.
+typedef AdminFact = ({String label, String value, IconData icon});
+
+AdminFact fact(String label, String value, IconData icon) =>
+    (label: label, value: value, icon: icon);
+
+/// Fiche détaillée premium (produit, commerce, livreur, client, catégorie) :
+/// bannière ou photo, titre, pastilles, informations en grille, actions.
+Future<void> showAdminDetail(
+  BuildContext context, {
+  required String title,
+  String? subtitle,
+  Widget? media,
+  Widget? avatar,
+  List<Widget> badges = const [],
+  required List<AdminFact> facts,
+  String? note,
+  String noteLabel = 'Présentation',
+  List<({String label, IconData icon, VoidCallback onTap, bool primary})>
+      actions = const [],
+}) {
+  return showDialog(
+    context: context,
+    builder: (dialogContext) {
+      final wide = MediaQuery.sizeOf(dialogContext).width > 640;
+      return Dialog(
+        insetPadding: const EdgeInsets.all(16.0),
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22.0)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Bannière (image) ou bandeau dégradé de la marque.
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SizedBox(
+                      height: media != null ? 190.0 : 96.0,
+                      width: double.infinity,
+                      child: media ??
+                          const DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFFF23A3A), Color(0xFF9E0E0E)],
+                              ),
+                            ),
+                          ),
+                    ),
+                    Positioned(
+                      top: 10.0,
+                      right: 10.0,
+                      child: Material(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        shape: const CircleBorder(),
+                        child: IconButton(
+                          tooltip: 'Fermer',
+                          icon: const Icon(Icons.close_rounded,
+                              color: Colors.white, size: 20.0),
+                          onPressed: () => Navigator.pop(dialogContext),
+                        ),
+                      ),
+                    ),
+                    if (avatar != null)
+                      Positioned(
+                        left: 24.0,
+                        bottom: -34.0,
+                        child: Container(
+                          padding: const EdgeInsets.all(4.0),
+                          decoration: BoxDecoration(
+                            color: AdminColors.surface,
+                            shape: BoxShape.circle,
+                          ),
+                          child: avatar,
+                        ),
+                      ),
+                  ],
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                      24.0, avatar != null ? 44.0 : 20.0, 24.0, 4.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: AdminText.h1(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                      if (subtitle != null && subtitle.trim().isNotEmpty) ...[
+                        const SizedBox(height: 2.0),
+                        Text(subtitle, style: AdminText.label()),
+                      ],
+                      if (badges.isNotEmpty) ...[
+                        const SizedBox(height: 10.0),
+                        Wrap(spacing: 6.0, runSpacing: 6.0, children: badges),
+                      ],
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24.0, 14.0, 24.0, 0),
+                  child: LayoutBuilder(builder: (context, c) {
+                    final cols = wide ? 2 : 1;
+                    final w = (c.maxWidth - 10.0 * (cols - 1)) / cols;
+                    return Wrap(
+                      spacing: 10.0,
+                      runSpacing: 10.0,
+                      children: [
+                        for (final f in facts)
+                          SizedBox(
+                            width: w,
+                            child: Container(
+                              padding: const EdgeInsets.all(12.0),
+                              decoration: BoxDecoration(
+                                color: AdminColors.surfaceAlt,
+                                borderRadius: BorderRadius.circular(14.0),
+                                border: Border.all(color: AdminColors.border),
+                              ),
+                              child: Row(
+                                children: [
+                                  AdminIconBadge(f.icon,
+                                      size: 34.0, round: false),
+                                  const SizedBox(width: 10.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(f.label.toUpperCase(),
+                                            style: AdminText.caps()),
+                                        const SizedBox(height: 2.0),
+                                        Text(
+                                            f.value.trim().isEmpty
+                                                ? '—'
+                                                : f.value,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AdminText.strong(size: 13.5)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  }),
+                ),
+                if (note != null && note.trim().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24.0, 14.0, 24.0, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(noteLabel.toUpperCase(), style: AdminText.caps()),
+                        const SizedBox(height: 4.0),
+                        Text(note, style: AdminText.body()),
+                      ],
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 10.0,
+                    runSpacing: 10.0,
+                    children: [
+                      for (final a in actions)
+                        a.primary
+                            ? FilledButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(dialogContext);
+                                  a.onTap();
+                                },
+                                icon: Icon(a.icon, size: 18.0),
+                                label: Text(a.label),
+                              )
+                            : OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(dialogContext);
+                                  a.onTap();
+                                },
+                                icon: Icon(a.icon, size: 18.0),
+                                label: Text(a.label),
+                              ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}

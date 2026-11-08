@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '/noc/sales/sales_admin_widget.dart' show SalesPage;
 import '/noc/sales/sales_common.dart';
+import '/noc/ui/admin_export.dart';
 import '/noc/admin/admin_layout.dart' show AdminShell, AdminTabbedBody;
 
 /// Gestion (adresse /gestion) : remboursements à traiter, abonnements offerts
@@ -96,8 +97,41 @@ class _RefundsTabState extends State<_RefundsTab> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('${refunds.length} commande(s) · ${fcfa(total)} à rembourser',
-                    style: salesTitle(15.0)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                          '${refunds.length} commande(s) · ${fcfa(total)} à rembourser',
+                          style: salesTitle(15.0)),
+                    ),
+                    AdminExportButton(
+                      data: () => AdminExportData(
+                        title: 'Remboursements à traiter',
+                        subtitle: '${refunds.length} commande(s) · ${fcfa(total)} à rembourser',
+                        fileName: 'remboursements',
+                        headers: ['Commande', 'Montant', 'Statut commande',
+                          'Remboursement', 'Client', 'Téléphone', 'Email',
+                          'Référence MTN', 'Mise à jour'],
+                        flex: [3, 2, 2, 3, 3, 2, 3, 3, 2],
+                        moneyColumns: {1},
+                        rows: [
+                          for (final r in refunds)
+                            [
+                              r['reference'] ?? '',
+                              r['amount'] as num?,
+                              r['status'] ?? '',
+                              r['refundStatus'] ?? '',
+                              (r['client'] as Map?)?['name'] ?? '',
+                              (r['client'] as Map?)?['phone'] ?? '',
+                              (r['client'] as Map?)?['email'] ?? '',
+                              r['paymentReference'] ?? '',
+                              dateFr(r['updatedAt'] as String?),
+                            ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 10.0),
                 for (final r in refunds) ...[
                   SalesCard(

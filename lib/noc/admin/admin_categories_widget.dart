@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/noc/sales/sales_common.dart';
 import 'admin_shell.dart';
+import '/noc/ui/admin_export.dart';
 
 /// Catégories de commerces (adresse /categories) : celles affichées dans
 /// l'application. Voir, ajouter, modifier (nom, image, couleur, ordre,
@@ -46,51 +47,37 @@ class _AdminCategoriesWidgetState extends State<AdminCategoriesWidget> {
   }
 
   void _view(Map<String, dynamic> c) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(c['name'] ?? ''),
-        content: SizedBox(
-          width: 380.0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14.0),
-                child: Container(
-                  height: 160.0,
-                  color: hexColor(c['color']),
-                  padding: const EdgeInsets.all(16.0),
-                  child: AdminImage(c['image'] ?? '', fit: BoxFit.contain),
-                ),
-              ),
-              const SizedBox(height: 12.0),
-              AdminInfoRow('Commerces', '${c['sellers'] ?? 0}'),
-              AdminInfoRow('Ordre d\'affichage', '${(c['order'] ?? 0) + 1}'),
-              AdminInfoRow('Dans l\'application',
-                  c['active'] == false ? 'Masquée' : 'Visible'),
-              AdminInfoRow('Couleur de fond', '${c['color'] ?? ''}'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.go(Uri(
-                  path: AdminPaths.sellers,
-                  queryParameters: {'categorie': c['name']}).toString());
-            },
-            child: const Text('Voir les commerces'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: kSalesRed),
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fermer'),
-          ),
-        ],
+    showAdminDetail(
+      context,
+      title: c['name'] ?? '',
+      subtitle: 'Catégorie de commerces',
+      media: Container(
+        color: hexColor(c['color']),
+        padding: const EdgeInsets.all(22.0),
+        child: AdminImage(c['image'] ?? '', fit: BoxFit.contain),
       ),
+      badges: [
+        c['active'] == false
+            ? const AdminBadge('Masquée', tone: kToneGrey)
+            : const AdminBadge('Visible dans l\'application', tone: kToneGreen),
+      ],
+      facts: [
+        fact('Commerces', '${c['sellers'] ?? 0}', Icons.storefront_rounded),
+        fact('Position', '${((c['order'] as num?)?.toInt() ?? 0) + 1}',
+            Icons.format_list_numbered_rounded),
+        fact('Couleur de fond', '${c['color'] ?? ''}', Icons.palette_rounded),
+      ],
+      actions: [
+        (
+          label: 'Voir les commerces',
+          icon: Icons.storefront_outlined,
+          onTap: () => context.go(Uri(
+              path: AdminPaths.sellers,
+              queryParameters: {'categorie': c['name']}).toString()),
+          primary: false
+        ),
+        (label: 'Modifier', icon: Icons.edit_rounded, onTap: () => _edit(c), primary: true),
+      ],
     );
   }
 
@@ -127,6 +114,7 @@ class _AdminCategoriesWidgetState extends State<AdminCategoriesWidget> {
       future: _future,
       builder: (context, snap) {
         final list = snap.data ?? const <Map<String, dynamic>>[];
+        final ready = snap.hasData;
         return AdminShell(
           current: 'categories',
           title: 'Catégories',
@@ -136,6 +124,27 @@ class _AdminCategoriesWidgetState extends State<AdminCategoriesWidget> {
                 onPressed: _reload,
                 icon: const Icon(Icons.refresh_rounded, size: 18.0),
                 label: const Text('Actualiser')),
+            AdminExportButton(
+              data: () => !ready
+                  ? null
+                  : AdminExportData(
+                      title: 'Catégories',
+                      subtitle:
+                          '${list.length} catégorie${list.length > 1 ? 's' : ''}',
+                      fileName: 'categories',
+                      headers: ['Position', 'Catégorie', 'Commerces', 'Dans l\'application'],
+                      flex: [1, 4, 2, 2],
+                      rows: [
+                        for (final c in list)
+                          [
+                            ((c['order'] as num?)?.toInt() ?? 0) + 1,
+                            c['name'] ?? '',
+                            c['sellers'] as num?,
+                            c['active'] == false ? 'Masquée' : 'Visible',
+                          ],
+                      ],
+                    ),
+            ),
             adminAddButton('Nouvelle catégorie',
                 () => _edit(null, list.length)),
           ],
@@ -171,7 +180,7 @@ class _AdminCategoriesWidgetState extends State<AdminCategoriesWidget> {
                   40.0),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 280.0,
-                mainAxisExtent: 296.0,
+                mainAxisExtent: 318.0,
                 crossAxisSpacing: 14.0,
                 mainAxisSpacing: 14.0,
               ),
@@ -211,47 +220,84 @@ class _CategoryCard extends StatelessWidget {
     final c = category;
     final sellers = (c['sellers'] as num? ?? 0).toInt();
     final hidden = c['active'] == false;
-    return SalesCard(
+    return AdminCard(
       onTap: onView,
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12.0),
-            child: Container(
-              height: 130.0,
-              color: hexColor(c['color']),
-              padding: const EdgeInsets.all(12.0),
-              child: Opacity(
-                opacity: hidden ? 0.4 : 1.0,
-                child: AdminImage(c['image'] ?? '', fit: BoxFit.contain),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10.0),
-          Row(
+          // Image sur fond pastel, position en pastille.
+          Stack(
             children: [
-              Expanded(
-                child: Text(c['name'] ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: salesTitle(16.0)),
+              Container(
+                height: 140.0,
+                width: double.infinity,
+                color: hexColor(c['color']),
+                padding: const EdgeInsets.all(18.0),
+                child: Opacity(
+                  opacity: hidden ? 0.4 : 1.0,
+                  child: AdminImage(c['image'] ?? '', fit: BoxFit.contain),
+                ),
               ),
-              AdminRowActions(actions: [
-                viewAction(onView),
-                editAction(onEdit),
-                deleteAction(onDelete),
-              ]),
+              Positioned(
+                top: 10.0,
+                left: 10.0,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9.0, vertical: 3.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(AdminRadius.pill),
+                  ),
+                  child: Text('#${((c['order'] as num?)?.toInt() ?? 0) + 1}',
+                      style: AdminText.strong(
+                          size: 11.5, color: const Color(0xFF16181D))),
+                ),
+              ),
             ],
           ),
-          Text('$sellers commerce${sellers > 1 ? 's' : ''}',
-              style: salesBody()),
-          const Spacer(),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: hidden
-                ? const AdminBadge('Masquée', tone: kToneGrey)
-                : const AdminBadge('Visible', tone: kToneGreen),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 14.0, 16.0, 14.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(c['name'] ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AdminText.h2()),
+                  const SizedBox(height: 2.0),
+                  Text('$sellers commerce${sellers > 1 ? 's' : ''}',
+                      style: AdminText.label()),
+                  const SizedBox(height: 8.0),
+                  hidden
+                      ? const AdminBadge('Masquée', tone: kToneGrey)
+                      : const AdminBadge('Visible', tone: kToneGreen),
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AdminActionDot(
+                          icon: Icons.visibility_rounded,
+                          tooltip: 'Voir',
+                          onTap: onView),
+                      const SizedBox(width: 6.0),
+                      AdminActionDot(
+                          icon: Icons.edit_rounded,
+                          tooltip: 'Modifier',
+                          tone: kToneOrange,
+                          onTap: onEdit),
+                      const SizedBox(width: 6.0),
+                      AdminActionDot(
+                          icon: Icons.delete_rounded,
+                          tooltip: 'Supprimer',
+                          tone: kToneRed,
+                          onTap: onDelete),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

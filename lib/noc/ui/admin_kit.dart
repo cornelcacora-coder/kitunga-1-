@@ -200,9 +200,11 @@ ThemeData adminTheme(ThemeData base) {
     popupMenuTheme: PopupMenuThemeData(
       color: AdminColors.surface,
       surfaceTintColor: Colors.transparent,
-      elevation: 6.0,
+      elevation: 10.0,
+      shadowColor: const Color(0x401B2340),
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AdminRadius.md)),
+          borderRadius: BorderRadius.circular(AdminRadius.md),
+          side: BorderSide(color: AdminColors.border)),
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,

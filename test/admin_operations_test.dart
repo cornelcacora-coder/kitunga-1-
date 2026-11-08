@@ -7,6 +7,9 @@ import 'package:kitunga/noc/admin/admin_dashboard_data.dart';
 import 'package:kitunga/noc/admin/admin_monitoring_widgets.dart';
 import 'package:kitunga/noc/admin/admin_orders_widget.dart';
 import 'package:kitunga/noc/admin/admin_shell.dart';
+import 'package:kitunga/noc/ui/admin_export.dart';
+import 'package:archive/archive.dart';
+import 'dart:convert';
 
 /// Pages Commandes, Livraisons, Alertes et Zones avec des données simulées.
 void main() {
@@ -183,4 +186,30 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('export Excel des commandes affichées (onglet et filtres)',
+      (tester) async {
+    final saved = <(String, List<int>)>[];
+    adminExportSaveOverride = (bytes, name, mime) => saved.add((name, bytes));
+    addTearDown(() => adminExportSaveOverride = null);
+    await open(tester, AdminOrdersWidget(clock: () => now),
+        const Size(1440, 1000));
+    await tapText(tester, 'Non reçues');
+    await tester.tap(find.text('Exporter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Excel (.xlsx)'));
+    await tester.runAsync(() => Future<void>.delayed(
+        const Duration(milliseconds: 300)));
+    await tester.pumpAndSettle();
+    expect(saved.length, 1);
+    expect(saved.single.$1, startsWith('kitunga_commandes_'));
+    final sheet = utf8.decode(ZipDecoder()
+        .decodeBytes(saved.single.$2)
+        .firstWhere((f) => f.name == 'xl/worksheets/sheet1.xml')
+        .content as List<int>);
+    // Seule la commande non reçue de l'onglet est exportée.
+    expect(sheet, contains('ORD-2'));
+    expect(sheet, isNot(contains('ORD-1<')));
+    expect(sheet, contains('onglet « Non reçues »'));
+  });
 }

@@ -194,7 +194,7 @@ void main() {
       // Voir.
       await rowAction(tester, 'Voir', at: 0);
       expect(find.text('Voir les commerces'), findsOneWidget);
-      await tester.tap(find.text('Fermer'));
+      await tester.tap(find.byTooltip('Fermer'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });

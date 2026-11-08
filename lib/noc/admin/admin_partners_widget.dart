@@ -7,6 +7,7 @@ import '/noc/sales/sales_common.dart';
 import 'admin_categories_widget.dart' show loadAdminCategories;
 import 'admin_products_widget.dart' show loadAdminPartners;
 import 'admin_shell.dart';
+import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 
 /// Commerçants & boutiques (adresse /commercants) et livreurs (/livreurs) :
@@ -96,94 +97,52 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
 
   void _view(Map<String, dynamic> p) {
     final cover = (p['businessCover'] ?? '') as String;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        titlePadding: EdgeInsets.zero,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (_sellers && cover.isNotEmpty)
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(28.0)),
-                child: AdminImage(cover, height: 130.0),
-              ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24.0, 18.0, 24.0, 0.0),
-              child: Row(
-                children: [
-                  ClipOval(
-                    child: AdminImage(p['photoUrl'] ?? '',
-                        width: 52.0,
-                        height: 52.0,
-                        icon: _sellers
-                            ? Icons.storefront_outlined
-                            : Icons.person_outline),
-                  ),
-                  const SizedBox(width: 12.0),
-                  Expanded(
-                    child: Text(_name(p),
-                        style: salesTitle(18.0),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: 420.0,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: StatusChip(accountStatusStyle[p['accountStatus']]),
-                ),
-                if (p['accountStatus'] == 'suspended')
-                  AdminInfoRow('Motif', p['accountStatusReason'] ?? ''),
-                if (_sellers) AdminInfoRow('Catégorie', p['category'] ?? ''),
-                AdminInfoRow('Email', p['email'] ?? ''),
-                AdminInfoRow('Téléphone', p['phone'] ?? ''),
-                if (_sellers) AdminInfoRow('Horaires', p['horraire'] ?? ''),
-                if (_sellers)
-                  AdminInfoRow('Produits', '${p['products'] ?? 0}'),
-                AdminInfoRow('Certifié', p['verified'] == true ? 'Oui' : 'Non'),
-                AdminInfoRow('Présentation', p['bio'] ?? ''),
-                AdminInfoRow('Inscrit le', dateFr(p['createdAt'])),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          if (_sellers)
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.go(Uri(
-                    path: AdminPaths.products,
-                    queryParameters: {'commerce': p['uid']}).toString());
-              },
-              child: const Text('Voir ses produits'),
-            ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _edit(p);
-            },
-            child: const Text('Modifier'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: kSalesRed),
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fermer'),
-          ),
-        ],
+    final suspended = p['accountStatus'] == 'suspended';
+    showAdminDetail(
+      context,
+      title: _name(p),
+      subtitle: _sellers ? p['category'] as String? : 'Livreur partenaire',
+      media: _sellers && cover.isNotEmpty
+          ? AdminImage(cover, fit: BoxFit.cover)
+          : null,
+      avatar: ClipOval(
+        child: AdminImage(p['photoUrl'] ?? '',
+            width: 68.0,
+            height: 68.0,
+            icon: _sellers ? Icons.storefront_outlined : Icons.person_outline),
       ),
+      badges: [
+        suspended
+            ? const AdminBadge('Suspendu', tone: kToneOrange)
+            : const AdminBadge('Actif', tone: kToneGreen),
+        if (p['verified'] == true)
+          const AdminBadge('Certifié', tone: kToneBlue),
+      ],
+      facts: [
+        fact('Email', p['email'] ?? '', Icons.alternate_email_rounded),
+        fact('Téléphone', p['phone'] ?? '', Icons.phone_rounded),
+        if (_sellers) ...[
+          fact('Produits', '${p['products'] ?? 0}', Icons.shopping_bag_rounded),
+          fact('Horaires', p['horraire'] ?? '', Icons.schedule_rounded),
+        ],
+        fact('Inscrit le', dateFr(p['createdAt']), Icons.event_rounded),
+        if (suspended)
+          fact('Motif de suspension', p['accountStatusReason'] ?? '',
+              Icons.block_rounded),
+      ],
+      note: p['bio'] as String?,
+      actions: [
+        if (_sellers)
+          (
+            label: 'Voir ses produits',
+            icon: Icons.shopping_bag_outlined,
+            onTap: () => context.go(Uri(
+                path: AdminPaths.products,
+                queryParameters: {'commerce': p['uid']}).toString()),
+            primary: false
+          ),
+        (label: 'Modifier', icon: Icons.edit_rounded, onTap: () => _edit(p), primary: true),
+      ],
     );
   }
 
@@ -239,6 +198,7 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
             onPressed: _reload,
             icon: const Icon(Icons.refresh_rounded, size: 18.0),
             label: const Text('Actualiser')),
+        AdminExportButton(data: _export),
         adminAddButton(
             _sellers ? 'Nouveau commerce' : 'Nouveau livreur', _add),
       ],
@@ -305,6 +265,7 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                       );
                     }
                     final list = snap.data!;
+                    _shown = list;
                     final n = list.length;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -328,6 +289,49 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
           ),
         ],
       ),
+    );
+  }
+
+  List<Map<String, dynamic>>? _shown;
+
+  AdminExportData? _export() {
+    final list = _shown;
+    if (list == null) return null;
+    final n = list.length;
+    return AdminExportData(
+      title: _sellers ? 'Commerçants & boutiques' : 'Livreurs',
+      subtitle: [
+        if (_sellers && _category != null) 'catégorie $_category',
+        if (_q.isNotEmpty) 'recherche « $_q »',
+        _sellers ? '$n commerce${n > 1 ? 's' : ''}' : '$n livreur${n > 1 ? 's' : ''}',
+      ].join(' · '),
+      fileName: _sellers ? 'commercants' : 'livreurs',
+      headers: [
+        _sellers ? 'Commerce' : 'Livreur',
+        'Email',
+        'Téléphone',
+        if (_sellers) 'Catégorie',
+        if (_sellers) 'Produits',
+        if (_sellers) 'Horaires',
+        'Certifié',
+        'Statut',
+        'Inscrit le',
+      ],
+      flex: _sellers ? [4, 4, 2, 2, 1, 3, 1, 2, 2] : [4, 4, 3, 2, 2, 2],
+      rows: [
+        for (final p in list)
+          [
+            _name(p),
+            p['email'] ?? '',
+            p['phone'] ?? '',
+            if (_sellers) p['category'] ?? '',
+            if (_sellers) p['products'] as num?,
+            if (_sellers) p['horraire'] ?? '',
+            p['verified'] == true ? 'Oui' : 'Non',
+            p['accountStatus'] == 'suspended' ? 'Suspendu' : 'Actif',
+            dateFr(p['createdAt']),
+          ],
+      ],
     );
   }
 

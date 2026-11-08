@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'sales_admin_widget.dart';
 import 'sales_common.dart';
+import '/noc/ui/admin_export.dart';
 
 /// Noms des commerciaux et campagnes, pour afficher autre chose que des
 /// identifiants.
@@ -128,8 +129,40 @@ class _SalesCommissionsTabState extends State<SalesCommissionsTab> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('${items.length} commission(s) · total ${fcfa(total)}',
-                    style: salesBody()),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                          '${items.length} commission(s) · total ${fcfa(total)}',
+                          style: salesBody()),
+                    ),
+                    AdminExportButton(
+                      data: () => AdminExportData(
+                        title: 'Commissions',
+                        subtitle: '${items.length} commission(s) · total ${fcfa(total)}',
+                        fileName: 'commissions',
+                        headers: ['Date', 'Commercial', 'Campagne', 'Type',
+                          'Formule', 'Montant', 'Statut', 'Éligible le', 'Motif'],
+                        flex: [2, 3, 3, 2, 2, 2, 2, 2, 3],
+                        moneyColumns: {5},
+                        rows: [
+                          for (final c in items)
+                            [
+                              dateFr(c['createdAt'] as String?),
+                              agents[c['agentUid']] ?? c['agentUid'] ?? '',
+                              campaigns[c['campaignId']] ?? '',
+                              commissionType[c['type']] ?? '${c['type'] ?? ''}',
+                              planLabel[c['plan']] ?? '',
+                              c['amount'] as num?,
+                              commissionStatus[c['status']]?.label ?? '${c['status'] ?? ''}',
+                              dateFr(c['eligibleAt'] as String?),
+                              c['statusReason'] ?? '',
+                            ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 10.0),
                 for (final c in items) ...[
                   _commissionCard(c, agents, campaigns),
@@ -343,14 +376,44 @@ class _SalesPayoutsTabState extends State<SalesPayoutsTab> {
                     'puis vous saisissez la référence.',
                     style: salesBody()),
                 const SizedBox(height: 10.0),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: FilledButton.icon(
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 10.0,
+                  runSpacing: 10.0,
+                  children: [
+                  AdminExportButton(
+                    data: () => AdminExportData(
+                      title: 'Versements aux commerciaux',
+                      subtitle: '${payouts.length} versement(s)',
+                      fileName: 'versements',
+                      headers: ['Demandé le', 'Commercial', 'Montant',
+                        'Commissions', 'Moyen de paiement', 'Statut',
+                        'Payé le', 'Référence du virement', 'Motif'],
+                      flex: [2, 3, 2, 1, 3, 2, 2, 3, 3],
+                      moneyColumns: {2},
+                      rows: [
+                        for (final p in payouts)
+                          [
+                            dateFr(p['requestedAt'] as String?),
+                            agents[p['agentUid']] ?? p['agentUid'] ?? '',
+                            p['amount'] as num?,
+                            p['itemsCount'] as num?,
+                            payoutMethodLabel(p['method'] as Map?),
+                            payoutStatus[p['status']]?.label ?? '${p['status'] ?? ''}',
+                            p['paidAt'] == null ? '' : dateFr(p['paidAt'] as String?),
+                            p['externalReference'] ?? '',
+                            p['statusReason'] ?? '',
+                          ],
+                      ],
+                    ),
+                  ),
+                  FilledButton.icon(
                     style: FilledButton.styleFrom(backgroundColor: kSalesRed),
                     onPressed: () => _prepare(listOf(data['agents'])),
                     icon: const Icon(Icons.add_card_rounded),
                     label: const Text('Préparer un versement'),
                   ),
+                  ],
                 ),
                 const SizedBox(height: 16.0),
                 if (payouts.isEmpty)

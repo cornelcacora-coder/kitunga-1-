@@ -13,6 +13,7 @@ import 'admin_dashboard_data.dart';
 import 'admin_order_detail.dart';
 import 'admin_shell.dart';
 import '/noc/ui/admin_table.dart';
+import '/noc/ui/admin_export.dart';
 
 /// Tableau de bord de l'administration (adresse /supervisionDashboard) :
 /// indicateurs clés comparés à la période précédente, commandes par jour,
@@ -52,6 +53,13 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
 
   final _People _people = {};
   final Set<String> _asked = {};
+
+  /// Derniers chiffres affichés (rapport d'activité exportable).
+  DashPeriod? _stats;
+  List<DashOrder> _inPeriod = const [];
+  List<DashOrder> _latest = const [];
+  int? _newClients;
+  ({int clients, int sellers, int delivers})? _totalsValue;
   Timer? _tick;
 
   Future<List<DateTime>> _loadUsers() =>
@@ -98,6 +106,7 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
       title: 'Tableau de bord',
       subtitle: 'Activité de Kitunga en temps réel',
       actions: [
+        AdminExportButton(data: _report),
         AdminSelect<int>(
           value: _days,
           items: _periods,
@@ -134,6 +143,9 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
       ..sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
     final latest = recent.take(20).toList();
     _ensureNames(latest.expand((o) => [o.userPath, o.sellerPath]));
+    _stats = stats;
+    _inPeriod = inPeriod;
+    _latest = latest;
 
     return AdminScroll(
       children: [
@@ -168,6 +180,54 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
     );
   }
 
+  /// Rapport d'activité : indicateurs, statuts et commandes récentes.
+  AdminExportData? _report() {
+    final s = _stats;
+    if (s == null) return null;
+    String trend(num cur, num prev) {
+      final t = trendPercent(cur, prev);
+      if (t == null) return '';
+      return '${t >= 0 ? '+' : ''}${t.toStringAsFixed(t.abs() < 10 ? 1 : 0)} %';
+    }
+    final t = _totalsValue;
+    final rows = <List<Object?>>[
+      ['Indicateur', 'Commandes passées', s.orders, trend(s.orders, s.previousOrders)],
+      ['Indicateur', 'Ventes livrées (F)', s.revenue, trend(s.revenue, s.previousRevenue)],
+      if (_newClients != null)
+        ['Indicateur', 'Nouveaux clients', _newClients, ''],
+      [
+        'Indicateur',
+        'Livraison moyenne (min)',
+        s.deliveryMinutes,
+        s.deliveryMinutes == null || s.previousDeliveryMinutes == null
+            ? ''
+            : trend(s.deliveryMinutes!, s.previousDeliveryMinutes!),
+      ],
+      if (t != null) ...[
+        ['Comptes', 'Clients inscrits', t.clients, ''],
+        ['Comptes', 'Commerces', t.sellers, ''],
+        ['Comptes', 'Livreurs', t.delivers, ''],
+      ],
+      for (final g in statusBreakdown(_inPeriod))
+        ['Statut des commandes', g.label, g.count, ''],
+      for (final o in _latest)
+        [
+          'Commande récente',
+          '${o.reference} · ${_name(o.userPath)} → ${_name(o.sellerPath)} · ${orderStatusShort(o.status)}',
+          o.total,
+          _ago(o.createdAt),
+        ],
+    ];
+    return AdminExportData(
+      title: 'Rapport d\'activité',
+      subtitle: '${_periods[_days]} · comparaison avec la période précédente',
+      fileName: 'rapport_activite',
+      headers: ['Rubrique', 'Élément', 'Valeur', 'Évolution / date'],
+      flex: [3, 7, 2, 2],
+      rows: rows,
+    );
+  }
+
   // ── Indicateurs ────────────────────────────────────────────────────────
 
   Widget _kpis(DashPeriod s) {
@@ -178,11 +238,13 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
         final from = now.subtract(Duration(days: _days));
         final list = users.data ?? const <DateTime>[];
         final newClients = list.where((d) => !d.isBefore(from)).length;
+        if (users.hasData) _newClients = newClients;
         final prevClients = list.where((d) => d.isBefore(from)).length;
         return FutureBuilder<({int clients, int sellers, int delivers})>(
           future: _totals,
           builder: (context, totals) {
             final t = totals.data;
+            _totalsValue = t;
             return AdminGrid(
               minItemWidth: 250.0,
               children: [

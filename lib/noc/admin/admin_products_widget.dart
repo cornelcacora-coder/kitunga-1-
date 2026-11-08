@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '/noc/sales/sales_common.dart';
 import 'admin_categories_widget.dart' show loadAdminCategories;
 import 'admin_shell.dart';
+import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 
 /// Produits (adresse /produits) : tous les produits, avec leur emplacement
@@ -89,54 +90,46 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
   }
 
   void _view(Map<String, dynamic> p) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(p['name'] ?? ''),
-        content: SizedBox(
-          width: 420.0,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14.0),
-                  child: AdminImage(p['prodImg'] ?? '', height: 200.0),
-                ),
-                const SizedBox(height: 12.0),
-                AdminInfoRow('Emplacement', productLocation(p)),
-                AdminInfoRow('Statut',
-                    p['published'] == false ? 'Brouillon (masqué)' : 'Publié'),
-                AdminInfoRow('Prix', fcfa(p['price'])),
-                AdminInfoRow('Stock', '${p['quantity'] ?? '—'}'),
-                AdminInfoRow('Unité', p['unit'] ?? ''),
-                AdminInfoRow('Mise en avant', p['tag'] ?? ''),
-                AdminInfoRow('Livraison express',
-                    p['express'] == true ? 'Oui' : 'Non'),
-                if (p['requiresPrescription'] == true)
-                  const AdminInfoRow('Ordonnance', 'Obligatoire'),
-                AdminInfoRow('Description', p['description'] ?? ''),
-                AdminInfoRow('Ajouté le', dateFr(p['createdAt'])),
-              ],
-            ),
-          ),
+    final img = (p['prodImg'] ?? '') as String;
+    final seller = p['seller'] as Map?;
+    showAdminDetail(
+      context,
+      title: p['name'] ?? '',
+      subtitle: productLocation(p),
+      media: img.isEmpty ? null : AdminImage(img, fit: BoxFit.cover),
+      badges: [
+        p['published'] == false
+            ? const AdminBadge('Brouillon', tone: kToneGrey)
+            : const AdminBadge('Publié', tone: kToneGreen),
+        if (p['express'] == true)
+          const AdminBadge('⚡ Livraison express', tone: kToneOrange),
+        if ((p['tag'] ?? '').isNotEmpty)
+          AdminBadge(p['tag'] as String, tone: kToneBlue),
+        if (p['requiresPrescription'] == true)
+          const AdminBadge('Ordonnance obligatoire', tone: kToneViolet),
+      ],
+      facts: [
+        fact('Prix de vente', fcfa(p['price']), Icons.payments_rounded),
+        fact('Stock', '${p['quantity'] ?? '—'}', Icons.inventory_2_rounded),
+        fact('Commerce', (seller?['name'] ?? 'Commerce supprimé') as String,
+            Icons.storefront_rounded),
+        fact('Catégorie', (seller?['category'] ?? '') as String,
+            Icons.category_rounded),
+        fact('Rayon', p['section'] ?? '', Icons.view_list_rounded),
+        fact('Unité de vente', p['unit'] ?? '', Icons.straighten_rounded),
+        fact('Ajouté le', dateFr(p['createdAt']), Icons.event_rounded),
+      ],
+      note: p['description'] as String?,
+      noteLabel: 'Description',
+      actions: [
+        (
+          label: 'Supprimer',
+          icon: Icons.delete_outline_rounded,
+          onTap: () => _delete(p),
+          primary: false
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _edit(p);
-            },
-            child: const Text('Modifier'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: kSalesRed),
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fermer'),
-          ),
-        ],
-      ),
+        (label: 'Modifier', icon: Icons.edit_rounded, onTap: () => _edit(p), primary: true),
+      ],
     );
   }
 
@@ -224,6 +217,7 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
             onPressed: _reload,
             icon: const Icon(Icons.refresh_rounded, size: 18.0),
             label: const Text('Actualiser')),
+        AdminExportButton(data: _export),
         adminAddButton('Nouveau produit', () => _edit()),
       ],
       body: AdminScroll(
@@ -258,6 +252,7 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
                       );
                     }
                     final list = listOf(snap.data!['products']);
+                    _shown = list;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -279,6 +274,45 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
           ),
         ],
       ),
+    );
+  }
+
+  List<Map<String, dynamic>>? _shown;
+
+  AdminExportData? _export() {
+    final list = _shown;
+    if (list == null) return null;
+    final filters = [
+      if (_category != null) 'catégorie $_category',
+      if (_sellerUid != null)
+        'commerce ${(list.isEmpty ? null : (list.first['seller'] as Map?)?['name']) ?? ''}',
+      if (_missingImage) 'sans image',
+      if (_q.isNotEmpty) 'recherche « $_q »',
+      '${list.length} produit${list.length > 1 ? 's' : ''}',
+    ].join(' · ');
+    return AdminExportData(
+      title: _missingImage ? 'Produits sans photo' : 'Produits',
+      subtitle: filters,
+      fileName: _missingImage ? 'produits_sans_photo' : 'produits',
+      headers: ['Produit', 'Catégorie', 'Commerce', 'Rayon', 'Prix', 'Stock',
+        'Statut', 'Express', 'Mise en avant', 'Ordonnance'],
+      flex: [4, 2, 3, 2, 2, 1, 2, 1, 2, 2],
+      moneyColumns: {4},
+      rows: [
+        for (final p in list)
+          [
+            p['name'] ?? '',
+            (p['seller'] as Map?)?['category'] ?? '',
+            (p['seller'] as Map?)?['name'] ?? 'Commerce supprimé',
+            p['section'] ?? '',
+            p['price'] as num?,
+            p['quantity'] as num?,
+            p['published'] == false ? 'Brouillon' : 'Publié',
+            p['express'] == true ? 'Oui' : 'Non',
+            p['tag'] ?? '',
+            p['requiresPrescription'] == true ? 'Obligatoire' : '',
+          ],
+      ],
     );
   }
 

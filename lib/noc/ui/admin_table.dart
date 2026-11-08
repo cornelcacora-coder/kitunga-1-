@@ -118,12 +118,29 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
 
     return LayoutBuilder(builder: (context, c) {
       final table = c.maxWidth >= widget.breakpoint;
+      // Tableau encadré aux coins arrondis (en-tête + lignes).
+      final body = Container(
+        decoration: BoxDecoration(
+          color: AdminColors.surface,
+          borderRadius: BorderRadius.circular(AdminRadius.lg),
+          border: Border.all(color: AdminColors.border),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (table) _header(),
+            for (var i = 0; i < visible.length; i++)
+              table
+                  ? _row(visible[i], i, last: i == visible.length - 1)
+                  : _compactRow(visible[i], last: i == visible.length - 1),
+          ],
+        ),
+      );
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (table) _header(),
-          for (var i = 0; i < visible.length; i++)
-            table ? _row(visible[i], i) : _compactRow(visible[i]),
+          body,
           _footer(sorted.length, start, visible.length, page, pages),
         ],
       );
@@ -132,86 +149,106 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
 
   Widget _header() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 2.0),
       decoration: BoxDecoration(
         color: AdminColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(AdminRadius.sm),
+        border: Border(bottom: BorderSide(color: AdminColors.border)),
       ),
       child: Row(
         children: [
           for (var i = 0; i < widget.columns.length; i++)
-            _sized(
-              widget.columns[i],
-              widget.columns[i].sortKey == null
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: Text(widget.columns[i].label.toUpperCase(),
-                          style: AdminText.caps()),
-                    )
-                  : InkWell(
-                      borderRadius: BorderRadius.circular(AdminRadius.sm),
-                      onTap: () => setState(() {
-                        if (_sort == i) {
-                          _asc = !_asc;
-                        } else {
-                          _sort = i;
-                          _asc = true;
-                        }
-                      }),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: Row(
-                          children: [
-                            Flexible(
-                              child: Text(widget.columns[i].label.toUpperCase(),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AdminText.caps(
-                                      color: _sort == i
-                                          ? AdminColors.ink
-                                          : AdminColors.faint)),
-                            ),
-                            const SizedBox(width: 2.0),
-                            Icon(
-                              _sort != i
-                                  ? Icons.unfold_more_rounded
-                                  : _asc
-                                      ? Icons.arrow_upward_rounded
-                                      : Icons.arrow_downward_rounded,
-                              size: 14.0,
-                              color: _sort == i
-                                  ? AdminColors.ink
-                                  : AdminColors.faint,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+            _sized(widget.columns[i], _headerCell(i)),
+          if (widget.actions != null)
+            SizedBox(
+              width: widget.actionsWidth,
+              // Libellé seulement si la colonne est assez large.
+              child: widget.actionsWidth >= 90.0
+                  ? Text('ACTIONS',
+                      maxLines: 1,
+                      textAlign: TextAlign.right,
+                      style: AdminText.caps())
+                  : null,
             ),
-          if (widget.actions != null) SizedBox(width: widget.actionsWidth),
         ],
       ),
     );
   }
 
-  Widget _row(T r, int i) {
+  Widget _headerCell(int i) {
+    final col = widget.columns[i];
+    final label = Text(col.label.toUpperCase(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AdminText.caps(
+            color: _sort == i ? AdminColors.ink : AdminColors.faint));
+    if (col.sortKey == null) {
+      return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14.0), child: label);
+    }
+    return InkWell(
+      borderRadius: BorderRadius.circular(AdminRadius.sm),
+      onTap: () => setState(() {
+        if (_sort == i) {
+          _asc = !_asc;
+        } else {
+          _sort = i;
+          _asc = true;
+        }
+      }),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14.0),
+        child: Row(
+          children: [
+            Flexible(child: label),
+            const SizedBox(width: 4.0),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              child: Icon(
+                _sort != i
+                    ? Icons.unfold_more_rounded
+                    : _asc
+                        ? Icons.north_rounded
+                        : Icons.south_rounded,
+                key: ValueKey('${_sort == i}-$_asc'),
+                size: 13.0,
+                color: _sort == i ? AdminColors.red : AdminColors.faint,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _row(T r, int i, {required bool last}) {
     final hl = widget.highlight?.call(r) ?? false;
+    final hover = _hover == i;
     return MouseRegion(
+      cursor: widget.onTap == null ? MouseCursor.defer : SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hover = i),
       onExit: (_) => setState(() => _hover = null),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap == null ? null : () => widget.onTap!(r),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 11.0),
+          duration: const Duration(milliseconds: 140),
+          constraints: const BoxConstraints(minHeight: 62.0),
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10.0),
           decoration: BoxDecoration(
             color: hl
                 ? AdminColors.redSoft
-                : _hover == i
+                : hover
                     ? AdminColors.surfaceAlt
                     : Colors.transparent,
             border: Border(
-                bottom: BorderSide(color: AdminColors.border)),
+              // Liseré rouge au survol (ou ligne mise en avant).
+              left: BorderSide(
+                  color: hover || hl ? AdminColors.red : Colors.transparent,
+                  width: 3.0),
+              bottom: last
+                  ? BorderSide.none
+                  : BorderSide(color: AdminColors.border),
+            ),
           ),
           child: Row(
             children: [
@@ -219,7 +256,7 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
                 _sized(
                   c,
                   Padding(
-                    padding: const EdgeInsets.only(right: 10.0),
+                    padding: const EdgeInsets.only(right: 12.0),
                     child: Align(
                         alignment: Alignment.centerLeft, child: c.cell(r)),
                   ),
@@ -240,13 +277,15 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
     );
   }
 
-  Widget _compactRow(T r) {
+  Widget _compactRow(T r, {required bool last}) {
     return InkWell(
       onTap: widget.onTap == null ? null : () => widget.onTap!(r),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        padding: const EdgeInsets.all(14.0),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: AdminColors.border)),
+          border: last
+              ? null
+              : Border(bottom: BorderSide(color: AdminColors.border)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,13 +307,28 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
     );
   }
 
+  /// Numéros de page affichés : tous si peu nombreux, sinon début, voisins
+  /// de la page courante et fin (null = « … »).
+  static List<int?> pageNumbers(int page, int pages) {
+    if (pages <= 7) return [for (var i = 0; i < pages; i++) i];
+    final set = <int>{0, pages - 1, page - 1, page, page + 1}
+      ..removeWhere((p) => p < 0 || p >= pages);
+    final sortedPages = set.toList()..sort();
+    final out = <int?>[];
+    for (var k = 0; k < sortedPages.length; k++) {
+      if (k > 0 && sortedPages[k] - sortedPages[k - 1] > 1) out.add(null);
+      out.add(sortedPages[k]);
+    }
+    return out;
+  }
+
   Widget _footer(int total, int start, int count, int page, int pages) {
     return Padding(
-      padding: const EdgeInsets.only(top: 14.0),
+      padding: const EdgeInsets.only(top: 16.0),
       child: Wrap(
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
-        runSpacing: 10.0,
+        runSpacing: 12.0,
         spacing: 16.0,
         children: [
           Row(
@@ -291,8 +345,12 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
                 }),
               ),
               const SizedBox(width: 12.0),
-              Text('${start + 1}–${start + count} sur $total',
-                  style: AdminText.label()),
+              Text.rich(TextSpan(children: [
+                TextSpan(
+                    text: '${start + 1}–${start + count}',
+                    style: AdminText.strong(size: 13.0)),
+                TextSpan(text: ' sur $total', style: AdminText.label()),
+              ])),
             ],
           ),
           Row(
@@ -300,13 +358,18 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
             children: [
               _pageButton(Icons.chevron_left_rounded, 'Page précédente',
                   page > 0 ? () => setState(() => _page = page - 1) : null),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: Text('Page ${page + 1} / $pages',
-                    style: AdminText.strong(size: 13.0)),
-              ),
-              _pageButton(Icons.chevron_right_rounded, 'Page suivante',
-                  page < pages - 1 ? () => setState(() => _page = page + 1) : null),
+              for (final n in pageNumbers(page, pages))
+                n == null
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Text('…', style: AdminText.label()))
+                    : _pageNumber(n, n == page),
+              _pageButton(
+                  Icons.chevron_right_rounded,
+                  'Page suivante',
+                  page < pages - 1
+                      ? () => setState(() => _page = page + 1)
+                      : null),
             ],
           ),
         ],
@@ -314,21 +377,54 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
     );
   }
 
+  Widget _pageNumber(int n, bool active) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3.0),
+      child: Material(
+        color: active ? AdminColors.red : Colors.transparent,
+        borderRadius: BorderRadius.circular(10.0),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10.0),
+          onTap: active ? null : () => setState(() => _page = n),
+          child: Container(
+            width: 36.0,
+            height: 36.0,
+            alignment: Alignment.center,
+            decoration: active
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    boxShadow: adminGlow(AdminColors.red))
+                : null,
+            child: Text('${n + 1}',
+                style: AdminText.strong(
+                    size: 13.0,
+                    color: active ? Colors.white : AdminColors.text)),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _pageButton(IconData icon, String tooltip, VoidCallback? onTap) {
     return Tooltip(
       message: tooltip,
-      child: Material(
-        color: onTap == null ? AdminColors.greySoft : AdminColors.surface,
-        shape: CircleBorder(side: BorderSide(color: AdminColors.border)),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: SizedBox(
-            width: 36.0,
-            height: 36.0,
-            child: Icon(icon,
-                size: 20.0,
-                color: onTap == null ? AdminColors.faint : AdminColors.ink),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 3.0),
+        child: Material(
+          color: AdminColors.surface,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+              side: BorderSide(color: AdminColors.border)),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10.0),
+            onTap: onTap,
+            child: SizedBox(
+              width: 36.0,
+              height: 36.0,
+              child: Icon(icon,
+                  size: 20.0,
+                  color: onTap == null ? AdminColors.faint : AdminColors.ink),
+            ),
           ),
         ),
       ),
