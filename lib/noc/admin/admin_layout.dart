@@ -148,7 +148,38 @@ String Function() adminDisplayName = () {
 
 // ── Menu latéral ─────────────────────────────────────────────────────────
 
-class KitungaAdminSidebar extends StatelessWidget {
+/// Couleurs du menu latéral (panneau sombre premium).
+class _Side {
+  static const top = Color(0xFF1C1F27);
+  static const bottom = Color(0xFF111318);
+  static const text = Color(0xFFB4B9C4);
+  static const dim = Color(0xFF7A808C);
+  static const line = Color(0x1AFFFFFF);
+  static const hover = Color(0x0FFFFFFF);
+  static const chip = Color(0x14FFFFFF);
+  static const redA = Color(0xFFF23A3A);
+  static const redB = Color(0xFFC4141B);
+}
+
+/// Panneau du menu : fond dégradé sombre, coins arrondis.
+BoxDecoration adminSidebarDecoration({bool floating = true}) => BoxDecoration(
+      gradient: const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [_Side.top, _Side.bottom],
+      ),
+      borderRadius: floating ? BorderRadius.circular(24.0) : null,
+      boxShadow: floating
+          ? const [
+              BoxShadow(
+                  color: Color(0x33111318),
+                  blurRadius: 30.0,
+                  offset: Offset(0, 12)),
+            ]
+          : null,
+    );
+
+class KitungaAdminSidebar extends StatefulWidget {
   const KitungaAdminSidebar(
       {super.key, required this.current, this.collapsed = false});
 
@@ -156,94 +187,268 @@ class KitungaAdminSidebar extends StatelessWidget {
   final bool collapsed;
 
   @override
+  State<KitungaAdminSidebar> createState() => _KitungaAdminSidebarState();
+}
+
+class _KitungaAdminSidebarState extends State<KitungaAdminSidebar> {
+  /// Commandes à confirmer : compteur sur « Opérations » et « Commandes ».
+  late final Stream<int> _pending = adminPendingOrders();
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AdminColors.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Logo
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-                collapsed ? 0 : 24.0, 26.0, collapsed ? 0 : 20.0, 22.0),
-            child: Row(
-              mainAxisAlignment:
-                  collapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
-              children: [
-                Container(
-                  width: 42.0,
-                  height: 42.0,
-                  padding: const EdgeInsets.all(7.0),
-                  decoration: BoxDecoration(
-                    color: AdminColors.red,
-                    borderRadius: BorderRadius.circular(AdminRadius.md),
-                    boxShadow: adminGlow(AdminColors.red),
+    final collapsed = widget.collapsed;
+    final current = widget.current;
+    return StreamBuilder<int>(
+      stream: _pending,
+      builder: (context, snap) {
+        final badges = <String, int>{'orders': snap.data ?? 0};
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _brand(collapsed),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: collapsed ? 18.0 : 20.0),
+              child: const Divider(height: 1.0, color: _Side.line),
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                    collapsed ? 14.0 : 14.0, 16.0, collapsed ? 14.0 : 14.0, 8.0),
+                children: [
+                  if (!collapsed) _caption('NAVIGATION'),
+                  _NavTile(
+                    item: kDashboardItem,
+                    selected: current == 'dashboard',
+                    collapsed: collapsed,
+                    onTap: () =>
+                        openAdminItem(context, kDashboardItem, current: current),
                   ),
-                  child: Image.asset('assets/logo/kitunga_logo_white.png',
-                      errorBuilder: (_, __, ___) => const Icon(
-                          Icons.storefront_rounded,
-                          color: Colors.white)),
-                ),
-                if (!collapsed) ...[
-                  const SizedBox(width: 12.0),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Kitunga', style: AdminText.h1(color: AdminColors.ink)),
-                      Text('Administration',
-                          style: AdminText.label(size: 12.0)),
-                    ],
+                  const SizedBox(height: 10.0),
+                  if (!collapsed) _caption('MODULES'),
+                  for (final g in kAdminMenu)
+                    _NavGroup(
+                      group: g,
+                      current: current,
+                      collapsed: collapsed,
+                      badges: badges,
+                    ),
+                ],
+              ),
+            ),
+            _profile(context, collapsed),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _caption(String text) => Padding(
+        padding: const EdgeInsets.fromLTRB(12.0, 6.0, 0, 8.0),
+        child: Text(text,
+            style: AdminText.caps(color: _Side.dim).copyWith(letterSpacing: 1.4)),
+      );
+
+  Widget _brand(bool collapsed) {
+    final logo = Container(
+      width: 44.0,
+      height: 44.0,
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_Side.redA, _Side.redB],
+        ),
+        borderRadius: BorderRadius.circular(14.0),
+        boxShadow: [
+          BoxShadow(
+              color: _Side.redA.withValues(alpha: 0.45),
+              blurRadius: 16.0,
+              offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Image.asset('assets/logo/kitunga_logo_white.png',
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.storefront_rounded, color: Colors.white)),
+    );
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          collapsed ? 0 : 22.0, 26.0, collapsed ? 0 : 18.0, 22.0),
+      child: Row(
+        mainAxisAlignment:
+            collapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
+        children: [
+          logo,
+          if (!collapsed) ...[
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Kitunga',
+                      style: AdminText.h1(color: Colors.white)
+                          .copyWith(fontSize: 21.0, letterSpacing: 0.2)),
+                  const SizedBox(height: 2.0),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 2.0),
+                    decoration: BoxDecoration(
+                      color: _Side.redA.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(AdminRadius.pill),
+                    ),
+                    child: Text('ADMINISTRATION',
+                        style: AdminText.caps(color: const Color(0xFFFF8A8A))
+                            .copyWith(fontSize: 9.5, letterSpacing: 1.2)),
                   ),
                 ],
-              ],
+              ),
             ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _profile(BuildContext context, bool collapsed) {
+    final name = adminDisplayName();
+    final logout = Tooltip(
+      message: 'Déconnexion',
+      child: Material(
+        color: _Side.chip,
+        borderRadius: BorderRadius.circular(12.0),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12.0),
+          onTap: () => adminSignOut(context),
+          child: const SizedBox(
+            width: 38.0,
+            height: 38.0,
+            child: Icon(Icons.logout_rounded, size: 18.0, color: _Side.text),
           ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: collapsed ? 14.0 : 16.0),
-              children: [
-                if (!collapsed)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(10.0, 4.0, 0, 10.0),
-                    child: Text('MENU', style: AdminText.caps()),
+        ),
+      ),
+    );
+    if (collapsed) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 22.0, top: 10.0),
+        child: Column(
+          children: [
+            AdminAvatar(name: name, size: 40.0),
+            const SizedBox(height: 10.0),
+            logout,
+          ],
+        ),
+      );
+    }
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14.0, 8.0, 14.0, 18.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: _Side.hover,
+        borderRadius: BorderRadius.circular(18.0),
+        border: Border.all(color: _Side.line),
+      ),
+      child: Row(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              AdminAvatar(name: name, size: 40.0),
+              Positioned(
+                right: -1.0,
+                bottom: -1.0,
+                child: Container(
+                  width: 12.0,
+                  height: 12.0,
+                  decoration: BoxDecoration(
+                    color: AdminColors.green,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _Side.bottom, width: 2.0),
                   ),
-                _NavTile(
-                  item: kDashboardItem,
-                  selected: current == 'dashboard',
-                  collapsed: collapsed,
-                  onTap: () =>
-                      openAdminItem(context, kDashboardItem, current: current),
                 ),
-                const SizedBox(height: 6.0),
-                for (final g in kAdminMenu)
-                  _NavGroup(group: g, current: current, collapsed: collapsed),
+              ),
+            ],
+          ),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AdminText.strong(color: Colors.white, size: 13.5)),
+                Text('Administrateur',
+                    style: AdminText.label(color: _Side.dim, size: 12.0)),
               ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-                collapsed ? 14.0 : 16.0, 8.0, collapsed ? 14.0 : 16.0, 20.0),
-            child: _NavTile(
-              item: const AdminNavItem(
-                  'logout', 'Déconnexion', Icons.logout_rounded),
-              selected: false,
-              collapsed: collapsed,
-              onTap: () => adminSignOut(context),
-            ),
-          ),
+          logout,
         ],
       ),
     );
   }
 }
 
+/// Pastille de compteur (commandes à confirmer).
+Widget _countBadge(int n, {bool onRed = false}) => Container(
+      constraints: const BoxConstraints(minWidth: 22.0),
+      padding: const EdgeInsets.symmetric(horizontal: 7.0, vertical: 2.0),
+      decoration: BoxDecoration(
+        color: onRed ? Colors.white : _Side.redA,
+        borderRadius: BorderRadius.circular(AdminRadius.pill),
+      ),
+      child: Text(n > 99 ? '99+' : '$n',
+          textAlign: TextAlign.center,
+          style: AdminText.strong(
+              color: onRed ? _Side.redB : Colors.white, size: 11.0)),
+    );
+
+/// Icône dans une pastille (menu).
+class _IconChip extends StatelessWidget {
+  const _IconChip(this.icon, {required this.active, this.strong = false});
+
+  final IconData icon;
+  final bool active;
+
+  /// Sur fond rouge (entrée active de premier niveau).
+  final bool strong;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34.0,
+      height: 34.0,
+      decoration: BoxDecoration(
+        color: strong
+            ? Colors.white.withValues(alpha: 0.18)
+            : active
+                ? _Side.redA.withValues(alpha: 0.18)
+                : _Side.chip,
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: Icon(icon,
+          size: 18.0,
+          color: strong
+              ? Colors.white
+              : active
+                  ? const Color(0xFFFF6B6B)
+                  : _Side.text),
+    );
+  }
+}
+
 class _NavGroup extends StatefulWidget {
-  const _NavGroup(
-      {required this.group, required this.current, required this.collapsed});
+  const _NavGroup({
+    required this.group,
+    required this.current,
+    required this.collapsed,
+    required this.badges,
+  });
 
   final AdminNavGroup group;
   final String current;
   final bool collapsed;
+  final Map<String, int> badges;
 
   @override
   State<_NavGroup> createState() => _NavGroupState();
@@ -251,11 +456,14 @@ class _NavGroup extends StatefulWidget {
 
 class _NavGroupState extends State<_NavGroup> {
   late bool _open = widget.group.items.any((i) => i.key == widget.current);
+  bool _hover = false;
 
   @override
   Widget build(BuildContext context) {
     final g = widget.group;
     final active = g.items.any((i) => i.key == widget.current);
+    final count =
+        g.items.fold(0, (s, i) => s + (widget.badges[i.key] ?? 0));
 
     // Menu réduit : l'icône du groupe ouvre ses entrées dans un menu.
     if (widget.collapsed) {
@@ -264,12 +472,14 @@ class _NavGroupState extends State<_NavGroup> {
         child: PopupMenuButton<AdminNavItem>(
           tooltip: g.label,
           position: PopupMenuPosition.over,
-          offset: const Offset(64, 0),
+          offset: const Offset(70, 0),
+          color: _Side.top,
           onSelected: (i) => openAdminItem(context, i, current: widget.current),
           itemBuilder: (_) => [
             PopupMenuItem<AdminNavItem>(
               enabled: false,
-              child: Text(g.label.toUpperCase(), style: AdminText.caps()),
+              child: Text(g.label.toUpperCase(),
+                  style: AdminText.caps(color: _Side.dim)),
             ),
             for (final i in g.items)
               PopupMenuItem(
@@ -279,22 +489,29 @@ class _NavGroupState extends State<_NavGroup> {
                     Icon(i.icon,
                         size: 18.0,
                         color: i.key == widget.current
-                            ? AdminColors.red
-                            : AdminColors.muted),
+                            ? const Color(0xFFFF6B6B)
+                            : _Side.text),
                     const SizedBox(width: 10.0),
-                    Text(i.label, style: AdminText.body()),
+                    Text(i.label,
+                        style: AdminText.body(
+                            color: i.key == widget.current
+                                ? Colors.white
+                                : _Side.text)),
                   ],
                 ),
               ),
           ],
-          child: Container(
-            height: 48.0,
-            decoration: BoxDecoration(
-              color: active ? AdminColors.redSoft : Colors.transparent,
-              borderRadius: BorderRadius.circular(AdminRadius.md),
+          child: SizedBox(
+            height: 50.0,
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                _IconChip(g.icon, active: active),
+                if (count > 0)
+                  Positioned(top: 2.0, right: 6.0, child: _countBadge(count)),
+              ],
             ),
-            child: Icon(g.icon,
-                size: 22.0, color: active ? AdminColors.red : AdminColors.muted),
           ),
         ),
       );
@@ -303,64 +520,72 @@ class _NavGroupState extends State<_NavGroup> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2.0),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(AdminRadius.md),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AdminRadius.md),
-              onTap: () => setState(() => _open = !_open),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14.0, vertical: 13.0),
-                child: Row(
-                  children: [
-                    Icon(g.icon,
-                        size: 21.0,
-                        color: active ? AdminColors.red : AdminColors.muted),
-                    const SizedBox(width: 14.0),
-                    Expanded(
-                      child: Text(g.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AdminText.strong(
-                              color: active ? AdminColors.ink : AdminColors.text)),
-                    ),
-                    AnimatedRotation(
-                      turns: _open ? 0.5 : 0.0,
-                      duration: const Duration(milliseconds: 180),
-                      child: const Icon(Icons.keyboard_arrow_down_rounded,
-                          size: 20.0, color: AdminColors.faint),
-                    ),
+        MouseRegion(
+          onEnter: (_) => setState(() => _hover = true),
+          onExit: (_) => setState(() => _hover = false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() => _open = !_open),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              margin: const EdgeInsets.symmetric(vertical: 2.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 7.0),
+              decoration: BoxDecoration(
+                color: _hover || (_open && active)
+                    ? _Side.hover
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(14.0),
+              ),
+              child: Row(
+                children: [
+                  _IconChip(g.icon, active: active),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: Text(g.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AdminText.strong(
+                            color: active ? Colors.white : _Side.text,
+                            size: 14.0)),
+                  ),
+                  if (count > 0 && !_open) ...[
+                    _countBadge(count),
+                    const SizedBox(width: 6.0),
                   ],
-                ),
+                  AnimatedRotation(
+                    turns: _open ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(Icons.keyboard_arrow_down_rounded,
+                        size: 20.0, color: active ? Colors.white : _Side.dim),
+                  ),
+                ],
               ),
             ),
           ),
         ),
         AnimatedSize(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
           alignment: Alignment.topCenter,
           child: !_open
               ? const SizedBox(width: double.infinity)
               : Padding(
-                  padding: const EdgeInsets.only(left: 24.0, bottom: 6.0),
+                  padding: const EdgeInsets.only(left: 26.0, bottom: 6.0),
                   child: Container(
-                    padding: const EdgeInsets.only(left: 10.0),
+                    padding: const EdgeInsets.only(left: 12.0),
                     decoration: const BoxDecoration(
-                      border: Border(
-                          left: BorderSide(color: AdminColors.border, width: 2.0)),
+                      border:
+                          Border(left: BorderSide(color: _Side.line, width: 1.5)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         for (final item in g.items)
-                          _NavTile(
+                          _SubTile(
                             item: item,
-                            dense: true,
                             selected: item.key == widget.current,
+                            count: widget.badges[item.key] ?? 0,
                             onTap: () => openAdminItem(context, item,
                                 current: widget.current),
                           ),
@@ -374,81 +599,163 @@ class _NavGroupState extends State<_NavGroup> {
   }
 }
 
-class _NavTile extends StatelessWidget {
+/// Entrée de premier niveau (tableau de bord).
+class _NavTile extends StatefulWidget {
   const _NavTile({
     required this.item,
     required this.selected,
     required this.onTap,
-    this.dense = false,
     this.collapsed = false,
   });
 
   final AdminNavItem item;
   final bool selected;
-  final bool dense;
   final bool collapsed;
   final VoidCallback onTap;
 
   @override
+  State<_NavTile> createState() => _NavTileState();
+}
+
+class _NavTileState extends State<_NavTile> {
+  bool _hover = false;
+
+  @override
   Widget build(BuildContext context) {
-    // Entrée active : pastille rouge pleine avec une ombre colorée.
-    final strong = selected && !dense;
-    final fg = strong
-        ? Colors.white
-        : selected
-            ? AdminColors.red
-            : AdminColors.text;
-    final tile = Container(
-      margin: const EdgeInsets.symmetric(vertical: 2.0),
-      decoration: BoxDecoration(
-        color: strong
-            ? AdminColors.red
-            : selected
-                ? AdminColors.redSoft
-                : Colors.transparent,
-        borderRadius: BorderRadius.circular(AdminRadius.md),
-        boxShadow: strong ? adminGlow(AdminColors.red) : null,
+    final sel = widget.selected;
+    final tile = MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          margin: const EdgeInsets.symmetric(vertical: 2.0),
+          padding: EdgeInsets.symmetric(
+              horizontal: widget.collapsed ? 0 : 10.0, vertical: 7.0),
+          decoration: BoxDecoration(
+            gradient: sel
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [_Side.redA, _Side.redB])
+                : null,
+            color: sel ? null : (_hover ? _Side.hover : Colors.transparent),
+            borderRadius: BorderRadius.circular(14.0),
+            boxShadow: sel
+                ? [
+                    BoxShadow(
+                        color: _Side.redA.withValues(alpha: 0.40),
+                        blurRadius: 18.0,
+                        offset: const Offset(0, 8)),
+                  ]
+                : null,
+          ),
+          child: widget.collapsed
+              ? Center(
+                  child: _IconChip(widget.item.icon, active: sel, strong: sel))
+              : Row(
+                  children: [
+                    _IconChip(widget.item.icon, active: sel, strong: sel),
+                    const SizedBox(width: 12.0),
+                    Expanded(
+                      child: Text(widget.item.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AdminText.strong(
+                              color: sel ? Colors.white : _Side.text,
+                              size: 14.0)),
+                    ),
+                  ],
+                ),
+        ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AdminRadius.md),
-          onTap: onTap,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: collapsed ? 0 : (dense ? 12.0 : 14.0),
-                vertical: dense ? 10.0 : 13.0),
-            child: collapsed
-                ? Icon(item.icon, size: 22.0, color: strong ? Colors.white : AdminColors.muted)
-                : Row(
-                    children: [
-                      Icon(item.icon,
-                          size: dense ? 18.0 : 21.0,
-                          color: strong || selected ? fg : AdminColors.muted),
-                      SizedBox(width: dense ? 10.0 : 14.0),
-                      Expanded(
-                        child: Text(item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: dense
-                                ? AdminText.label(color: fg, size: 13.5)
-                                    .copyWith(
-                                        fontWeight: selected
-                                            ? FontWeight.w700
-                                            : FontWeight.w500)
-                                : AdminText.strong(color: fg)),
-                      ),
-                      if (item.sheet != null)
-                        Icon(Icons.open_in_new_rounded,
-                            size: 13.0,
-                            color: AdminColors.faint.withValues(alpha: 0.8)),
-                    ],
-                  ),
+    );
+    return widget.collapsed
+        ? Tooltip(message: widget.item.label, child: tile)
+        : tile;
+  }
+}
+
+/// Entrée d'un groupe (sous-menu).
+class _SubTile extends StatefulWidget {
+  const _SubTile({
+    required this.item,
+    required this.selected,
+    required this.count,
+    required this.onTap,
+  });
+
+  final AdminNavItem item;
+  final bool selected;
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  State<_SubTile> createState() => _SubTileState();
+}
+
+class _SubTileState extends State<_SubTile> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final sel = widget.selected;
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          margin: const EdgeInsets.symmetric(vertical: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 9.0),
+          decoration: BoxDecoration(
+            color: sel
+                ? Colors.white.withValues(alpha: 0.08)
+                : (_hover ? _Side.hover : Colors.transparent),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: sel ? 8.0 : 5.0,
+                height: sel ? 8.0 : 5.0,
+                decoration: BoxDecoration(
+                  color: sel ? _Side.redA : _Side.dim,
+                  shape: BoxShape.circle,
+                  boxShadow: sel
+                      ? [
+                          BoxShadow(
+                              color: _Side.redA.withValues(alpha: 0.6),
+                              blurRadius: 8.0),
+                        ]
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 12.0),
+              Expanded(
+                child: Text(widget.item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AdminText.label(
+                            color: sel
+                                ? Colors.white
+                                : (_hover ? Colors.white : _Side.text),
+                            size: 13.5)
+                        .copyWith(
+                            fontWeight:
+                                sel ? FontWeight.w700 : FontWeight.w500)),
+              ),
+              if (widget.count > 0) _countBadge(widget.count),
+            ],
           ),
         ),
       ),
     );
-    return collapsed ? Tooltip(message: item.label, child: tile) : tile;
   }
 }
 
@@ -820,8 +1127,11 @@ class AdminShell extends StatelessWidget {
             ? null
             : Drawer(
                 width: 290.0,
-                backgroundColor: AdminColors.surface,
-                child: SafeArea(child: KitungaAdminSidebar(current: current)),
+                backgroundColor: _Side.bottom,
+                child: Container(
+                  decoration: adminSidebarDecoration(floating: false),
+                  child: SafeArea(child: KitungaAdminSidebar(current: current)),
+                ),
               ),
         body: SafeArea(
           child: wide
@@ -830,20 +1140,19 @@ class AdminShell extends StatelessWidget {
                   children: [
                     ValueListenableBuilder<bool>(
                       valueListenable: adminSidebarCollapsed,
+                      // Panneau flottant aux coins arrondis.
                       builder: (context, collapsed, _) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 220),
                         curve: Curves.easeOutCubic,
-                        width: collapsed ? 84.0 : 272.0,
-                        decoration: const BoxDecoration(
-                          color: AdminColors.surface,
-                          border: Border(
-                              right: BorderSide(color: AdminColors.border)),
-                        ),
-                        child: ClipRect(
+                        width: collapsed ? 92.0 : 280.0,
+                        margin: const EdgeInsets.fromLTRB(14.0, 14.0, 0, 14.0),
+                        decoration: adminSidebarDecoration(),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24.0),
                           child: OverflowBox(
                             alignment: Alignment.topLeft,
-                            minWidth: collapsed ? 84.0 : 272.0,
-                            maxWidth: collapsed ? 84.0 : 272.0,
+                            minWidth: collapsed ? 92.0 : 280.0,
+                            maxWidth: collapsed ? 92.0 : 280.0,
                             child: KitungaAdminSidebar(
                                 current: current, collapsed: collapsed),
                           ),

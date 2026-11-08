@@ -170,10 +170,10 @@ void main() {
     await tester.tap(find.byTooltip('Fermer'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Administration'), findsOneWidget);
+    expect(find.text('ADMINISTRATION'), findsOneWidget);
     await tester.tap(find.byTooltip('Réduire ou agrandir le menu'));
     await tester.pumpAndSettle();
-    expect(find.text('Administration'), findsNothing);
+    expect(find.text('ADMINISTRATION'), findsNothing);
     adminSidebarCollapsed.value = false;
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
