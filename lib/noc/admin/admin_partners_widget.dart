@@ -86,14 +86,14 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
     if (saved == true) _reload();
   }
 
-  Future<void> _add() async {
+  Future<void> _add([LaunchPartner? template]) async {
     final categories = await _categoryNames();
     if (!mounted) return;
     final saved = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) =>
-          _NewPartnerForm(role: widget.role, categories: categories),
+      builder: (_) => _NewPartnerForm(
+          role: widget.role, categories: categories, template: template),
     );
     if (saved == true) _reload();
   }
@@ -144,7 +144,12 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                 queryParameters: {'commerce': p['uid']}).toString()),
             primary: false
           ),
-        (label: 'Modifier', icon: Icons.edit_rounded, onTap: () => _edit(p), primary: true),
+        (
+          label: 'Modifier',
+          icon: Icons.edit_rounded,
+          onTap: () => _edit(p),
+          primary: true
+        ),
       ],
     );
   }
@@ -202,8 +207,7 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
             icon: const Icon(Icons.refresh_rounded, size: 18.0),
             label: const Text('Actualiser')),
         AdminExportButton(data: _export),
-        adminAddButton(
-            _sellers ? 'Nouveau commerce' : 'Nouveau livreur', _add),
+        adminAddButton(_sellers ? 'Nouveau commerce' : 'Nouveau livreur', _add),
       ],
       body: AdminScroll(
         children: [
@@ -283,8 +287,7 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                         title: 'Chargement impossible',
                         message: '${snap.error}',
                         action: TextButton(
-                            onPressed: _reload,
-                            child: const Text('Réessayer')),
+                            onPressed: _reload, child: const Text('Réessayer')),
                       );
                     }
                     final list = [
@@ -299,9 +302,21 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                     ];
                     _shown = list;
                     final n = list.length;
+                    final names = {
+                      for (final p in snap.data!)
+                        '${p['displayName'] ?? ''}'.trim().toLowerCase(),
+                    };
+                    final ready = [
+                      if (_sellers && _q.isEmpty)
+                        for (final t in kLaunchPartners)
+                          if (!names.contains(t.name.toLowerCase())) t,
+                    ];
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (ready.isNotEmpty)
+                          _LaunchPartnersBanner(
+                              partners: ready, onAdd: (t) => _add(t)),
                         if (n > 0)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 10.0),
@@ -337,7 +352,9 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
       subtitle: [
         if (_sellers && _category != null) 'catégorie $_category',
         if (_q.isNotEmpty) 'recherche « $_q »',
-        _sellers ? '$n commerce${n > 1 ? 's' : ''}' : '$n livreur${n > 1 ? 's' : ''}',
+        _sellers
+            ? '$n commerce${n > 1 ? 's' : ''}'
+            : '$n livreur${n > 1 ? 's' : ''}',
       ].join(' · '),
       fileName: _sellers ? 'commercants' : 'livreurs',
       headers: [
@@ -492,7 +509,8 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
           AdminColumn(
               label: 'Catégorie',
               flex: 2,
-              cell: (p) => Text((p['category'] ?? '').isEmpty ? '—' : p['category'],
+              cell: (p) => Text(
+                  (p['category'] ?? '').isEmpty ? '—' : p['category'],
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AdminText.body(size: 13.0)),
@@ -609,7 +627,8 @@ class _PartnerFormState extends State<_PartnerForm> {
                 'category': _category,
                 'horraire': _hours.text.trim(),
                 'businessCover': _cover,
-                if (hasCuisines(_category ?? '')) 'cuisines': _cuisines.toList(),
+                if (hasCuisines(_category ?? ''))
+                  'cuisines': _cuisines.toList(),
               },
             }),
         'Fiche enregistrée');
@@ -703,19 +722,36 @@ class _PartnerFormState extends State<_PartnerForm> {
 /// Création d'un compte commerçant ou livreur (fonction kitungaCreatePartner,
 /// la même que le formulaire d'inscription des partenaires).
 class _NewPartnerForm extends StatefulWidget {
-  const _NewPartnerForm({required this.role, required this.categories});
+  const _NewPartnerForm(
+      {required this.role, required this.categories, this.template});
 
   final String role;
   final List<String> categories;
+  final LaunchPartner? template;
 
   @override
   State<_NewPartnerForm> createState() => _NewPartnerFormState();
 }
 
-const kPartnerPlans = ['Mensuel - 250F', 'Trimestriel - 500 F', 'Annuel - 1000 F'];
+const kPartnerPlans = [
+  'Mensuel - 250F',
+  'Trimestriel - 500 F',
+  'Annuel - 1000 F'
+];
 
 class _NewPartnerFormState extends State<_NewPartnerForm> {
   late final bool _seller = widget.role == 'Seller';
+
+  @override
+  void initState() {
+    super.initState();
+    final t = widget.template;
+    if (t != null)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _applyTemplate(t);
+      });
+  }
+
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _name = TextEditingController();
@@ -756,9 +792,14 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
     });
     final messenger = ScaffoldMessenger.of(context);
     try {
-      // Fiche prête : logo intégré envoyé s'il n'a pas été remplacé.
+      // Fiche prête : logo et couverture intégrés, sauf s'ils sont remplacés.
       final t = _template;
-      if (t != null && _photo.isEmpty) _photo = await uploadLaunchLogo(t) ?? '';
+      if (t != null && _photo.isEmpty) {
+        _photo = await uploadLaunchImage(t.logoAsset) ?? '';
+      }
+      if (t != null && _cover.isEmpty) {
+        _cover = await uploadLaunchImage(t.coverAsset) ?? '';
+      }
       final created = await salesCall('kitungaCreatePartner', {
         'email': _email.text.trim(),
         'password': _password.text,
@@ -792,6 +833,7 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         final r = await salesCall('kitungaImportMenu', {
           'sellerUid': created['uid'],
           'portions': 50,
+          if (t.menuDraft) 'draft': true,
           'items': [
             for (final l in lines)
               {'section': l.section, 'name': l.name, 'price': l.price},
@@ -804,10 +846,12 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
               ],
             },
         });
-        menuNote = ' · ${r['created']} plats ajoutés';
+        menuNote = ' · ${r['created']} plats ajoutés'
+            '${t.menuDraft ? ' en brouillon (prix à confirmer)' : ''}';
       }
       messenger.showSnackBar(SnackBar(
-          content: Text((_seller ? 'Commerce créé' : 'Livreur créé') + menuNote),
+          content:
+              Text((_seller ? 'Commerce créé' : 'Livreur créé') + menuNote),
           backgroundColor: const Color(0xFF136B3D)));
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
@@ -818,6 +862,19 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
       });
     }
   }
+
+  Widget _assetPreview(String label, String asset) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: salesBody()),
+          const SizedBox(height: 6.0),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AdminRadius.md),
+            child: Image.asset(asset,
+                height: 110.0, width: double.infinity, fit: BoxFit.contain),
+          ),
+        ],
+      );
 
   void _applyTemplate(LaunchPartner p) {
     setState(() {
@@ -855,8 +912,8 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
               Text('Fiche prête :', style: salesBody()),
               for (final p in kLaunchPartners)
                 ChoiceChip(
-                  avatar: CircleAvatar(
-                      backgroundImage: AssetImage(p.logoAsset)),
+                  avatar:
+                      CircleAvatar(backgroundImage: AssetImage(p.logoAsset)),
                   label: Text(p.name),
                   selected: _template == p,
                   onSelected: _saving ? null : (_) => _applyTemplate(p),
@@ -865,12 +922,11 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
           ),
         if (_template != null)
           Text(
-              _template!.menu.isEmpty
-                  ? 'Logo, présentation et cuisines remplis. Le menu sera '
-                      'ajouté ensuite (« Importer un menu »).'
-                  : 'Logo, présentation, cuisines et menu '
-                      '(${parseMenuText(_template!.menu).lines.length} plats) '
-                      'ajoutés à la création.',
+              'Logo, couverture, présentation, cuisines et menu '
+              '(${parseMenuText(_template!.menu).lines.length} plats'
+              '${_template!.menuDraft ? ' en brouillon, prix à confirmer' : ''}) '
+              'ajoutés à la création. Saisissez seulement l\'email et le mot '
+              'de passe du restaurant.',
               style: salesBody()),
         TextField(
           controller: _name,
@@ -933,23 +989,29 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
             decoration: salesInput('Horaires', hint: 'Ex. Lun-Sam 8h-20h'),
           ),
         ],
-        AdminFieldRow(children: [
-          AdminImageField(
-            label: _seller ? 'Logo' : 'Photo',
-            value: _photo,
-            height: 110.0,
-            allowRemove: true,
-            onChanged: (v) => setState(() => _photo = v),
-          ),
-          if (_seller)
+        if (_template != null && _photo.isEmpty && _cover.isEmpty)
+          AdminFieldRow(children: [
+            _assetPreview('Logo (fourni)', _template!.logoAsset),
+            _assetPreview('Couverture (fournie)', _template!.coverAsset),
+          ])
+        else
+          AdminFieldRow(children: [
             AdminImageField(
-              label: 'Couverture',
-              value: _cover,
+              label: _seller ? 'Logo' : 'Photo',
+              value: _photo,
               height: 110.0,
               allowRemove: true,
-              onChanged: (v) => setState(() => _cover = v),
+              onChanged: (v) => setState(() => _photo = v),
             ),
-        ]),
+            if (_seller)
+              AdminImageField(
+                label: 'Couverture',
+                value: _cover,
+                height: 110.0,
+                allowRemove: true,
+                onChanged: (v) => setState(() => _cover = v),
+              ),
+          ]),
         TextField(
           controller: _bio,
           maxLines: 3,
@@ -1009,6 +1071,82 @@ class CuisinePicker extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Premiers restaurants partenaires pas encore créés : fiches prêtes.
+class _LaunchPartnersBanner extends StatelessWidget {
+  const _LaunchPartnersBanner({required this.partners, required this.onAdd});
+
+  final List<LaunchPartner> partners;
+  final void Function(LaunchPartner) onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: AdminColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(AdminRadius.md),
+        border: Border.all(color: AdminColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Partenaires prêts à ajouter', style: AdminText.strong()),
+          const SizedBox(height: 4.0),
+          Text(
+              'Leur fiche est déjà remplie (logo, couverture, présentation, '
+              'cuisines, menu). Il ne manque que l\'email et le mot de passe '
+              'de connexion du restaurant.',
+              style: AdminText.label(size: 12.5)),
+          const SizedBox(height: 12.0),
+          Wrap(
+            spacing: 12.0,
+            runSpacing: 12.0,
+            children: [
+              for (final p in partners)
+                Container(
+                  width: 300.0,
+                  padding: const EdgeInsets.all(12.0),
+                  decoration: BoxDecoration(
+                    color: AdminColors.surface,
+                    borderRadius: BorderRadius.circular(AdminRadius.md),
+                    border: Border.all(color: AdminColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: Image.asset(p.logoAsset,
+                            width: 48.0, height: 48.0, fit: BoxFit.cover),
+                      ),
+                      const SizedBox(width: 12.0),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(p.name, style: AdminText.strong(size: 14.0)),
+                            Text(
+                                '${parseMenuText(p.menu).lines.length} plats'
+                                '${p.menuDraft ? ' (prix à confirmer)' : ''}',
+                                style: AdminText.label(size: 12.0)),
+                          ],
+                        ),
+                      ),
+                      FilledButton(
+                        onPressed: () => onAdd(p),
+                        child: const Text('Ajouter'),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -545,6 +545,8 @@ async function importMenu({db, uid, data}) {
     throw err("invalid-argument", "Portions : 100 000 au plus.");
   }
   const photoOptional = PHOTO_OPTIONAL.includes(seller.get("category"));
+  // draft : prix à confirmer par le commerce avant publication.
+  const publish = photoOptional && data.draft !== true;
   const existing = await db.collection("Product")
       .where("seller_ref", "==", seller.ref).get();
   const known = new Set(existing.docs
@@ -569,7 +571,7 @@ async function importMenu({db, uid, data}) {
       prod_img: "", requires_prescription: false,
       instant_disponibilty: false,
       // Sans photo, publié seulement pour les restaurants.
-      on_sale: photoOptional,
+      on_sale: publish,
       options: option && !noOption.test(it.section) ? [option] : [],
       seller_ref: seller.ref, created_at: ts(), modified_at: ts(),
     });
@@ -584,7 +586,7 @@ async function importMenu({db, uid, data}) {
     actor_role: "Admin", action: "product.import", target: seller.ref.path,
     details: {created: created.length, skipped: skipped.length},
     created_at: ts()});
-  return {created: created.length, skipped, published: photoOptional};
+  return {created: created.length, skipped, published: publish};
 }
 
 module.exports = {catalogQuery, importMenu, publicCategories, seedCategories, saveCategory, deleteCategory,

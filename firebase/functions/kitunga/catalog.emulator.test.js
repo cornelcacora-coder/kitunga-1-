@@ -333,6 +333,13 @@ test("import d'un menu : plats, doublons, option accompagnement", async () => {
   const mosseka = (await db.collection("Product")
       .where("name", "==", "Mosseka").get()).docs[0];
   assert.strictEqual(mosseka.get("quantity"), 20);
+  // Prix à confirmer : importés en brouillon même pour un restaurant.
+  const draft = await cat.importMenu({db, uid: "admin", data: {
+    sellerUid: "shop", draft: true, items: [{name: "Haricots", price: 1500}]}});
+  assert.strictEqual(draft.published, false);
+  const haricots = (await db.collection("Product")
+      .where("name", "==", "Haricots").get()).docs[0];
+  assert.strictEqual(haricots.get("on_sale"), false);
   // Pharmacie : importés en brouillon (photo obligatoire).
   const ph = await cat.importMenu({db, uid: "admin", data: {
     sellerUid: "shop2", items: [{name: "Paracétamol", price: 800}]}});

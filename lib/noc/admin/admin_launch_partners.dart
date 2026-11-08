@@ -5,33 +5,42 @@ import '/backend/firebase_storage/storage.dart';
 
 /// Premiers restaurants partenaires de Kitunga : fiches prêtes à l'emploi
 /// dans « Nouveau commerce ». L'admin saisit seulement l'email et le mot de
-/// passe du compte ; logo, cuisines, présentation et menu sont ajoutés.
+/// passe du compte ; logo, couverture, cuisines, présentation et menu sont
+/// ajoutés automatiquement.
 class LaunchPartner {
   const LaunchPartner({
     required this.name,
     required this.logoAsset,
+    required this.coverAsset,
     required this.cuisines,
     required this.bio,
     this.phone = '',
     this.hours = '',
     this.menu = '',
+    this.menuDraft = false,
   });
 
   final String name;
   final String logoAsset;
+  final String coverAsset;
   final List<String> cuisines;
   final String bio;
   final String phone;
   final String hours;
 
-  /// Menu à importer (format de « Importer un menu »), vide si inconnu.
+  /// Menu à importer (format de « Importer un menu »).
   final String menu;
+
+  /// Prix à confirmer : plats importés en brouillon (invisibles des clients
+  /// jusqu'à leur publication par le restaurant ou l'admin).
+  final bool menuDraft;
 }
 
 const kLaunchPartners = [
   LaunchPartner(
     name: 'Le Crisp\'nCroc',
     logoAsset: 'assets/images/partners/crispncroc.png',
+    coverAsset: 'assets/images/partners/crispncroc_cover.jpg',
     cuisines: [
       'Congolaise (Brazzaville)',
       'Grillades & braisés',
@@ -47,26 +56,40 @@ const kLaunchPartners = [
   LaunchPartner(
     name: 'Zone de Confort',
     logoAsset: 'assets/images/partners/zone_de_confort.png',
+    coverAsset: 'assets/images/partners/zone_de_confort_cover.jpg',
     cuisines: ['Congolaise (Brazzaville)', 'Grillades & braisés'],
     phone: '065376382',
     bio: 'Ne t\'inquiète plus pour ton midi, on s\'en occupe ! Plats '
         'africains à partir de 1500 F, tu manges comme à la maison. '
         'Livraison partout à Brazzaville. 39 rue des Cheminots, Ouenzé '
-        '(vers Général Ndeguet). WhatsApp : 06 793 23 29.',
+        '(vers Général Ndeguet). WhatsApp : 06 793 23 29 · '
+        'Portable : 06 537 63 82.',
+    // Plats de l'affiche, « à partir de 1500 frs » : prix à confirmer.
+    menu: _zoneMenu,
+    menuDraft: true,
   ),
 ];
 
-/// Tests : remplace l'envoi du logo.
-Future<String?> Function(LaunchPartner p)? launchLogoUploadOverride;
+/// Tests : remplace l'envoi des images.
+Future<String?> Function(String asset)? launchLogoUploadOverride;
 
-/// Envoie le logo intégré à l'application dans Firebase Storage.
-Future<String?> uploadLaunchLogo(LaunchPartner p) async {
-  if (launchLogoUploadOverride != null) return launchLogoUploadOverride!(p);
-  final bytes = (await rootBundle.load(p.logoAsset)).buffer.asUint8List();
+/// Envoie une image intégrée à l'application dans Firebase Storage.
+Future<String?> uploadLaunchImage(String asset) async {
+  if (launchLogoUploadOverride != null) return launchLogoUploadOverride!(asset);
+  final bytes = (await rootBundle.load(asset)).buffer.asUint8List();
+  final ext = asset.split('.').last;
   return uploadData(
-      'users/$currentUserUid/uploads/${DateTime.now().microsecondsSinceEpoch}.png',
+      'users/$currentUserUid/uploads/${DateTime.now().microsecondsSinceEpoch}.$ext',
       bytes);
 }
+
+const _zoneMenu = '''
+NOS PLATS AFRICAINS
+Ragoût de bœuf et riz ....... 1500 FCFA
+Saka-saka au poisson ....... 1500 FCFA
+Haricots ....... 1500 FCFA
+Poulet braisé ....... 1500 FCFA
+''';
 
 const _crispMenu = '''
 NOS PLATS AFRICAINS

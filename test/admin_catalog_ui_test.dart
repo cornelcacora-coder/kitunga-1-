@@ -313,9 +313,13 @@ void main() {
       // Fiche prête : Le Crisp'nCroc, avec logo, cuisines et menu.
       launchLogoUploadOverride = (_) async => img;
       addTearDown(() => launchLogoUploadOverride = null);
-      await tester.tap(find.text('Nouveau commerce'));
+      // Encadré « Partenaires prêts à ajouter » de la page.
+      expect(find.text('Partenaires prêts à ajouter'), findsOneWidget);
+      expect(find.text('4 plats (prix à confirmer)'), findsOneWidget);
+      final add = find.widgetWithText(FilledButton, 'Ajouter').first;
+      await tester.ensureVisible(add);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Le Crisp\'nCroc'));
+      await tester.tap(add);
       await tester.pumpAndSettle();
       expect(find.textContaining('menu (30 plats)'), findsOneWidget);
       final g = dialogFields();
@@ -328,6 +332,7 @@ void main() {
       expect(crisp['category'], 'Restaurant');
       final profile = last('kitungaSavePartner').$2;
       expect(profile['photoUrl'], img);
+      expect(profile['businessCover'], img);
       expect(profile['cuisines'], contains('Congolaise (Brazzaville)'));
       final menu = last('kitungaImportMenu').$2;
       expect((menu['items'] as List).length, 30);
