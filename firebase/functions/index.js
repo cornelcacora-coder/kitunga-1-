@@ -306,6 +306,28 @@ exports.kitungaAdminOrderAction = acquisitionCallable((data, uid) =>
 exports.kitungaCloseStaleOrders = acquisitionCallable((data, uid) =>
   adminOrders.closeStaleOrders({db: admin.firestore(), uid, data}));
 
+// ── Nettoyage des données de test (admin) ──────────────────────────────────
+const purgeData = require("./kitunga/purge");
+
+/** Aperçu, suppression avec sauvegarde, restauration, historique. */
+exports.kitungaPurgeTestData = functions.region("us-west1")
+    .runWith({timeoutSeconds: 540, memory: "1GB"})
+    .https.onCall(async (data, context) => {
+      try {
+        return await purgeData.purgeTestData({db: admin.firestore(),
+          auth: admin.auth(), bucket: admin.storage().bucket(),
+          uid: context.auth && context.auth.uid, data: data || {}});
+      } catch (e) {
+        if (e instanceof AcquisitionError) {
+          throw new functions.https.HttpsError(e.code, e.message);
+        }
+        console.error(e);
+        throw new functions.https.HttpsError("internal",
+            "Le nettoyage n'a pas pu aboutir. Relancez-le : il reprend là où " +
+            "il s'est arrêté.");
+      }
+    });
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));

@@ -4,6 +4,7 @@ import '/noc/sales/sales_admin_widget.dart' show SalesPage;
 import '/noc/sales/sales_common.dart';
 import '/noc/ui/admin_export.dart';
 import '/noc/admin/admin_layout.dart' show AdminShell, AdminTabbedBody;
+import 'purge_tab.dart';
 
 /// Gestion (adresse /gestion) : remboursements à traiter, abonnements offerts
 /// ou prolongés, suspension des comptes. Tout passe par le serveur, qui
@@ -25,11 +26,13 @@ class AdminOpsWidget extends StatelessWidget {
           (Icons.currency_exchange_rounded, 'Remboursements'),
           (Icons.workspace_premium_outlined, 'Abonnements'),
           (Icons.manage_accounts_outlined, 'Comptes'),
+          (Icons.cleaning_services_outlined, 'Données de test'),
         ],
         children: [
           _RefundsTab(),
           _AccountsTab(mode: _AccountsMode.subscriptions),
           _AccountsTab(mode: _AccountsMode.accounts),
+          PurgeTestDataTab(),
         ],
       ),
     );
