@@ -98,13 +98,16 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) => kIsWeb
+      errorBuilder: (context, state) => kIsWeb && !kWebMobilePreview
           ? AdminLoginWidget()
           : appStateNotifier.loggedIn
               ? NavBarPage()
               : IntroWidget(),
-      // Web : administration seulement (voir web_admin_only.dart).
-      redirect: kIsWeb ? (context, state) => webAdminRedirect(state.uri) : null,
+      // Web : administration seulement (voir web_admin_only.dart), sauf en
+      // aperçu local de l'application mobile.
+      redirect: kIsWeb && !kWebMobilePreview
+          ? (context, state) => webAdminRedirect(state.uri)
+          : null,
       routes: [
         FFRoute(
           name: '_initialize',
