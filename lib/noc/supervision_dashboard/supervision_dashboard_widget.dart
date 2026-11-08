@@ -1,3 +1,4 @@
+import '/noc/sales/sales_admin_widget.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/alert_card_widget.dart';
@@ -971,6 +972,35 @@ class _SupervisionDashboardWidgetState
                                       ].divide(SizedBox(width: 16.0)),
                                     ),
                                   ),
+                                ),
+                              ),
+                            ),
+                            // Module commercial : campagnes, commerciaux,
+                            // commissions et versements (page /commercial).
+                            InkWell(
+                              borderRadius: BorderRadius.circular(8.0),
+                              onTap: () =>
+                                  context.pushNamed(SalesAdminWidget.routeName),
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.campaign_rounded,
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryText,
+                                      size: 20.0,
+                                    ),
+                                    SizedBox(width: 12.0),
+                                    Expanded(
+                                      child: Text(
+                                        'Module commercial',
+                                        maxLines: 1,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),

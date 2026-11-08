@@ -11,6 +11,7 @@ const kWebAdminHome = '/admin';
 const _webAdminPaths = {
   '/admin',
   '/supervisionDashboard',
+  '/commercial',
   '/forgotPassword',
   '/forgotPasswordLink',
 };

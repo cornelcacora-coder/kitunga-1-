@@ -243,6 +243,30 @@ exports.kitungaOnActivationVerified = functions.region("us-west1")
         db: admin.firestore(), installation: context.params.installation});
     });
 
+const payouts = require("./kitunga/acquisition/payouts");
+
+/** Valider, rejeter ou annuler une commission (admin). */
+exports.kitungaReviewCommission = acquisitionCallable((data, uid) =>
+  payouts.reviewCommission({db: admin.firestore(), uid, data}));
+/** Demande de versement (admin ou commercial). */
+exports.kitungaRequestPayout = acquisitionCallable((data, uid) =>
+  payouts.requestPayout({db: admin.firestore(), uid, data}));
+/** Valider, refuser ou marquer payé un versement (admin). */
+exports.kitungaDecidePayout = acquisitionCallable((data, uid) =>
+  payouts.decidePayout({db: admin.firestore(), uid, data}));
+
+const adminQuery = require("./kitunga/acquisition/admin_query");
+
+/** Lecture des données du module pour l'interface admin. */
+exports.kitungaSalesAdminQuery = acquisitionCallable((data, uid) =>
+  adminQuery.salesAdminQuery({db: admin.firestore(), uid, data}));
+
+const agentQuery = require("./kitunga/acquisition/agent_query");
+
+/** Espace commercial : ses propres données seulement. */
+exports.kitungaSalesAgentQuery = acquisitionCallable((data, uid) =>
+  agentQuery.salesAgentQuery({db: admin.firestore(), uid, data}));
+
 /** Démarre un paiement MoMo : montant recalculé par le serveur. */
 exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,

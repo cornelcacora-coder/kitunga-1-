@@ -8,6 +8,7 @@ void main() {
     for (final url in [
       '/admin',
       '/supervisionDashboard',
+      '/commercial',
       '/forgotPassword',
       '/forgotPasswordLink',
       '/sign?accessibility=Admin',
