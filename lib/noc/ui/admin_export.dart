@@ -548,3 +548,131 @@ class AdminExportButton extends StatelessWidget {
     );
   }
 }
+
+// ── Reçu de commande (PDF) ───────────────────────────────────────────────
+
+/// Reçu PDF (A5) à partir des données de kitungaOrderReceipt.
+Future<Uint8List> buildReceiptPdf(Map<String, dynamic> r) async {
+  final regular =
+      pw.Font.ttf(await rootBundle.load('assets/fonts/Roboto-Regular.ttf'));
+  final bold = pw.Font.ttf(await rootBundle.load('assets/fonts/Roboto-Bold.ttf'));
+  pw.MemoryImage? logo;
+  try {
+    logo = pw.MemoryImage((await rootBundle.load('assets/logo/kitunga_logo.png'))
+        .buffer
+        .asUint8List());
+  } catch (_) {}
+  const red = PdfColor.fromInt(0xFFE51A1A);
+  const muted = PdfColor.fromInt(0xFF6F737C);
+  const line = PdfColor.fromInt(0xFFE6E8EE);
+  String money(Object? v) => '${_num.format((v as num?) ?? 0)} F';
+  String date(Object? iso) {
+    final d = DateTime.tryParse('${iso ?? ''}')?.toLocal();
+    return d == null ? '—' : DateFormat('d MMMM yyyy à HH:mm', 'fr').format(d);
+  }
+
+  final seller = Map<String, dynamic>.from(r['seller'] as Map? ?? {});
+  final client = Map<String, dynamic>.from(r['client'] as Map? ?? {});
+  final pay = r['payment'] as Map?;
+  final lines = (r['lines'] as List? ?? const [])
+      .map((e) => Map<String, dynamic>.from(e as Map))
+      .toList();
+  pw.Widget row(String a, String b, {bool strong = false}) => pw.Padding(
+        padding: const pw.EdgeInsets.symmetric(vertical: 2),
+        child: pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text(a,
+                style: pw.TextStyle(
+                    fontSize: strong ? 11 : 9, color: strong ? null : muted,
+                    font: strong ? bold : regular)),
+            pw.Text(b,
+                style: pw.TextStyle(fontSize: strong ? 12 : 9.5,
+                    font: strong ? bold : regular)),
+          ],
+        ),
+      );
+
+  final doc = pw.Document(
+    title: 'Reçu ${r['number']}',
+    author: 'Kitunga',
+    theme: pw.ThemeData.withFont(base: regular, bold: bold),
+  );
+  doc.addPage(pw.Page(
+    pageFormat: PdfPageFormat.a5,
+    margin: const pw.EdgeInsets.all(28),
+    build: (context) => pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        if (logo != null) pw.Center(child: pw.Image(logo, height: 46)),
+        pw.SizedBox(height: 6),
+        pw.Center(
+            child: pw.Text('Reçu de commande',
+                style: pw.TextStyle(font: bold, fontSize: 15))),
+        pw.Center(
+            child: pw.Text('N° ${r['number']}',
+                style: pw.TextStyle(font: bold, fontSize: 11, color: red))),
+        if (r['codeVerified'] == true)
+          pw.Center(
+              child: pw.Text('Remise confirmée par code',
+                  style: const pw.TextStyle(
+                      fontSize: 8.5, color: PdfColor.fromInt(0xFF17A35B)))),
+        pw.Divider(color: line),
+        row('Commande', '${r['orderReference'] ?? ''}'),
+        row('Commandée le', date(r['orderedAt'])),
+        row('Livrée le', date(r['deliveredAt'])),
+        row('Commerce', '${seller['name'] ?? ''}'),
+        row('Client', '${client['name'] ?? ''}'),
+        if ('${r['address'] ?? ''}'.isNotEmpty) row('Adresse', '${r['address']}'),
+        if ('${r['deliverer'] ?? ''}'.isNotEmpty)
+          row('Livreur', '${r['deliverer']}'),
+        pw.Divider(color: line),
+        for (final l in lines)
+          pw.Padding(
+            padding: const pw.EdgeInsets.symmetric(vertical: 3),
+            child: pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('${l['quantity']} × ${l['name']}',
+                          style: pw.TextStyle(font: bold, fontSize: 9.5)),
+                      if ('${l['options'] ?? ''}'.isNotEmpty)
+                        pw.Text('${l['options']}',
+                            style: const pw.TextStyle(fontSize: 8, color: muted)),
+                    ],
+                  ),
+                ),
+                pw.Text(money(l['total']), style: const pw.TextStyle(fontSize: 9.5)),
+              ],
+            ),
+          ),
+        pw.Divider(color: line),
+        row('Sous-total', money(r['subtotal'])),
+        row('Livraison', money(r['deliveryFees'])),
+        row('Total payé', money(r['total']), strong: true),
+        pw.Divider(color: line),
+        row('Paiement', pay == null ? 'Non enregistré' : '${pay['method']}'),
+        if (pay != null) row('Référence', '${pay['reference']}'),
+        pw.Spacer(),
+        pw.Center(
+          child: pw.Text(
+              'Kitunga · Brazzaville — reçu généré automatiquement. '
+              'Conservez-le en cas de réclamation.',
+              textAlign: pw.TextAlign.center,
+              style: const pw.TextStyle(fontSize: 7.5, color: muted)),
+        ),
+      ],
+    ),
+  ));
+  return doc.save();
+}
+
+/// Télécharge le reçu PDF d'une commande (admin).
+Future<void> downloadReceiptPdf(Map<String, dynamic> r) async {
+  final bytes = await buildReceiptPdf(r);
+  (adminExportSaveOverride ?? saveAdminFile)(
+      bytes, 'recu_${r['number']}.pdf', 'application/pdf');
+}

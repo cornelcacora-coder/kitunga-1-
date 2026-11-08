@@ -103,16 +103,40 @@ test("vendeur : accepte, prépare, refuse avec motif", async () => {
     refusal_reason: "Rupture", refund_needed: true}));
 });
 
-test("livreur : prend, livre, ajoute la preuve", async () => {
-  await seed({status: "Pret"});
-  const d = db("driver");
-  await assertSucceeds(updateDoc(orderOf("driver"), {status: "encours",
-    deliver_reference: doc(d, "User/driver"), deliverer_ref: "driver"}));
-  await assertSucceeds(updateDoc(orderOf("driver"), {status: "Livrer",
-    delivered_at: serverTimestamp()}));
-  await assertSucceeds(updateDoc(orderOf("driver"),
-      {delivery_photo: "url", user_signature: "url"}));
-});
+test("livreur : prend la commande ; la remise passe par le serveur",
+    async () => {
+      await seed({status: "Pret"});
+      const d = db("driver");
+      await assertSucceeds(updateDoc(orderOf("driver"), {status: "encours",
+        deliver_reference: doc(d, "User/driver"), deliverer_ref: "driver"}));
+      // Sans code de remise vérifié par le serveur : refusé.
+      await assertFails(updateDoc(orderOf("driver"), {status: "Livrer",
+        delivered_at: serverTimestamp()}));
+      await assertFails(updateDoc(orderOf("driver"), {status: "Reçu"}));
+      await assertFails(updateDoc(orderOf("driver"),
+          {delivery_code_verified: true}));
+      await assertFails(updateDoc(orderOf("driver"), {delivery_photo: "url"}));
+      await assertFails(updateDoc(orderOf("driver"),
+          {receipt_number: "KTG-2026-000001"}));
+      // Le client non plus ne peut pas se déclarer livré avant la remise.
+      await assertFails(updateDoc(orderOf("buyer"), {status: "Reçu"}));
+    });
+
+test("codes de remise et compteurs de reçus : fermés aux applications",
+    async () => {
+      await seed();
+      await env.withSecurityRulesDisabled(async (ctx) => {
+        const f = ctx.firestore();
+        await setDoc(doc(f, "delivery_codes/o1"), {code: "4821"});
+        await setDoc(doc(f, "receipt_counters/2026"), {next: 2});
+      });
+      for (const uid of ["buyer", "driver", "seller", "admin"]) {
+        await assertFails(getDoc(doc(db(uid), "delivery_codes/o1")));
+        await assertFails(setDoc(doc(db(uid), "delivery_codes/o1"),
+            {code: "0000"}));
+        await assertFails(getDoc(doc(db(uid), "receipt_counters/2026")));
+      }
+    });
 
 test("client : confirme ou signale la réception", async () => {
   await seed({status: "Livrer"});

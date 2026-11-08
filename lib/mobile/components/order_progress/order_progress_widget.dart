@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/backend/order_status.dart';
+import '/mobile/components/delivery/kitunga_delivery.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -170,6 +171,8 @@ class KitungaOrderProgress extends StatelessWidget {
               ),
             ),
           ],
+          // Code de remise (client) ou reçu (commande livrée).
+          KitungaDeliveryExtras(order: order),
         ],
       ),
     );

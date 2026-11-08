@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/order_status.dart';
+import '/mobile/components/delivery/kitunga_delivery.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -309,6 +310,18 @@ class _SellerOrderCard extends StatelessWidget {
                         fontWeight: FontWeight.w600)),
               ),
               Spacer(),
+              // Commande livrée : reçu (même numéro que celui du client).
+              if (KitungaReceiptButton.showsFor(order))
+                TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) =>
+                          KitungaReceiptPage(orderId: order.reference.id))),
+                  icon: Icon(Icons.receipt_long_rounded,
+                      size: 18.0, color: theme.primary),
+                  label: Text('Reçu',
+                      style: GoogleFonts.inter(
+                          color: theme.primary, fontWeight: FontWeight.w700)),
+                ),
               if (status == OrderStatus.pending) ...[
                 OutlinedButton(
                   onPressed: () => _refuse(context),

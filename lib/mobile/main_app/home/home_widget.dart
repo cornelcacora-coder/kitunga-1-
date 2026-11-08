@@ -17,6 +17,7 @@ import 'dart:math';
 import 'dart:ui';
 import '/index.dart';
 import '/backend/kitunga_categories.dart' show kitungaShopIsActive;
+import '/mobile/components/delivery/kitunga_delivery.dart' show kitungaCompleteDelivery;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -2447,15 +2448,8 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                                 deliverReference: currentUserReference,
                                                                               ));
                                                                             } else if (listViewOrdersRecord.status == 'encours' && assignedToMe) {
-                                                                              // Terminer : même action que dans l'onglet Commandes.
-                                                                              await listViewOrdersRecord.reference.update({
-            ...createOrdersRecordData(
-              status: 'Livrer',
-              delivererRef: currentUserReference?.id,
-            ),
-            // Heure de livraison (temps de livraison du tableau de bord).
-            'delivered_at': FieldValue.serverTimestamp(),
-          });
+                                                                              // Remise : code du client + photo, vérifiés par le serveur.
+                                                                              await kitungaCompleteDelivery(context, listViewOrdersRecord);
                                                                             } else {
                                                                               ScaffoldMessenger.of(context).showSnackBar(
                                                                                 SnackBar(

@@ -27,6 +27,9 @@ void main() {
         userPath: 'User/client$id',
         sellerPath: 'User/shop',
         delivererPath: null,
+        codeVerified: false,
+        photo: '',
+        issue: '',
       );
 
   final orders = [

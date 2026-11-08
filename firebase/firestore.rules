@@ -153,7 +153,18 @@ service cloud.firestore {
         || isAdmin()
         || (after == 'Annulée' && isPendingStatus(before) && isBuyer(resource.data))
         || (after == 'Refusée' && isPendingStatus(before) && isSeller(resource.data))
-        || (!isPendingStatus(after) && !isStoppedStatus(after) && !isStoppedStatus(before));
+        // Réception : seulement le client, une fois la commande livrée.
+        || (after in ['Reçu', 'Non Reçu'] && before == 'Livrer' && isBuyer(resource.data))
+        // « Livrer » n'est posé que par le serveur (code de remise vérifié).
+        || (!isPendingStatus(after) && !isStoppedStatus(after) && !isStoppedStatus(before)
+            && !(after in ['Livrer', 'Reçu', 'Non Reçu']));
+    }
+    // Remise, reçu et incidents : écrits par le serveur seulement.
+    function orderServerFieldsUnchanged() {
+      return isAdmin() || !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['delivery_code_verified', 'delivery_photo', 'delivered_at',
+          'delivery_issue', 'receipt_number', 'receipt_at', 'cancel_reason',
+          'cancelled_by', 'admin_updated_by']);
     }
 
     // La demande de remboursement n'est possible qu'au moment de l'arrêt de
@@ -190,6 +201,7 @@ service cloud.firestore {
         || isAdmin());
       allow update: if signedIn() && orderKeyFieldsUnchanged()
         && orderStatusChangeAllowed()
+        && orderServerFieldsUnchanged()
         && orderRefundFieldsAllowed()
         && orderPaymentFieldsAllowed()
         && (isBuyer(resource.data) || isSeller(resource.data)

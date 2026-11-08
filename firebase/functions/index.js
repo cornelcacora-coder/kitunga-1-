@@ -328,6 +328,22 @@ exports.kitungaPurgeTestData = functions.region("us-west1")
       }
     });
 
+// ── Remise sécurisée et reçus ────────────────────────────────────────────
+const delivery = require("./kitunga/delivery");
+
+/** Le client obtient le code de remise de sa commande. */
+exports.kitungaDeliveryCode = acquisitionCallable((data, uid) =>
+  delivery.deliveryCode({db: admin.firestore(), uid, data}));
+/** Le livreur confirme la remise (code du client + photo). */
+exports.kitungaConfirmDelivery = acquisitionCallable((data, uid) =>
+  delivery.confirmDelivery({db: admin.firestore(), uid, data}));
+/** Le livreur signale un problème de livraison. */
+exports.kitungaReportDeliveryIssue = acquisitionCallable((data, uid) =>
+  delivery.reportDeliveryIssue({db: admin.firestore(), uid, data}));
+/** Reçu d'une commande livrée. */
+exports.kitungaOrderReceipt = acquisitionCallable((data, uid) =>
+  delivery.orderReceipt({db: admin.firestore(), uid, data}));
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));

@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/mobile/components/delivery/kitunga_delivery.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -1041,16 +1042,8 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                   if (listViewOrdersRecord
                                                                           .status ==
                                                                       'encours') {
-                                                                    await listViewOrdersRecord
-                                                                        .reference
-                                                                        .update({
-            ...createOrdersRecordData(
-              status: 'Livrer',
-              delivererRef: currentUserReference?.id,
-            ),
-            // Heure de livraison (temps de livraison du tableau de bord).
-            'delivered_at': FieldValue.serverTimestamp(),
-          });
+                                                                    // Remise : code du client + photo, vérifiés par le serveur.
+                                                                    await kitungaCompleteDelivery(context, listViewOrdersRecord);
                                                                   } else {
                                                                     if (listViewOrdersRecord
                                                                             .status ==
@@ -1075,9 +1068,13 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                             child:
                                                                                 Padding(
                                                                               padding: MediaQuery.viewInsetsOf(context),
-                                                                              child: AddDeliveryProofWidget(
-                                                                                orderRef: listViewOrdersRecord.reference,
-                                                                              ),
+                                                                              // Commande reçue : le reçu (la preuve de remise est prise
+                                                                                    // désormais au moment de la remise, avec le code).
+                                                                                    child: SizedBox(
+                                                                                      height: MediaQuery.sizeOf(context).height * 0.9,
+                                                                                      child: KitungaReceiptPage(
+                                                                                          orderId: listViewOrdersRecord.reference.id),
+                                                                                    ),
                                                                             ),
                                                                           );
                                                                         },

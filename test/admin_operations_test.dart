@@ -33,6 +33,9 @@ void main() {
         userPath: 'User/client$id',
         sellerPath: 'User/shop',
         delivererPath: driver,
+        codeVerified: false,
+        photo: '',
+        issue: '',
       );
 
   final recent = [

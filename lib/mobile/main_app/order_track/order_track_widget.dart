@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/mobile/components/delivery/kitunga_delivery.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -305,6 +306,13 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget>
                             shrinkWrap: true,
                             scrollDirection: Axis.vertical,
                             children: [
+                              // Code de remise (client) ou reçu (livrée).
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    20.0, 0.0, 20.0, 12.0),
+                                child: KitungaDeliveryExtras(
+                                    order: listViewOrdersRecord),
+                              ),
                               Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     20.0, 0.0, 20.0, 16.0),
