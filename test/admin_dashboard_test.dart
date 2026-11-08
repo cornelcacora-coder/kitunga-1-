@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:kitunga/noc/admin/admin_dashboard_data.dart';
+import 'package:kitunga/noc/admin/admin_delivery_map.dart';
 import 'package:kitunga/noc/admin/admin_dashboard_widget.dart';
 import 'package:kitunga/noc/admin/admin_shell.dart';
 import 'package:kitunga/noc/ui/admin_charts.dart';
@@ -86,6 +87,7 @@ void main() {
 
   setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
+    AdminDeliveryMap.showTiles = false; // pas de réseau dans les tests
     await initializeDateFormatting('fr');
     adminPendingOrders = () => Stream.value(3);
     adminDisplayName = () => 'Fortuné Okombi';
@@ -160,8 +162,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('5'), findsWidgets);
 
-    await tester.scrollUntilVisible(find.text('ORD-5'), 300.0,
-        scrollable: find.byType(Scrollable).last);
+    // La carte capte le glisser : on amène la ligne à l'écran directement.
+    await tester.ensureVisible(find.text('ORD-5'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('ORD-5'));
     await tester.pumpAndSettle();
     expect(find.text('Commande ORD-5'), findsOneWidget);

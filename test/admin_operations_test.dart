@@ -4,10 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:kitunga/noc/admin/admin_dashboard_data.dart';
+import 'package:kitunga/noc/admin/admin_delivery_map.dart';
+import 'package:kitunga/noc/admin/brazzaville_zones.dart';
 import 'package:kitunga/noc/admin/admin_monitoring_widgets.dart';
 import 'package:kitunga/noc/admin/admin_orders_widget.dart';
 import 'package:kitunga/noc/admin/admin_shell.dart';
 import 'package:kitunga/noc/ui/admin_export.dart';
+import 'package:kitunga/noc/ui/admin_kit.dart';
 import 'package:kitunga/noc/sales/sales_common.dart';
 import 'package:archive/archive.dart';
 import 'dart:convert';
@@ -52,6 +55,7 @@ void main() {
 
   setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
+    AdminDeliveryMap.showTiles = false; // pas de réseau dans les tests
     await initializeDateFormatting('fr');
     adminPendingOrders = () => Stream.value(1);
     adminDisplayName = () => 'Admin';
@@ -303,5 +307,43 @@ void main() {
       expect(calls.last.$2, {'days': 7, 'reason': 'Commande jamais confirmée'});
       expect(find.text('Aucune commande à clôturer.'), findsOneWidget);
     });
+  });
+
+  test('carte : quartiers reconnus malgré accents et casse', () {
+    expect(zonePosition('poto poto')?.name, 'Poto-Poto');
+    expect(zonePosition('TALANGAI')?.name, 'Talangaï');
+    expect(zonePosition('Makelekele')?.name, 'Makélékélé');
+    expect(zonePosition('Quartier inconnu'), isNull);
+    final r = mapZones([
+      ...live,
+      o('8', 'En attente', now, zone: 'Ailleurs'),
+    ], now);
+    final poto = r.zones.firstWhere((z) => z.name == 'Poto-Poto');
+    expect(poto.orders.length, 3);
+    expect(poto.delivering, 1);
+    expect(poto.late, 1); // ORD-7, ancienne commande toujours en cours
+    // Retard dans le quartier : bulle rouge.
+    expect(mapZoneColor(poto), AdminColors.red);
+    expect(r.unplaced.map((x) => x.reference), ['ORD-8']);
+  });
+
+  testWidgets('carte : une bulle par quartier, liste puis fiche', (tester) async {
+    await open(tester, AdminZonesWidget(clock: () => now),
+        const Size(1440, 1100));
+    expect(find.text('Carte des livraisons en cours'), findsOneWidget);
+    expect(find.text('4 commandes en cours'), findsOneWidget);
+    // Bulles : Poto-Poto (3) et Bacongo (1).
+    expect(find.text('3'), findsWidgets);
+    final bubble = find.byWidgetPredicate((w) =>
+        w is Tooltip && (w.message ?? '').startsWith('Poto-Poto'));
+    expect(bubble, findsOneWidget);
+    await tester.tap(bubble);
+    await tester.pumpAndSettle();
+    expect(find.text('3 en cours'), findsOneWidget);
+    expect(find.text('ORD-6'), findsWidgets);
+    await tester.tap(find.text('ORD-6').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Commande ORD-6'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

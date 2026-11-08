@@ -10,6 +10,7 @@ import '/noc/ops_panels.dart' show ordersByZone;
 import '/noc/sales/sales_common.dart' show fcfa;
 import '/noc/ui/admin_charts.dart';
 import 'admin_dashboard_data.dart';
+import 'admin_delivery_map.dart';
 import 'admin_order_detail.dart';
 import 'admin_shell.dart';
 import '/noc/ui/admin_table.dart';
@@ -147,36 +148,68 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
     _inPeriod = inPeriod;
     _latest = latest;
 
-    return AdminScroll(
-      children: [
-        _kpis(stats),
-        const SizedBox(height: 20.0),
-        AdminSplit(
-          flex: (3, 2),
-          breakpoint: 1000.0,
-          height: 430.0,
-          left: _ordersChart(orders, now),
-          right: _statusCard(inPeriod),
-        ),
-        const SizedBox(height: 20.0),
-        AdminSplit(
-          flex: (3, 2),
-          breakpoint: 1000.0,
-          left: _recentOrders(latest),
-          // Une seule écoute des commandes en cours pour les deux cartes.
-          right: StreamBuilder<List<DashOrder>>(
-            stream: _inProgress,
-            builder: (context, snap) => Column(
+    // Une seule écoute des commandes en cours (carte, alertes, zones).
+    return StreamBuilder<List<DashOrder>>(
+      stream: _inProgress,
+      builder: (context, live) => AdminScroll(
+        children: [
+          _kpis(stats),
+          const SizedBox(height: 20.0),
+          AdminSplit(
+            flex: (3, 2),
+            breakpoint: 1000.0,
+            height: 430.0,
+            left: _ordersChart(orders, now),
+            right: _statusCard(inPeriod),
+          ),
+          const SizedBox(height: 20.0),
+          _mapCard(now, live.data),
+          const SizedBox(height: 20.0),
+          AdminSplit(
+            flex: (3, 2),
+            breakpoint: 1000.0,
+            left: _recentOrders(latest),
+            right: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _alertsCard(now, snap.data),
+                _alertsCard(now, live.data),
                 const SizedBox(height: 20.0),
-                _zonesCard(snap.data),
+                _zonesCard(live.data),
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  /// Carte des livraisons en cours, par quartier.
+  Widget _mapCard(DateTime now, List<DashOrder>? live) {
+    final wide = MediaQuery.sizeOf(context).width >= AdminShell.wideBreakpoint;
+    return AdminCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AdminCardHeader(
+            title: 'Carte des livraisons',
+            subtitle: 'Commandes en cours par quartier de Brazzaville',
+            trailing: TextButton.icon(
+              onPressed: () => context.go(AdminPaths.zones),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 18.0),
+              label: const Text('Détail par zone'),
+            ),
+          ),
+          if (live == null)
+            const AdminLoading(height: 300.0)
+          else
+            AdminDeliveryMap(
+              orders: live,
+              now: now,
+              height: wide ? 440.0 : 340.0,
+              people: _people,
+            ),
+        ],
+      ),
     );
   }
 

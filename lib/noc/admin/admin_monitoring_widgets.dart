@@ -11,6 +11,7 @@ import '/noc/ui/admin_charts.dart';
 import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 import 'admin_dashboard_data.dart';
+import 'admin_delivery_map.dart';
 import 'admin_order_detail.dart';
 import 'admin_shell.dart';
 
@@ -533,6 +534,27 @@ class _AdminZonesWidgetState extends State<AdminZonesWidget> {
             final maxMonth = rows.fold(0, (m, r) => r.month > m ? r.month : m);
             return AdminScroll(
               children: [
+                AdminCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const AdminCardHeader(
+                        title: 'Carte des livraisons en cours',
+                        subtitle: 'Cliquez sur une bulle pour voir les commandes '
+                            'du quartier',
+                      ),
+                      AdminDeliveryMap(
+                        orders: live.data!,
+                        now: _now,
+                        height: MediaQuery.sizeOf(context).width >=
+                                AdminShell.wideBreakpoint
+                            ? 480.0
+                            : 340.0,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20.0),
                 AdminCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
