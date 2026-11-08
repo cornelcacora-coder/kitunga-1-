@@ -341,6 +341,9 @@ exports.kitungaDeliveryCode = acquisitionCallable((data, uid) =>
 exports.kitungaConfirmDelivery = acquisitionCallable((data, uid) =>
   delivery.confirmDelivery({db: admin.firestore(), uid, data}));
 /** Le livreur signale un problème de livraison. */
+exports.kitungaTakeDelivery = acquisitionCallable((data, uid) =>
+  delivery.takeDelivery({db: admin.firestore(), uid, data}));
+
 exports.kitungaReportDeliveryIssue = acquisitionCallable((data, uid) =>
   delivery.reportDeliveryIssue({db: admin.firestore(), uid, data}));
 /** Reçu d'une commande livrée. */

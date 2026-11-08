@@ -17,7 +17,7 @@ import 'dart:math';
 import 'dart:ui';
 import '/index.dart';
 import '/backend/kitunga_categories.dart' show kitungaShopIsActive;
-import '/mobile/components/delivery/kitunga_delivery.dart' show kitungaCompleteDelivery;
+import '/mobile/components/delivery/kitunga_delivery.dart' show kitungaCompleteDelivery, kitungaTakeDelivery;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -2441,12 +2441,8 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                                 (listViewOrdersRecord.deliverReference != null ||
                                                                                     listViewOrdersRecord.delivererRef.isNotEmpty);
                                                                             if (listViewOrdersRecord.status == 'Pret' && !assignedToOther) {
-                                                                              // Accepter : le livreur prend la commande.
-                                                                              await listViewOrdersRecord.reference.update(createOrdersRecordData(
-                                                                                status: 'encours',
-                                                                                delivererRef: currentUserReference?.id,
-                                                                                deliverReference: currentUserReference,
-                                                                              ));
+                                                                              // Accepter : le serveur attribue la commande à un seul livreur.
+                                                                              await kitungaTakeDelivery(context, listViewOrdersRecord);
                                                                             } else if (listViewOrdersRecord.status == 'encours' && assignedToMe) {
                                                                               // Remise : code du client + photo, vérifiés par le serveur.
                                                                               await kitungaCompleteDelivery(context, listViewOrdersRecord);

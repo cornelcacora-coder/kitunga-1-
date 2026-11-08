@@ -537,6 +537,13 @@ async function importMenu({db, uid, data}) {
     option = {name: text(o.name, 60) || "Accompagnement", required: false,
       max: 0, choices};
   }
+  // Portions disponibles par plat (le restaurant les ajuste ensuite) :
+  // sans stock, un plat ne peut pas être commandé.
+  const portions = data.portions === undefined ? 50 :
+    amountOf(data.portions, "Portions");
+  if (portions > 100000) {
+    throw err("invalid-argument", "Portions : 100 000 au plus.");
+  }
   const photoOptional = PHOTO_OPTIONAL.includes(seller.get("category"));
   const existing = await db.collection("Product")
       .where("seller_ref", "==", seller.ref).get();
@@ -558,6 +565,7 @@ async function importMenu({db, uid, data}) {
     batch.set(ref, {
       name: it.name, description: it.description, specifications: "",
       price: it.price, sale_price: it.price, section: it.section, unit: "",
+      quantity: portions,
       prod_img: "", requires_prescription: false,
       instant_disponibilty: false,
       // Sans photo, publié seulement pour les restaurants.

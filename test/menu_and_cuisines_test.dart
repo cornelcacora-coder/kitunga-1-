@@ -91,7 +91,7 @@ void main() {
     ));
     await tester.tap(find.text('Ouvrir'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), menu);
+    await tester.enterText(find.byType(TextField).first, menu);
     await tester.pumpAndSettle();
     expect(find.text('Aperçu : 30 plat(s), 4 rubrique(s)'), findsOneWidget);
     expect(find.textContaining('7 accompagnements en option'), findsOneWidget);
@@ -100,6 +100,7 @@ void main() {
     final c = calls.single;
     expect(c['f'], 'kitungaImportMenu');
     expect(c['sellerUid'], 'crisp');
+    expect(c['portions'], 50);
     expect((c['items'] as List).length, 30);
     expect(((c['sideOption'] as Map)['choices'] as List).length, 7);
     expect(find.textContaining('30 plat(s) ajouté(s)'), findsOneWidget);

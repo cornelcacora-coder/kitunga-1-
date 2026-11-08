@@ -5,9 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
 /// Paiement MTN contrôlé par le serveur (firebase/functions/kitunga).
-/// À passer à true seulement APRÈS le déploiement des fonctions
-/// (voir firebase/functions/README-KITUNGA.md).
-const kServerPayment = false;
+/// Activé : kitungaStartPayment et kitungaConfirmPayment doivent être en
+/// ligne AVANT la publication de l'application qui contient ce réglage.
+/// Le stock est réservé (décrémenté) à la confirmation du paiement.
+const kServerPayment = true;
 
 const _functionsUrl = 'https://us-west1-kitunga-xtvpe4.cloudfunctions.net';
 
@@ -66,7 +67,8 @@ Future<Map<String, dynamic>> _call(String name, Map<String, dynamic> data,
 /// [ServerPaymentException], avec un message à montrer tel quel.
 /// [appCheckToken] : jeton App Check facultatif (module commercial).
 Future<Map<String, dynamic>> kitungaCallFunction(
-        String name, Map<String, dynamic> data, {String? appCheckToken}) =>
+        String name, Map<String, dynamic> data,
+        {String? appCheckToken}) =>
     _call(name, data, appCheckToken: appCheckToken);
 
 /// Lance le paiement puis attend la validation du client (code PIN MTN).
@@ -89,8 +91,17 @@ Future<ServerPaymentResult> kitungaServerPay({
   final end = DateTime.now().add(timeout);
   while (true) {
     await Future.delayed(const Duration(seconds: 5));
-    final r =
-        await _call('kitungaConfirmPayment', {'referenceId': referenceId});
+    Map<String, dynamic> r;
+    try {
+      r = await _call('kitungaConfirmPayment', {'referenceId': referenceId});
+    } on ServerPaymentException {
+      // Réseau coupé pendant l'attente : on réessaie. Le serveur termine
+      // de toute façon les paiements validés (toutes les 5 minutes).
+      if (DateTime.now().isAfter(end))
+        r = {'status': 'pending'};
+      else
+        continue;
+    }
     final status = r['status'] as String;
     if (status != 'pending' || DateTime.now().isAfter(end)) {
       return (

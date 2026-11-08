@@ -438,6 +438,25 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
 
 // ── Livreur : remise et problèmes ────────────────────────────────────────
 
+/// Le livreur prend une commande prête. Le serveur garantit qu'un seul
+/// livreur l'obtient ; l'autre voit un message. true si prise.
+Future<bool> kitungaTakeDelivery(
+    BuildContext context, OrdersRecord order) async {
+  final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+  try {
+    await _call('kitungaTakeDelivery', {'orderId': order.reference.id});
+    messenger.showSnackBar(const SnackBar(
+        content: Text('Commande prise en charge. Bonne route !')));
+    return true;
+  } on ServerPaymentException catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text(e.message)));
+  } catch (_) {
+    messenger.showSnackBar(const SnackBar(
+        content: Text('Connexion impossible. Réessayez.')));
+  }
+  return false;
+}
+
 /// Remise de la commande : code du client + photo. true si livrée.
 Future<bool> kitungaCompleteDelivery(
     BuildContext context, OrdersRecord order) async {

@@ -254,5 +254,41 @@ async function orderReceipt({db, uid, data}) {
   };
 }
 
+/**
+ * Un livreur prend une commande prête. Transaction : si deux livreurs
+ * acceptent en même temps, un seul l'obtient, l'autre est prévenu.
+ */
+async function takeDelivery({db, uid, data}) {
+  const me = await caller(db, uid);
+  if (me.role !== "Deliver") {
+    throw err("permission-denied", "Réservé aux livreurs.");
+  }
+  if (me.user.get("account_status") === "suspended") {
+    throw err("permission-denied", "Votre compte livreur est suspendu.");
+  }
+  const ref = db.doc(`Orders/${text(data.orderId, 128) || "_"}`);
+  return db.runTransaction(async (tx) => {
+    const o = await tx.get(ref);
+    if (!o.exists) throw err("not-found", "Commande introuvable.");
+    if (isDeliverer(o, uid)) return {ok: true, already: true};
+    const taken = o.get("deliver_reference") ||
+      String(o.get("deliverer_ref") || "") !== "";
+    if (taken) {
+      throw err("already-exists",
+          "Cette commande a déjà été prise par un autre livreur.");
+    }
+    if (o.get("status") !== "Pret") {
+      throw err("failed-precondition", "Cette commande n'est plus disponible.");
+    }
+    tx.update(ref, {
+      status: "encours",
+      deliverer_ref: uid,
+      deliver_reference: db.doc(`User/${uid}`),
+      taken_at: ts(),
+    });
+    return {ok: true};
+  });
+}
+
 module.exports = {deliveryCode, confirmDelivery, reportDeliveryIssue,
-  orderReceipt, ISSUES, MAX_ATTEMPTS};
+  orderReceipt, takeDelivery, ISSUES, MAX_ATTEMPTS};

@@ -64,6 +64,12 @@ void main() {
           return receipt;
         case 'kitungaReportDeliveryIssue':
           return {'ok': true};
+        case 'kitungaTakeDelivery':
+          if (data['orderId'] == 'pris') {
+            throw ServerPaymentException(
+                'Cette commande a déjà été prise par un autre livreur.');
+          }
+          return {'ok': true};
       }
       return {};
     };
@@ -133,6 +139,39 @@ void main() {
     expect(calls.last.$1, 'kitungaConfirmDelivery');
     expect(calls.last.$2['code'], '4821');
     expect(calls.last.$2['photoUrl'], startsWith('https://'));
+  });
+
+  testWidgets('livreur : accepter, ou commande déjà prise', (tester) async {
+    final taken = OrdersRecord.getDocumentFromData(
+        {'status': 'Pret'}, _Ref('Orders/pris'));
+    final results = <bool>[];
+    await open(
+        tester,
+        Builder(
+          builder: (context) => Column(children: [
+            TextButton(
+              onPressed: () async =>
+                  results.add(await kitungaTakeDelivery(context, order)),
+              child: const Text('Accepter'),
+            ),
+            TextButton(
+              onPressed: () async =>
+                  results.add(await kitungaTakeDelivery(context, taken)),
+              child: const Text('Accepter 2'),
+            ),
+          ]),
+        ));
+    await tester.tap(find.text('Accepter'));
+    await tester.pump();
+    expect(find.text('Commande prise en charge. Bonne route !'),
+        findsOneWidget);
+    expect(calls.last.$2['orderId'], 'o1');
+    await tester.tap(find.text('Accepter 2'));
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.text('Cette commande a déjà été prise par un autre livreur.'),
+        findsOneWidget);
+    expect(results, [true, false]);
   });
 
   testWidgets('livreur : signaler un client injoignable', (tester) async {

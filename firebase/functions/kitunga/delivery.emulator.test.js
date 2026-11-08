@@ -152,3 +152,33 @@ test("reçu : après livraison, numéro unique, contenu complet", async () => {
   assert.strictEqual(r2.number, "KTG-2026-000002");
   assert.strictEqual(r2.payment, null);
 });
+
+test("prise en charge : un seul livreur, même s'ils acceptent ensemble",
+    async () => {
+      await db.doc("Orders/o2").set({status: "Pret",
+        user_ref: db.doc("User/marie"), seller_ref: db.doc("User/shop")});
+      const take = (uid) => d.takeDelivery({db, uid, data: {orderId: "o2"}});
+      await assert.rejects(take("marie"), /Réservé aux livreurs/);
+      // Jean et Paul acceptent au même instant.
+      const res = await Promise.allSettled([take("jean"), take("paul")]);
+      assert.strictEqual(res.filter((r) => r.status === "fulfilled").length, 1);
+      assert.match(res.find((r) => r.status === "rejected").reason.message,
+          /déjà été prise/);
+      const o = (await db.doc("Orders/o2").get()).data();
+      assert.strictEqual(o.status, "encours");
+      const winner = o.deliverer_ref;
+      assert.ok(["jean", "paul"].includes(winner));
+      assert.strictEqual(o.deliver_reference.id, winner);
+      assert.ok(o.taken_at);
+      // Le gagnant peut rappuyer sans erreur.
+      assert.deepStrictEqual(await take(winner), {ok: true, already: true});
+      // Commande pas encore prête : refusée.
+      await db.doc("Orders/o3").set({status: "En attente",
+        user_ref: db.doc("User/marie")});
+      await assert.rejects(d.takeDelivery({db, uid: "jean",
+        data: {orderId: "o3"}}), /plus disponible/);
+      // Livreur suspendu.
+      await db.doc("User/paul").update({account_status: "suspended"});
+      await assert.rejects(d.takeDelivery({db, uid: "paul",
+        data: {orderId: "o3"}}), /suspendu/);
+    });

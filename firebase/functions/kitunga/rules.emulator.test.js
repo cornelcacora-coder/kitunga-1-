@@ -105,8 +105,11 @@ test("vendeur : accepte, prépare, refuse avec motif", async () => {
 
 test("livreur : prend la commande ; la remise passe par le serveur",
     async () => {
-      await seed({status: "Pret"});
+      await seed({status: "Pret"}, {driver2: {role: "Deliver"}});
       const d = db("driver");
+      // Prendre la commande au nom d'un autre livreur : refusé.
+      await assertFails(updateDoc(orderOf("driver"), {status: "encours",
+        deliver_reference: doc(d, "User/driver2"), deliverer_ref: "driver2"}));
       await assertSucceeds(updateDoc(orderOf("driver"), {status: "encours",
         deliver_reference: doc(d, "User/driver"), deliverer_ref: "driver"}));
       // Sans code de remise vérifié par le serveur : refusé.
@@ -118,6 +121,11 @@ test("livreur : prend la commande ; la remise passe par le serveur",
       await assertFails(updateDoc(orderOf("driver"), {delivery_photo: "url"}));
       await assertFails(updateDoc(orderOf("driver"),
           {receipt_number: "KTG-2026-000001"}));
+      // Déjà prise : un second livreur ne peut plus la prendre.
+      await assertFails(updateDoc(doc(db("driver2"), "Orders/o1"), {
+        deliver_reference: doc(d, "User/driver2"), deliverer_ref: "driver2"}));
+      await assertFails(updateDoc(orderOf("driver"),
+          {taken_at: serverTimestamp()}));
       // Le client non plus ne peut pas se déclarer livré avant la remise.
       await assertFails(updateDoc(orderOf("buyer"), {status: "Reçu"}));
     });

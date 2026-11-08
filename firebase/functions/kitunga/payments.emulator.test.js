@@ -52,6 +52,9 @@ test("variante épuisée : paiement refusé avant MTN", async () => {
 
 test("paiement réussi : commande, stock et panier", async () => {
   await seed("Taille : Maxi · Suppléments : Fromage", 2);
+  // Article provisoire écrit par l'application à l'ajout au panier.
+  await db.doc("OrderItems/draft").set({user_ref: db.doc("User/buyer"),
+    cart_ref: db.doc("Cart/c1"), item_name: "Burger", quantity: 2});
   const s = await start();
   assert.equal(s.amount, (2500 + 1000 + 300) * 2 + 1500);
 
@@ -73,6 +76,7 @@ test("paiement réussi : commande, stock et panier", async () => {
   const items = await db.collection("OrderItems")
       .where("order_ref", "==", order.order_unique_reference).get();
   assert.equal(items.size, 1);
+  assert.equal((await db.doc("OrderItems/draft").get()).exists, false);
   assert.equal(items.docs[0].get("options"),
       "Taille : Maxi · Suppléments : Fromage");
 

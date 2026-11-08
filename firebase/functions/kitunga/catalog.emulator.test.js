@@ -326,6 +326,13 @@ test("import d'un menu : plats, doublons, option accompagnement", async () => {
   assert.strictEqual(brochette.on_sale, true);
   assert.strictEqual(brochette.options[0].choices.length, 2);
   assert.deepStrictEqual(all.find((p) => p.name === "Frites").options, []);
+  // 50 portions par défaut : sinon le plat serait « en rupture ».
+  assert.strictEqual(brochette.quantity, 50);
+  await cat.importMenu({db, uid: "admin", data: {sellerUid: "shop",
+    portions: 20, items: [{name: "Mosseka", price: 2000}]}});
+  const mosseka = (await db.collection("Product")
+      .where("name", "==", "Mosseka").get()).docs[0];
+  assert.strictEqual(mosseka.get("quantity"), 20);
   // Pharmacie : importés en brouillon (photo obligatoire).
   const ph = await cat.importMenu({db, uid: "admin", data: {
     sellerUid: "shop2", items: [{name: "Paracétamol", price: 800}]}});

@@ -378,7 +378,9 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      KitungaFieldLabel('Stock disponible'),
+                      KitungaFieldLabel(hasCuisines(_category)
+                          ? 'Portions disponibles'
+                          : 'Stock disponible'),
                       TextFormField(
                         controller: _stock,
                         keyboardType: TextInputType.number,

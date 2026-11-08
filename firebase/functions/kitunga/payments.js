@@ -15,6 +15,12 @@ const {PaymentError} = require("./errors");
 const STOPPED = ["Refusée", "Annulée"];
 
 
+function chunks(list, size) {
+  const out = [];
+  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+  return out;
+}
+
 function orderReference() {
   const n = Date.now().toString(36).toUpperCase();
   const r = Math.random().toString(36).slice(2, 5).toUpperCase();
@@ -131,6 +137,11 @@ async function confirmPayment({db, momo, uid, referenceId}) {
     const productRefs = carts.map((c) => c.exists ? c.get("product_ref") : null);
     const products = await Promise.all(
         productRefs.map((r) => r ? tx.get(r) : null));
+    // Articles provisoires créés par l'application à l'ajout au panier :
+    // remplacés par ceux de la commande.
+    const drafts = cartRefs.length === 0 ? [] : (await Promise.all(
+        chunks(cartRefs, 30).map((part) => tx.get(db.collection("OrderItems")
+            .where("cart_ref", "in", part))))).flatMap((q) => q.docs);
 
     const lines = carts.map((c, i) => ({
       cartRef: cartRefs[i],
@@ -196,6 +207,9 @@ async function confirmPayment({db, momo, uid, referenceId}) {
       });
       tx.delete(line.cartRef);
     });
+    drafts.filter((d) => !d.get("order_ref") &&
+        d.get("user_ref") && d.get("user_ref").id === uid)
+        .forEach((d) => tx.delete(d.ref));
     tx.update(payRef, {status: "Réussi", order_ref: orderRef});
     return {status: "paid", orderPath: orderRef.path};
   });

@@ -575,7 +575,9 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text(
-                          p.quantity <= 0 ? 'Rupture' : 'Stock : ${p.quantity}',
+                          p.quantity <= 0
+                              ? (hasCuisines(widget.shop.category) ? 'Épuisé' : 'Rupture')
+                              : (hasCuisines(widget.shop.category) ? 'Portions : ${p.quantity}' : 'Stock : ${p.quantity}'),
                           style: GoogleFonts.inter(
                             color: p.quantity <= 0
                                 ? theme.error

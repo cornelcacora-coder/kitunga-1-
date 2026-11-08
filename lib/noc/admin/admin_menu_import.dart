@@ -76,6 +76,7 @@ class _MenuImportDialog extends StatefulWidget {
 
 class _MenuImportDialogState extends State<_MenuImportDialog> {
   final _text = TextEditingController();
+  final _portions = TextEditingController(text: '50');
   bool _sideOption = true;
   bool _busy = false;
   String? _result;
@@ -84,6 +85,7 @@ class _MenuImportDialogState extends State<_MenuImportDialog> {
   @override
   void dispose() {
     _text.dispose();
+    _portions.dispose();
     super.dispose();
   }
 
@@ -101,6 +103,7 @@ class _MenuImportDialogState extends State<_MenuImportDialog> {
     try {
       final r = await salesCall('kitungaImportMenu', {
         'sellerUid': widget.sellerUid,
+        'portions': int.tryParse(_portions.text.trim()) ?? 50,
         'items': [
           for (final l in lines)
             {'section': l.section, 'name': l.name, 'price': l.price},
@@ -267,6 +270,28 @@ class _MenuImportDialogState extends State<_MenuImportDialog> {
                       ),
               ),
               const SizedBox(height: 10.0),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 120.0,
+                    child: TextField(
+                      controller: _portions,
+                      enabled: !_busy,
+                      keyboardType: TextInputType.number,
+                      style: AdminText.body(size: 13.5),
+                      decoration:
+                          const InputDecoration(labelText: 'Portions / plat'),
+                    ),
+                  ),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: Text(
+                        'Quantité disponible de chaque plat. Le restaurant '
+                        'l\'ajuste ensuite depuis son application (0 = épuisé).',
+                        style: AdminText.label(size: 12.0)),
+                  ),
+                ],
+              ),
               if (sides.isNotEmpty)
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
