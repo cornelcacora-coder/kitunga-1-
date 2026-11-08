@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
@@ -507,12 +508,8 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                             ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12.0),
-                                              child: CachedNetworkImage(
-                                                fadeInDuration:
-                                                    Duration(milliseconds: 0),
-                                                fadeOutDuration:
-                                                    Duration(milliseconds: 0),
-                                                imageUrl: getCORSProxyUrl(
+                                              child: KitungaImage(
+                                                getCORSProxyUrl(
                                                   valueOrDefault<String>(
                                                     _model.uploadedFileUrl_businessCover !=
                                                                 null &&
@@ -520,13 +517,12 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                                 ''
                                                         ? _model
                                                             .uploadedFileUrl_businessCover
-                                                        : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
-                                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                        : 'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                    'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
                                                   ),
                                                 ),
                                                 width: double.infinity,
                                                 height: 250.0,
-                                                fit: BoxFit.cover,
                                               ),
                                             ),
                                             Container(
@@ -599,16 +595,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                                     .circle,
                                                               ),
                                                               child:
-                                                                  CachedNetworkImage(
-                                                                fadeInDuration:
-                                                                    Duration(
-                                                                        milliseconds:
-                                                                            0),
-                                                                fadeOutDuration:
-                                                                    Duration(
-                                                                        milliseconds:
-                                                                            0),
-                                                                imageUrl:
+                                                                  KitungaImage(
                                                                     getCORSProxyUrl(
                                                                   valueOrDefault<
                                                                       String>(
@@ -618,13 +605,11 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                                                 ''
                                                                         ? _model
                                                                             .uploadedFileUrl_businessProfile
-                                                                        : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
-                                                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                                        : 'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                                    'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
                                                                   ),
                                                                 ),
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              ),
+                                                                  ),
                                                             ),
                                                           ),
                                                         ),

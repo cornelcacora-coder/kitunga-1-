@@ -160,6 +160,8 @@ flutter:
     - assets/images/
     - assets/images/categories/
     - assets/images/partners/
+    - assets/images/app/
+    - assets/images/zones/
     - assets/videos/
     - assets/audios/
     - assets/rive_animations/

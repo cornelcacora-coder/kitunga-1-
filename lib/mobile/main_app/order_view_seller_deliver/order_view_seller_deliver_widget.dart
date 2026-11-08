@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -192,7 +193,7 @@ class _OrderViewSellerDeliverWidgetState
                               'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
                           buttonText: 'Explorer',
                           photo:
-                              'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
+                              'assets/images/app/emptycart.png',
                           action: () async {
                             context.pushNamed(HomeWidget.routeName);
                           },
@@ -263,20 +264,15 @@ class _OrderViewSellerDeliverWidgetState
                                               borderRadius:
                                                   BorderRadius.circular(16.0),
                                             ),
-                                            child: CachedNetworkImage(
-                                              fadeInDuration:
-                                                  Duration(milliseconds: 0),
-                                              fadeOutDuration:
-                                                  Duration(milliseconds: 0),
-                                              imageUrl: getCORSProxyUrl(
+                                            child: KitungaImage(
+                                              getCORSProxyUrl(
                                                 valueOrDefault<String>(
                                                   productProductRecord.prodImg,
-                                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
+                                                  'assets/images/app/shopicon_1.png',
                                                 ),
                                               ),
                                               width: double.infinity,
                                               height: double.infinity,
-                                              fit: BoxFit.cover,
                                             ),
                                           ),
                                         ),

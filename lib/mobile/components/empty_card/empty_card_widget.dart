@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -65,15 +66,10 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(0.0),
-            child: CachedNetworkImage(
-              fadeInDuration: Duration(milliseconds: 500),
-              fadeOutDuration: Duration(milliseconds: 500),
-              imageUrl: getCORSProxyUrl(
-                widget!.photo!,
-              ),
+            child: KitungaImage(
+              getCORSProxyUrl(widget!.photo ?? ''),
               width: 160.0,
               height: 165.0,
-              fit: BoxFit.cover,
             ),
           ),
           Row(

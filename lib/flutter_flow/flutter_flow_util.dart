@@ -423,7 +423,8 @@ extension StatefulWidgetExtensions on State<StatefulWidget> {
 }
 
 String getCORSProxyUrl(String path) {
-  if (!kIsWeb) {
+  // Mobile, ou image fournie avec l'application (assets/…) : inchangée.
+  if (!kIsWeb || !path.startsWith('http')) {
     return path;
   }
   const proxyUrl =

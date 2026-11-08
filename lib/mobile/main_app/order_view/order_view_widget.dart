@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -691,7 +692,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                       'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
                                                   buttonText: 'Explorer',
                                                   photo:
-                                                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
+                                                      'assets/images/app/emptycart.png',
                                                   action: () async {
                                                     context.pushNamed(
                                                         HomeWidget.routeName);
@@ -794,31 +795,20 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                                             16.0),
                                                                   ),
                                                                   child:
-                                                                      CachedNetworkImage(
-                                                                    fadeInDuration:
-                                                                        Duration(
-                                                                            milliseconds:
-                                                                                0),
-                                                                    fadeOutDuration:
-                                                                        Duration(
-                                                                            milliseconds:
-                                                                                0),
-                                                                    imageUrl:
+                                                                      KitungaImage(
                                                                         getCORSProxyUrl(
                                                                       valueOrDefault<
                                                                           String>(
                                                                         productProductRecord
                                                                             .prodImg,
-                                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
+                                                                        'assets/images/app/shopicon_1.png',
                                                                       ),
                                                                     ),
-                                                                    width: double
+                                                                        width: double
                                                                         .infinity,
-                                                                    height: double
+                                                                        height: double
                                                                         .infinity,
-                                                                    fit: BoxFit
-                                                                        .cover,
-                                                                  ),
+                                                                      ),
                                                                 ),
                                                               ),
                                                               Expanded(
@@ -1022,17 +1012,16 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           8.0),
-                                                  child: Image.network(
+                                                  child: KitungaImage(
                                                     getCORSProxyUrl(
                                                       valueOrDefault<String>(
                                                         middleBodyOrdersRecord
                                                             .deliveryPhoto,
-                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
+                                                        'assets/images/app/shopicon_1.png',
                                                       ),
                                                     ),
                                                     width: double.infinity,
                                                     height: 150.0,
-                                                    fit: BoxFit.cover,
                                                   ),
                                                 ),
                                               ),
@@ -1117,17 +1106,16 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           8.0),
-                                                  child: Image.network(
+                                                  child: KitungaImage(
                                                     getCORSProxyUrl(
                                                       valueOrDefault<String>(
                                                         middleBodyOrdersRecord
                                                             .userSignature,
-                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
+                                                        'assets/images/app/shopicon_1.png',
                                                       ),
                                                     ),
                                                     width: double.infinity,
                                                     height: 150.0,
-                                                    fit: BoxFit.cover,
                                                   ),
                                                 ),
                                               ),
@@ -1223,7 +1211,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                     },
                                                     child: EmptyCardWidget(
                                                       photo:
-                                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
+                                                          'assets/images/app/illustration_ou1qzr.png',
                                                       title:
                                                           'Contactez l\'admin !',
                                                       description:
@@ -1293,7 +1281,7 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                                                               child:
                                                                   EmptyCardWidget(
                                                                 photo:
-                                                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
+                                                                    'assets/images/app/illustration_ou1qzr.png',
                                                                 title:
                                                                     'Contactez l\'admin !',
                                                                 description:

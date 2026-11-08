@@ -1044,7 +1044,7 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                                   context),
                                               child: EmptyCardWidget(
                                                 photo:
-                                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
+                                                    'assets/images/app/illustration_ou1qzr.png',
                                                 title:
                                                     'Créez votre compte',
                                                 description:

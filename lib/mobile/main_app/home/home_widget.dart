@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/backend/order_status.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -587,23 +588,18 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                           ClipRRect(
                                             borderRadius:
                                                 BorderRadius.circular(12.0),
-                                            child: CachedNetworkImage(
-                                              fadeInDuration:
-                                                  Duration(milliseconds: 0),
-                                              fadeOutDuration:
-                                                  Duration(milliseconds: 0),
-                                              imageUrl: getCORSProxyUrl(
+                                            child: KitungaImage(
+                                              getCORSProxyUrl(
                                                 valueOrDefault<String>(
                                                   valueOrDefault(
                                                       currentUserDocument
                                                           ?.businessCover,
                                                       ''),
-                                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                  'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
                                                 ),
                                               ),
                                               width: double.infinity,
                                               height: 250.0,
-                                              fit: BoxFit.cover,
                                             ),
                                           ),
                                           Container(
@@ -855,26 +851,15 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                       .circle,
                                                                 ),
                                                                 child:
-                                                                    CachedNetworkImage(
-                                                                  fadeInDuration:
-                                                                      Duration(
-                                                                          milliseconds:
-                                                                              0),
-                                                                  fadeOutDuration:
-                                                                      Duration(
-                                                                          milliseconds:
-                                                                              0),
-                                                                  imageUrl:
+                                                                    KitungaImage(
                                                                       getCORSProxyUrl(
                                                                     valueOrDefault<
                                                                         String>(
                                                                       currentUserPhoto,
-                                                                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                                      'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
                                                                     ),
                                                                   ),
-                                                                  fit: BoxFit
-                                                                      .cover,
-                                                                ),
+                                                                    ),
                                                               ),
                                                             ),
                                                           ),
@@ -1379,12 +1364,10 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       price:
                                                           gridViewProductRecord
                                                               .salePrice,
-                                                      cover: valueOrDefault<
-                                                          String>(
-                                                        gridViewProductRecord
-                                                            .prodImg,
-                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
-                                                      ),
+                                                      // Sans photo : vignette du plat (pas d'icône générique).
+                                                      cover: gridViewProductRecord
+                                                          .prodImg,
+                                                      product: gridViewProductRecord,
                                                     ),
                                                   ),
                                                 );
@@ -1482,18 +1465,13 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
                                                   ),
-                                                  child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 0),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 0),
-                                                    imageUrl: getCORSProxyUrl(
+                                                  child: KitungaImage(
+                                                    getCORSProxyUrl(
                                                       valueOrDefault<String>(
                                                         currentUserPhoto,
-                                                        'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h5ta1mt8rram/UserIcon.png',
+                                                        'assets/images/app/usericon.png',
                                                       ),
                                                     ),
-                                                    fit: BoxFit.cover,
                                                   ),
                                                 ),
                                                 Align(
@@ -2057,7 +2035,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       .isEmpty) {
                                                     return EmptyCardWidget(
                                                       photo:
-                                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
+                                                          'assets/images/app/emptycart.png',
                                                       description:
                                                           'Patientez un instant ou revenez plus tard quand une offre sera disponible',
                                                       buttonText:

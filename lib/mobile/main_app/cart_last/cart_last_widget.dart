@@ -274,7 +274,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                     'Votre panier est vide. Parcourez les commerces pour choisir vos produits.',
                                 buttonText: 'Explorer',
                                 photo:
-                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
+                                    'assets/images/app/emptycart.png',
                                 action: () async {
                                   context.pushNamed(HomeWidget.routeName);
                                 },
@@ -1305,101 +1305,101 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                           child: KitungaImage(
                                             () {
                                               if (_model.zone == 'Avenue de la Paix') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/96kbhp9scr8m/Av_Paix.jpg';
+                                                return 'assets/images/zones/av_paix.jpg';
                                               } else if (_model.zone == 'Bacongo') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/npi5151n0k1p/Bacongo.jpg';
+                                                return 'assets/images/zones/bacongo.jpg';
                                               } else if (_model.zone == 'Barrage') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h8ds3hm1wyjh/Barrage.jpg';
+                                                return 'assets/images/zones/barrage.jpg';
                                               } else if (_model.zone == 'Batignolles') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/dwghivq9my60/batignole.jpg';
+                                                return 'assets/images/zones/batignole.jpg';
                                               } else if (_model.zone == 'Centre sportif') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/q07gn73ny7ed/makelekele.jpg';
+                                                return 'assets/images/zones/makelekele.jpg';
                                               } else if (_model.zone == 'Centre-ville') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/kuoubno85ha9/ville-radisson.jpg';
+                                                return 'assets/images/zones/ville_radisson.jpg';
                                               } else if (_model.zone == "Château d'eau") {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/wdvzqwoztlzg/chateau_deau.jpg';
+                                                return 'assets/images/zones/chateau_deau.jpg';
                                               } else if (_model.zone == "Cité des 17") {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/wtl9b9von4fm/cite_17.jpg';
+                                                return 'assets/images/zones/cite_17.jpg';
                                               } else if (_model.zone == 'Diata') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/g6cqd4p6yce7/diata.jpg';
+                                                return 'assets/images/zones/diata.jpg';
                                               } else if (_model.zone == 'Djiri') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/em9ct121bd0r/djiri.jpg';
+                                                return 'assets/images/zones/djiri.jpg';
                                               } else if (_model.zone == 'Kibina') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/8p1lcrtnmey0/madibou.jpg';
+                                                return 'assets/images/zones/madibou.jpg';
                                               } else if (_model.zone == 'Kingouari') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/nqkurjwggyfl/kigouari.jpg';
+                                                return 'assets/images/zones/kigouari.jpg';
                                               } else if (_model.zone == 'Kinsoundi') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cmair8547wl9/kisundi.jpg';
+                                                return 'assets/images/zones/kisundi.jpg';
                                               } else if (_model.zone == 'Kintélé') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ci5rgx41bbjp/kintele.jpg';
+                                                return 'assets/images/zones/kintele.jpg';
                                               } else if (_model.zone == 'Kombo') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cr8izr9r7vnm/kombo.jpg';
+                                                return 'assets/images/zones/kombo.jpg';
                                               } else if (_model.zone == 'La Base') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/mhk3zbchor0e/la_base.jpg';
+                                                return 'assets/images/zones/la_base.jpg';
                                               } else if (_model.zone == 'La Tsiémé') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/qbjo4oa6z5fi/La_Tsieme.jpg';
+                                                return 'assets/images/zones/la_tsieme.jpg';
                                               } else if (_model.zone == 'Ma-Mboualé') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gbvtyd8pt6z4/mbouale.jpg';
+                                                return 'assets/images/zones/mbouale.jpg';
                                               } else if (_model.zone == 'Madibou') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/8p1lcrtnmey0/madibou.jpg';
+                                                return 'assets/images/zones/madibou.jpg';
                                               } else if (_model.zone == 'Mafouta') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/x572tglyd8om/mafouta.jpg';
+                                                return 'assets/images/zones/mafouta.jpg';
                                               } else if (_model.zone == 'Makabandilou') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/0c3ae54nh2df/Makabandilou.jpg';
+                                                return 'assets/images/zones/makabandilou.jpg';
                                               } else if (_model.zone == 'Makélékélé') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/q07gn73ny7ed/makelekele.jpg';
+                                                return 'assets/images/zones/makelekele.jpg';
                                               } else if (_model.zone == 'Mansimou') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/o5r47c7h6xy4/mansimou.jpg';
+                                                return 'assets/images/zones/mansimou.jpg';
                                               } else if (_model.zone == 'Mapassi') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/l746lg8ewjw0/mapassi.png';
+                                                return 'assets/images/zones/mapassi.png';
                                               } else if (_model.zone == 'Marché Moungali') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gitzv0f94pm7/mougali.png';
+                                                return 'assets/images/zones/mougali.png';
                                               } else if (_model.zone == 'Massengo') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/lecrnafgnwrr/massengo.jpg';
+                                                return 'assets/images/zones/massengo.jpg';
                                               } else if (_model.zone == 'Massissia') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/uky530izfm3g/massissa.jpg';
+                                                return 'assets/images/zones/massissa.jpg';
                                               } else if (_model.zone == 'Mayanga') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/oi4vxr6thou2/mayanga.jpg';
+                                                return 'assets/images/zones/mayanga.jpg';
                                               } else if (_model.zone == 'Mbouono') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/f4co5rqs7agc/mbouono.jpg';
+                                                return 'assets/images/zones/mbouono.jpg';
                                               } else if (_model.zone == 'Mfilou') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/l0j1ul7cu4j4/mfilou.jpg';
+                                                return 'assets/images/zones/mfilou.jpg';
                                               } else if (_model.zone == 'Mikalou') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/013eufdnn24t/mikalou.jpg';
+                                                return 'assets/images/zones/mikalou.jpg';
                                               } else if (_model.zone == 'Moukondo') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gwpsm4z8wefj/moukondo.jpg';
+                                                return 'assets/images/zones/moukondo.jpg';
                                               } else if (_model.zone == 'Moukoundzi-Ngouaka') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/96xe8p58wj0q/moukounzi_ngouaka.jpg';
+                                                return 'assets/images/zones/moukounzi_ngouaka.jpg';
                                               } else if (_model.zone == 'Moungali') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gitzv0f94pm7/mougali.png';
+                                                return 'assets/images/zones/mougali.png';
                                               } else if (_model.zone == 'Moussosso') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ry4tfurzfzdd/moussosso.jpg';
+                                                return 'assets/images/zones/moussosso.jpg';
                                               } else if (_model.zone == 'Mpila') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v54qgk9kgjt7/mpila.jpg';
+                                                return 'assets/images/zones/mpila.jpg';
                                               } else if (_model.zone == 'Mpissa') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/pjdad8guzdwh/Mpiss.jpg';
+                                                return 'assets/images/zones/mpiss.jpg';
                                               } else if (_model.zone == 'Ngamakosso') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/cmpi44hqlj9o/ngamakosso.jpg';
+                                                return 'assets/images/zones/ngamakosso.jpg';
                                               } else if (_model.zone == 'Nganga-Lingolo') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gnhw8yomipv0/ngangalingolo.jpg';
+                                                return 'assets/images/zones/ngangalingolo.jpg';
                                               } else if (_model.zone == 'Ndjiri') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/em9ct121bd0r/djiri.jpg';
+                                                return 'assets/images/zones/djiri.jpg';
                                               } else if (_model.zone == 'O.C.H') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/856amc5on2z1/OCH.jpg';
+                                                return 'assets/images/zones/och.jpg';
                                               } else if (_model.zone == 'Talangaï') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/x8iv4713ugv9/talangai.jpg';
+                                                return 'assets/images/zones/talangai.jpg';
                                               } else if (_model.zone == 'Soprogie') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/u5civf1yxxes/SOPROGIE.jpg';
+                                                return 'assets/images/zones/soprogie.jpg';
                                               } else if (_model.zone == 'Sadelmi') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/b3jmepvevn7f/sadelmie.jpg';
+                                                return 'assets/images/zones/sadelmie.jpg';
                                               } else if (_model.zone == 'Poto-Poto') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/embxmtiggnh9/poto_poto.png';
+                                                return 'assets/images/zones/poto_poto.png';
                                               } else if (_model.zone == 'Plateau des 15 ans') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/m9unb7oz8mkx/Plateau.jpg';
+                                                return 'assets/images/zones/plateau.jpg';
                                               } else if (_model.zone == 'Ouenzé') {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ryley3vutnl9/ouenze.png';
+                                                return 'assets/images/zones/ouenze.png';
                                               } else {
-                                                return 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/azpygr5br5gj/aa1.jpg';
+                                                return 'assets/images/zones/aa1.jpg';
                                               }
                                             }(),
                                             width: double.infinity,

@@ -99,7 +99,7 @@ class _ForgotPasswordLinkWidgetState extends State<ForgotPasswordLinkWidget> {
                 updateCallback: () => safeSetState(() {}),
                 child: EmptyCardWidget(
                   photo:
-                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/huber-eats-consumer-app-38yn7u/assets/bh9lkvi2krgy/Screenshot_2024-03-10_at_15.29.09.png',
+                      'assets/images/app/wallet_card.png',
                   title: 'Mail Envoyé',
                   description:
                       'Nous vous avions envoyé un lien, consultez vos e-mails afin de suivre le lien de reconnexion. ',

@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
@@ -255,7 +256,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Image.network(
+                                      child: KitungaImage(
                                         getCORSProxyUrl(
                                           valueOrDefault<String>(
                                             _model.uploadedFileUrl_userPictureUpladed !=
@@ -265,10 +266,9 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
                                                 ? _model
                                                     .uploadedFileUrl_userPictureUpladed
                                                 : currentUserPhoto,
-                                            'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h5ta1mt8rram/UserIcon.png',
+                                            'assets/images/app/usericon.png',
                                           ),
                                         ),
-                                        fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),

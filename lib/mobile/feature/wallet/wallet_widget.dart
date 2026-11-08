@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -590,23 +591,13 @@ class _WalletWidgetState extends State<WalletWidget> {
                                                                   .circular(
                                                                       0.0),
                                                           child:
-                                                              CachedNetworkImage(
-                                                            fadeInDuration:
-                                                                Duration(
-                                                                    milliseconds:
-                                                                        500),
-                                                            fadeOutDuration:
-                                                                Duration(
-                                                                    milliseconds:
-                                                                        500),
-                                                            imageUrl:
+                                                              KitungaImage(
                                                                 getCORSProxyUrl(
-                                                              'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/huber-eats-consumer-app-38yn7u/assets/u5szqvm8iry3/mastercard_logo.jpg',
+                                                              'assets/images/app/mastercard_logo.jpg',
                                                             ),
-                                                            width: 30.0,
-                                                            height: 20.0,
-                                                            fit: BoxFit.contain,
-                                                          ),
+                                                                width: 30.0,
+                                                                height: 20.0,
+                                                              ),
                                                         ),
                                                         Text(
                                                           '**** 2125',

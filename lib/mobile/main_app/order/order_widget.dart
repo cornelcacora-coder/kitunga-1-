@@ -135,7 +135,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                             if (orderListOrdersRecordList.isEmpty) {
                               return EmptyCardWidget(
                                 photo:
-                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
+                                    'assets/images/app/emptycart.png',
                                 title: 'Aucune commande pour le moment',
                                 description:
                                     'Ajoutez des produits à votre panier et validez votre commande : vous pourrez la suivre ici.',
@@ -572,7 +572,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                         if (listViewOrdersRecordList.isEmpty) {
                                           return EmptyCardWidget(
                                             photo:
-                                                'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
+                                                'assets/images/app/emptycart.png',
                                             title: 'Aucune Commande Accepté',
                                             description:
                                                 'Accepter une commande afin de la voir apparaitre ici',
@@ -1108,7 +1108,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                                 Padding(
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: EmptyCardWidget(
-                                                                                photo: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/gv3nx4dk4pps/boxicons-pXmQQk8IxaQ-unsplash.png',
+                                                                                photo: 'assets/images/app/colis_non_recu.png',
                                                                                 title: 'Colis non reçu !',
                                                                                 description: 'Veuillez demandé une confirmation de l\'utilisateur afin de confirmer votre livraison ',
                                                                                 buttonText: 'Compris !',
@@ -1275,7 +1275,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                           if (adminOrderOrdersRecordList.isEmpty) {
                             return EmptyCardWidget(
                               photo:
-                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
+                                  'assets/images/app/emptycart.png',
                               title: 'Aucune commande pour le moment',
                               description:
                                   'Ajoutez des produits à votre panier et validez votre commande : vous pourrez la suivre ici.',
@@ -1621,7 +1621,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                               updateCallback: () => safeSetState(() {}),
                               child: EmptyCardWidget(
                                 photo:
-                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/v1j5zelwpg12/Gemini_Generated_Image_ou1qzrou1qzrou1q-removebg-preview.png',
+                                    'assets/images/app/illustration_ou1qzr.png',
                                 title: 'Créez votre compte',
                                 description:
                                     'Créez votre compte Kitunga pour accéder à l\'historique de vos commandes.',

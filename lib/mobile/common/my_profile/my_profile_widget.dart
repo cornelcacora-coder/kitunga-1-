@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -235,14 +236,13 @@ class _MyProfileWidgetState extends State<MyProfileWidget>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                 ),
-                                child: Image.network(
+                                child: KitungaImage(
                                   getCORSProxyUrl(
                                     valueOrDefault<String>(
                                       currentUserPhoto,
-                                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/h5ta1mt8rram/UserIcon.png',
+                                      'assets/images/app/usericon.png',
                                     ),
                                   ),
-                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
