@@ -1043,14 +1043,14 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                       'encours') {
                                                                     await listViewOrdersRecord
                                                                         .reference
-                                                                        .update(
-                                                                            createOrdersRecordData(
-                                                                      status:
-                                                                          'Livrer',
-                                                                      delivererRef:
-                                                                          currentUserReference
-                                                                              ?.id,
-                                                                    ));
+                                                                        .update({
+            ...createOrdersRecordData(
+              status: 'Livrer',
+              delivererRef: currentUserReference?.id,
+            ),
+            // Heure de livraison (temps de livraison du tableau de bord).
+            'delivered_at': FieldValue.serverTimestamp(),
+          });
                                                                   } else {
                                                                     if (listViewOrdersRecord
                                                                             .status ==

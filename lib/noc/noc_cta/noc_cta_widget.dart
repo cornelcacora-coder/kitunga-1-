@@ -80,7 +80,7 @@ class _NocCtaWidgetState extends State<NocCtaWidget> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'COMING SOON',
+                    'BIENTÔT DISPONIBLE',
                     style: FlutterFlowTheme.of(context).titleMedium.override(
                           font: GoogleFonts.interTight(
                             fontWeight: FontWeight.bold,

@@ -132,7 +132,9 @@ class _NOCDeliveryWidgetState extends State<NOCDeliveryWidget> {
                         queryBuilder: (ordersRecord) => ordersRecord.where(
                           'status',
                           whereIn: OrderStatus.finished,
-                        ),
+                        )
+            .orderBy('created_at', descending: true)
+            .limit(200),
                       ),
                       builder: (context, snapshot) {
                         // Customize what your widget looks like when it's loading.

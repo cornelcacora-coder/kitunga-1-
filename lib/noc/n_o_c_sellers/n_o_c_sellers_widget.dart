@@ -442,7 +442,7 @@ class _NOCSellersWidgetState extends State<NOCSellersWidget> {
                             isEqualTo:
                                 _model.category != '' ? _model.category : null,
                           ),
-                          limit: 20,
+                          limit: 500,
                         ),
                         builder: (context, snapshot) {
                           // Customize what your widget looks like when it's loading.

@@ -1,3 +1,4 @@
+import '/noc/ops_alerts.dart';
 import '/backend/order_status.dart';
 import '/backend/backend.dart';
 import '/components/alert_card_widget.dart';
@@ -129,168 +130,8 @@ class _NOCAlertWidgetState extends State<NOCAlertWidget> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            FutureBuilder<int>(
-                              future: querySystemLogsRecordCount(
-                                queryBuilder: (systemLogsRecord) =>
-                                    systemLogsRecord
-                                        .where(
-                                          'status',
-                                          isEqualTo: 'Echec',
-                                        )
-                                        .where(
-                                          'delivery_date',
-                                          isGreaterThan: getCurrentTimestamp,
-                                        ),
-                              ),
-                              builder: (context, snapshot) {
-                                // Customize what your widget looks like when it's loading.
-                                if (!snapshot.hasData) {
-                                  return Center(
-                                    child: SizedBox(
-                                      width: 50.0,
-                                      height: 50.0,
-                                      child: CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          FlutterFlowTheme.of(context).primary,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                int alertCardCount = snapshot.data!;
-
-                                return wrapWithModel(
-                                  model: _model.alertCardModel1,
-                                  updateCallback: () => safeSetState(() {}),
-                                  child: AlertCardWidget(
-                                    color: FlutterFlowTheme.of(context).error,
-                                    icon: Icon(
-                                      Icons.timer_rounded,
-                                      color: FlutterFlowTheme.of(context).error,
-                                      size: 24.0,
-                                    ),
-                                    label: 'DÉLAIS DÉPASSÉ',
-                                    status: 'Elevé',
-                                    value: valueOrDefault<String>(
-                                      alertCardCount.toString(),
-                                      '0',
-                                    ),
-                                    unit: 'livraisons',
-                                    bg: Color(0x44E00F17),
-                                  ),
-                                );
-                              },
-                            ),
-                            StreamBuilder<List<OrdersRecord>>(
-                              stream: queryOrdersRecord(
-                                queryBuilder: (ordersRecord) =>
-                                    ordersRecord.where(
-                                  'responded_at',
-                                  isEqualTo: getCurrentTimestamp,
-                                ),
-                              ),
-                              builder: (context, snapshot) {
-                                // Customize what your widget looks like when it's loading.
-                                if (!snapshot.hasData) {
-                                  return Center(
-                                    child: SizedBox(
-                                      width: 50.0,
-                                      height: 50.0,
-                                      child: CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          FlutterFlowTheme.of(context).primary,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                List<OrdersRecord> alertCardOrdersRecordList =
-                                    snapshot.data!;
-
-                                return wrapWithModel(
-                                  model: _model.alertCardModel2,
-                                  updateCallback: () => safeSetState(() {}),
-                                  child: AlertCardWidget(
-                                    color: FlutterFlowTheme.of(context).warning,
-                                    icon: Icon(
-                                      Icons.speed_rounded,
-                                      color:
-                                          FlutterFlowTheme.of(context).warning,
-                                      size: 24.0,
-                                    ),
-                                    label: 'TEMPS DE RÉPONSE MOYEN',
-                                    status: 'Moyen',
-                                    value: functions
-                                        .calculateSellerResponseTime(
-                                            alertCardOrdersRecordList.toList())
-                                        .toString(),
-                                    unit: 'min',
-                                    bg: Color(0x52E0A50F),
-                                  ),
-                                );
-                              },
-                            ),
-                            StreamBuilder<List<SystemLogsRecord>>(
-                              stream: querySystemLogsRecord(
-                                limit: 500,
-                              ),
-                              builder: (context, snapshot) {
-                                // Customize what your widget looks like when it's loading.
-                                if (!snapshot.hasData) {
-                                  return Center(
-                                    child: SizedBox(
-                                      width: 50.0,
-                                      height: 50.0,
-                                      child: CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          FlutterFlowTheme.of(context).primary,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                List<SystemLogsRecord>
-                                    alertCardSystemLogsRecordList =
-                                    snapshot.data!;
-
-                                return wrapWithModel(
-                                  model: _model.alertCardModel3,
-                                  updateCallback: () => safeSetState(() {}),
-                                  child: AlertCardWidget(
-                                    color: FlutterFlowTheme.of(context).warning,
-                                    icon: Icon(
-                                      Icons.bug_report_rounded,
-                                      color:
-                                          FlutterFlowTheme.of(context).warning,
-                                      size: 24.0,
-                                    ),
-                                    label: 'TAUX D\'ERREUR SYSTÈME',
-                                    status: 'Elevé',
-                                    value: valueOrDefault<String>(
-                                      formatNumber(
-                                        functions.calculateErrorRate(
-                                            alertCardSystemLogsRecordList
-                                                .toList()),
-                                        formatType: FormatType.percent,
-                                      ),
-                                      '0,0',
-                                    ),
-                                    unit: '%',
-                                    bg: Color(0x52E0A50F),
-                                  ),
-                                );
-                              },
-                            ),
-                          ].divide(SizedBox(height: 16.0)),
-                        ),
+                        // Indicateurs réels (voir ops_alerts.dart).
+                        const KitungaOpsAlerts(),
                         Divider(
                           height: 16.0,
                           thickness: 1.0,
@@ -355,7 +196,7 @@ class _NOCAlertWidgetState extends State<NOCAlertWidget> {
                                               ),
                                         ),
                                         Text(
-                                          '0',
+                                          '—',
                                           style: FlutterFlowTheme.of(context)
                                               .titleLarge
                                               .override(
@@ -380,7 +221,7 @@ class _NOCAlertWidgetState extends State<NOCAlertWidget> {
                                               ),
                                         ),
                                         Text(
-                                          'Aucune panne',
+                                          'Non surveillé',
                                           style: FlutterFlowTheme.of(context)
                                               .labelSmall
                                               .override(
@@ -472,9 +313,16 @@ class _NOCAlertWidgetState extends State<NOCAlertWidget> {
                                           stream: queryPaiementRecord(
                                             queryBuilder: (paiementRecord) =>
                                                 paiementRecord.where(
-                                              'status',
-                                              isEqualTo: 'Echec',
-                                            ),
+                                                                    'status',
+                                                                    isEqualTo: 'Echec',
+                                                                  )
+                                                                  // 7 derniers jours seulement.
+                                                                  .where(
+                                                                    'created_at',
+                                                                    isGreaterThanOrEqualTo:
+                                                                        DateTime.now().subtract(
+                                                                            const Duration(days: 7)),
+                                                                  ),
                                           ),
                                           builder: (context, snapshot) {
                                             // Customize what your widget looks like when it's loading.
@@ -536,7 +384,7 @@ class _NOCAlertWidgetState extends State<NOCAlertWidget> {
                                           },
                                         ),
                                         Text(
-                                          'Bas',
+                                          '7 derniers jours',
                                           style: FlutterFlowTheme.of(context)
                                               .labelSmall
                                               .override(
@@ -687,7 +535,7 @@ class _NOCAlertWidgetState extends State<NOCAlertWidget> {
                                         },
                                       ),
                                       Text(
-                                        'Bas',
+                                        'Commandes non reçues',
                                         style: FlutterFlowTheme.of(context)
                                             .labelSmall
                                             .override(

@@ -1,3 +1,5 @@
+import '/noc/ops_alerts.dart';
+import '/noc/ops_panels.dart';
 import '/noc/sales/sales_admin_widget.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -367,7 +369,7 @@ class _SupervisionDashboardWidgetState
                                         Expanded(
                                           flex: 1,
                                           child: Text(
-                                            'livraison',
+                                            'Livraisons',
                                             maxLines: 1,
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
@@ -1147,7 +1149,7 @@ class _SupervisionDashboardWidgetState
                                             CrossAxisAlignment.center,
                                         children: [
                                           Text(
-                                            'Dark Mode',
+                                            'Mode sombre',
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
                                                 .override(
@@ -1416,7 +1418,10 @@ class _SupervisionDashboardWidgetState
                                           height: 110.0,
                                           decoration: BoxDecoration(),
                                           child: FutureBuilder<int>(
-                                            future: queryUserRecordCount(),
+                                            future: queryUserRecordCount(
+                                              queryBuilder: (u) =>
+                                                  u.where('role', isEqualTo: 'User'),
+                                            ),
                                             builder: (context, snapshot) {
                                               // Customize what your widget looks like when it's loading.
                                               if (!snapshot.hasData) {
@@ -1452,9 +1457,9 @@ class _SupervisionDashboardWidgetState
                                                         .primaryText,
                                                   ),
                                                   bg: Color(0x4DD25239),
-                                                  title: 'UTILISATEURS  ',
+                                                  title: 'CLIENTS',
                                                   subtitle:
-                                                      'Nombre d\'utilisateurs',
+                                                      'Nombre de clients inscrits',
                                                   role: 'User',
                                                   quantity: statCompCount,
                                                 ),
@@ -1541,9 +1546,9 @@ class _SupervisionDashboardWidgetState
                                                         .primaryText,
                                                   ),
                                                   bg: Color(0x4DB539D2),
-                                                  title: 'COMMERCIAUX',
+                                                  title: 'COMMERÇANTS',
                                                   subtitle:
-                                                      'Nombre de vendeurs',
+                                                      'Nombre de commerçants',
                                                   quantity: valueOrDefault<int>(
                                                     statCompCount,
                                                     0,
@@ -1636,9 +1641,9 @@ class _SupervisionDashboardWidgetState
                                                   bg: FlutterFlowTheme.of(
                                                           context)
                                                       .accent2,
-                                                  title: 'COMMANDE ACHEVEE',
+                                                  title: 'COMMANDES LIVRÉES',
                                                   subtitle:
-                                                      'Nombre de livraison reussi',
+                                                      'Nombre de livraisons réussies',
                                                   quantity: statCompCount,
                                                 ),
                                               ),
@@ -1653,24 +1658,7 @@ class _SupervisionDashboardWidgetState
                                       width: 280.0,
                                       height: 110.0,
                                       decoration: BoxDecoration(),
-                                      child: wrapWithModel(
-                                        model: _model.statCompModel4,
-                                        updateCallback: () =>
-                                            safeSetState(() {}),
-                                        child: StatCompWidget(
-                                          bgIcon: Icon(
-                                            Icons.timer_rounded,
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                          ),
-                                          bg: FlutterFlowTheme.of(context)
-                                              .accent3,
-                                          title: 'TEMPS  DE LIVRAISON',
-                                          subtitle:
-                                              'Temps estimé maximal  de  livraison',
-                                          quantity: 90,
-                                        ),
-                                      ),
+                                      child: const KitungaDeliveryTimeStat(),
                                     ),
                                   ),
                                 ].divide(SizedBox(width: 10.0)),
@@ -1952,7 +1940,7 @@ class _SupervisionDashboardWidgetState
                                                                   ),
                                                             ),
                                                             Text(
-                                                              'Statu de la livraison',
+                                                              'Statut de la livraison',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .labelSmall
@@ -2323,7 +2311,9 @@ class _SupervisionDashboardWidgetState
                                                                         .where(
                                                               'status',
                                                               whereIn: OrderStatus.finished,
-                                                            ),
+                                                            )
+                                                                .orderBy('created_at', descending: true)
+                                                                .limit(100),
                                                           ),
                                                           builder: (context,
                                                               snapshot) {
@@ -2435,7 +2425,7 @@ class _SupervisionDashboardWidgetState
                                                               .stretch,
                                                       children: [
                                                         Text(
-                                                          'INTERFACE CARTOGRAPHIQUE',
+                                                          'LIVRAISONS EN COURS PAR ZONE',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .titleMedium
@@ -2489,16 +2479,7 @@ class _SupervisionDashboardWidgetState
                                                                     BorderRadius
                                                                         .circular(
                                                                             8.0),
-                                                                child: Image
-                                                                    .network(
-                                                                  getCORSProxyUrl(
-                                                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/azpygr5br5gj/aa1.jpg',
-                                                                  ),
-                                                                  width: 200.0,
-                                                                  height: 200.0,
-                                                                  fit: BoxFit
-                                                                      .cover,
-                                                                ),
+                                                                child: const KitungaZonesPanel(),
                                                               ),
                                                             ),
                                                           ),
@@ -2581,220 +2562,8 @@ class _SupervisionDashboardWidgetState
                                                 ),
                                               ],
                                             ),
-                                            Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                FutureBuilder<int>(
-                                                  future:
-                                                      querySystemLogsRecordCount(
-                                                    queryBuilder:
-                                                        (systemLogsRecord) =>
-                                                            systemLogsRecord
-                                                                .where(
-                                                                  'status',
-                                                                  isEqualTo:
-                                                                      'Echec',
-                                                                )
-                                                                .where(
-                                                                  'delivery_date',
-                                                                  isGreaterThan:
-                                                                      getCurrentTimestamp,
-                                                                ),
-                                                  ),
-                                                  builder: (context, snapshot) {
-                                                    // Customize what your widget looks like when it's loading.
-                                                    if (!snapshot.hasData) {
-                                                      return Center(
-                                                        child: SizedBox(
-                                                          width: 50.0,
-                                                          height: 50.0,
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                            valueColor:
-                                                                AlwaysStoppedAnimation<
-                                                                    Color>(
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .primary,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }
-                                                    int alertCardCount =
-                                                        snapshot.data!;
-
-                                                    return wrapWithModel(
-                                                      model: _model
-                                                          .alertCardModel1,
-                                                      updateCallback: () =>
-                                                          safeSetState(() {}),
-                                                      child: AlertCardWidget(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .error,
-                                                        icon: Icon(
-                                                          Icons.timer_rounded,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .error,
-                                                          size: 24.0,
-                                                        ),
-                                                        label: 'DÉLAIS DÉPASSÉ',
-                                                        status: 'Elevé',
-                                                        value: valueOrDefault<
-                                                            String>(
-                                                          alertCardCount
-                                                              .toString(),
-                                                          '0',
-                                                        ),
-                                                        unit: 'livraisons',
-                                                        bg: Color(0x44E00F17),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                                StreamBuilder<
-                                                    List<OrdersRecord>>(
-                                                  stream: queryOrdersRecord(
-                                                    queryBuilder:
-                                                        (ordersRecord) =>
-                                                            ordersRecord.where(
-                                                      'responded_at',
-                                                      isEqualTo:
-                                                          getCurrentTimestamp,
-                                                    ),
-                                                  ),
-                                                  builder: (context, snapshot) {
-                                                    // Customize what your widget looks like when it's loading.
-                                                    if (!snapshot.hasData) {
-                                                      return Center(
-                                                        child: SizedBox(
-                                                          width: 50.0,
-                                                          height: 50.0,
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                            valueColor:
-                                                                AlwaysStoppedAnimation<
-                                                                    Color>(
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .primary,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }
-                                                    List<OrdersRecord>
-                                                        alertCardOrdersRecordList =
-                                                        snapshot.data!;
-
-                                                    return wrapWithModel(
-                                                      model: _model
-                                                          .alertCardModel2,
-                                                      updateCallback: () =>
-                                                          safeSetState(() {}),
-                                                      child: AlertCardWidget(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .warning,
-                                                        icon: Icon(
-                                                          Icons.speed_rounded,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .warning,
-                                                          size: 24.0,
-                                                        ),
-                                                        label:
-                                                            'TEMPS DE RÉPONSE MOYEN',
-                                                        status: 'Moyen',
-                                                        value: functions
-                                                            .calculateSellerResponseTime(
-                                                                alertCardOrdersRecordList
-                                                                    .toList())
-                                                            .toString(),
-                                                        unit: 'min',
-                                                        bg: Color(0x52E0A50F),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                                StreamBuilder<
-                                                    List<SystemLogsRecord>>(
-                                                  stream: querySystemLogsRecord(
-                                                    limit: 500,
-                                                  ),
-                                                  builder: (context, snapshot) {
-                                                    // Customize what your widget looks like when it's loading.
-                                                    if (!snapshot.hasData) {
-                                                      return Center(
-                                                        child: SizedBox(
-                                                          width: 50.0,
-                                                          height: 50.0,
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                            valueColor:
-                                                                AlwaysStoppedAnimation<
-                                                                    Color>(
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .primary,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }
-                                                    List<SystemLogsRecord>
-                                                        alertCardSystemLogsRecordList =
-                                                        snapshot.data!;
-
-                                                    return wrapWithModel(
-                                                      model: _model
-                                                          .alertCardModel3,
-                                                      updateCallback: () =>
-                                                          safeSetState(() {}),
-                                                      child: AlertCardWidget(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .warning,
-                                                        icon: Icon(
-                                                          Icons
-                                                              .bug_report_rounded,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .warning,
-                                                          size: 24.0,
-                                                        ),
-                                                        label:
-                                                            'TAUX D\'ERREUR SYSTÈME',
-                                                        status: 'Elevé',
-                                                        value: valueOrDefault<
-                                                            String>(
-                                                          formatNumber(
-                                                            functions.calculateErrorRate(
-                                                                alertCardSystemLogsRecordList
-                                                                    .toList()),
-                                                            formatType:
-                                                                FormatType
-                                                                    .percent,
-                                                          ),
-                                                          '0,0',
-                                                        ),
-                                                        unit: '%',
-                                                        bg: Color(0x52E0A50F),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                              ].divide(SizedBox(height: 16.0)),
-                                            ),
+                                            // Indicateurs réels (voir ops_alerts.dart).
+                                            const KitungaOpsAlerts(),
                                             Divider(
                                               height: 16.0,
                                               thickness: 1.0,
@@ -2872,7 +2641,7 @@ class _SupervisionDashboardWidgetState
                                                                   ),
                                                             ),
                                                             Text(
-                                                              '0',
+                                                              '—',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .titleLarge
@@ -2904,7 +2673,7 @@ class _SupervisionDashboardWidgetState
                                                                   ),
                                                             ),
                                                             Text(
-                                                              'Aucune panne',
+                                                              'Non surveillé',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .labelSmall
@@ -3013,10 +2782,16 @@ class _SupervisionDashboardWidgetState
                                                                     (paiementRecord) =>
                                                                         paiementRecord
                                                                             .where(
-                                                                  'status',
-                                                                  isEqualTo:
-                                                                      'Echec',
-                                                                ),
+                                                                    'status',
+                                                                    isEqualTo: 'Echec',
+                                                                  )
+                                                                  // 7 derniers jours seulement.
+                                                                  .where(
+                                                                    'created_at',
+                                                                    isGreaterThanOrEqualTo:
+                                                                        DateTime.now().subtract(
+                                                                            const Duration(days: 7)),
+                                                                  ),
                                                               ),
                                                               builder: (context,
                                                                   snapshot) {
@@ -3082,7 +2857,7 @@ class _SupervisionDashboardWidgetState
                                                               },
                                                             ),
                                                             Text(
-                                                              'Bas',
+                                                              '7 derniers jours',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .labelSmall
@@ -3264,7 +3039,7 @@ class _SupervisionDashboardWidgetState
                                                             },
                                                           ),
                                                           Text(
-                                                            'Bas',
+                                                            'Commandes non reçues',
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .labelSmall

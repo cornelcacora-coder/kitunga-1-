@@ -108,7 +108,8 @@ test("livreur : prend, livre, ajoute la preuve", async () => {
   const d = db("driver");
   await assertSucceeds(updateDoc(orderOf("driver"), {status: "encours",
     deliver_reference: doc(d, "User/driver"), deliverer_ref: "driver"}));
-  await assertSucceeds(updateDoc(orderOf("driver"), {status: "Livrer"}));
+  await assertSucceeds(updateDoc(orderOf("driver"), {status: "Livrer",
+    delivered_at: serverTimestamp()}));
   await assertSucceeds(updateDoc(orderOf("driver"),
       {delivery_photo: "url", user_signature: "url"}));
 });

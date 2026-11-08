@@ -193,7 +193,7 @@ class _NOCDeliversWidgetState extends State<NOCDeliversWidget> {
                             'role',
                             isEqualTo: 'Deliver',
                           ),
-                          limit: 20,
+                          limit: 500,
                         ),
                         builder: (context, snapshot) {
                           // Customize what your widget looks like when it's loading.

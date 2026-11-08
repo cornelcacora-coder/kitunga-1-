@@ -107,7 +107,7 @@ class _UserRowNOCWidgetState extends State<UserRowNOCWidget> {
                               Text(
                                 valueOrDefault<String>(
                                   widget!.displayName,
-                                  'Guest',
+                                  'Sans nom',
                                 ),
                                 maxLines: 1,
                                 style: FlutterFlowTheme.of(context)
@@ -152,7 +152,7 @@ class _UserRowNOCWidgetState extends State<UserRowNOCWidget> {
                                   child: Text(
                                     valueOrDefault<String>(
                                       widget!.badge,
-                                      'USER',
+                                      'CLIENT',
                                     ),
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
@@ -185,7 +185,7 @@ class _UserRowNOCWidgetState extends State<UserRowNOCWidget> {
                               Text(
                                 valueOrDefault<String>(
                                   widget!.email,
-                                  'email Address',
+                                  'E-mail non renseigné',
                                 ),
                                 style: FlutterFlowTheme.of(context)
                                     .bodySmall

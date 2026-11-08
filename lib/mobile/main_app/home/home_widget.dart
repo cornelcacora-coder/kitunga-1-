@@ -2445,10 +2445,14 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                               ));
                                                                             } else if (listViewOrdersRecord.status == 'encours' && assignedToMe) {
                                                                               // Terminer : même action que dans l'onglet Commandes.
-                                                                              await listViewOrdersRecord.reference.update(createOrdersRecordData(
-                                                                                status: 'Livrer',
-                                                                                delivererRef: currentUserReference?.id,
-                                                                              ));
+                                                                              await listViewOrdersRecord.reference.update({
+            ...createOrdersRecordData(
+              status: 'Livrer',
+              delivererRef: currentUserReference?.id,
+            ),
+            // Heure de livraison (temps de livraison du tableau de bord).
+            'delivered_at': FieldValue.serverTimestamp(),
+          });
                                                                             } else {
                                                                               ScaffoldMessenger.of(context).showSnackBar(
                                                                                 SnackBar(
