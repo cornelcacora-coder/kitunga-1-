@@ -1,5 +1,7 @@
 import '/noc/admin_guard.dart';
 import '/noc/admin_login/admin_login_widget.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'web_admin_only.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -86,8 +88,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? NavBarPage() : IntroWidget(),
+      errorBuilder: (context, state) => kIsWeb
+          ? AdminLoginWidget()
+          : appStateNotifier.loggedIn
+              ? NavBarPage()
+              : IntroWidget(),
+      // Web : administration seulement (voir web_admin_only.dart).
+      redirect: kIsWeb ? (context, state) => webAdminRedirect(state.uri) : null,
       routes: [
         FFRoute(
           name: '_initialize',
