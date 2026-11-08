@@ -12,6 +12,7 @@ import '/noc/ui/admin_charts.dart';
 import 'admin_dashboard_data.dart';
 import 'admin_order_detail.dart';
 import 'admin_shell.dart';
+import '/noc/ui/admin_table.dart';
 
 /// Tableau de bord de l'administration (adresse /supervisionDashboard) :
 /// indicateurs clés comparés à la période précédente, commandes par jour,
@@ -131,7 +132,7 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
     final recent = [...orders]
       ..removeWhere((o) => o.createdAt == null)
       ..sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-    final latest = recent.take(8).toList();
+    final latest = recent.take(20).toList();
     _ensureNames(latest.expand((o) => [o.userPath, o.sellerPath]));
 
     return AdminScroll(
@@ -326,53 +327,87 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
         children: [
           AdminCardHeader(
             title: 'Commandes récentes',
-            subtitle: 'Les 8 dernières commandes passées',
+            subtitle: 'Les 20 dernières commandes, 5 par page',
             trailing: TextButton.icon(
               onPressed: () => context.go(AdminPaths.orders),
               icon: const Icon(Icons.arrow_forward_rounded, size: 18.0),
               label: const Text('Tout voir'),
             ),
           ),
-          if (latest.isEmpty)
-            const AdminEmpty(
+          AdminTable<DashOrder>(
+            rows: latest,
+            empty: const AdminEmpty(
                 icon: Icons.receipt_long_rounded,
                 title: 'Aucune commande',
-                message: 'Les commandes apparaîtront ici.')
-          else
-            LayoutBuilder(builder: (context, c) {
-              final table = c.maxWidth >= 560.0;
-              return Column(
-                children: [
-                  if (table) _tableHeader(),
-                  for (var i = 0; i < latest.length; i++)
-                    table
-                        ? _tableRow(latest[i], i.isOdd)
-                        : _compactRow(latest[i]),
-                ],
-              );
-            }),
-        ],
-      ),
-    );
-  }
-
-  static const _cols = [3, 4, 3, 2, 3];
-
-  Widget _tableHeader() {
-    const labels = ['COMMANDE', 'CLIENT', 'COMMERCE', 'MONTANT', 'STATUT'];
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-      decoration: BoxDecoration(
-        color: AdminColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(AdminRadius.sm),
-      ),
-      child: Row(
-        children: [
-          for (var i = 0; i < labels.length; i++)
-            Expanded(
-                flex: _cols[i],
-                child: Text(labels[i], style: AdminText.caps())),
-          const SizedBox(width: 40.0),
+                message: 'Les commandes apparaîtront ici.'),
+            breakpoint: 560.0,
+            onTap: (o) => showAdminOrderDetail(context, o, known: _people),
+            actionsWidth: 44.0,
+            actions: (o) => [
+              AdminActionDot(
+                icon: Icons.visibility_rounded,
+                tooltip: 'Voir la commande',
+                onTap: () => showAdminOrderDetail(context, o, known: _people),
+              ),
+            ],
+            columns: [
+              AdminColumn(
+                  label: 'Commande',
+                  flex: 3,
+                  cell: (o) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                              o.reference.isEmpty
+                                  ? 'Sans référence'
+                                  : o.reference,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AdminText.strong(size: 13.0)),
+                          Text(_ago(o.createdAt),
+                              style: AdminText.label(
+                                  color: AdminColors.faint, size: 12.0)),
+                        ],
+                      )),
+              AdminColumn(
+                  label: 'Client',
+                  flex: 4,
+                  cell: (o) => Row(
+                        children: [
+                          AdminAvatar(
+                              name: _name(o.userPath),
+                              photo: _people[o.userPath]?.photo,
+                              size: 30.0),
+                          const SizedBox(width: 8.0),
+                          Expanded(
+                            child: Text(_name(o.userPath),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AdminText.body(size: 13.0)),
+                          ),
+                        ],
+                      )),
+              AdminColumn(
+                  label: 'Commerce',
+                  flex: 3,
+                  cell: (o) => Text(_name(o.sellerPath),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AdminText.body(size: 13.0))),
+              AdminColumn(
+                  label: 'Montant',
+                  flex: 2,
+                  cell: (o) =>
+                      Text(fcfa(o.total), style: AdminText.strong(size: 13.0))),
+              AdminColumn(
+                  label: 'Statut',
+                  flex: 3,
+                  cell: (o) => AdminBadge(orderStatusShort(o.status),
+                      tone: orderStatusTone(o.status))),
+            ],
+            compact: _compactRow,
+          ),
         ],
       ),
     );
@@ -381,89 +416,12 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
   String _name(String? path) =>
       path == null ? '—' : (_people[path]?.name ?? '…');
 
-  Widget _tableRow(DashOrder o, bool striped) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AdminRadius.sm),
-      onTap: () => showAdminOrderDetail(context, o, known: _people),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AdminColors.border)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              flex: _cols[0],
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(o.reference.isEmpty ? 'Sans référence' : o.reference,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AdminText.strong(size: 13.0)),
-                  Text(_ago(o.createdAt),
-                      style: AdminText.label(
-                          color: AdminColors.faint, size: 12.0)),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: _cols[1],
-              child: Row(
-                children: [
-                  AdminAvatar(
-                      name: _name(o.userPath),
-                      photo: _people[o.userPath]?.photo,
-                      size: 30.0),
-                  const SizedBox(width: 8.0),
-                  Expanded(
-                    child: Text(_name(o.userPath),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AdminText.body(size: 13.0)),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: _cols[2],
-              child: Text(_name(o.sellerPath),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AdminText.body(size: 13.0)),
-            ),
-            Expanded(
-              flex: _cols[3],
-              child: Text(fcfa(o.total), style: AdminText.strong(size: 13.0)),
-            ),
-            Expanded(
-              flex: _cols[4],
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: AdminBadge(orderStatusShort(o.status),
-                    tone: orderStatusTone(o.status)),
-              ),
-            ),
-            SizedBox(
-              width: 40.0,
-              child: AdminActionDot(
-                icon: Icons.visibility_rounded,
-                tooltip: 'Voir la commande',
-                onTap: () => showAdminOrderDetail(context, o, known: _people),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _compactRow(DashOrder o) {
     return InkWell(
       onTap: () => showAdminOrderDetail(context, o, known: _people),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: AdminColors.border)),
         ),
         child: Row(

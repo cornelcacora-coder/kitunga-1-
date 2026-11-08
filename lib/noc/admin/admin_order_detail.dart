@@ -286,7 +286,7 @@ class _ItemRow extends StatelessWidget {
         width: 46.0,
         height: 46.0,
         color: AdminColors.greySoft,
-        child: const Icon(Icons.image_outlined,
+        child: Icon(Icons.image_outlined,
             size: 20.0, color: AdminColors.faint),
       );
 }

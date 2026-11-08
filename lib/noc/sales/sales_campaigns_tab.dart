@@ -112,7 +112,7 @@ class _SalesCampaignsTabState extends State<SalesCampaignsTab> {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right_rounded, color: kSalesMuted),
+                        Icon(Icons.chevron_right_rounded, color: kSalesMuted),
                       ],
                     ),
                   ),

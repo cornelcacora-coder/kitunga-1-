@@ -35,7 +35,7 @@ class AdminTable<T> extends StatefulWidget {
     this.onTap,
     this.actions,
     this.actionsWidth = 120.0,
-    this.pageSize = 20,
+    this.pageSize = 5,
     this.breakpoint = 760.0,
     this.empty,
     this.initialSort,
@@ -210,7 +210,7 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
                 : _hover == i
                     ? AdminColors.surfaceAlt
                     : Colors.transparent,
-            border: const Border(
+            border: Border(
                 bottom: BorderSide(color: AdminColors.border)),
           ),
           child: Row(
@@ -245,7 +245,7 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
       onTap: widget.onTap == null ? null : () => widget.onTap!(r),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: AdminColors.border)),
         ),
         child: Row(
@@ -284,7 +284,7 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
               const SizedBox(width: 8.0),
               AdminSelect<int>(
                 value: _size,
-                items: const {10: '10', 20: '20', 50: '50', 100: '100'},
+                items: const {5: '5', 10: '10', 20: '20', 50: '50'},
                 onChanged: (v) => setState(() {
                   _size = v;
                   _page = 0;
@@ -319,7 +319,7 @@ class _AdminTableState<T> extends State<AdminTable<T>> {
       message: tooltip,
       child: Material(
         color: onTap == null ? AdminColors.greySoft : AdminColors.surface,
-        shape: const CircleBorder(side: BorderSide(color: AdminColors.border)),
+        shape: CircleBorder(side: BorderSide(color: AdminColors.border)),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,
@@ -359,7 +359,7 @@ class AdminTabs<T> extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Material(
-                color: t.value == value ? AdminColors.ink : AdminColors.surface,
+                color: t.value == value ? AdminColors.red : AdminColors.surface,
                 borderRadius: BorderRadius.circular(AdminRadius.pill),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(AdminRadius.pill),
@@ -371,7 +371,7 @@ class AdminTabs<T> extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AdminRadius.pill),
                       border: Border.all(
                           color: t.value == value
-                              ? AdminColors.ink
+                              ? AdminColors.red
                               : AdminColors.border),
                     ),
                     child: Row(
@@ -433,7 +433,7 @@ class AdminSearchBox extends StatelessWidget {
         style: AdminText.body(),
         decoration: InputDecoration(
           hintText: hint,
-          prefixIcon: const Icon(Icons.search_rounded,
+          prefixIcon: Icon(Icons.search_rounded,
               size: 20.0, color: AdminColors.faint),
           fillColor: AdminColors.surface,
           contentPadding: const EdgeInsets.symmetric(vertical: 12.0),

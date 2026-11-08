@@ -126,6 +126,14 @@ void main() {
       // 3 de la période + 4 en cours (dont une ancienne), sans doublon.
       expect(find.text('Toutes'), findsOneWidget);
       expect(find.text('7'), findsWidgets);
+      // 5 par page : la plus ancienne (ORD-7) est en page 2.
+      expect(find.text('1–5 sur 7'), findsOneWidget);
+      expect(find.text('ORD-7'), findsNothing);
+      await tester.dragUntilVisible(find.byTooltip('Page suivante'),
+          find.byType(Scrollable).first, const Offset(0, -250));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Page suivante'));
+      await tester.pumpAndSettle();
       expect(find.text('ORD-7'), findsOneWidget);
       await tapText(tester, 'Non reçues');
       expect(find.text('ORD-2'), findsOneWidget);

@@ -248,62 +248,55 @@ class _KitungaAdminSidebarState extends State<KitungaAdminSidebar> {
             style: AdminText.caps(color: _Side.dim).copyWith(letterSpacing: 1.4)),
       );
 
+  /// Vrai logo Kitunga posé directement sur le panneau, sans cadre : sa
+  /// variante pour fond sombre (K et mot « KITUNGA » en blanc, chariot rouge).
   Widget _brand(bool collapsed) {
-    final logo = Container(
-      width: 44.0,
-      height: 44.0,
-      padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_Side.redA, _Side.redB],
-        ),
-        borderRadius: BorderRadius.circular(14.0),
-        boxShadow: [
-          BoxShadow(
-              color: _Side.redA.withValues(alpha: 0.45),
-              blurRadius: 16.0,
-              offset: const Offset(0, 6)),
-        ],
-      ),
-      child: Image.asset('assets/logo/kitunga_logo_white.png',
-          errorBuilder: (_, __, ___) =>
-              const Icon(Icons.storefront_rounded, color: Colors.white)),
-    );
+    Widget logo(double h) => Image.asset(
+          'assets/logo/kitunga_logo_dark_bg.png',
+          height: h,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+          semanticLabel: 'Kitunga',
+          errorBuilder: (_, __, ___) => Icon(Icons.storefront_rounded,
+              color: Colors.white, size: h * 0.6),
+        );
+    if (collapsed) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(0, 24.0, 0, 20.0),
+        child: Center(child: logo(46.0)),
+      );
+    }
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-          collapsed ? 0 : 22.0, 26.0, collapsed ? 0 : 18.0, 22.0),
+      padding: const EdgeInsets.fromLTRB(22.0, 24.0, 18.0, 20.0),
       child: Row(
-        mainAxisAlignment:
-            collapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
-          logo,
-          if (!collapsed) ...[
-            const SizedBox(width: 12.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Kitunga',
-                      style: AdminText.h1(color: Colors.white)
-                          .copyWith(fontSize: 21.0, letterSpacing: 0.2)),
-                  const SizedBox(height: 2.0),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 2.0),
-                    decoration: BoxDecoration(
-                      color: _Side.redA.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(AdminRadius.pill),
-                    ),
-                    child: Text('ADMINISTRATION',
-                        style: AdminText.caps(color: const Color(0xFFFF8A8A))
-                            .copyWith(fontSize: 9.5, letterSpacing: 1.2)),
+          logo(68.0),
+          const SizedBox(width: 14.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Espace',
+                    style: AdminText.label(color: _Side.dim, size: 12.0)),
+                Text('Administration',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AdminText.h2(color: Colors.white)
+                        .copyWith(fontSize: 16.5)),
+                const SizedBox(height: 6.0),
+                Container(
+                  height: 3.0,
+                  width: 34.0,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        colors: [_Side.redA, _Side.redB]),
+                    borderRadius: BorderRadius.circular(2.0),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -787,6 +780,14 @@ class _TopBar extends StatelessWidget {
             const Spacer(),
           if (wide) const Spacer(),
           const SizedBox(width: 12.0),
+          _CircleButton(
+            icon: AdminColors.dark
+                ? Icons.light_mode_rounded
+                : Icons.dark_mode_rounded,
+            tooltip: AdminColors.dark ? 'Mode clair' : 'Mode sombre',
+            onTap: toggleAdminDarkMode,
+          ),
+          const SizedBox(width: 12.0),
           _Notifications(current: current),
           const SizedBox(width: 12.0),
           _AccountMenu(wide: wide),
@@ -810,7 +811,7 @@ class _CircleButton extends StatelessWidget {
       message: tooltip,
       child: Material(
         color: AdminColors.surface,
-        shape: const CircleBorder(side: BorderSide(color: AdminColors.border)),
+        shape: CircleBorder(side: BorderSide(color: AdminColors.border)),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,
@@ -852,18 +853,18 @@ class _PageSearch extends StatelessWidget {
           style: AdminText.body(),
           decoration: InputDecoration(
             hintText: 'Rechercher une page…',
-            prefixIcon: const Icon(Icons.search_rounded,
+            prefixIcon: Icon(Icons.search_rounded,
                 size: 20.0, color: AdminColors.faint),
             filled: true,
             fillColor: AdminColors.surface,
             contentPadding: const EdgeInsets.symmetric(vertical: 13.0),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AdminRadius.pill),
-              borderSide: const BorderSide(color: AdminColors.border),
+              borderSide: BorderSide(color: AdminColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AdminRadius.pill),
-              borderSide: const BorderSide(color: AdminColors.border),
+              borderSide: BorderSide(color: AdminColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AdminRadius.pill),
@@ -983,7 +984,7 @@ class _AccountMenu extends StatelessWidget {
         PopupMenuItem(
           value: 'home',
           child: Row(children: [
-            const Icon(Icons.space_dashboard_rounded,
+            Icon(Icons.space_dashboard_rounded,
                 size: 18.0, color: AdminColors.muted),
             const SizedBox(width: 10.0),
             Text('Tableau de bord', style: AdminText.body()),

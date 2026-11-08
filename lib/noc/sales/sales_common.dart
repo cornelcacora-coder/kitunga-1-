@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '/noc/ui/admin_kit.dart' show AdminColors;
+
 import '/backend/server_payment.dart';
 
 /// Éléments communs de l'interface admin du module commercial : appels au
@@ -9,9 +11,10 @@ import '/backend/server_payment.dart';
 
 const kSalesRed = Color(0xFFE51A1A);
 const kSalesDeepRed = Color(0xFF9E0E0E);
-const kSalesInk = Color(0xFF17181C);
-const kSalesMuted = Color(0xFF6B6F76);
-const kSalesSurface = Color(0xFFF2F3F7); // fond des pages admin (charte)
+// Couleurs neutres : suivent le mode clair / sombre de l'administration.
+Color get kSalesInk => AdminColors.ink;
+Color get kSalesMuted => AdminColors.muted;
+Color get kSalesSurface => AdminColors.page;
 
 // ── Serveur ──────────────────────────────────────────────────────────────
 
@@ -76,13 +79,15 @@ const _grey = Color(0xFF8A8F98);
 const _green = Color(0xFF1E9E5A);
 const _blue = Color(0xFF2F6FDB);
 const _orange = Color(0xFFE08A00);
+// Gris ardoise : lisible sur fond clair comme sur fond sombre.
+const _slate = Color(0xFF5E6573);
 
 const campaignStatus = <String, StatusStyle>{
   'draft': (label: 'Brouillon', color: _grey),
   'scheduled': (label: 'Programmée', color: _blue),
   'active': (label: 'Active', color: _green),
   'paused': (label: 'En pause', color: _orange),
-  'completed': (label: 'Terminée', color: kSalesInk),
+  'completed': (label: 'Terminée', color: _slate),
   'archived': (label: 'Archivée', color: _grey),
 };
 
@@ -182,12 +187,12 @@ class SalesCard extends StatelessWidget {
         ],
       ),
       child: Material(
-        color: Colors.white,
+        color: AdminColors.surface,
         borderRadius: BorderRadius.circular(16.0),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          hoverColor: const Color(0xFFF7F8FB),
+          hoverColor: AdminColors.surfaceAlt,
           child: Padding(padding: const EdgeInsets.all(16.0), child: child),
         ),
       ),
@@ -237,8 +242,8 @@ class StatusChip extends StatelessWidget {
 TextStyle salesTitle([double size = 16.0]) => GoogleFonts.interTight(
     color: kSalesInk, fontSize: size, fontWeight: FontWeight.w700);
 
-TextStyle salesBody({Color color = kSalesMuted, double size = 13.0}) =>
-    GoogleFonts.inter(color: color, fontSize: size, height: 1.4);
+TextStyle salesBody({Color? color, double size = 13.0}) =>
+    GoogleFonts.inter(color: color ?? kSalesMuted, fontSize: size, height: 1.4);
 
 /// Chargement, erreur et liste vide pour une lecture du serveur.
 class SalesLoader extends StatelessWidget {
@@ -293,7 +298,7 @@ class SalesEmpty extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 24.0),
       child: Column(
         children: [
-          Icon(icon, size: 44.0, color: const Color(0xFFB9BCC3)),
+          Icon(icon, size: 44.0, color: AdminColors.faint),
           const SizedBox(height: 12.0),
           Text(title, style: salesTitle(15.0), textAlign: TextAlign.center),
           if (text != null) ...[
@@ -401,13 +406,13 @@ InputDecoration salesInput(String label, {String? hint, String? helper}) =>
       helperText: helper,
       helperMaxLines: 3,
       filled: true,
-      fillColor: const Color(0xFFF7F8FB),
+      fillColor: AdminColors.surfaceAlt,
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(color: Color(0xFFE6E8EE))),
+          borderSide: BorderSide(color: AdminColors.border)),
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(color: Color(0xFFE6E8EE))),
+          borderSide: BorderSide(color: AdminColors.border)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
         borderSide: const BorderSide(color: kSalesRed, width: 1.5),

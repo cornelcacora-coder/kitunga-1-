@@ -423,7 +423,6 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
   Widget _table(List<Map<String, dynamic>> list) {
     return AdminTable<Map<String, dynamic>>(
       rows: list,
-      pageSize: 20,
       initialSort: 0,
       initialAscending: true,
       empty: AdminEmpty(

@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/upload_data.dart';
 import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/noc/sales/sales_common.dart';
+import '/noc/ui/admin_kit.dart';
 
 export 'admin_layout.dart';
 export '/noc/ui/admin_kit.dart';
@@ -48,9 +49,9 @@ class AdminImage extends StatelessWidget {
   Widget _empty() => Container(
         width: width,
         height: height,
-        color: const Color(0xFFEDEDF1),
+        color: AdminColors.greySoft,
         alignment: Alignment.center,
-        child: Icon(icon, color: const Color(0xFFA5A8B0), size: 26.0),
+        child: Icon(icon, color: AdminColors.faint, size: 26.0),
       );
 }
 
@@ -126,7 +127,7 @@ class AdminImageField extends StatelessWidget {
           child: Container(
             height: height,
             width: double.infinity,
-            color: background ?? const Color(0xFFEDEDF1),
+            color: background ?? AdminColors.greySoft,
             padding: fit == BoxFit.contain ? const EdgeInsets.all(12.0) : null,
             child: AdminImage(value, height: height, fit: fit),
           ),
@@ -175,7 +176,7 @@ class AdminSearchField extends StatelessWidget {
         decoration: salesInput('Rechercher', hint: hint).copyWith(
           prefixIcon: const Icon(Icons.search_rounded),
           isDense: true,
-          fillColor: Colors.white,
+          fillColor: AdminColors.surface,
         ),
       ),
     );
@@ -193,7 +194,7 @@ class AdminRowActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<int>(
       tooltip: 'Actions',
-      icon: const Icon(Icons.more_vert_rounded, color: kSalesMuted),
+      icon: Icon(Icons.more_vert_rounded, color: kSalesMuted),
       onSelected: (i) => actions[i].onTap(),
       itemBuilder: (_) => [
         for (var i = 0; i < actions.length; i++)
@@ -280,8 +281,8 @@ class AdminFormDialog extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.fromLTRB(24.0, 18.0, 12.0, 14.0),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Color(0xFFE6E8EE))),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: AdminColors.border)),
               ),
               child: Row(
                 children: [
@@ -289,7 +290,7 @@ class AdminFormDialog extends StatelessWidget {
                     width: 40.0,
                     height: 40.0,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFDECEC),
+                      color: AdminColors.redSoft,
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: Icon(icon, color: kSalesRed, size: 21.0),

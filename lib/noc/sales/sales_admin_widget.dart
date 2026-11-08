@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
 import '/noc/admin/admin_layout.dart' show AdminShell, AdminTabbedBody;
+import '/noc/ui/admin_kit.dart' show AdminColors;
 import 'sales_agents_tab.dart';
 import 'sales_campaigns_tab.dart';
 import 'sales_common.dart';
@@ -244,9 +245,9 @@ class _OverviewTabState extends State<_OverviewTab> {
       width: 280.0,
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AdminColors.surface,
         borderRadius: BorderRadius.circular(20.0),
-        border: Border.all(color: const Color(0xFFE0E0E6)),
+        border: Border.all(color: AdminColors.border),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String?>(
@@ -285,9 +286,9 @@ class _Kpi extends StatelessWidget {
         gradient: highlight
             ? const LinearGradient(colors: [kSalesRed, kSalesDeepRed])
             : null,
-        color: highlight ? null : Colors.white,
+        color: highlight ? null : AdminColors.surface,
         borderRadius: BorderRadius.circular(16.0),
-        border: highlight ? null : Border.all(color: const Color(0xFFE9E9EE)),
+        border: highlight ? null : Border.all(color: AdminColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

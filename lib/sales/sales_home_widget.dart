@@ -210,7 +210,7 @@ class _SalesHomeWidgetState extends State<SalesHomeWidget> {
               Icon(l.$1, color: kSalesRed),
               const SizedBox(width: 12.0),
               Expanded(child: Text(l.$2, style: salesTitle(15.0))),
-              const Icon(Icons.chevron_right_rounded, color: kSalesMuted),
+              Icon(Icons.chevron_right_rounded, color: kSalesMuted),
             ]),
           ),
           const SizedBox(height: 8.0),

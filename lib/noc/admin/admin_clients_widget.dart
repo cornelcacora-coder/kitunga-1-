@@ -268,7 +268,6 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
   Widget _table(List<Map<String, dynamic>> list) {
     return AdminTable<Map<String, dynamic>>(
       rows: list,
-      pageSize: 20,
       initialSort: 2,
       empty: const AdminEmpty(
           icon: Icons.people_outline_rounded,

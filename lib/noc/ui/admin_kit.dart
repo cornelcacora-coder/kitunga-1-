@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Charte graphique de l'administration Kitunga (indépendante de
 /// FlutterFlow) : couleurs tirées du logo, typographie Inter, espacements,
@@ -7,36 +8,43 @@ import 'package:google_fonts/google_fonts.dart';
 class AdminColors {
   AdminColors._();
 
-  // Marque
+  /// Mode sombre actif (fixé par [AdminThemeScope] avant chaque construction).
+  static bool dark = false;
+
+  static Color _m(int light, int darkValue) => Color(dark ? darkValue : light);
+
+  // Marque (identique dans les deux modes)
   static const red = Color(0xFFE51A1A);
   static const redDeep = Color(0xFFB31212);
-  static const redSoft = Color(0xFFFDECEC);
 
   // Fonds et surfaces
-  static const page = Color(0xFFF2F3F7);
-  static const panel = Color(0xFFE9EBF1);
-  static const surface = Colors.white;
-  static const surfaceAlt = Color(0xFFF7F8FB);
-  static const border = Color(0xFFE6E8EE);
+  static Color get page => _m(0xFFF2F3F7, 0xFF0E1014);
+  static Color get panel => _m(0xFFE9EBF1, 0xFF1B1E25);
+  static Color get surface => _m(0xFFFFFFFF, 0xFF171A21);
+  static Color get surfaceAlt => _m(0xFFF7F8FB, 0xFF1E2129);
+  static Color get border => _m(0xFFE6E8EE, 0xFF2A2E38);
 
   // Textes
-  static const ink = Color(0xFF16181D);
-  static const text = Color(0xFF3B3F47);
-  static const muted = Color(0xFF6F737C);
-  static const faint = Color(0xFFA2A6AE);
+  static Color get ink => _m(0xFF16181D, 0xFFF3F4F7);
+  static Color get text => _m(0xFF3B3F47, 0xFFCBCFD7);
+  static Color get muted => _m(0xFF6F737C, 0xFF9AA0AB);
+  static Color get faint => _m(0xFFA2A6AE, 0xFF6E7481);
 
-  // Statuts et graphiques
+  // Statuts et graphiques : couleurs vives, fonds teintés transparents
+  // (lisibles sur fond clair comme sur fond sombre).
   static const green = Color(0xFF17A35B);
-  static const greenSoft = Color(0xFFE5F6EC);
+  static const greenSoft = Color(0x2617A35B);
   static const orange = Color(0xFFE38B00);
-  static const orangeSoft = Color(0xFFFFF2DE);
+  static const orangeSoft = Color(0x29E38B00);
   static const blue = Color(0xFF2F6FDB);
-  static const blueSoft = Color(0xFFE6EFFC);
+  static const blueSoft = Color(0x262F6FDB);
   static const violet = Color(0xFF7458E0);
-  static const violetSoft = Color(0xFFEFEBFC);
+  static const violetSoft = Color(0x297458E0);
   static const teal = Color(0xFF14A3A3);
   static const grey = Color(0xFF8A8F98);
-  static const greySoft = Color(0xFFF0F1F4);
+  static const greySoftConst = Color(0x248A8F98);
+  static const redSoft = Color(0x1FE51A1A);
+  static Color get greySoft => _m(0xFFF0F1F4, 0xFF242832);
 }
 
 class AdminRadius {
@@ -64,29 +72,29 @@ List<BoxShadow> adminGlow(Color c) => [
 class AdminText {
   AdminText._();
 
-  static TextStyle display({Color color = AdminColors.ink}) =>
+  static TextStyle display({Color? color}) =>
       GoogleFonts.interTight(
-          color: color, fontSize: 28.0, fontWeight: FontWeight.w800, height: 1.1);
+          color: color ?? AdminColors.ink, fontSize: 28.0, fontWeight: FontWeight.w800, height: 1.1);
 
-  static TextStyle h1({Color color = AdminColors.ink}) => GoogleFonts.interTight(
-      color: color, fontSize: 22.0, fontWeight: FontWeight.w800);
+  static TextStyle h1({Color? color}) => GoogleFonts.interTight(
+      color: color ?? AdminColors.ink, fontSize: 22.0, fontWeight: FontWeight.w800);
 
-  static TextStyle h2({Color color = AdminColors.ink}) => GoogleFonts.interTight(
-      color: color, fontSize: 16.0, fontWeight: FontWeight.w700);
+  static TextStyle h2({Color? color}) => GoogleFonts.interTight(
+      color: color ?? AdminColors.ink, fontSize: 16.0, fontWeight: FontWeight.w700);
 
-  static TextStyle body({Color color = AdminColors.text, double size = 14.0}) =>
-      GoogleFonts.inter(color: color, fontSize: size, height: 1.4);
+  static TextStyle body({Color? color, double size = 14.0}) =>
+      GoogleFonts.inter(color: color ?? AdminColors.text, fontSize: size, height: 1.4);
 
-  static TextStyle label({Color color = AdminColors.muted, double size = 13.0}) =>
+  static TextStyle label({Color? color, double size = 13.0}) =>
       GoogleFonts.inter(
-          color: color, fontSize: size, fontWeight: FontWeight.w500, height: 1.3);
+          color: color ?? AdminColors.muted, fontSize: size, fontWeight: FontWeight.w500, height: 1.3);
 
-  static TextStyle strong({Color color = AdminColors.ink, double size = 14.0}) =>
+  static TextStyle strong({Color? color, double size = 14.0}) =>
       GoogleFonts.inter(
-          color: color, fontSize: size, fontWeight: FontWeight.w700, height: 1.3);
+          color: color ?? AdminColors.ink, fontSize: size, fontWeight: FontWeight.w700, height: 1.3);
 
-  static TextStyle caps({Color color = AdminColors.faint}) => GoogleFonts.inter(
-      color: color,
+  static TextStyle caps({Color? color}) => GoogleFonts.inter(
+      color: color ?? AdminColors.faint,
       fontSize: 11.5,
       fontWeight: FontWeight.w700,
       letterSpacing: 0.8);
@@ -94,13 +102,17 @@ class AdminText {
 
 /// Thème Material des pages admin (boutons, champs, menus, fenêtres).
 ThemeData adminTheme(ThemeData base) {
-  // Surfaces blanches (pas de teinte Material 3 sur fenêtres et menus).
+  final brightness = AdminColors.dark ? Brightness.dark : Brightness.light;
+  // Surfaces de la charte (pas de teinte Material 3 sur fenêtres et menus).
   final scheme = ColorScheme.fromSeed(
     seedColor: AdminColors.red,
     primary: AdminColors.red,
     surface: AdminColors.surface,
-    brightness: Brightness.light,
+    brightness: brightness,
   ).copyWith(
+    primary: AdminColors.red,
+    onPrimary: Colors.white,
+    surface: AdminColors.surface,
     surfaceTint: Colors.transparent,
     surfaceContainerLowest: AdminColors.surface,
     surfaceContainerLow: AdminColors.surface,
@@ -117,14 +129,26 @@ ThemeData adminTheme(ThemeData base) {
         borderSide: BorderSide(color: c, width: w),
       );
   return base.copyWith(
-    brightness: Brightness.light,
+    brightness: brightness,
     colorScheme: scheme,
     scaffoldBackgroundColor: AdminColors.page,
     textTheme: GoogleFonts.interTextTheme(base.textTheme)
         .apply(bodyColor: AdminColors.text, displayColor: AdminColors.ink),
+    iconTheme: IconThemeData(color: AdminColors.muted),
+    canvasColor: AdminColors.surface,
+    cardColor: AdminColors.surface,
+    dropdownMenuTheme: DropdownMenuThemeData(
+      menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(AdminColors.surface)),
+    ),
+    listTileTheme: ListTileThemeData(
+      textColor: AdminColors.text,
+      iconColor: AdminColors.muted,
+    ),
+    checkboxTheme: base.checkboxTheme,
     dividerColor: AdminColors.border,
     dividerTheme:
-        const DividerThemeData(color: AdminColors.border, thickness: 1.0),
+        DividerThemeData(color: AdminColors.border, thickness: 1.0),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AdminColors.surfaceAlt,
@@ -151,7 +175,7 @@ ThemeData adminTheme(ThemeData base) {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: AdminColors.ink,
-        side: const BorderSide(color: AdminColors.border),
+        side: BorderSide(color: AdminColors.border),
         textStyle: AdminText.strong(),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.0),
         shape: RoundedRectangleBorder(
@@ -187,7 +211,7 @@ ThemeData adminTheme(ThemeData base) {
     ),
     chipTheme: base.chipTheme.copyWith(
       backgroundColor: AdminColors.surface,
-      side: const BorderSide(color: AdminColors.border),
+      side: BorderSide(color: AdminColors.border),
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AdminRadius.pill)),
       labelStyle: AdminText.label(color: AdminColors.text),
@@ -203,22 +227,70 @@ ThemeData adminTheme(ThemeData base) {
         const ProgressIndicatorThemeData(color: AdminColors.red),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
-          color: AdminColors.ink,
+          color: const Color(0xFF23262E),
           borderRadius: BorderRadius.circular(AdminRadius.sm)),
       textStyle: AdminText.label(color: Colors.white, size: 12.0),
     ),
   );
 }
 
-/// Applique le thème admin à une page.
-class AdminThemeScope extends StatelessWidget {
+/// Mode sombre de l'administration (choix mémorisé sur cet appareil).
+final adminDarkMode = ValueNotifier<bool>(false);
+const _kDarkPref = 'kitunga_admin_dark';
+bool _darkLoaded = false;
+
+/// Lit le choix enregistré (une seule fois).
+Future<void> loadAdminDarkMode() async {
+  if (_darkLoaded) return;
+  _darkLoaded = true;
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    adminDarkMode.value = prefs.getBool(_kDarkPref) ?? false;
+  } catch (_) {
+    // Préférences indisponibles : mode clair.
+  }
+}
+
+/// Bascule clair / sombre et mémorise le choix.
+Future<void> toggleAdminDarkMode() async {
+  adminDarkMode.value = !adminDarkMode.value;
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kDarkPref, adminDarkMode.value);
+  } catch (_) {}
+}
+
+/// Applique le thème admin (clair ou sombre) à une page et aux fenêtres
+/// qu'elle ouvre. Au changement de mode, toute la page est reconstruite.
+class AdminThemeScope extends StatefulWidget {
   const AdminThemeScope({super.key, required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) =>
-      Theme(data: adminTheme(Theme.of(context)), child: child);
+  State<AdminThemeScope> createState() => _AdminThemeScopeState();
+}
+
+class _AdminThemeScopeState extends State<AdminThemeScope> {
+  @override
+  void initState() {
+    super.initState();
+    loadAdminDarkMode();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: adminDarkMode,
+      builder: (context, dark, _) {
+        AdminColors.dark = dark;
+        return Theme(
+          data: adminTheme(Theme.of(context)),
+          child: KeyedSubtree(key: ValueKey(dark), child: widget.child),
+        );
+      },
+    );
+  }
 }
 
 // ── Composants ───────────────────────────────────────────────────────────
@@ -230,13 +302,13 @@ class AdminCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(20.0),
     this.onTap,
-    this.color = AdminColors.surface,
+    this.color,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -246,7 +318,7 @@ class AdminCard extends StatelessWidget {
         boxShadow: kAdminShadow,
       ),
       child: Material(
-        color: color,
+        color: color ?? AdminColors.surface,
         borderRadius: BorderRadius.circular(AdminRadius.lg),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -437,7 +509,7 @@ const kToneOrange = (fg: AdminColors.orange, bg: AdminColors.orangeSoft);
 const kToneBlue = (fg: AdminColors.blue, bg: AdminColors.blueSoft);
 const kToneViolet = (fg: AdminColors.violet, bg: AdminColors.violetSoft);
 const kToneRed = (fg: AdminColors.red, bg: AdminColors.redSoft);
-const kToneGrey = (fg: AdminColors.grey, bg: AdminColors.greySoft);
+const kToneGrey = (fg: AdminColors.grey, bg: AdminColors.greySoftConst);
 
 /// Pastille de statut (texte + point de couleur).
 class AdminBadge extends StatelessWidget {
@@ -562,7 +634,7 @@ class AdminSelect<T> extends StatelessWidget {
                   style: AdminText.label(color: AdminColors.text)),
             ),
             const SizedBox(width: 6.0),
-            const Icon(Icons.keyboard_arrow_down_rounded,
+            Icon(Icons.keyboard_arrow_down_rounded,
                 size: 18.0, color: AdminColors.muted),
           ],
         ),

@@ -372,7 +372,7 @@ class _CategoryFormState extends State<_CategoryForm> {
                     border: Border.all(
                         color: _color.toUpperCase() == hex
                             ? kSalesRed
-                            : const Color(0xFFDADCE0),
+                            : AdminColors.border,
                         width: _color.toUpperCase() == hex ? 2.5 : 1.0),
                   ),
                 ),

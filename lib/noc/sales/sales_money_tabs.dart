@@ -412,7 +412,7 @@ class _SalesPayoutsTabState extends State<SalesPayoutsTab> {
                           IconButton(
                             tooltip: 'Refuser',
                             onPressed: () => _decide(p, 'reject'),
-                            icon: const Icon(Icons.block_rounded, color: kSalesMuted),
+                            icon: Icon(Icons.block_rounded, color: kSalesMuted),
                           ),
                       ],
                     ),

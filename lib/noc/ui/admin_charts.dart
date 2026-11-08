@@ -95,7 +95,7 @@ class _AdminAreaChartState extends State<AdminAreaChart> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
                 decoration: BoxDecoration(
-                  color: AdminColors.ink,
+                  color: const Color(0xFF23262E),
                   borderRadius: BorderRadius.circular(AdminRadius.sm),
                 ),
                 child: Column(

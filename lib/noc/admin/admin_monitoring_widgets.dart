@@ -214,7 +214,6 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
           ),
           AdminTable<DashOrder>(
             rows: rows,
-            pageSize: 10,
             initialSort: 1,
             initialAscending: false,
             empty: AdminEmpty(
@@ -305,7 +304,6 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
           ),
           AdminTable<Map<String, dynamic>>(
             rows: failed,
-            pageSize: 10,
             initialSort: 0,
             empty: const AdminEmpty(
                 icon: Icons.check_circle_rounded,
@@ -459,7 +457,6 @@ class _AdminZonesWidgetState extends State<AdminZonesWidget> {
                       ),
                       AdminTable<ZoneRow>(
                         rows: rows,
-                        pageSize: 20,
                         empty: const AdminEmpty(
                             icon: Icons.place_rounded,
                             title: 'Aucune commande',

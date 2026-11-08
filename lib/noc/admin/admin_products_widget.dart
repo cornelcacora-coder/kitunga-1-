@@ -322,7 +322,6 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
   Widget _table(List<Map<String, dynamic>> list) {
     return AdminTable<Map<String, dynamic>>(
       rows: list,
-      pageSize: 20,
       empty: const AdminEmpty(
           icon: Icons.shopping_bag_outlined,
           title: 'Aucun produit',
