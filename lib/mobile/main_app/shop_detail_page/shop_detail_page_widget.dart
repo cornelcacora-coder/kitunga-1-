@@ -1,4 +1,6 @@
 import '/backend/backend.dart';
+import '/mobile/main_app/search/kitunga_filters.dart'
+    show ProductSort, productSortLabels, productPrice, searchNorm;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'dart:ui';
@@ -244,6 +246,10 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
   // ── Catalogue adapté à la catégorie du commerce ──────────────────────
   String _search = '';
   String _chip = '';
+
+  /// Tri et disponibilité choisis par le client dans la vitrine.
+  ProductSort _sort = ProductSort.relevance;
+  bool _inStock = false;
   final _sectionKeys = <String, GlobalKey>{};
   late Stream<List<ProductRecord>> _productStream = _loadProducts();
 
@@ -293,6 +299,36 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
           hintStyle:
               GoogleFonts.inter(color: theme.secondaryText, fontSize: 15.0),
           prefixIcon: Icon(Icons.search_rounded, color: theme.secondaryText),
+          // Tri et « disponibles uniquement ».
+          suffixIcon: PopupMenuButton<Object>(
+            tooltip: 'Trier et filtrer',
+            icon: Badge(
+              isLabelVisible: _inStock || _sort != ProductSort.relevance,
+              smallSize: 8.0,
+              backgroundColor: theme.primary,
+              child: Icon(Icons.tune_rounded, color: theme.secondaryText),
+            ),
+            onSelected: (v) => setState(() {
+              if (v is ProductSort) _sort = v;
+              if (v == 'stock') _inStock = !_inStock;
+            }),
+            itemBuilder: (_) => [
+              for (final e in productSortLabels.entries)
+                CheckedPopupMenuItem<Object>(
+                  value: e.key,
+                  checked: _sort == e.key,
+                  child: Text(e.key == ProductSort.relevance
+                      ? 'Ordre du commerce'
+                      : e.value),
+                ),
+              const PopupMenuDivider(),
+              CheckedPopupMenuItem<Object>(
+                value: 'stock',
+                checked: _inStock,
+                child: const Text('Disponibles uniquement'),
+              ),
+            ],
+          ),
           filled: true,
           fillColor: theme.primaryBackground,
           contentPadding: EdgeInsets.symmetric(vertical: 14.0),
@@ -507,7 +543,23 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                 q.isEmpty ||
                 _norm(p.name).contains(q) ||
                 _norm(p.description).contains(q))
+            .where((p) =>
+                !_inStock || !p.hasQuantity() || p.quantity > 0)
             .toList();
+        // Tri choisi par le client (sinon l'ordre du commerce).
+        switch (_sort) {
+          case ProductSort.priceAsc:
+            all.sort((a, b) => productPrice(a).compareTo(productPrice(b)));
+          case ProductSort.priceDesc:
+            all.sort((a, b) => productPrice(b).compareTo(productPrice(a)));
+          case ProductSort.name:
+            all.sort((a, b) => searchNorm(a.name).compareTo(searchNorm(b.name)));
+          case ProductSort.newest:
+            all.sort((a, b) => (b.createdAt ?? DateTime(2000))
+                .compareTo(a.createdAt ?? DateTime(2000)));
+          case ProductSort.relevance:
+            break;
+        }
         final groups = _group(all, category);
         final menu = _isMenu(category);
         final pharmacy = category == 'Pharmacie';

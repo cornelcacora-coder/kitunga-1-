@@ -2,6 +2,7 @@ import 'dart:async';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_categories.dart';
+import '/mobile/main_app/search/kitunga_search_page.dart' show openKitungaSearch;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -262,16 +263,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           setState(() => _query = '');
                         },
                       ),
+                    // Recherche avancée : produits et commerces, filtres, tri.
                     InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text('Recherche vocale bientôt disponible'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      onTap: () =>
+                          openKitungaSearch(context, query: _query.trim()),
                       borderRadius: BorderRadius.circular(20.0),
                       child: Container(
                         width: 40.0,
@@ -281,7 +276,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.mic_rounded,
+                          Icons.tune_rounded,
                           color: Colors.white,
                           size: 20.0,
                         ),
@@ -1180,8 +1175,26 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
 
   List<Widget> _buildSearchResults(FlutterFlowTheme theme) {
     final results = _searchResults;
+    // Lien vers la recherche dans les produits de tous les commerces.
+    final products = Padding(
+      padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 0.0),
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFFE51A1A),
+          side: const BorderSide(color: Color(0x55E51A1A)),
+          padding: const EdgeInsets.symmetric(vertical: 14.0),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14.0)),
+        ),
+        onPressed: () => openKitungaSearch(context, query: _query.trim()),
+        icon: const Icon(Icons.shopping_bag_outlined, size: 18.0),
+        label: Text('Chercher « ${_query.trim()} » dans les produits',
+            overflow: TextOverflow.ellipsis),
+      ),
+    );
     if (results.isEmpty) {
       return [
+        products,
         Padding(
           padding: const EdgeInsets.fromLTRB(32.0, 48.0, 32.0, 0.0),
           child: Column(
@@ -1201,6 +1214,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
       ];
     }
     return [
+      products,
       _sectionHeader(
           '${results.length} résultat${results.length > 1 ? 's' : ''}'),
       for (final s in results) _shopTile(theme, s),

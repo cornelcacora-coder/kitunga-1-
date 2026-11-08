@@ -346,4 +346,20 @@ void main() {
     expect(find.text('Commande ORD-6'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('filtres admin : montant puis réinitialisation', (tester) async {
+    await open(tester, AdminOrdersWidget(clock: () => now),
+        const Size(1440, 1000));
+    expect(find.text('1–5 sur 7'), findsOneWidget);
+    await tester.tap(find.text('Tous les montants'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('5 000 – 10 000 F').last);
+    await tester.pumpAndSettle();
+    // Montants 1 000 à 7 000 F : ORD-5, 6 et 7.
+    expect(find.text('1–3 sur 3'), findsOneWidget);
+    await tester.tap(find.text('Réinitialiser'));
+    await tester.pumpAndSettle();
+    expect(find.text('1–5 sur 7'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

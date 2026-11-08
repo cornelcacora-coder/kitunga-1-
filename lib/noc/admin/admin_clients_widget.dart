@@ -165,16 +165,56 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AdminSearchBox(
-                  width: wide ? 320.0 : MediaQuery.sizeOf(context).width - 72.0,
-                  hint: 'Nom, email ou téléphone',
-                  onChanged: (v) {
-                    _debounce?.cancel();
-                    _debounce = Timer(const Duration(milliseconds: 400), () {
-                      _q = v.trim();
-                      _reload();
-                    });
-                  },
+                Wrap(
+                  spacing: 10.0,
+                  runSpacing: 10.0,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    AdminSearchBox(
+                      width:
+                          wide ? 320.0 : MediaQuery.sizeOf(context).width - 72.0,
+                      hint: 'Nom, email ou téléphone',
+                      onChanged: (v) {
+                        _debounce?.cancel();
+                        _debounce =
+                            Timer(const Duration(milliseconds: 400), () {
+                          _q = v.trim();
+                          _reload();
+                        });
+                      },
+                    ),
+                    AdminSelect<String>(
+                      value: _subFilter,
+                      icon: Icons.workspace_premium_outlined,
+                      items: const {
+                        'all': 'Abonnés ou non',
+                        'yes': 'Abonnés',
+                        'no': 'Non abonnés',
+                      },
+                      onChanged: (v) => setState(() => _subFilter = v),
+                    ),
+                    AdminSelect<String>(
+                      value: _statusFilter,
+                      icon: Icons.toggle_on_outlined,
+                      items: const {
+                        'all': 'Tous les statuts',
+                        'active': 'Actifs',
+                        'suspended': 'Suspendus',
+                      },
+                      onChanged: (v) => setState(() => _statusFilter = v),
+                    ),
+                    AdminSelect<int>(
+                      value: _joinedDays,
+                      icon: Icons.event_outlined,
+                      items: const {
+                        0: 'Inscrits à toute date',
+                        7: 'Inscrits ces 7 jours',
+                        30: 'Inscrits ces 30 jours',
+                        90: 'Inscrits ces 90 jours',
+                      },
+                      onChanged: (v) => setState(() => _joinedDays = v),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16.0),
                 FutureBuilder<Map<String, dynamic>>(
@@ -193,7 +233,21 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
                             child: const Text('Réessayer')),
                       );
                     }
-                    final list = listOf(snap.data!['clients']);
+                    final now = DateTime.now();
+                    final list = [
+                      for (final c in listOf(snap.data!['clients']))
+                        if ((_subFilter == 'all' ||
+                                (_subFilter == 'yes') == isSubscribed(c)) &&
+                            (_statusFilter == 'all' ||
+                                (c['accountStatus'] ?? 'active') ==
+                                    _statusFilter) &&
+                            (_joinedDays == 0 ||
+                                (DateTime.tryParse('${c['createdAt']}')
+                                        ?.isAfter(now.subtract(
+                                            Duration(days: _joinedDays))) ??
+                                    false)))
+                          c,
+                    ];
                     _shown = list;
                     final total =
                         (snap.data!['total'] as num? ?? list.length).toInt();
@@ -222,6 +276,9 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
   }
 
   List<Map<String, dynamic>>? _shown;
+  String _subFilter = 'all';
+  String _statusFilter = 'all';
+  int _joinedDays = 0;
 
   AdminExportData? _export() {
     final list = _shown;

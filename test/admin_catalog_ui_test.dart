@@ -205,7 +205,8 @@ void main() {
       expect(find.text('Restaurant › Chez Paul › Plats'), findsOneWidget);
       expect(find.text('Commerce supprimé'), findsOneWidget);
       expect(find.text('Brouillon'), findsOneWidget);
-      expect(find.text('⚡ Express'), findsOneWidget);
+      // Pastille du produit + filtre « ⚡ Express » de la page.
+      expect(find.text('⚡ Express'), findsNWidgets(2));
       expect(find.text('Stock : 0'), findsOneWidget);
 
       await tester.tap(find.text('Nouveau produit'));

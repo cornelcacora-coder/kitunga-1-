@@ -192,6 +192,42 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
             _reload();
           },
         ),
+        AdminSelect<int>(
+          value: _price,
+          icon: Icons.payments_outlined,
+          items: {
+            for (var i = 0; i < kPriceFilters.length; i++)
+              i: kPriceFilters[i].label,
+          },
+          onChanged: (v) => setState(() => _price = v),
+        ),
+        AdminSelect<String>(
+          value: _stockFilter,
+          icon: Icons.inventory_2_outlined,
+          items: const {
+            'all': 'Tous les stocks',
+            'in': 'En stock',
+            'out': 'En rupture',
+          },
+          onChanged: (v) => setState(() => _stockFilter = v),
+        ),
+        AdminSelect<String>(
+          value: _statusFilter,
+          icon: Icons.visibility_outlined,
+          items: const {
+            'all': 'Publiés et brouillons',
+            'published': 'Publiés',
+            'draft': 'Brouillons',
+          },
+          onChanged: (v) => setState(() => _statusFilter = v),
+        ),
+        FilterChip(
+          label: const Text('⚡ Express'),
+          selected: _expressOnly,
+          selectedColor: AdminColors.redSoft,
+          checkmarkColor: AdminColors.red,
+          onSelected: (v) => setState(() => _expressOnly = v),
+        ),
         FilterChip(
           label: const Text('Sans image'),
           selected: _missingImage,
@@ -251,7 +287,7 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
                             child: const Text('Réessayer')),
                       );
                     }
-                    final list = listOf(snap.data!['products']);
+                    final list = _applyLocal(listOf(snap.data!['products']));
                     _shown = list;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -278,6 +314,29 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
   }
 
   List<Map<String, dynamic>>? _shown;
+
+  // Filtres appliqués à la liste chargée.
+  int _price = 0;
+  String _stockFilter = 'all';
+  String _statusFilter = 'all';
+  bool _expressOnly = false;
+
+  List<Map<String, dynamic>> _applyLocal(List<Map<String, dynamic>> list) {
+    final pr = kPriceFilters[_price];
+    return [
+      for (final p in list)
+        if ((pr.min == null || (p['price'] as num? ?? 0) >= pr.min!) &&
+            (pr.max == null || (p['price'] as num? ?? 0) < pr.max!) &&
+            (_stockFilter == 'all' ||
+                (_stockFilter == 'in'
+                    ? (p['quantity'] == null || (p['quantity'] as num) > 0)
+                    : (p['quantity'] != null && (p['quantity'] as num) <= 0))) &&
+            (_statusFilter == 'all' ||
+                (_statusFilter == 'published') == (p['published'] != false)) &&
+            (!_expressOnly || p['express'] == true))
+          p,
+    ];
+  }
 
   AdminExportData? _export() {
     final list = _shown;
@@ -630,3 +689,12 @@ class _ProductFormState extends State<_ProductForm> {
     );
   }
 }
+
+/// Tranches de prix des filtres de produits.
+const kPriceFilters = <({String label, int? min, int? max})>[
+  (label: 'Tous les prix', min: null, max: null),
+  (label: 'Moins de 2 000 F', min: null, max: 2000),
+  (label: '2 000 – 5 000 F', min: 2000, max: 5000),
+  (label: '5 000 – 10 000 F', min: 5000, max: 10000),
+  (label: '10 000 F et plus', min: 10000, max: null),
+];

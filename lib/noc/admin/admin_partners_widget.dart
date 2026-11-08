@@ -245,6 +245,26 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                           },
                         ),
                       ),
+                    AdminSelect<String>(
+                      value: _statusFilter,
+                      icon: Icons.toggle_on_outlined,
+                      items: const {
+                        'all': 'Tous les statuts',
+                        'active': 'Actifs',
+                        'suspended': 'Suspendus',
+                      },
+                      onChanged: (v) => setState(() => _statusFilter = v),
+                    ),
+                    AdminSelect<String>(
+                      value: _verifiedFilter,
+                      icon: Icons.verified_outlined,
+                      items: const {
+                        'all': 'Certifiés ou non',
+                        'yes': 'Certifiés',
+                        'no': 'Non certifiés',
+                      },
+                      onChanged: (v) => setState(() => _verifiedFilter = v),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -264,7 +284,16 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                             child: const Text('Réessayer')),
                       );
                     }
-                    final list = snap.data!;
+                    final list = [
+                      for (final p in snap.data!)
+                        if ((_statusFilter == 'all' ||
+                                (p['accountStatus'] ?? 'active') ==
+                                    _statusFilter) &&
+                            (_verifiedFilter == 'all' ||
+                                (_verifiedFilter == 'yes') ==
+                                    (p['verified'] == true)))
+                          p,
+                    ];
                     _shown = list;
                     final n = list.length;
                     return Column(
@@ -293,6 +322,8 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
   }
 
   List<Map<String, dynamic>>? _shown;
+  String _statusFilter = 'all';
+  String _verifiedFilter = 'all';
 
   AdminExportData? _export() {
     final list = _shown;
