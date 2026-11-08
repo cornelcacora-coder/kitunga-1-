@@ -18,6 +18,10 @@ const _webAdminPaths = {
   '/commercants',
   '/livreurs',
   '/clients',
+  '/commandes',
+  '/livraisons',
+  '/alertes',
+  '/zones',
   '/forgotPassword',
   '/forgotPasswordLink',
 };

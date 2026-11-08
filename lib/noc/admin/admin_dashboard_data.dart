@@ -51,7 +51,11 @@ class AdminDashboardSource {
     required this.paymentStatusesSince,
     required this.names,
     required this.orderItems,
-  });
+    Stream<List<Map<String, dynamic>>> Function(DateTime since)? payments,
+  }) : payments = payments ?? ((_) => Stream.value(const []));
+
+  /// Paiements depuis une date (statut, montant, message, client).
+  final Stream<List<Map<String, dynamic>>> Function(DateTime since) payments;
 
   /// Commandes créées depuis une date (direct).
   final Stream<List<DashOrder>> Function(DateTime since) ordersSince;
@@ -141,6 +145,20 @@ class AdminDashboardSource {
               ),
         };
       },
+      payments: (since) => db
+          .collection('Paiement')
+          .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+          .snapshots()
+          .map((s) => [
+                for (final d in s.docs)
+                  {
+                    ...d.data(),
+                    'id': d.id,
+                    'created_at': _date(d.data()['created_at']),
+                    'user_path':
+                        (d.data()['user_ref'] as DocumentReference?)?.path,
+                  },
+              ]),
       orderItems: (reference) async {
         if (reference.isEmpty) return const [];
         final s = await db
@@ -305,3 +323,23 @@ String orderStatusShort(String status) => switch (status) {
       '' || OrderStatus.pending => 'À confirmer',
       _ => OrderStatus.label(status),
     };
+
+/// Commandes de la période et commandes encore en cours (sans doublon).
+List<DashOrder> mergeOrders(List<DashOrder> a, List<DashOrder> b) {
+  final byId = <String, DashOrder>{for (final o in a) o.id: o};
+  for (final o in b) {
+    byId[o.id] = o;
+  }
+  return byId.values.toList();
+}
+
+/// Durée lisible (« 45 min », « 2 h 05 », « 3 j »).
+String adminDuration(Duration d) {
+  final m = d.inMinutes;
+  if (m < 60) return '${m < 0 ? 0 : m} min';
+  if (m < 60 * 24) {
+    final r = m % 60;
+    return r == 0 ? '${m ~/ 60} h' : '${m ~/ 60} h ${r.toString().padLeft(2, '0')}';
+  }
+  return '${d.inDays} j';
+}

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '/flutter_flow/flutter_flow_util.dart';
 import '/noc/sales/sales_admin_widget.dart' show SalesPage;
 import '/noc/sales/sales_common.dart';
+import '/noc/admin/admin_layout.dart' show AdminShell, AdminTabbedBody;
 
 /// Gestion (adresse /gestion) : remboursements à traiter, abonnements offerts
 /// ou prolongés, suspension des comptes. Tout passe par le serveur, qui
@@ -16,49 +15,21 @@ class AdminOpsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        backgroundColor: kSalesSurface,
-        appBar: AppBar(
-          backgroundColor: kSalesRed,
-          foregroundColor: Colors.white,
-          elevation: 0.0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            tooltip: 'Tableau de bord',
-            onPressed: () => context.canPop()
-                ? context.pop()
-                : context.go('/supervisionDashboard'),
-          ),
-          title: Text('Gestion',
-              style: GoogleFonts.interTight(
-                  fontWeight: FontWeight.w800, fontSize: 19.0)),
-          bottom: TabBar(
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            indicatorColor: Colors.white,
-            indicatorWeight: 3.0,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w700),
-            tabs: const [
-              Tab(icon: Icon(Icons.currency_exchange_rounded, size: 20.0),
-                  text: 'Remboursements'),
-              Tab(icon: Icon(Icons.workspace_premium_outlined, size: 20.0),
-                  text: 'Abonnements'),
-              Tab(icon: Icon(Icons.manage_accounts_outlined, size: 20.0),
-                  text: 'Comptes'),
-            ],
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            _RefundsTab(),
-            _AccountsTab(mode: _AccountsMode.subscriptions),
-            _AccountsTab(mode: _AccountsMode.accounts),
-          ],
-        ),
+    return const AdminShell(
+      current: 'ops',
+      title: 'Remboursements & comptes',
+      subtitle: 'Remboursements à traiter, abonnements offerts, comptes suspendus',
+      body: AdminTabbedBody(
+        tabs: [
+          (Icons.currency_exchange_rounded, 'Remboursements'),
+          (Icons.workspace_premium_outlined, 'Abonnements'),
+          (Icons.manage_accounts_outlined, 'Comptes'),
+        ],
+        children: [
+          _RefundsTab(),
+          _AccountsTab(mode: _AccountsMode.subscriptions),
+          _AccountsTab(mode: _AccountsMode.accounts),
+        ],
       ),
     );
   }

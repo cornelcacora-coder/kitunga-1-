@@ -543,7 +543,12 @@ class AdminSelect<T> extends StatelessWidget {
               Icon(icon, size: 17.0, color: AdminColors.muted),
               const SizedBox(width: 8.0),
             ],
-            Text(items[value] ?? '', style: AdminText.label(color: AdminColors.text)),
+            Flexible(
+              child: Text(items[value] ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AdminText.label(color: AdminColors.text)),
+            ),
             const SizedBox(width: 6.0),
             const Icon(Icons.keyboard_arrow_down_rounded,
                 size: 18.0, color: AdminColors.muted),

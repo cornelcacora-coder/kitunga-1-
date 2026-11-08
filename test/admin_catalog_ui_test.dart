@@ -98,10 +98,19 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Action d'une ligne : pastille du tableau (infobulle) ou menu « Actions »
+  /// (cartes des catégories).
   Future<void> rowAction(WidgetTester tester, String label, {int at = 0}) async {
-    await tester.tap(find.byTooltip('Actions').at(at));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(label).last);
+    final dots = find.byTooltip(label);
+    if (find.byTooltip('Actions').evaluate().isEmpty) {
+      await tester.ensureVisible(dots.at(at));
+      await tester.pumpAndSettle();
+      await tester.tap(dots.at(at));
+    } else {
+      await tester.tap(find.byTooltip('Actions').at(at));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label).last);
+    }
     await tester.pumpAndSettle();
   }
 
@@ -252,7 +261,8 @@ void main() {
       expect(find.text('Suspendu'), findsOneWidget);
       expect(find.text('3 produits'), findsOneWidget);
 
-      await rowAction(tester, 'Modifier', at: 0);
+      // Tri par nom : « Ancien commerce » (shop2) puis « Chez Paul » (shop).
+      await rowAction(tester, 'Modifier', at: 1);
       await tester.tap(find.text('Ajouter une image').first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Enregistrer'));
@@ -269,7 +279,7 @@ void main() {
       expect(last('kitungaSetAccountStatus').$2,
           {'userUid': 'shop', 'status': 'suspended', 'reason': 'Fermeture'});
 
-      await rowAction(tester, 'Réactiver', at: 1);
+      await rowAction(tester, 'Réactiver', at: 0);
       await tester.tap(find.text('Réactiver').last);
       await tester.pumpAndSettle();
       expect(last('kitungaSetAccountStatus').$2,

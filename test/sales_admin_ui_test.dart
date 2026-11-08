@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:kitunga/noc/sales/sales_admin_widget.dart';
+import 'package:kitunga/noc/admin/admin_layout.dart';
 import 'package:kitunga/noc/sales/sales_common.dart';
 
 /// Interface admin du module commercial avec un serveur simulé : chaque
@@ -106,6 +107,8 @@ void main() {
   setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
     await initializeDateFormatting('fr');
+    adminPendingOrders = () => Stream.value(0);
+    adminDisplayName = () => 'Admin';
     salesBackendOverride = (function, data) async {
       calls.add((function, data));
       return fake(function, data);
@@ -132,6 +135,8 @@ void main() {
   }
 
   Future<void> tab(WidgetTester tester, String label) async {
+    await tester.ensureVisible(find.text(label));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(label));
     await tester.pumpAndSettle();
   }
@@ -180,7 +185,7 @@ void main() {
     await tester.tap(find.text('Confirmer')); // note vide : refusé
     await tester.pumpAndSettle();
     expect(find.text('Commission signalée'), findsOneWidget);
-    await tester.enterText(find.byType(TextField), 'Même famille, vérifié');
+    await tester.enterText(find.byType(TextField).last, 'Même famille, vérifié');
     await tester.tap(find.text('Confirmer'));
     await tester.pumpAndSettle();
     final review = calls.where((c) => c.$1 == 'kitungaReviewCommission').single;
@@ -197,7 +202,7 @@ void main() {
     await tab(tester, 'Versements');
     await tester.tap(find.text('Marquer payé'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'MP261120.0912.A1');
+    await tester.enterText(find.byType(TextField).last, 'MP261120.0912.A1');
     await tester.tap(find.text('Confirmer'));
     await tester.pumpAndSettle();
     final paid = calls.where((c) => c.$1 == 'kitungaDecidePayout').single;

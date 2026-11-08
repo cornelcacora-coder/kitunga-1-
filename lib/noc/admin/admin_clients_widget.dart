@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '/noc/sales/sales_common.dart';
 import 'admin_shell.dart';
+import '/noc/ui/admin_table.dart';
 
 /// Clients (adresse /clients) : voir la fiche, modifier (nom, téléphone),
 /// offrir ou prolonger l'abonnement, supprimer (= désactiver le compte, qui
@@ -160,149 +161,188 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final wide = MediaQuery.sizeOf(context).width >= 700.0;
     return AdminShell(
       current: 'clients',
       title: 'Clients',
       subtitle: 'Comptes clients de l\'application',
       actions: [
-        IconButton(
-            tooltip: 'Actualiser',
+        OutlinedButton.icon(
             onPressed: _reload,
-            icon: const Icon(Icons.refresh_rounded)),
+            icon: const Icon(Icons.refresh_rounded, size: 18.0),
+            label: const Text('Actualiser')),
       ],
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: AdminScroll(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 12.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: AdminSearchField(
-                hint: 'Nom, email ou téléphone',
-                onChanged: (v) {
-                  _debounce?.cancel();
-                  _debounce = Timer(const Duration(milliseconds: 400), () {
-                    _q = v.trim();
-                    _reload();
-                  });
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            child: FutureBuilder<Map<String, dynamic>>(
-              future: _future,
-              builder: (context, snap) {
-                if (snap.connectionState != ConnectionState.done) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: kSalesRed));
-                }
-                if (snap.hasError) {
-                  return SalesEmpty(
-                    icon: Icons.cloud_off_rounded,
-                    title: 'Chargement impossible',
-                    text: '${snap.error}',
-                    action: TextButton(
-                        onPressed: _reload, child: const Text('Réessayer')),
-                  );
-                }
-                final list = listOf(snap.data!['clients']);
-                final total = (snap.data!['total'] as num? ?? list.length).toInt();
-                if (list.isEmpty) {
-                  return const SalesEmpty(
-                      icon: Icons.people_outline_rounded,
-                      title: 'Aucun client',
-                      text: 'Aucun compte ne correspond à cette recherche.');
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 40.0),
-                  itemCount: list.length + 1,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8.0),
-                  itemBuilder: (context, i) {
-                    if (i == 0) {
-                      return Text(
-                          '$total client${total > 1 ? 's' : ''}'
-                          '${total > list.length ? ' (${list.length} plus récents affichés)' : ''}',
-                          style: salesBody());
+          AdminCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AdminSearchBox(
+                  width: wide ? 320.0 : MediaQuery.sizeOf(context).width - 72.0,
+                  hint: 'Nom, email ou téléphone',
+                  onChanged: (v) {
+                    _debounce?.cancel();
+                    _debounce = Timer(const Duration(milliseconds: 400), () {
+                      _q = v.trim();
+                      _reload();
+                    });
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                FutureBuilder<Map<String, dynamic>>(
+                  future: _future,
+                  builder: (context, snap) {
+                    if (snap.connectionState != ConnectionState.done) {
+                      return const AdminLoading(height: 240.0);
                     }
-                    final c = list[i - 1];
-                    final suspended = c['accountStatus'] == 'suspended';
-                    return SalesCard(
-                      onTap: () => _view(c),
-                      child: Row(
-                        children: [
-                          ClipOval(
-                            child: AdminImage(c['photoUrl'] ?? '',
-                                width: 46.0,
-                                height: 46.0,
-                                icon: Icons.person_outline),
+                    if (snap.hasError) {
+                      return AdminEmpty(
+                        icon: Icons.cloud_off_rounded,
+                        title: 'Chargement impossible',
+                        message: '${snap.error}',
+                        action: TextButton(
+                            onPressed: _reload,
+                            child: const Text('Réessayer')),
+                      );
+                    }
+                    final list = listOf(snap.data!['clients']);
+                    final total =
+                        (snap.data!['total'] as num? ?? list.length).toInt();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (list.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: Text(
+                                '$total client${total > 1 ? 's' : ''}'
+                                '${total > list.length ? ' (${list.length} plus récents affichés)' : ''}',
+                                style: AdminText.label()),
                           ),
-                          const SizedBox(width: 14.0),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(_name(c),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: salesTitle(15.0)),
-                                const SizedBox(height: 2.0),
-                                Text(
-                                    [
-                                      if ((c['phone'] ?? '').isNotEmpty)
-                                        c['phone'],
-                                      if ((c['email'] ?? '').isNotEmpty)
-                                        c['email'],
-                                      'inscrit le ${dateFr(c['createdAt'])}',
-                                    ].join(' · '),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: salesBody(size: 12.5)),
-                                const SizedBox(height: 6.0),
-                                Wrap(
-                                  spacing: 8.0,
-                                  runSpacing: 4.0,
-                                  children: [
-                                    StatusChip(
-                                        accountStatusStyle[c['accountStatus']]),
-                                    StatusChip(isSubscribed(c)
-                                        ? (
-                                            label: 'Abonné',
-                                            color: const Color(0xFF2F6FDB)
-                                          )
-                                        : (label: 'Non abonné', color: kSalesMuted)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          AdminRowActions(actions: [
-                            viewAction(() => _view(c)),
-                            editAction(() => _edit(c)),
-                            (
-                              label: 'Offrir un abonnement',
-                              icon: Icons.card_giftcard_rounded,
-                              onTap: () => _grant(c),
-                              danger: false,
-                            ),
-                            if (suspended)
-                              (
-                                label: 'Réactiver',
-                                icon: Icons.restore_rounded,
-                                onTap: () => _setStatus(c, 'active'),
-                                danger: false,
-                              )
-                            else
-                              deleteAction(() => _setStatus(c, 'suspended')),
-                          ]),
-                        ],
-                      ),
+                        _table(list),
+                      ],
                     );
                   },
-                );
-              },
+                ),
+              ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _identity(Map<String, dynamic> c) => Row(
+        children: [
+          AdminAvatar(name: _name(c), photo: c['photoUrl'], size: 38.0),
+          const SizedBox(width: 12.0),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_name(c),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AdminText.strong(size: 13.5)),
+                if ((c['email'] ?? '').isNotEmpty)
+                  Text(c['email'],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AdminText.label(size: 12.0)),
+              ],
+            ),
+          ),
+        ],
+      );
+
+  Widget _subscription(Map<String, dynamic> c) => isSubscribed(c)
+      ? AdminBadge('Abonné', tone: kToneBlue)
+      : const AdminBadge('Non abonné', tone: kToneGrey);
+
+  Widget _status(Map<String, dynamic> c) => c['accountStatus'] == 'suspended'
+      ? const AdminBadge('Suspendu', tone: kToneOrange)
+      : const AdminBadge('Actif', tone: kToneGreen);
+
+  Widget _table(List<Map<String, dynamic>> list) {
+    return AdminTable<Map<String, dynamic>>(
+      rows: list,
+      pageSize: 20,
+      initialSort: 2,
+      empty: const AdminEmpty(
+          icon: Icons.people_outline_rounded,
+          title: 'Aucun client',
+          message: 'Aucun compte ne correspond à cette recherche.'),
+      onTap: _view,
+      actionsWidth: 164.0,
+      actions: (c) {
+        final suspended = c['accountStatus'] == 'suspended';
+        return [
+          AdminActionDot(
+              icon: Icons.visibility_rounded,
+              tooltip: 'Voir',
+              onTap: () => _view(c)),
+          AdminActionDot(
+              icon: Icons.edit_rounded,
+              tooltip: 'Modifier',
+              tone: kToneOrange,
+              onTap: () => _edit(c)),
+          AdminActionDot(
+              icon: Icons.card_giftcard_rounded,
+              tooltip: 'Offrir un abonnement',
+              tone: kToneViolet,
+              onTap: () => _grant(c)),
+          suspended
+              ? AdminActionDot(
+                  icon: Icons.restore_rounded,
+                  tooltip: 'Réactiver',
+                  tone: kToneGreen,
+                  onTap: () => _setStatus(c, 'active'))
+              : AdminActionDot(
+                  icon: Icons.delete_rounded,
+                  tooltip: 'Supprimer',
+                  tone: kToneRed,
+                  onTap: () => _setStatus(c, 'suspended')),
+        ];
+      },
+      columns: [
+        AdminColumn(
+            label: 'Client',
+            flex: 5,
+            cell: _identity,
+            sortKey: (c) => _name(c).toLowerCase()),
+        AdminColumn(
+            label: 'Téléphone',
+            flex: 2,
+            cell: (c) => Text((c['phone'] ?? '').isEmpty ? '—' : c['phone'],
+                style: AdminText.body(size: 13.0))),
+        AdminColumn(
+            label: 'Inscrit le',
+            flex: 2,
+            cell: (c) =>
+                Text(dateFr(c['createdAt']), style: AdminText.body(size: 13.0)),
+            sortKey: (c) => c['createdAt'] as String?),
+        AdminColumn(
+            label: 'Abonnement',
+            flex: 2,
+            cell: _subscription,
+            sortKey: (c) => c['subscribeCloseAt'] as String?),
+        AdminColumn(
+            label: 'Statut',
+            flex: 2,
+            cell: _status,
+            sortKey: (c) => c['accountStatus'] as String?),
+      ],
+      compact: (c) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _identity(c),
+          const SizedBox(height: 8.0),
+          Wrap(spacing: 8.0, runSpacing: 6.0, children: [
+            _status(c),
+            _subscription(c),
+          ]),
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
+import '/noc/admin/admin_layout.dart' show AdminShell, AdminTabbedBody;
 import 'sales_agents_tab.dart';
 import 'sales_campaigns_tab.dart';
 import 'sales_common.dart';
@@ -25,56 +26,20 @@ class SalesAdminWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: _tabs.length,
-      child: Scaffold(
-        backgroundColor: kSalesSurface,
-        appBar: AppBar(
-          backgroundColor: kSalesRed,
-          foregroundColor: Colors.white,
-          elevation: 0.0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            tooltip: 'Tableau de bord',
-            onPressed: () => context.canPop()
-                ? context.pop()
-                : context.go('/supervisionDashboard'),
-          ),
-          title: Row(
-            children: [
-              Image.asset('assets/logo/kitunga_logo_white.png', height: 30.0),
-              const SizedBox(width: 12.0),
-              Flexible(
-                child: Text('Module commercial',
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.interTight(
-                        fontWeight: FontWeight.w800, fontSize: 19.0)),
-              ),
-            ],
-          ),
-          bottom: TabBar(
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            indicatorColor: Colors.white,
-            indicatorWeight: 3.0,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w700),
-            tabs: [
-              for (final t in _tabs) Tab(icon: Icon(t.$1, size: 20.0), text: t.$2),
-            ],
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            _OverviewTab(),
-            SalesAgentsTab(),
-            SalesCampaignsTab(),
-            SalesCommissionsTab(),
-            SalesPayoutsTab(),
-            _AuditTab(),
-          ],
-        ),
+    return AdminShell(
+      current: 'sales',
+      title: 'Module commercial',
+      subtitle: 'Commerciaux, campagnes, commissions et versements',
+      body: AdminTabbedBody(
+        tabs: [for (final t in _tabs) (t.$1, t.$2)],
+        children: const [
+          _OverviewTab(),
+          SalesAgentsTab(),
+          SalesCampaignsTab(),
+          SalesCommissionsTab(),
+          SalesPayoutsTab(),
+          _AuditTab(),
+        ],
       ),
     );
   }

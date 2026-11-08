@@ -132,10 +132,10 @@ class _AdminCategoriesWidgetState extends State<AdminCategoriesWidget> {
           title: 'Catégories',
           subtitle: 'Types de commerce proposés aux clients dans l\'application',
           actions: [
-            IconButton(
-                tooltip: 'Actualiser',
+            OutlinedButton.icon(
                 onPressed: _reload,
-                icon: const Icon(Icons.refresh_rounded)),
+                icon: const Icon(Icons.refresh_rounded, size: 18.0),
+                label: const Text('Actualiser')),
             adminAddButton('Nouvelle catégorie',
                 () => _edit(null, list.length)),
           ],
@@ -160,7 +160,15 @@ class _AdminCategoriesWidgetState extends State<AdminCategoriesWidget> {
                   text: 'Ajoutez la première avec « Nouvelle catégorie ».');
             }
             return GridView.builder(
-              padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 40.0),
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.sizeOf(context).width >= AdminShell.wideBreakpoint
+                      ? 28.0
+                      : 16.0,
+                  4.0,
+                  MediaQuery.sizeOf(context).width >= AdminShell.wideBreakpoint
+                      ? 28.0
+                      : 16.0,
+                  40.0),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 280.0,
                 mainAxisExtent: 296.0,
@@ -241,9 +249,9 @@ class _CategoryCard extends StatelessWidget {
           const Spacer(),
           Align(
             alignment: Alignment.centerLeft,
-            child: StatusChip(hidden
-                ? (label: 'Masquée', color: kSalesMuted)
-                : (label: 'Visible', color: const Color(0xFF1E9E5A))),
+            child: hidden
+                ? const AdminBadge('Masquée', tone: kToneGrey)
+                : const AdminBadge('Visible', tone: kToneGreen),
           ),
         ],
       ),

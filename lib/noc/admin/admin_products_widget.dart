@@ -5,17 +5,21 @@ import 'package:flutter/material.dart';
 import '/noc/sales/sales_common.dart';
 import 'admin_categories_widget.dart' show loadAdminCategories;
 import 'admin_shell.dart';
+import '/noc/ui/admin_table.dart';
 
 /// Produits (adresse /produits) : tous les produits, avec leur emplacement
 /// (catégorie › commerce › rayon). Voir, ajouter, modifier, supprimer.
 /// [sellerUid] (paramètre « commerce ») limite la liste à un commerce.
 class AdminProductsWidget extends StatefulWidget {
-  const AdminProductsWidget({super.key, this.sellerUid});
+  const AdminProductsWidget({super.key, this.sellerUid, this.missingImage = false});
 
   static String routeName = 'AdminProducts';
   static String routePath = AdminPaths.products;
 
   final String? sellerUid;
+
+  /// Filtre « sans image » actif au départ (paramètre « sansImage »).
+  final bool missingImage;
 
   @override
   State<AdminProductsWidget> createState() => _AdminProductsWidgetState();
@@ -44,7 +48,7 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
   String _q = '';
   String? _category;
   late String? _sellerUid = widget.sellerUid;
-  bool _missingImage = false;
+  late bool _missingImage = widget.missingImage;
   Timer? _debounce;
   late Future<Map<String, dynamic>> _future = _load();
   late final Future<List<Map<String, dynamic>>> _sellers =
@@ -149,264 +153,250 @@ class _AdminProductsWidgetState extends State<AdminProductsWidget> {
     if (ok) _reload();
   }
 
-  Widget _filters() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 12.0),
-      child: Wrap(
-        spacing: 10.0,
-        runSpacing: 10.0,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          AdminSearchField(
-            hint: 'Produit, commerce ou rayon',
-            onChanged: (v) {
-              _debounce?.cancel();
-              _debounce = Timer(const Duration(milliseconds: 400), () {
-                _q = v.trim();
-                _reload();
-              });
-            },
-          ),
-          FutureBuilder<List<Map<String, dynamic>>>(
-            future: _categories,
-            builder: (context, snap) => _Filter(
-              label: 'Catégorie',
-              value: _category,
-              items: {
-                for (final c in snap.data ?? const <Map<String, dynamic>>[])
-                  c['name'] as String: c['name'] as String,
-              },
-              onChanged: (v) {
-                _category = v;
-                _reload();
-              },
-            ),
-          ),
-          FutureBuilder<List<Map<String, dynamic>>>(
-            future: _sellers,
-            builder: (context, snap) => _Filter(
-              label: 'Commerce',
-              value: _sellerUid,
-              items: {
-                for (final s in snap.data ?? const <Map<String, dynamic>>[])
-                  s['uid'] as String: (s['displayName'] as String?)?.isNotEmpty ==
-                          true
-                      ? s['displayName'] as String
-                      : s['email'] as String? ?? s['uid'] as String,
-              },
-              onChanged: (v) {
-                _sellerUid = v;
-                _reload();
-              },
-            ),
-          ),
-          FilterChip(
-            label: const Text('Sans image'),
-            selected: _missingImage,
-            selectedColor: kSalesRed.withValues(alpha: 0.15),
-            checkmarkColor: kSalesRed,
-            onSelected: (v) {
-              _missingImage = v;
+  Widget _filters(List<Map<String, dynamic>> categories,
+      List<Map<String, dynamic>> sellers) {
+    final wide = MediaQuery.sizeOf(context).width >= 700.0;
+    return Wrap(
+      spacing: 10.0,
+      runSpacing: 10.0,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        AdminSearchBox(
+          width: wide ? 320.0 : MediaQuery.sizeOf(context).width - 72.0,
+          hint: 'Produit, commerce ou rayon',
+          onChanged: (v) {
+            _debounce?.cancel();
+            _debounce = Timer(const Duration(milliseconds: 400), () {
+              _q = v.trim();
               _reload();
-            },
-          ),
-        ],
-      ),
+            });
+          },
+        ),
+        AdminSelect<String?>(
+          value: _category,
+          icon: Icons.category_outlined,
+          items: {
+            null: 'Toutes les catégories',
+            for (final c in categories) c['name'] as String: c['name'] as String,
+          },
+          onChanged: (v) {
+            _category = v;
+            _reload();
+          },
+        ),
+        AdminSelect<String?>(
+          value: _sellerUid,
+          icon: Icons.storefront_outlined,
+          items: {
+            null: 'Tous les commerces',
+            for (final s in sellers)
+              s['uid'] as String: (s['displayName'] as String?)?.isNotEmpty == true
+                  ? s['displayName'] as String
+                  : s['email'] as String? ?? s['uid'] as String,
+          },
+          onChanged: (v) {
+            _sellerUid = v;
+            _reload();
+          },
+        ),
+        FilterChip(
+          label: const Text('Sans image'),
+          selected: _missingImage,
+          selectedColor: AdminColors.redSoft,
+          checkmarkColor: AdminColors.red,
+          onSelected: (v) => setState(() {
+            _missingImage = v;
+            _future = _load();
+          }),
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return AdminShell(
-      current: 'products',
+      current: _missingImage ? 'missing' : 'products',
       title: 'Produits',
       subtitle: 'Tous les produits des commerces, avec leur emplacement',
       actions: [
-        IconButton(
-            tooltip: 'Actualiser',
+        OutlinedButton.icon(
             onPressed: _reload,
-            icon: const Icon(Icons.refresh_rounded)),
+            icon: const Icon(Icons.refresh_rounded, size: 18.0),
+            label: const Text('Actualiser')),
         adminAddButton('Nouveau produit', () => _edit()),
       ],
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: AdminScroll(
         children: [
-          _filters(),
-          Expanded(
-            child: FutureBuilder<Map<String, dynamic>>(
-              future: _future,
-              builder: (context, snap) {
-                if (snap.connectionState != ConnectionState.done) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: kSalesRed));
-                }
-                if (snap.hasError) {
-                  return SalesEmpty(
-                    icon: Icons.cloud_off_rounded,
-                    title: 'Chargement impossible',
-                    text: '${snap.error}',
-                    action: TextButton(
-                        onPressed: _reload, child: const Text('Réessayer')),
-                  );
-                }
-                final list = listOf(snap.data!['products']);
-                if (list.isEmpty) {
-                  return const SalesEmpty(
-                      icon: Icons.shopping_bag_outlined,
-                      title: 'Aucun produit',
-                      text: 'Aucun produit ne correspond à ces filtres.');
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 40.0),
-                  itemCount: list.length + 1,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8.0),
-                  itemBuilder: (context, i) {
-                    if (i == 0) {
-                      return Text(
-                          '${list.length} produit${list.length > 1 ? 's' : ''}'
-                          '${list.length >= 300 ? ' (affinez la recherche pour voir les autres)' : ''}',
-                          style: salesBody());
+          AdminCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FutureBuilder<List<List<Map<String, dynamic>>>>(
+                  future: Future.wait([
+                    _categories.catchError((_) => <Map<String, dynamic>>[]),
+                    _sellers.catchError((_) => <Map<String, dynamic>>[]),
+                  ]),
+                  builder: (context, snap) => _filters(
+                      snap.data?[0] ?? const [], snap.data?[1] ?? const []),
+                ),
+                const SizedBox(height: 16.0),
+                FutureBuilder<Map<String, dynamic>>(
+                  future: _future,
+                  builder: (context, snap) {
+                    if (snap.connectionState != ConnectionState.done) {
+                      return const AdminLoading(height: 240.0);
                     }
-                    final p = list[i - 1];
-                    return _ProductRow(
-                      product: p,
-                      onView: () => _view(p),
-                      onEdit: () => _edit(p),
-                      onDelete: () => _delete(p),
+                    if (snap.hasError) {
+                      return AdminEmpty(
+                        icon: Icons.cloud_off_rounded,
+                        title: 'Chargement impossible',
+                        message: '${snap.error}',
+                        action: TextButton(
+                            onPressed: _reload,
+                            child: const Text('Réessayer')),
+                      );
+                    }
+                    final list = listOf(snap.data!['products']);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (list.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: Text(
+                                '${list.length} produit${list.length > 1 ? 's' : ''}'
+                                '${list.length >= 300 ? ' (affinez la recherche pour voir les autres)' : ''}',
+                                style: AdminText.label()),
+                          ),
+                        _table(list),
+                      ],
                     );
                   },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Liste déroulante de filtre (« Tous » = aucun filtre).
-class _Filter extends StatelessWidget {
-  const _Filter({
-    required this.label,
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
-
-  final String label;
-  final String? value;
-  final Map<String, String> items;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 220.0,
-      child: DropdownButtonFormField<String?>(
-        key: ValueKey('$label-${items.length}-$value'),
-        initialValue: items.containsKey(value) ? value : null,
-        isExpanded: true,
-        decoration: salesInput(label)
-            .copyWith(isDense: true, fillColor: Colors.white),
-        items: [
-          DropdownMenuItem<String?>(value: null, child: Text('Tous')),
-          for (final e in items.entries)
-            DropdownMenuItem<String?>(
-                value: e.key,
-                child: Text(e.value, overflow: TextOverflow.ellipsis)),
-        ],
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-class _ProductRow extends StatelessWidget {
-  const _ProductRow({
-    required this.product,
-    required this.onView,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  final Map<String, dynamic> product;
-  final VoidCallback onView;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = product;
-    final published = p['published'] != false;
-    final qty = p['quantity'];
-    return SalesCard(
-      onTap: onView,
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10.0),
-            child: AdminImage(p['prodImg'] ?? '', width: 60.0, height: 60.0),
-          ),
-          const SizedBox(width: 14.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(p['name'] ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: salesTitle(15.0)),
-                const SizedBox(height: 2.0),
-                Row(
-                  children: [
-                    const Icon(Icons.place_outlined,
-                        size: 14.0, color: kSalesMuted),
-                    const SizedBox(width: 4.0),
-                    Expanded(
-                      child: Text(productLocation(p),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: salesBody(size: 12.5)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6.0),
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(fcfa(p['price']), style: salesTitle(14.0)),
-                    if (qty != null)
-                      Text('Stock : $qty',
-                          style: salesBody(
-                              size: 12.0,
-                              color: qty == 0 ? kSalesRed : kSalesMuted)),
-                    StatusChip(published
-                        ? (label: 'Publié', color: const Color(0xFF1E9E5A))
-                        : (label: 'Brouillon', color: kSalesMuted)),
-                    if (p['express'] == true)
-                      const StatusChip(
-                          (label: '⚡ Express', color: Color(0xFFE08A00))),
-                    if ((p['tag'] ?? '').isNotEmpty)
-                      StatusChip(
-                          (label: p['tag'], color: const Color(0xFF2F6FDB))),
-                  ],
                 ),
               ],
             ),
           ),
-          AdminRowActions(actions: [
-            viewAction(onView),
-            editAction(onEdit),
-            deleteAction(onDelete),
-          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _badges(Map<String, dynamic> p) => Wrap(
+        spacing: 6.0,
+        runSpacing: 4.0,
+        children: [
+          p['published'] != false
+              ? const AdminBadge('Publié', tone: kToneGreen)
+              : const AdminBadge('Brouillon', tone: kToneGrey),
+          if (p['express'] == true)
+            const AdminBadge('⚡ Express', tone: kToneOrange),
+          if ((p['tag'] ?? '').isNotEmpty)
+            AdminBadge(p['tag'] as String, tone: kToneBlue),
+        ],
+      );
+
+  Widget _thumbName(Map<String, dynamic> p) => Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AdminRadius.sm),
+            child: AdminImage(p['prodImg'] ?? '', width: 44.0, height: 44.0),
+          ),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: Text(p['name'] ?? '',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AdminText.strong(size: 13.5)),
+          ),
+        ],
+      );
+
+  Widget _stock(Map<String, dynamic> p) {
+    final qty = p['quantity'];
+    return Text(qty == null ? '—' : 'Stock : $qty',
+        style: AdminText.body(
+            size: 13.0, color: qty == 0 ? AdminColors.red : AdminColors.text));
+  }
+
+  Widget _table(List<Map<String, dynamic>> list) {
+    return AdminTable<Map<String, dynamic>>(
+      rows: list,
+      pageSize: 20,
+      empty: const AdminEmpty(
+          icon: Icons.shopping_bag_outlined,
+          title: 'Aucun produit',
+          message: 'Aucun produit ne correspond à ces filtres.'),
+      onTap: _view,
+      actionsWidth: 124.0,
+      actions: (p) => [
+        AdminActionDot(
+            icon: Icons.visibility_rounded,
+            tooltip: 'Voir',
+            onTap: () => _view(p)),
+        AdminActionDot(
+            icon: Icons.edit_rounded,
+            tooltip: 'Modifier',
+            tone: kToneOrange,
+            onTap: () => _edit(p)),
+        AdminActionDot(
+            icon: Icons.delete_rounded,
+            tooltip: 'Supprimer',
+            tone: kToneRed,
+            onTap: () => _delete(p)),
+      ],
+      columns: [
+        AdminColumn(
+            label: 'Produit',
+            flex: 4,
+            cell: _thumbName,
+            sortKey: (p) => (p['name'] as String? ?? '').toLowerCase()),
+        AdminColumn(
+            label: 'Emplacement',
+            flex: 4,
+            cell: (p) => Text(productLocation(p),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AdminText.body(size: 13.0)),
+            sortKey: (p) => productLocation(p).toLowerCase()),
+        AdminColumn(
+            label: 'Prix',
+            flex: 2,
+            cell: (p) => Text(fcfa(p['price']), style: AdminText.strong(size: 13.0)),
+            sortKey: (p) => (p['price'] as num?)?.toDouble()),
+        AdminColumn(
+            label: 'Stock',
+            flex: 2,
+            cell: _stock,
+            sortKey: (p) => (p['quantity'] as num?)?.toInt()),
+        AdminColumn(label: 'Statut', flex: 3, cell: _badges),
+      ],
+      compact: (p) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _thumbName(p),
+          const SizedBox(height: 6.0),
+          Text(productLocation(p),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AdminText.label(size: 12.5)),
+          const SizedBox(height: 6.0),
+          Wrap(
+            spacing: 10.0,
+            runSpacing: 6.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(fcfa(p['price']), style: AdminText.strong(size: 13.5)),
+              _stock(p),
+              _badges(p),
+            ],
+          ),
         ],
       ),
     );
   }
 }
+
 
 class _ProductForm extends StatefulWidget {
   const _ProductForm(

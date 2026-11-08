@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:kitunga/noc/ops/admin_ops_widget.dart';
+import 'package:kitunga/noc/admin/admin_layout.dart';
 import 'package:kitunga/noc/sales/sales_common.dart';
 
 /// Page « Gestion » avec un serveur simulé.
@@ -35,6 +36,8 @@ void main() {
   setUpAll(() async {
     GoogleFonts.config.allowRuntimeFetching = false;
     await initializeDateFormatting('fr');
+    adminPendingOrders = () => Stream.value(0);
+    adminDisplayName = () => 'Admin';
     salesBackendOverride = (function, data) async {
       calls.add((function, data));
       return fake(function, data);
@@ -60,7 +63,7 @@ void main() {
   }
 
   Future<void> search(WidgetTester tester) async {
-    await tester.enterText(find.byType(TextField), 'marie');
+    await tester.enterText(find.byType(TextField).last, 'marie');
     await tester.tap(find.text('Chercher'));
     await tester.pumpAndSettle();
   }
@@ -70,11 +73,19 @@ void main() {
         (tester) async {
       await open(tester, size);
       expect(find.text('Marie Ngoma · 061234567'), findsOneWidget);
-      await tester.tap(find.text('Abonnements'));
+      await tester.ensureVisible(find.text('Abonnements'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Abonnements'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Abonnements'));
       await tester.pumpAndSettle();
       await search(tester);
       expect(find.textContaining('Abonnement terminé'), findsOneWidget);
-      await tester.tap(find.text('Comptes'));
+      await tester.ensureVisible(find.text('Comptes'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Comptes'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Comptes'));
       await tester.pumpAndSettle();
       await search(tester);
       expect(find.text('Suspendu'), findsOneWidget);
@@ -87,7 +98,7 @@ void main() {
     await open(tester, const Size(1280, 900));
     await tester.tap(find.text('Marquer remboursé'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'MP261108.1530.R1');
+    await tester.enterText(find.byType(TextField).last, 'MP261108.1530.R1');
     await tester.tap(find.text('Confirmer'));
     await tester.pumpAndSettle();
     final c = calls.where((c) => c.$1 == 'kitungaMarkRefunded').single;
@@ -96,6 +107,8 @@ void main() {
 
   testWidgets('abonnement : 1 mois offert avec motif', (tester) async {
     await open(tester, const Size(1280, 900));
+    await tester.ensureVisible(find.text('Abonnements'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Abonnements'));
     await tester.pumpAndSettle();
     await search(tester);
@@ -112,6 +125,8 @@ void main() {
 
   testWidgets('suspension : motif obligatoire', (tester) async {
     await open(tester, const Size(1280, 900));
+    await tester.ensureVisible(find.text('Comptes'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Comptes'));
     await tester.pumpAndSettle();
     await search(tester);

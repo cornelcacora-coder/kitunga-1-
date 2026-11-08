@@ -5,6 +5,8 @@ import '/noc/ops/admin_ops_widget.dart';
 import '/noc/admin/admin_categories_widget.dart';
 import '/noc/admin/admin_clients_widget.dart';
 import '/noc/admin/admin_dashboard_widget.dart';
+import '/noc/admin/admin_monitoring_widgets.dart';
+import '/noc/admin/admin_orders_widget.dart';
 import '/noc/admin/admin_partners_widget.dart';
 import '/noc/admin/admin_products_widget.dart';
 import '/noc/admin/admin_shell.dart' show AdminPaths;
@@ -149,7 +151,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: AdminProductsWidget.routePath,
           builder: (context, params) => KitungaAdminGuard(
               child: AdminProductsWidget(
-                  sellerUid: params.getParam('commerce', ParamType.String))),
+                  sellerUid: params.getParam('commerce', ParamType.String),
+                  missingImage:
+                      params.getParam('sansImage', ParamType.String) == '1')),
         ),
         FFRoute(
           name: AdminPartnersWidget.sellersRouteName,
@@ -164,6 +168,31 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: AdminPaths.delivers,
           builder: (context, params) => KitungaAdminGuard(
               child: AdminPartnersWidget(role: 'Deliver')),
+        ),
+        FFRoute(
+          name: AdminOrdersWidget.routeName,
+          path: AdminOrdersWidget.routePath,
+          builder: (context, params) => KitungaAdminGuard(
+              child: AdminOrdersWidget(
+                  tab: params.getParam('statut', ParamType.String))),
+        ),
+        FFRoute(
+          name: AdminOrdersWidget.deliveriesRouteName,
+          path: AdminOrdersWidget.deliveriesRoutePath,
+          builder: (context, params) => KitungaAdminGuard(
+              child: AdminOrdersWidget(mode: AdminOrdersMode.deliveries)),
+        ),
+        FFRoute(
+          name: AdminAlertsWidget.routeName,
+          path: AdminAlertsWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminAlertsWidget()),
+        ),
+        FFRoute(
+          name: AdminZonesWidget.routeName,
+          path: AdminZonesWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminZonesWidget()),
         ),
         FFRoute(
           name: AdminClientsWidget.routeName,

@@ -7,6 +7,7 @@ import '/noc/sales/sales_common.dart';
 import 'admin_categories_widget.dart' show loadAdminCategories;
 import 'admin_products_widget.dart' show loadAdminPartners;
 import 'admin_shell.dart';
+import '/noc/ui/admin_table.dart';
 
 /// Commerçants & boutiques (adresse /commercants) et livreurs (/livreurs) :
 /// voir la fiche, ajouter un compte, modifier (nom, téléphone, catégorie,
@@ -226,6 +227,7 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final wide = MediaQuery.sizeOf(context).width >= 700.0;
     return AdminShell(
       current: _sellers ? 'sellers' : 'delivers',
       title: _sellers ? 'Commerçants & boutiques' : 'Livreurs',
@@ -233,207 +235,264 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
           ? 'Commerces présents dans l\'application'
           : 'Livreurs partenaires',
       actions: [
-        IconButton(
-            tooltip: 'Actualiser',
+        OutlinedButton.icon(
             onPressed: _reload,
-            icon: const Icon(Icons.refresh_rounded)),
+            icon: const Icon(Icons.refresh_rounded, size: 18.0),
+            label: const Text('Actualiser')),
         adminAddButton(
             _sellers ? 'Nouveau commerce' : 'Nouveau livreur', _add),
       ],
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: AdminScroll(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 12.0),
-            child: Wrap(
-              spacing: 10.0,
-              runSpacing: 10.0,
+          AdminCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AdminSearchField(
-                  hint: 'Nom, email ou téléphone',
-                  onChanged: (v) {
-                    _debounce?.cancel();
-                    _debounce = Timer(const Duration(milliseconds: 400), () {
-                      _q = v.trim();
-                      _reload();
-                    });
-                  },
-                ),
-                if (_sellers)
-                  FutureBuilder<List<Map<String, dynamic>>>(
-                    future: _categories,
-                    builder: (context, snap) {
-                      final names = [
-                        for (final c
-                            in snap.data ?? const <Map<String, dynamic>>[])
-                          c['name'] as String,
-                      ];
-                      return SizedBox(
-                        width: 220.0,
-                        child: DropdownButtonFormField<String?>(
-                          key: ValueKey('cat-${names.length}-$_category'),
-                          initialValue:
-                              names.contains(_category) ? _category : null,
-                          isExpanded: true,
-                          decoration: salesInput('Catégorie').copyWith(
-                              isDense: true, fillColor: Colors.white),
-                          items: [
-                            const DropdownMenuItem<String?>(
-                                value: null, child: Text('Toutes')),
-                            for (final n in names)
-                              DropdownMenuItem<String?>(
-                                  value: n, child: Text(n)),
-                          ],
+                Wrap(
+                  spacing: 10.0,
+                  runSpacing: 10.0,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    AdminSearchBox(
+                      width: wide
+                          ? 320.0
+                          : MediaQuery.sizeOf(context).width - 72.0,
+                      hint: 'Nom, email ou téléphone',
+                      onChanged: (v) {
+                        _debounce?.cancel();
+                        _debounce =
+                            Timer(const Duration(milliseconds: 400), () {
+                          _q = v.trim();
+                          _reload();
+                        });
+                      },
+                    ),
+                    if (_sellers)
+                      FutureBuilder<List<Map<String, dynamic>>>(
+                        future: _categories,
+                        builder: (context, snap) => AdminSelect<String?>(
+                          value: _category,
+                          icon: Icons.category_outlined,
+                          items: {
+                            null: 'Toutes les catégories',
+                            for (final c
+                                in snap.data ?? const <Map<String, dynamic>>[])
+                              c['name'] as String: c['name'] as String,
+                          },
                           onChanged: (v) {
                             _category = v;
                             _reload();
                           },
                         ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _future,
+                  builder: (context, snap) {
+                    if (snap.connectionState != ConnectionState.done) {
+                      return const AdminLoading(height: 240.0);
+                    }
+                    if (snap.hasError) {
+                      return AdminEmpty(
+                        icon: Icons.cloud_off_rounded,
+                        title: 'Chargement impossible',
+                        message: '${snap.error}',
+                        action: TextButton(
+                            onPressed: _reload,
+                            child: const Text('Réessayer')),
                       );
-                    },
-                  ),
+                    }
+                    final list = snap.data!;
+                    final n = list.length;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (n > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: Text(
+                                _sellers
+                                    ? '$n commerce${n > 1 ? 's' : ''}'
+                                    : '$n livreur${n > 1 ? 's' : ''}',
+                                style: AdminText.label()),
+                          ),
+                        _table(list),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           ),
-          Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _future,
-              builder: (context, snap) {
-                if (snap.connectionState != ConnectionState.done) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: kSalesRed));
-                }
-                if (snap.hasError) {
-                  return SalesEmpty(
-                    icon: Icons.cloud_off_rounded,
-                    title: 'Chargement impossible',
-                    text: '${snap.error}',
-                    action: TextButton(
-                        onPressed: _reload, child: const Text('Réessayer')),
-                  );
-                }
-                final list = snap.data!;
-                if (list.isEmpty) {
-                  return SalesEmpty(
-                      icon: _sellers
-                          ? Icons.storefront_outlined
-                          : Icons.delivery_dining_outlined,
-                      title: _sellers ? 'Aucun commerce' : 'Aucun livreur',
-                      text: 'Aucun compte ne correspond à cette recherche.');
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 40.0),
-                  itemCount: list.length + 1,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8.0),
-                  itemBuilder: (context, i) {
-                    if (i == 0) {
-                      final n = list.length;
-                      return Text(
-                          _sellers
-                              ? '$n commerce${n > 1 ? 's' : ''}'
-                              : '$n livreur${n > 1 ? 's' : ''}',
-                          style: salesBody());
-                    }
-                    final p = list[i - 1];
-                    final suspended = p['accountStatus'] == 'suspended';
-                    return SalesCard(
-                      onTap: () => _view(p),
-                      child: Row(
-                        children: [
-                          ClipOval(
-                            child: Opacity(
-                              opacity: suspended ? 0.45 : 1.0,
-                              child: AdminImage(p['photoUrl'] ?? '',
-                                  width: 52.0,
-                                  height: 52.0,
-                                  icon: _sellers
-                                      ? Icons.storefront_outlined
-                                      : Icons.person_outline),
-                            ),
-                          ),
-                          const SizedBox(width: 14.0),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(_name(p),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: salesTitle(15.0)),
-                                    ),
-                                    if (p['verified'] == true) ...[
-                                      const SizedBox(width: 6.0),
-                                      const Icon(Icons.verified_rounded,
-                                          size: 16.0, color: Color(0xFF2F6FDB)),
-                                    ],
-                                  ],
-                                ),
-                                const SizedBox(height: 2.0),
-                                Text(
-                                    [
-                                      if (_sellers &&
-                                          (p['category'] ?? '').isNotEmpty)
-                                        p['category'],
-                                      if ((p['phone'] ?? '').isNotEmpty)
-                                        p['phone'],
-                                      if ((p['email'] ?? '').isNotEmpty)
-                                        p['email'],
-                                    ].join(' · '),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: salesBody(size: 12.5)),
-                                const SizedBox(height: 6.0),
-                                Wrap(
-                                  spacing: 8.0,
-                                  runSpacing: 4.0,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    StatusChip(
-                                        accountStatusStyle[p['accountStatus']]),
-                                    if (_sellers)
-                                      Text(
-                                          '${p['products'] ?? 0} produit'
-                                          '${(p['products'] ?? 0) > 1 ? 's' : ''}',
-                                          style: salesBody(size: 12.0)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          AdminRowActions(actions: [
-                            viewAction(() => _view(p)),
-                            editAction(() => _edit(p)),
-                            if (_sellers)
-                              (
-                                label: 'Voir ses produits',
-                                icon: Icons.shopping_bag_outlined,
-                                onTap: () => context.go(Uri(
-                                    path: AdminPaths.products,
-                                    queryParameters: {
-                                      'commerce': p['uid']
-                                    }).toString()),
-                                danger: false,
-                              ),
-                            if (suspended)
-                              (
-                                label: 'Réactiver',
-                                icon: Icons.restore_rounded,
-                                onTap: () => _setStatus(p, 'active'),
-                                danger: false,
-                              )
-                            else
-                              deleteAction(() => _setStatus(p, 'suspended')),
-                          ]),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _identity(Map<String, dynamic> p) {
+    final suspended = p['accountStatus'] == 'suspended';
+    return Row(
+      children: [
+        Opacity(
+          opacity: suspended ? 0.45 : 1.0,
+          child: ClipOval(
+            child: AdminImage(p['photoUrl'] ?? '',
+                width: 40.0,
+                height: 40.0,
+                icon: _sellers
+                    ? Icons.storefront_outlined
+                    : Icons.person_outline),
+          ),
+        ),
+        const SizedBox(width: 12.0),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(_name(p),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AdminText.strong(size: 13.5)),
+                  ),
+                  if (p['verified'] == true) ...[
+                    const SizedBox(width: 4.0),
+                    const Tooltip(
+                      message: 'Compte certifié',
+                      child: Icon(Icons.verified_rounded,
+                          size: 15.0, color: AdminColors.blue),
+                    ),
+                  ],
+                ],
+              ),
+              if ((p['email'] ?? '').isNotEmpty)
+                Text(p['email'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AdminText.label(size: 12.0)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _status(Map<String, dynamic> p) => p['accountStatus'] == 'suspended'
+      ? const AdminBadge('Suspendu', tone: kToneOrange)
+      : const AdminBadge('Actif', tone: kToneGreen);
+
+  List<Widget> _actions(Map<String, dynamic> p) {
+    final suspended = p['accountStatus'] == 'suspended';
+    return [
+      AdminActionDot(
+          icon: Icons.visibility_rounded,
+          tooltip: 'Voir',
+          onTap: () => _view(p)),
+      AdminActionDot(
+          icon: Icons.edit_rounded,
+          tooltip: 'Modifier',
+          tone: kToneOrange,
+          onTap: () => _edit(p)),
+      if (_sellers)
+        AdminActionDot(
+            icon: Icons.shopping_bag_rounded,
+            tooltip: 'Voir ses produits',
+            tone: kToneViolet,
+            onTap: () => context.go(Uri(
+                path: AdminPaths.products,
+                queryParameters: {'commerce': p['uid']}).toString())),
+      suspended
+          ? AdminActionDot(
+              icon: Icons.restore_rounded,
+              tooltip: 'Réactiver',
+              tone: kToneGreen,
+              onTap: () => _setStatus(p, 'active'))
+          : AdminActionDot(
+              icon: Icons.delete_rounded,
+              tooltip: 'Supprimer',
+              tone: kToneRed,
+              onTap: () => _setStatus(p, 'suspended')),
+    ];
+  }
+
+  Widget _table(List<Map<String, dynamic>> list) {
+    return AdminTable<Map<String, dynamic>>(
+      rows: list,
+      pageSize: 20,
+      initialSort: 0,
+      initialAscending: true,
+      empty: AdminEmpty(
+          icon: _sellers
+              ? Icons.storefront_outlined
+              : Icons.delivery_dining_outlined,
+          title: _sellers ? 'Aucun commerce' : 'Aucun livreur',
+          message: 'Aucun compte ne correspond à cette recherche.'),
+      onTap: _view,
+      actionsWidth: _sellers ? 164.0 : 124.0,
+      actions: _actions,
+      columns: [
+        AdminColumn(
+            label: _sellers ? 'Commerce' : 'Livreur',
+            flex: 5,
+            cell: _identity,
+            sortKey: (p) => _name(p).toLowerCase()),
+        if (_sellers)
+          AdminColumn(
+              label: 'Catégorie',
+              flex: 2,
+              cell: (p) => Text((p['category'] ?? '').isEmpty ? '—' : p['category'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AdminText.body(size: 13.0)),
+              sortKey: (p) => (p['category'] as String? ?? '').toLowerCase()),
+        AdminColumn(
+            label: 'Téléphone',
+            flex: 2,
+            cell: (p) => Text((p['phone'] ?? '').isEmpty ? '—' : p['phone'],
+                style: AdminText.body(size: 13.0))),
+        if (_sellers)
+          AdminColumn(
+              label: 'Produits',
+              flex: 2,
+              cell: (p) => Text(
+                  '${p['products'] ?? 0} produit${(p['products'] ?? 0) > 1 ? 's' : ''}',
+                  style: AdminText.body(size: 13.0)),
+              sortKey: (p) => (p['products'] as num?)?.toInt()),
+        AdminColumn(
+            label: 'Inscrit le',
+            flex: 2,
+            cell: (p) =>
+                Text(dateFr(p['createdAt']), style: AdminText.body(size: 13.0)),
+            sortKey: (p) => p['createdAt'] as String?),
+        AdminColumn(
+            label: 'Statut',
+            flex: 2,
+            cell: _status,
+            sortKey: (p) => p['accountStatus'] as String?),
+      ],
+      compact: (p) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _identity(p),
+          const SizedBox(height: 8.0),
+          Wrap(
+            spacing: 10.0,
+            runSpacing: 6.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _status(p),
+              if (_sellers && (p['category'] ?? '').isNotEmpty)
+                Text(p['category'], style: AdminText.label(size: 12.5)),
+              if (_sellers)
+                Text(
+                    '${p['products'] ?? 0} produit${(p['products'] ?? 0) > 1 ? 's' : ''}',
+                    style: AdminText.label(size: 12.5)),
+            ],
           ),
         ],
       ),

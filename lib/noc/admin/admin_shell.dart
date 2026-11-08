@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/upload_data.dart';
 import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/noc/sales/sales_common.dart';
-import '/noc/ui/admin_kit.dart';
 
 export 'admin_layout.dart';
 export '/noc/ui/admin_kit.dart';

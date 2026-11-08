@@ -187,9 +187,7 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
                   color: AdminColors.red,
                   trend: trendPercent(s.orders, s.previousOrders),
                   caption: 'vs ${_int(s.previousOrders)} la période précédente',
-                  onTap: () => openAdminItem(
-                      context, kAdminMenu.first.items.first,
-                      current: 'dashboard'),
+                  onTap: () => context.go(AdminPaths.orders),
                 ),
                 AdminStatCard(
                   icon: Icons.payments_rounded,
@@ -316,9 +314,7 @@ class _AdminDashboardWidgetState extends State<AdminDashboardWidget> {
             title: 'Commandes récentes',
             subtitle: 'Les 8 dernières commandes passées',
             trailing: TextButton.icon(
-              onPressed: () => openAdminItem(
-                  context, kAdminMenu.first.items.first,
-                  current: 'dashboard'),
+              onPressed: () => context.go(AdminPaths.orders),
               icon: const Icon(Icons.arrow_forward_rounded, size: 18.0),
               label: const Text('Tout voir'),
             ),

@@ -7,11 +7,6 @@ import '/backend/backend.dart';
 import '/backend/order_status.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart' show IntroWidget;
-import '/noc/n_o_c_alert/n_o_c_alert_widget.dart';
-import '/noc/n_o_c_delivery/n_o_c_delivery_widget.dart';
-import '/noc/n_o_c_orders/n_o_c_orders_widget.dart';
-import '/noc/noc_cta/noc_cta_widget.dart';
-import '/noc/noc_missing_images/noc_missing_images_widget.dart';
 import '/noc/ui/admin_kit.dart';
 
 /// Cadre de l'administration : menu latéral à sections dépliables (réductible
@@ -46,30 +41,35 @@ class AdminPaths {
   static const clients = '/clients';
   static const ops = '/gestion';
   static const sales = '/commercial';
+  static const orders = '/commandes';
+  static const deliveries = '/livraisons';
+  static const zones = '/zones';
+  static const alerts = '/alertes';
+  static const missingImages = '/produits?sansImage=1';
 }
 
 const kDashboardItem = AdminNavItem(
     'dashboard', 'Tableau de bord', Icons.space_dashboard_rounded,
     path: AdminPaths.dashboard);
 
-final List<AdminNavGroup> kAdminMenu = [
-  AdminNavGroup('Opérations', Icons.local_shipping_rounded, [
+const List<AdminNavGroup> kAdminMenu = [
+  const AdminNavGroup('Opérations', Icons.local_shipping_rounded, [
     AdminNavItem('orders', 'Commandes', Icons.receipt_long_rounded,
-        sheet: () => const NOCOrdersWidget()),
+        path: AdminPaths.orders),
     AdminNavItem('deliveries', 'Livraisons', Icons.delivery_dining_rounded,
-        sheet: () => const NOCDeliveryWidget()),
+        path: AdminPaths.deliveries),
     AdminNavItem('zones', 'Livraisons par zone', Icons.place_rounded,
-        sheet: () => const NocCtaWidget()),
-    AdminNavItem('alerts', 'Alertes critiques', Icons.warning_amber_rounded,
-        sheet: () => const NOCAlertWidget()),
+        path: AdminPaths.zones),
+    AdminNavItem('alerts', 'Alertes', Icons.warning_amber_rounded,
+        path: AdminPaths.alerts),
   ]),
-  AdminNavGroup('Catalogue', Icons.inventory_2_rounded, [
-    const AdminNavItem('categories', 'Catégories', Icons.category_rounded,
+  const AdminNavGroup('Catalogue', Icons.inventory_2_rounded, [
+    AdminNavItem('categories', 'Catégories', Icons.category_rounded,
         path: AdminPaths.categories),
-    const AdminNavItem('products', 'Produits', Icons.shopping_bag_rounded,
+    AdminNavItem('products', 'Produits', Icons.shopping_bag_rounded,
         path: AdminPaths.products),
-    AdminNavItem('missing', 'Fiches à compléter', Icons.hide_image_rounded,
-        sheet: () => const NOCMissingImagesWidget()),
+    AdminNavItem('missing', 'Produits sans photo', Icons.hide_image_rounded,
+        path: AdminPaths.missingImages),
   ]),
   const AdminNavGroup('Partenaires', Icons.handshake_rounded, [
     AdminNavItem('sellers', 'Commerçants & boutiques', Icons.storefront_rounded,
@@ -619,8 +619,7 @@ class _NotificationsState extends State<_Notifications> {
               tooltip: n == 0
                   ? 'Aucune commande en attente'
                   : '$n commande${n > 1 ? 's' : ''} à confirmer',
-              onTap: () => openAdminItem(context, kAdminMenu.first.items.first,
-                  current: widget.current),
+              onTap: () => context.go('${AdminPaths.orders}?statut=confirm'),
             ),
             if (n > 0)
               Positioned(
@@ -955,5 +954,72 @@ class AdminSplit extends StatelessWidget {
         ],
       );
     });
+  }
+}
+
+/// Page à onglets dans le cadre admin (Gestion, Module commercial) : barre
+/// d'onglets blanche sous l'en-tête, contenu de chaque onglet en dessous.
+class AdminTabbedBody extends StatelessWidget {
+  const AdminTabbedBody({super.key, required this.tabs, required this.children});
+
+  final List<(IconData, String)> tabs;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final wide = MediaQuery.sizeOf(context).width >= AdminShell.wideBreakpoint;
+    return DefaultTabController(
+      length: tabs.length,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: wide ? 28.0 : 16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AdminColors.surface,
+                borderRadius: BorderRadius.circular(AdminRadius.lg),
+                boxShadow: kAdminShadow,
+              ),
+              padding: const EdgeInsets.all(6.0),
+              child: TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                dividerColor: Colors.transparent,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  color: AdminColors.red,
+                  borderRadius: BorderRadius.circular(AdminRadius.md),
+                  boxShadow: adminGlow(AdminColors.red),
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: AdminColors.text,
+                labelStyle: AdminText.strong(size: 13.5),
+                unselectedLabelStyle: AdminText.label(size: 13.5)
+                    .copyWith(fontWeight: FontWeight.w600),
+                splashBorderRadius: BorderRadius.circular(AdminRadius.md),
+                labelPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                tabs: [
+                  for (final t in tabs)
+                    Tab(
+                      height: 44.0,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(t.$1, size: 18.0),
+                          const SizedBox(width: 8.0),
+                          Text(t.$2),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 4.0),
+          Expanded(child: TabBarView(children: children)),
+        ],
+      ),
+    );
   }
 }
