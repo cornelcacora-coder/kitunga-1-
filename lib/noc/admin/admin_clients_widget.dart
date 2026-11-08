@@ -399,6 +399,7 @@ class _ClientFormState extends State<_ClientForm> {
   @override
   Widget build(BuildContext context) {
     return AdminFormDialog(
+      icon: Icons.person_rounded,
       title: 'Modifier le client',
       saving: _saving,
       onSave: _save,

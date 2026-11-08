@@ -201,11 +201,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               KitungaAdminGuard(child: AdminClientsWidget()),
         ),
         FFRoute(
-          name: TemplateWidget.routeName,
-          path: TemplateWidget.routePath,
-          builder: (context, params) => TemplateWidget(),
-        ),
-        FFRoute(
           name: SignWidget.routeName,
           path: SignWidget.routePath,
           builder: (context, params) {
@@ -428,8 +423,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => TemplateCopyWidget(),
         ),
         FFRoute(
-          name: SupervisionDashboardWidget.routeName,
-          path: SupervisionDashboardWidget.routePath,
+          name: AdminDashboardWidget.routeName,
+          path: AdminDashboardWidget.routePath,
           builder: (context, params) =>
               // Nouveau tableau de bord (l'ancien écran FlutterFlow reste dans le code).
               KitungaAdminGuard(child: AdminDashboardWidget()),

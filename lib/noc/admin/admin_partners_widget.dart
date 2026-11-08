@@ -573,6 +573,7 @@ class _PartnerFormState extends State<_PartnerForm> {
   @override
   Widget build(BuildContext context) {
     return AdminFormDialog(
+      icon: _seller ? Icons.storefront_rounded : Icons.two_wheeler_rounded,
       title: _seller ? 'Modifier le commerce' : 'Modifier le livreur',
       saving: _saving,
       onSave: _save,
@@ -734,6 +735,7 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
   @override
   Widget build(BuildContext context) {
     return AdminFormDialog(
+      icon: Icons.person_add_alt_1_rounded,
       title: _seller ? 'Nouveau commerce' : 'Nouveau livreur',
       saveLabel: 'Créer le compte',
       saving: _saving,

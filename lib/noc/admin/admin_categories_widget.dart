@@ -327,6 +327,7 @@ class _CategoryFormState extends State<_CategoryForm> {
   @override
   Widget build(BuildContext context) {
     return AdminFormDialog(
+      icon: Icons.category_rounded,
       title: _c['id'] == null ? 'Nouvelle catégorie' : 'Modifier la catégorie',
       saving: _saving,
       onSave: _save,

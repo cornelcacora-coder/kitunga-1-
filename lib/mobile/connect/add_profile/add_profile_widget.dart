@@ -1035,7 +1035,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                   if (widget.partnerRef != null) {
                                                     if (context.mounted) {
                                                       context.goNamed(
-                                                          SupervisionDashboardWidget.routeName);
+                                                          AdminDashboardWidget.routeName);
                                                     }
                                                     return;
                                                   }

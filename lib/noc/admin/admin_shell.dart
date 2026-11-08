@@ -255,7 +255,11 @@ class AdminFormDialog extends StatelessWidget {
     required this.onSave,
     this.saving = false,
     this.saveLabel = 'Enregistrer',
+    this.icon = Icons.edit_note_rounded,
   });
+
+  /// Icône de l'en-tête de la fenêtre.
+  final IconData icon;
 
   final String title;
   final List<Widget> children;
@@ -274,11 +278,24 @@ class AdminFormDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24.0, 20.0, 12.0, 8.0),
+            Container(
+              padding: const EdgeInsets.fromLTRB(24.0, 18.0, 12.0, 14.0),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Color(0xFFE6E8EE))),
+              ),
               child: Row(
                 children: [
-                  Expanded(child: Text(title, style: salesTitle(19.0))),
+                  Container(
+                    width: 40.0,
+                    height: 40.0,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDECEC),
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Icon(icon, color: kSalesRed, size: 21.0),
+                  ),
+                  const SizedBox(width: 12.0),
+                  Expanded(child: Text(title, style: salesTitle(18.0))),
                   IconButton(
                     tooltip: 'Fermer',
                     icon: const Icon(Icons.close_rounded),
@@ -289,7 +306,7 @@ class AdminFormDialog extends StatelessWidget {
             ),
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24.0, 4.0, 24.0, 8.0),
+                padding: const EdgeInsets.fromLTRB(24.0, 18.0, 24.0, 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -302,7 +319,7 @@ class AdminFormDialog extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24.0, 4.0, 24.0, 20.0),
+              padding: const EdgeInsets.fromLTRB(24.0, 14.0, 24.0, 20.0),
               // Passe à la ligne sur un écran étroit au lieu de déborder.
               child: Wrap(
                 alignment: WrapAlignment.end,

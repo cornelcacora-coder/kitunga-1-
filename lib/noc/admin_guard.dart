@@ -5,6 +5,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/noc/ui/admin_kit.dart' show AdminThemeScope;
 
 /// N'affiche [child] qu'à un compte dont le rôle est Admin. Le rôle est relu
 /// dans Firestore, y compris à l'ouverture directe d'une adresse sur le web.
@@ -33,7 +34,8 @@ class _KitungaAdminGuardState extends State<KitungaAdminGuard> {
       stream: _account,
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data?.role == 'Admin') {
-          return widget.child;
+          // Charte admin pour la page et les fenêtres qu'elle ouvre.
+          return AdminThemeScope(child: widget.child);
         }
         final waiting = !snapshot.hasError &&
             snapshot.connectionState == ConnectionState.waiting;

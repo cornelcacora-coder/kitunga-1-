@@ -1,27 +1,15 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-import '/backend/backend.dart';
 import '/backend/order_status.dart';
-import '/components/alert_card_widget.dart';
 
-/// Indicateurs d'alerte du tableau de bord, calculés à partir des vraies
-/// données (et non plus de valeurs fixes) :
+/// Indicateurs d'alerte de l'administration, calculés à partir des vraies
+/// données (utilisés par le tableau de bord et la page Alertes) :
 /// - retards : commandes encore en cours plus de 2 h après leur création ;
 /// - sans réponse : commandes toujours « En attente » après 15 min ;
 /// - échecs de paiement : part des paiements refusés sur 7 jours.
 /// Le niveau (Normal, Moyen, Élevé) et la couleur suivent la valeur.
-class KitungaOpsAlerts extends StatefulWidget {
-  const KitungaOpsAlerts({super.key, this.spacing = 10.0});
 
-  final double spacing;
-
-  @override
-  State<KitungaOpsAlerts> createState() => _KitungaOpsAlertsState();
-}
-
-/// Seuils, en dehors du widget pour pouvoir les tester.
+/// Seuils (testés).
 class OpsThresholds {
   static const lateAfter = Duration(hours: 2);
   static const noResponseAfter = Duration(minutes: 15);
@@ -75,93 +63,4 @@ double? paymentFailureRate(Iterable<String?> statuses) {
   }
   final total = failed + ok;
   return total == 0 ? null : failed * 100 / total;
-}
-
-class _KitungaOpsAlertsState extends State<KitungaOpsAlerts> {
-  late final Stream<List<OrdersRecord>> _orders = queryOrdersRecord(
-    queryBuilder: (q) => q.where('status', whereIn: OrderStatus.inProgress),
-  );
-  late final Stream<QuerySnapshot<Map<String, dynamic>>> _payments =
-      FirebaseFirestore.instance
-          .collection('Paiement')
-          .where('created_at',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(
-                  DateTime.now().subtract(OpsThresholds.paymentWindow)))
-          .snapshots();
-  late final Timer _tick;
-
-  @override
-  void initState() {
-    super.initState();
-    // Les durées avancent même sans nouvelle donnée : recalcul chaque minute.
-    _tick = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _tick.cancel();
-    super.dispose();
-  }
-
-  Widget _card(String label, String value, String unit, IconData icon,
-      OpsLevel level) {
-    return AlertCardWidget(
-      color: level.color,
-      icon: Icon(icon, color: level.color, size: 24.0),
-      label: label,
-      status: level.label,
-      value: value,
-      unit: unit,
-      bg: level.bg,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        StreamBuilder<List<OrdersRecord>>(
-          stream: _orders,
-          builder: (context, snap) {
-            final a = orderAlerts(
-                (snap.data ?? const <OrdersRecord>[])
-                    .map((o) => (status: o.status, createdAt: o.createdAt)),
-                DateTime.now());
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _card('RETARDS (+2 H)', snap.hasData ? '${a.late}' : '…',
-                    'commandes', Icons.timer_rounded, countLevel(a.late)),
-                SizedBox(height: widget.spacing),
-                _card('SANS RÉPONSE VENDEUR (+15 MIN)',
-                    snap.hasData ? '${a.noResponse}' : '…', 'commandes',
-                    Icons.speed_rounded, countLevel(a.noResponse)),
-              ],
-            );
-          },
-        ),
-        SizedBox(height: widget.spacing),
-        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: _payments,
-          builder: (context, snap) {
-            final rate = paymentFailureRate(
-                (snap.data?.docs ?? const []).map((d) => d.data()['status'] as String?));
-            return _card(
-                'ÉCHECS DE PAIEMENT (7 J)',
-                !snap.hasData
-                    ? '…'
-                    : rate == null
-                        ? '—'
-                        : rate.toStringAsFixed(rate < 10 ? 1 : 0),
-                rate == null ? 'aucun paiement' : '%',
-                Icons.credit_card_off_rounded,
-                rateLevel(snap.hasData ? rate : null));
-          },
-        ),
-      ],
-    );
-  }
 }

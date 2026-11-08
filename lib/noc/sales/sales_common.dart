@@ -202,17 +202,33 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Même pastille que la charte admin : point de couleur et fond teinté.
     final s = style ?? (label: '—', color: _grey);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       decoration: BoxDecoration(
         color: s.color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20.0),
+        borderRadius: BorderRadius.circular(999.0),
       ),
-      child: Text(
-        s.label,
-        style: GoogleFonts.inter(
-            color: s.color, fontSize: 12.0, fontWeight: FontWeight.w700),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6.0,
+            height: 6.0,
+            decoration: BoxDecoration(color: s.color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6.0),
+          Flexible(
+            child: Text(
+              s.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                  color: s.color, fontSize: 12.0, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
       ),
     );
   }

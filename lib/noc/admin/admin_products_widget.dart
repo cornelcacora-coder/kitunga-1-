@@ -491,6 +491,7 @@ class _ProductFormState extends State<_ProductForm> {
   @override
   Widget build(BuildContext context) {
     return AdminFormDialog(
+      icon: Icons.shopping_bag_rounded,
       title: _isNew ? 'Nouveau produit' : 'Modifier le produit',
       saving: _saving,
       onSave: _save,

@@ -1,7 +1,6 @@
 // Export pages
 export '/mobile/connect/login/login_widget.dart' show LoginWidget;
 export '/mobile/connect/intro/intro_widget.dart' show IntroWidget;
-export '/template/template_widget.dart' show TemplateWidget;
 export '/mobile/connect/sign/sign_widget.dart' show SignWidget;
 export '/mobile/connect/forgot_password/forgot_password_widget.dart'
     show ForgotPasswordWidget;
@@ -45,8 +44,7 @@ export '/mobile/main_app/add_delivery_address/add_delivery_address_widget.dart'
     show AddDeliveryAddressWidget;
 export '/model_copy/model_copy_widget.dart' show ModelCopyWidget;
 export '/template_copy/template_copy_widget.dart' show TemplateCopyWidget;
-export '/noc/supervision_dashboard/supervision_dashboard_widget.dart'
-    show SupervisionDashboardWidget;
+export '/noc/admin/admin_dashboard_widget.dart' show AdminDashboardWidget;
 export '/mobile/main_app/add_phone_number/add_phone_number_widget.dart'
     show AddPhoneNumberWidget;
 export '/mobile/main_app/order_view_seller_deliver/order_view_seller_deliver_widget.dart'

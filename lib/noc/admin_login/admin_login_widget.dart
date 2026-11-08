@@ -67,7 +67,7 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
       if (await _isAdminAccount(user.uid)) {
         if (mounted) {
           context.goNamedAuth(
-              SupervisionDashboardWidget.routeName, context.mounted);
+              AdminDashboardWidget.routeName, context.mounted);
         }
         return;
       }

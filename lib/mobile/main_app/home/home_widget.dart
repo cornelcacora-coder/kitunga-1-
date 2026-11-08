@@ -2582,7 +2582,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                       FFButtonWidget(
                                         onPressed: () async {
                                           context.pushNamed(
-                                              SupervisionDashboardWidget.routeName);
+                                              AdminDashboardWidget.routeName);
                                         },
                                         text: 'Démarrer',
                                         options: FFButtonOptions(

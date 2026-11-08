@@ -19,6 +19,10 @@ import 'admin_shell.dart';
 class AdminDashboardWidget extends StatefulWidget {
   const AdminDashboardWidget({super.key, this.clock});
 
+  // Mêmes nom et adresse que l'ancien tableau de bord (liens existants).
+  static String routeName = 'SupervisionDashboard';
+  static String routePath = '/supervisionDashboard';
+
   /// Heure de référence (tests) ; sinon l'heure actuelle.
   final DateTime Function()? clock;
 

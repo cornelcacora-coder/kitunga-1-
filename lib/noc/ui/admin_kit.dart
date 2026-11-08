@@ -94,11 +94,23 @@ class AdminText {
 
 /// Thème Material des pages admin (boutons, champs, menus, fenêtres).
 ThemeData adminTheme(ThemeData base) {
+  // Surfaces blanches (pas de teinte Material 3 sur fenêtres et menus).
   final scheme = ColorScheme.fromSeed(
     seedColor: AdminColors.red,
     primary: AdminColors.red,
     surface: AdminColors.surface,
     brightness: Brightness.light,
+  ).copyWith(
+    surfaceTint: Colors.transparent,
+    surfaceContainerLowest: AdminColors.surface,
+    surfaceContainerLow: AdminColors.surface,
+    surfaceContainer: AdminColors.surface,
+    surfaceContainerHigh: AdminColors.surface,
+    surfaceContainerHighest: AdminColors.surfaceAlt,
+    onSurface: AdminColors.ink,
+    onSurfaceVariant: AdminColors.muted,
+    outline: AdminColors.border,
+    outlineVariant: AdminColors.border,
   );
   OutlineInputBorder border(Color c, [double w = 1.0]) => OutlineInputBorder(
         borderRadius: BorderRadius.circular(AdminRadius.md),
