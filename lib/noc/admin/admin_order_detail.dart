@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '/noc/sales/sales_common.dart' show fcfa;
+import '/backend/order_status.dart';
+import '/noc/sales/sales_common.dart'
+    show fcfa, salesCall, askText, runSalesAction, listOf;
 import '/noc/ui/admin_kit.dart';
 import 'admin_dashboard_data.dart';
 
@@ -46,6 +48,115 @@ class _OrderDetailState extends State<_OrderDetail> {
     widget.order.sellerPath,
     widget.order.delivererPath,
   ].whereType<String>());
+
+  bool _busy = false;
+
+  Future<void> _run(Map<String, dynamic> data, String done) async {
+    setState(() => _busy = true);
+    final ok = await runSalesAction(
+        context, () => salesCall('kitungaAdminOrderAction', data), done);
+    if (!mounted) return;
+    if (ok) {
+      Navigator.pop(context);
+    } else {
+      setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _cancel(DashOrder o) async {
+    final reason = await askText(context, 'Annuler cette commande ?',
+        hint: 'Le client et le commerce verront la commande annulée. Si elle '
+            'était payée, elle passe dans Gestion › Remboursements.');
+    if (reason == null || !mounted) return;
+    await _run({'orderId': o.id, 'action': 'cancel', 'reason': reason},
+        'Commande annulée');
+  }
+
+  Future<void> _assign(DashOrder o) async {
+    final uid = await showDialog<String>(
+      context: context,
+      builder: (_) => AdminThemeScope(
+          child: _DelivererPicker(current: o.delivererPath?.split('/').last)),
+    );
+    if (uid == null || !mounted) return;
+    await _run({'orderId': o.id, 'action': 'assign', 'delivererUid': uid},
+        'Livreur attribué');
+  }
+
+  Future<void> _deliver(DashOrder o) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Marquer la commande livrée ?'),
+        content: const Text(
+            'À utiliser si le livreur a remis la commande sans la valider '
+            'dans l\'application.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Annuler')),
+          FilledButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('Marquer livrée')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    await _run({'orderId': o.id, 'action': 'deliver'}, 'Commande livrée');
+  }
+
+  /// Actions possibles selon le statut (mêmes règles que le serveur).
+  Widget _actions(DashOrder o) {
+    final inProgress = OrderStatus.inProgress.contains(o.status);
+    final canAssign = o.status == OrderStatus.ready ||
+        o.status == OrderStatus.delivering;
+    final canDeliver = o.status == OrderStatus.delivering;
+    if (!inProgress) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(24.0, 0, 24.0, 20.0),
+        child: Text('Commande terminée : aucune action possible.',
+            style: AdminText.label(size: 12.5)),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24.0, 14.0, 24.0, 20.0),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: AdminColors.border)),
+      ),
+      child: _busy
+          ? const AdminLoading(height: 48.0)
+          : Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 10.0,
+              runSpacing: 10.0,
+              children: [
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                      foregroundColor: AdminColors.red,
+                      side: BorderSide(
+                          color: AdminColors.red.withValues(alpha: 0.4))),
+                  onPressed: () => _cancel(o),
+                  icon: const Icon(Icons.cancel_outlined, size: 18.0),
+                  label: const Text('Annuler la commande'),
+                ),
+                if (canAssign)
+                  OutlinedButton.icon(
+                    onPressed: () => _assign(o),
+                    icon: const Icon(Icons.two_wheeler_rounded, size: 18.0),
+                    label: Text(o.delivererPath == null
+                        ? 'Attribuer un livreur'
+                        : 'Changer de livreur'),
+                  ),
+                if (canDeliver)
+                  FilledButton.icon(
+                    onPressed: () => _deliver(o),
+                    icon: const Icon(Icons.task_alt_rounded, size: 18.0),
+                    label: const Text('Marquer livrée'),
+                  ),
+              ],
+            ),
+    );
+  }
 
   Widget _person(String role, IconData icon, String? path,
       Map<String, ({String name, String photo, String phone})> people) {
@@ -225,6 +336,7 @@ class _OrderDetailState extends State<_OrderDetail> {
                 ),
               ),
             ),
+            _actions(o),
           ],
         ),
       ),
@@ -289,4 +401,100 @@ class _ItemRow extends StatelessWidget {
         child: Icon(Icons.image_outlined,
             size: 20.0, color: AdminColors.faint),
       );
+}
+
+/// Choix d'un livreur actif (fonction kitungaCatalogQuery).
+class _DelivererPicker extends StatefulWidget {
+  const _DelivererPicker({this.current});
+
+  final String? current;
+
+  @override
+  State<_DelivererPicker> createState() => _DelivererPickerState();
+}
+
+class _DelivererPickerState extends State<_DelivererPicker> {
+  late final Future<List<Map<String, dynamic>>> _list = salesCall(
+          'kitungaCatalogQuery', {'view': 'partners', 'role': 'Deliver'})
+      .then((r) => listOf(r['partners'])
+          .where((d) => d['accountStatus'] != 'suspended')
+          .toList());
+  String? _picked;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Choisir le livreur'),
+      content: SizedBox(
+        width: 420.0,
+        height: 360.0,
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: _list,
+          builder: (context, snap) {
+            if (snap.connectionState != ConnectionState.done) {
+              return const AdminLoading();
+            }
+            final list = snap.data ?? const [];
+            if (snap.hasError || list.isEmpty) {
+              return AdminEmpty(
+                  icon: Icons.two_wheeler_rounded,
+                  title: snap.hasError
+                      ? 'Livreurs indisponibles'
+                      : 'Aucun livreur actif');
+            }
+            return ListView(
+              children: [
+                for (final d in list)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6.0),
+                    child: Material(
+                      color: _picked == d['uid']
+                          ? AdminColors.redSoft
+                          : AdminColors.surfaceAlt,
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0)),
+                        onTap: d['uid'] == widget.current
+                            ? null
+                            : () => setState(() => _picked = d['uid'] as String),
+                        leading: AdminAvatar(
+                            name: (d['displayName'] as String?)?.isNotEmpty == true
+                                ? d['displayName'] as String
+                                : '${d['email'] ?? '?'}',
+                            photo: d['photoUrl'] as String?,
+                            size: 38.0),
+                        title: Text(
+                            (d['displayName'] as String?)?.isNotEmpty == true
+                                ? d['displayName'] as String
+                                : '${d['email'] ?? ''}',
+                            style: AdminText.strong(size: 13.5)),
+                        subtitle: Text(
+                            d['uid'] == widget.current
+                                ? 'Livreur actuel'
+                                : '${d['phone'] ?? ''}',
+                            style: AdminText.label(size: 12.0)),
+                        trailing: _picked == d['uid']
+                            ? const Icon(Icons.check_circle_rounded,
+                                color: AdminColors.red)
+                            : null,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler')),
+        FilledButton(
+          onPressed: _picked == null ? null : () => Navigator.pop(context, _picked),
+          child: const Text('Attribuer'),
+        ),
+      ],
+    );
+  }
 }

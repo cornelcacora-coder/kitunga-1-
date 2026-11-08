@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '/backend/order_status.dart';
 import '/noc/sales/sales_common.dart' show fcfa;
+import '/noc/sales/sales_common.dart' show salesCall;
 import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 import 'admin_dashboard_data.dart';
@@ -120,6 +121,9 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
   List<DashOrder>? _shown;
   String _shownTab = '';
 
+  /// Toutes les commandes chargées (période + en cours), pour la clôture.
+  List<DashOrder> _all = const [];
+
   Stream<List<DashOrder>> _load() => _src.ordersSince(_days == 0
       ? DateTime(2020)
       : _now.subtract(Duration(days: _days)));
@@ -176,6 +180,12 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
           ? 'Suivi des livreurs, de la prise en charge à la remise'
           : 'Toutes les commandes passées sur Kitunga',
       actions: [
+        if (!_deliveries)
+          OutlinedButton.icon(
+            onPressed: _closeStale,
+            icon: const Icon(Icons.cleaning_services_outlined, size: 18.0),
+            label: const Text('Clôturer les anciennes'),
+          ),
         AdminExportButton(data: _export),
         AdminSelect<int>(
           value: _days,
@@ -210,6 +220,7 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
   }
 
   Widget _content(List<DashOrder> all) {
+    _all = all;
     final base = all.where(_matches).toList();
     final tab = _tabs.firstWhere((t) => t.key == _tab);
     final rows = base.where(tab.test).toList();
@@ -272,6 +283,44 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
         ),
       ],
     );
+  }
+
+  // ── Clôture en lot ─────────────────────────────────────────────────────
+
+  /// Commandes jamais confirmées plus anciennes que [days] jours.
+  int _staleCount(int days) {
+    final before = _now.subtract(Duration(days: days));
+    return _all
+        .where((o) =>
+            ['', OrderStatus.pending].contains(o.status) &&
+            o.createdAt != null &&
+            o.createdAt!.isBefore(before))
+        .length;
+  }
+
+  Future<void> _closeStale() async {
+    final r = await showDialog<({int days, String reason})>(
+      context: context,
+      builder: (_) =>
+          AdminThemeScope(child: _CloseStaleDialog(count: _staleCount)),
+    );
+    if (r == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final res = await salesCall('kitungaCloseStaleOrders',
+          {'days': r.days, 'reason': r.reason});
+      final n = (res['closed'] as num? ?? 0).toInt();
+      final refunds = (res['refunds'] as num? ?? 0).toInt();
+      messenger.showSnackBar(SnackBar(
+          backgroundColor: const Color(0xFF136B3D),
+          content: Text(n == 0
+              ? 'Aucune commande à clôturer.'
+              : '$n commande${n > 1 ? 's' : ''} clôturée${n > 1 ? 's' : ''}'
+                  '${refunds > 0 ? ' · $refunds à rembourser (Gestion)' : ''}')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+          backgroundColor: AdminColors.redDeep, content: Text('$e')));
+    }
   }
 
   // ── Export ─────────────────────────────────────────────────────────────
@@ -599,4 +648,109 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
 
   static String _date(DateTime? d) =>
       d == null ? '—' : DateFormat('d MMM yyyy, HH:mm', 'fr').format(d);
+}
+
+/// Clôture des anciennes commandes jamais confirmées : ancienneté, motif et
+/// nombre de commandes concernées avant confirmation.
+class _CloseStaleDialog extends StatefulWidget {
+  const _CloseStaleDialog({required this.count});
+
+  final int Function(int days) count;
+
+  @override
+  State<_CloseStaleDialog> createState() => _CloseStaleDialogState();
+}
+
+class _CloseStaleDialogState extends State<_CloseStaleDialog> {
+  int _days = 2;
+  final _reason = TextEditingController(text: 'Commande jamais confirmée');
+  bool _missing = false;
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final n = widget.count(_days);
+    return AlertDialog(
+      title: const Text('Clôturer les anciennes commandes'),
+      content: SizedBox(
+        width: 440.0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+                'Annule les commandes restées « À confirmer » depuis plus de :',
+                style: AdminText.body()),
+            const SizedBox(height: 12.0),
+            Wrap(
+              spacing: 8.0,
+              children: [
+                for (final d in const [1, 2, 7, 30])
+                  ChoiceChip(
+                    label: Text(d == 1 ? '1 jour' : '$d jours'),
+                    selected: _days == d,
+                    selectedColor: AdminColors.redSoft,
+                    onSelected: (_) => setState(() => _days = d),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14.0),
+            Container(
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: n == 0 ? AdminColors.greySoft : AdminColors.redSoft,
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline_rounded,
+                      size: 18.0,
+                      color: n == 0 ? AdminColors.muted : AdminColors.red),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: Text(
+                        n == 0
+                            ? 'Aucune commande concernée parmi celles affichées.'
+                            : '$n commande${n > 1 ? 's' : ''} concernée${n > 1 ? 's' : ''} '
+                                '(le serveur recompte au moment de clôturer).',
+                        style: AdminText.strong(size: 13.0)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14.0),
+            TextField(
+              controller: _reason,
+              maxLength: 300,
+              decoration: InputDecoration(
+                labelText: 'Motif',
+                errorText: _missing ? 'Champ obligatoire' : null,
+              ),
+            ),
+            Text(
+                'Les commandes payées passent dans Gestion › Remboursements.',
+                style: AdminText.label(size: 12.0)),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler')),
+        FilledButton(
+          onPressed: () {
+            final r = _reason.text.trim();
+            if (r.isEmpty) return setState(() => _missing = true);
+            Navigator.pop(context, (days: _days, reason: r));
+          },
+          child: const Text('Clôturer'),
+        ),
+      ],
+    );
+  }
 }

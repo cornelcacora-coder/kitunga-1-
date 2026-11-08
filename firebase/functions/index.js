@@ -298,6 +298,14 @@ exports.kitungaDeleteProduct = acquisitionCallable((data, uid) =>
   catalog.deleteProduct({db: admin.firestore(), uid, data}));
 exports.kitungaSavePartner = acquisitionCallable((data, uid) =>
   catalog.savePartner({db: admin.firestore(), uid, data}));
+// ── Commandes (admin) : annuler, attribuer un livreur, livrer, clôturer ────
+const adminOrders = require("./kitunga/admin_orders");
+
+exports.kitungaAdminOrderAction = acquisitionCallable((data, uid) =>
+  adminOrders.adminOrderAction({db: admin.firestore(), uid, data}));
+exports.kitungaCloseStaleOrders = acquisitionCallable((data, uid) =>
+  adminOrders.closeStaleOrders({db: admin.firestore(), uid, data}));
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));

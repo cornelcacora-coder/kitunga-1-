@@ -8,6 +8,7 @@ import 'package:kitunga/noc/admin/admin_monitoring_widgets.dart';
 import 'package:kitunga/noc/admin/admin_orders_widget.dart';
 import 'package:kitunga/noc/admin/admin_shell.dart';
 import 'package:kitunga/noc/ui/admin_export.dart';
+import 'package:kitunga/noc/sales/sales_common.dart';
 import 'package:archive/archive.dart';
 import 'dart:convert';
 
@@ -211,5 +212,96 @@ void main() {
     expect(sheet, contains('ORD-2'));
     expect(sheet, isNot(contains('ORD-1<')));
     expect(sheet, contains('onglet « Non reçues »'));
+  });
+
+  group('actions sur les commandes', () {
+    final calls = <(String, Map<String, dynamic>)>[];
+    setUp(() {
+      calls.clear();
+      salesBackendOverride = (f, d) async {
+        calls.add((f, d));
+        if (f == 'kitungaCatalogQuery') {
+          return {'partners': [
+            {'uid': 'jean', 'displayName': 'Jean Livreur', 'phone': '06',
+              'accountStatus': 'active'},
+            {'uid': 'paul', 'displayName': 'Paul Moto', 'phone': '05',
+              'accountStatus': 'active'},
+            {'uid': 'off', 'displayName': 'Suspendu', 'accountStatus': 'suspended'},
+          ]};
+        }
+        if (f == 'kitungaCloseStaleOrders') return {'closed': 0, 'refunds': 0};
+        return {'status': 'ok'};
+      };
+    });
+    tearDown(() => salesBackendOverride = null);
+
+    Future<void> detail(WidgetTester tester, String ref) async {
+      await open(tester, AdminOrdersWidget(clock: () => now),
+          const Size(1440, 1000));
+      await tester.enterText(find.byType(TextField).last, ref);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(ref).last);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('annuler avec motif', (tester) async {
+      await detail(tester, 'ORD-4');
+      expect(find.text('Attribuer un livreur'), findsNothing);
+      await tester.tap(find.text('Annuler la commande'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'Commerce fermé');
+      await tester.tap(find.text('Confirmer'));
+      await tester.pumpAndSettle();
+      expect(calls.last.$1, 'kitungaAdminOrderAction');
+      expect(calls.last.$2, {'orderId': '4', 'action': 'cancel', 'reason': 'Commerce fermé'});
+      expect(find.text('Commande ORD-4'), findsNothing); // fiche refermée
+    });
+
+    testWidgets('attribuer un livreur actif', (tester) async {
+      await detail(tester, 'ORD-5');
+      await tester.tap(find.text('Attribuer un livreur'));
+      await tester.pumpAndSettle();
+      expect(find.text('Suspendu'), findsNothing);
+      await tester.tap(find.text('Paul Moto'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Attribuer'));
+      await tester.pumpAndSettle();
+      expect(calls.last.$1, 'kitungaAdminOrderAction');
+      expect(calls.last.$2, {'orderId': '5', 'action': 'assign', 'delivererUid': 'paul'});
+    });
+
+    testWidgets('changer de livreur et marquer livrée', (tester) async {
+      await detail(tester, 'ORD-6');
+      expect(find.text('Changer de livreur'), findsOneWidget);
+      await tester.tap(find.text('Marquer livrée'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Marquer livrée').last);
+      await tester.pumpAndSettle();
+      expect(calls.last.$1, 'kitungaAdminOrderAction');
+      expect(calls.last.$2, {'orderId': '6', 'action': 'deliver'});
+    });
+
+    testWidgets('commande terminée : aucune action', (tester) async {
+      await detail(tester, 'ORD-1');
+      expect(find.text('Commande terminée : aucune action possible.'),
+          findsOneWidget);
+      expect(find.text('Annuler la commande'), findsNothing);
+    });
+
+    testWidgets('clôturer les anciennes commandes', (tester) async {
+      await open(tester, AdminOrdersWidget(clock: () => now),
+          const Size(1440, 1000));
+      await tester.tap(find.text('Clôturer les anciennes'));
+      await tester.pumpAndSettle();
+      // ORD-4 est « À confirmer » depuis 40 min : pas concernée à 1 jour.
+      expect(find.textContaining('Aucune commande concernée'), findsOneWidget);
+      await tester.tap(find.text('7 jours'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clôturer'));
+      await tester.pumpAndSettle();
+      expect(calls.last.$1, 'kitungaCloseStaleOrders');
+      expect(calls.last.$2, {'days': 7, 'reason': 'Commande jamais confirmée'});
+      expect(find.text('Aucune commande à clôturer.'), findsOneWidget);
+    });
   });
 }
