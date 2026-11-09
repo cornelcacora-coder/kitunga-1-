@@ -6,6 +6,8 @@
   puis le site admin. Sans paramètre : le site seulement. Ensuite, purger le
   cache Cloudflare.
 - `bash scripts/storage_cors.sh` : règle CORS du stockage (déjà faite).
+- `bash scripts/deployer_regles_stockage.sh` : règles du stockage
+  (dossier privé des ordonnances).
 
 Ne pas mettre `corsProxy` dans la liste : l'outil Firebase ne connaît pas les
 tarifs de us-west1 et exige `--force` pour cette fonction. Si elle doit être
