@@ -8,6 +8,7 @@ import 'admin_categories_widget.dart' show loadAdminCategories;
 import 'admin_products_widget.dart' show loadAdminPartners;
 import 'admin_shell.dart';
 import '/backend/kitunga_cuisines.dart';
+import '/backend/kitunga_hours.dart';
 import 'admin_menu_import.dart';
 import 'admin_launch_partners.dart';
 import '/noc/ui/admin_export.dart';
@@ -688,12 +689,14 @@ class _PartnerFormState extends State<_PartnerForm> {
               onChanged: (v) => setState(() => _category = v),
             ),
         ]),
-        if (_seller)
-          TextField(
-            controller: _hours,
-            maxLength: 120,
-            decoration: salesInput('Horaires', hint: 'Ex. Lun-Sam 8h-20h'),
+        if (_seller) ...[
+          Text('Horaires d\'ouverture', style: salesBody(color: kSalesInk)),
+          KitungaHoursPicker(
+            initial: _hours.text,
+            onChanged: (v) => _hours.text = v,
+            textStyle: salesBody(color: kSalesInk),
           ),
+        ],
         TextField(
           controller: _bio,
           maxLines: 3,
@@ -966,10 +969,13 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
             ),
         ]),
         if (_seller) ...[
-          TextField(
-            controller: _hours,
-            maxLength: 120,
-            decoration: salesInput('Horaires', hint: 'Ex. Lun-Sam 8h-20h'),
+          Text('Horaires d\'ouverture', style: salesBody(color: kSalesInk)),
+          KitungaHoursPicker(
+            // Fiche prête : ses horaires remplacent la saisie.
+            key: ValueKey('hours-${_template?.name}'),
+            initial: _hours.text,
+            onChanged: (v) => _hours.text = v,
+            textStyle: salesBody(color: kSalesInk),
           ),
         ],
         if (_template != null && _photo.isEmpty && _cover.isEmpty)

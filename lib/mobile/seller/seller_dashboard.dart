@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_cuisines.dart';
+import '/backend/kitunga_hours.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -859,17 +860,16 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
           ),
           SizedBox(height: 16.0),
           KitungaFieldLabel('Horaires d\'ouverture'),
-          TextField(
-            controller: _hours,
-            onChanged: (_) => setState(() {}),
-            style: GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
-            decoration: kitungaInputDecoration(
-                context, 'Ex : 8h - 22h', Icons.schedule_rounded),
+          KitungaHoursPicker(
+            initial: _hours.text,
+            onChanged: (v) => setState(() => _hours.text = v),
+            textStyle:
+                GoogleFonts.inter(color: theme.primaryText, fontSize: 14.0),
           ),
           SizedBox(height: 8.0),
           Text(
             status == null
-                ? 'Écrivez vos horaires sous la forme « 8h - 22h » pour que les clients voient si vous êtes ouvert.'
+                ? 'Choisissez vos horaires jour par jour pour que les clients voient si vous êtes ouvert.'
                 : 'Aperçu pour les clients : ${status.label}',
             style: GoogleFonts.inter(
               color: status == null

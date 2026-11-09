@@ -1,4 +1,5 @@
 import '/backend/backend.dart';
+import '/backend/kitunga_hours.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -228,6 +229,12 @@ class KitungaShopCard extends StatelessWidget {
 /// exploitables : rien n'est alors affiché, plutôt qu'un statut inventé.
 ({bool open, String label})? kitungaOpeningStatus(String horaire,
     [DateTime? now]) {
+  // Horaires du lundi au dimanche (« Lun-Ven 8h00-20h00 · Dim fermé »).
+  final week = horaire.contains('·') ||
+          horaire.toLowerCase().startsWith('tous les jours')
+      ? parseWeek(horaire)
+      : null;
+  if (week != null) return weekStatus(week, now ?? DateTime.now());
   final m = RegExp(
           r'(\d{1,2})\s*[hH:]\s*(\d{2})?\s*(?:-|–|à|a)\s*(\d{1,2})\s*[hH:]\s*(\d{2})?')
       .firstMatch(horaire);
