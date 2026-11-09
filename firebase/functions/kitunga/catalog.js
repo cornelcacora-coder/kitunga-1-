@@ -551,7 +551,7 @@ async function importMenu({db, uid, data}) {
       .where("seller_ref", "==", seller.ref).get();
   const known = new Set(existing.docs
       .map((d) => String(d.get("name") || "").trim().toLowerCase()));
-  const noOption = /accompagnement|boisson|sauce|dessert/i;
+  const noOption = /accompagnement|boisson|sauce|dessert|emballage/i;
   const created = [];
   const skipped = [];
   let batch = db.batch();

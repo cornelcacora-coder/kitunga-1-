@@ -8,11 +8,14 @@ const {PaymentError} = require("./errors");
 
 const DAY = 24 * 60 * 60 * 1000;
 
-// Libellés identiques aux anciennes valeurs de User.subscribe_type.
+// Formule unique proposée : 300 F pour 30 jours. Les anciennes formules
+// (offered: false) restent connues pour terminer un paiement déjà lancé et
+// pour l'historique des commissions ; elles ne sont plus vendues.
 const PLANS = {
-  monthly: {label: "Mensuel - 250F", price: 250, days: 30},
-  quarterly: {label: "Trimestriel - 500 F", price: 500, days: 90},
-  annual: {label: "Annuel - 1000 F", price: 1000, days: 365},
+  monthly: {label: "Mensuel - 300 F", price: 300, days: 30},
+  quarterly: {label: "Trimestriel - 500 F", price: 500, days: 90,
+    offered: false},
+  annual: {label: "Annuel - 1000 F", price: 1000, days: 365, offered: false},
 };
 
 function toDate(v) {
@@ -39,8 +42,10 @@ function subscriptionActive(user, now = new Date()) {
 /** Demande MTN pour la formule choisie. Renvoie {referenceId, amount}. */
 async function startSubscription({db, momo, uid, plan, phone}) {
   if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
-  const p = PLANS[plan];
-  if (!p) throw new PaymentError("invalid-argument", "Formule inconnue.");
+  // Ancienne application ou page en cache : la seule formule vendue.
+  const p = PLANS[plan] && PLANS[plan].offered !== false ?
+    PLANS[plan] : PLANS.monthly;
+  plan = PLANS[plan] && PLANS[plan].offered !== false ? plan : "monthly";
   const payer = momo.normalizePhone(phone);
   if (!payer) {
     throw new PaymentError("invalid-argument", "Numéro MTN invalide.");
@@ -49,6 +54,11 @@ async function startSubscription({db, momo, uid, plan, phone}) {
   if (!user.exists) {
     throw new PaymentError("failed-precondition",
         "Créez d'abord votre compte dans l'application Kitunga.");
+  }
+  // Vendeurs, livreurs et admins : pas d'abonnement à payer.
+  if (ROLES_WITHOUT_SUBSCRIPTION.includes(user.get("role"))) {
+    throw new PaymentError("failed-precondition",
+        "Votre compte n'a pas besoin d'abonnement.");
   }
   const reference = `ABO-${Date.now().toString(36).toUpperCase()}`;
   const referenceId = await momo.requestToPay({

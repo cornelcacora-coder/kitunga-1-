@@ -1,3 +1,4 @@
+import '/backend/subscription.dart';
 import '/backend/server_payment.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -106,12 +107,6 @@ class _SignWidgetState extends State<SignWidget> {
   final _userFormKey = GlobalKey<FormState>();
   bool _signingUp = false;
 
-  static const _plans = [
-    'Mensuel - 250F',
-    'Trimestriel - 500 F',
-    'Annuel - 1000 F',
-  ];
-
   Future _signUpUser() async {
     if (_signingUp) return;
     if (!(_userFormKey.currentState?.validate() ?? false)) return;
@@ -141,7 +136,7 @@ class _SignWidgetState extends State<SignWidget> {
             horraire: _model.horraireTextController.text,
             // Abonnement activé par le serveur après paiement MoMo.
             isSubscribed: false,
-            subscribeType: _model.subscribTypeUserValue,
+            subscribeType: kSubscriptionLabel,
           ));
 
       // Module commercial : attribution au commercial (sans attendre).
@@ -369,28 +364,31 @@ class _SignWidgetState extends State<SignWidget> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Formule d'abonnement
-                const KitungaFieldLabel('Formule d\'abonnement'),
-                DropdownButtonFormField<String>(
-                  initialValue: _model.subscribTypeUserValue,
-                  items: _plans
-                      .map((p) => DropdownMenuItem(
-                            value: p,
-                            child: Text(p, style: fieldStyle),
-                          ))
-                      .toList(),
-                  onChanged: (v) =>
-                      safeSetState(() => _model.subscribTypeUserValue = v),
-                  dropdownColor: isDark ? const Color(0xFF1E242B) : Colors.white,
-                  borderRadius: BorderRadius.circular(22.0),
-                  icon: Icon(
-                    Icons.expand_more_rounded,
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                // Abonnement : formule unique.
+                const KitungaFieldLabel('Abonnement'),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 18.0, vertical: 14.0),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1E242B)
+                        : const Color(0xFFFFF1F1),
+                    borderRadius: BorderRadius.circular(22.0),
                   ),
-                  decoration: kitungaInputDecoration(
-                    context,
-                    'Choisissez votre formule',
-                    Icons.workspace_premium_outlined,
+                  child: Row(
+                    children: [
+                      Icon(Icons.workspace_premium_outlined,
+                          color: FlutterFlowTheme.of(context).primary),
+                      const SizedBox(width: 12.0),
+                      Expanded(
+                        child: Text(
+                          '$kSubscriptionPrice FCFA par mois, pour commander '
+                          'sur Kitunga.',
+                          style: fieldStyle,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16.0),
@@ -670,90 +668,7 @@ class _SignWidgetState extends State<SignWidget> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            if ((widget!.accessibility !=
-                                                    'Deliver') ||
-                                                (widget!.accessibility !=
-                                                    'Admin'))
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        20.0, 0.0, 20.0, 0.0),
-                                                child:
-                                                    FlutterFlowDropDown<String>(
-                                                  controller: _model
-                                                          .subscribTypBusinessValueController ??=
-                                                      FormFieldController<
-                                                          String>(null),
-                                                  options: [
-                                                    'Mensuel - 250F',
-                                                    'Trimestriel - 500 F',
-                                                    'Annuel - 1000 F'
-                                                  ],
-                                                  onChanged: (val) =>
-                                                      safeSetState(() => _model
-                                                              .subscribTypBusinessValue =
-                                                          val),
-                                                  width: double.infinity,
-                                                  height: 50.0,
-                                                  textStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        fontSize: 13.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  hintText:
-                                                      'Type d\'abonnement',
-                                                  icon: Icon(
-                                                    Icons
-                                                        .keyboard_arrow_down_rounded,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryText,
-                                                    size: 24.0,
-                                                  ),
-                                                  fillColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .secondaryBackground,
-                                                  elevation: 2.0,
-                                                  borderColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .black20,
-                                                  borderWidth: 1.0,
-                                                  borderRadius: 12.0,
-                                                  margin: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          12.0, 0.0, 12.0, 0.0),
-                                                  hidesUnderline: true,
-                                                  isOverButton: false,
-                                                  isSearchable: false,
-                                                  isMultiSelect: false,
-                                                ),
-                                              ),
+                                            // Vendeurs et livreurs : pas d'abonnement.
                                             Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -2569,7 +2484,6 @@ class _SignWidgetState extends State<SignWidget> {
                                                               ? _model.bioTextController.text
                                                               : 'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
                                                           'horraire': _model.horraireTextController.text,
-                                                          'subscribeType': _model.subscribTypBusinessValue,
                                                         },
                                                       );
                                                       partnerId = created['uid'] as String;

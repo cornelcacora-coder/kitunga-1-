@@ -175,7 +175,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
   Widget _header(FlutterFlowTheme theme, String role) {
     final photo = currentUserPhoto;
-    final plan = valueOrDefault(currentUserDocument?.subscribeType, '');
     final verified = valueOrDefault(currentUserDocument?.verified, false);
     // Le fond rouge passe sous la barre d'état.
     final top = MediaQuery.paddingOf(context).top;
@@ -307,10 +306,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _badge(theme, _roleLabel(role)),
-                    if (plan.isNotEmpty && role != 'Guest' && role != 'User') ...[
-                      SizedBox(width: 6.0),
-                      _badge(theme, plan),
-                    ],
+                    // Vendeurs et livreurs : pas d'abonnement.
                     if (role == 'User') ...[
                       SizedBox(width: 6.0),
                       _badge(

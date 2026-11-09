@@ -733,11 +733,6 @@ class _NewPartnerForm extends StatefulWidget {
   State<_NewPartnerForm> createState() => _NewPartnerFormState();
 }
 
-const kPartnerPlans = [
-  'Mensuel - 250F',
-  'Trimestriel - 500 F',
-  'Annuel - 1000 F'
-];
 
 class _NewPartnerFormState extends State<_NewPartnerForm> {
   late final bool _seller = widget.role == 'Seller';
@@ -759,7 +754,6 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
   final _hours = TextEditingController();
   final _bio = TextEditingController();
   String? _category;
-  String _plan = kPartnerPlans.first;
   String _photo = '';
   String _cover = '';
   bool _verified = false;
@@ -811,7 +805,6 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         'verified': _verified,
         'bio': _bio.text.trim(),
         'horraire': _hours.text.trim(),
-        'subscribeType': _seller ? _plan : '',
       });
       // Logo et couverture : ajoutés à la fiche juste après la création.
       if (_photo.isNotEmpty || _cover.isNotEmpty || _cuisines.isNotEmpty) {
@@ -973,16 +966,6 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
             ),
         ]),
         if (_seller) ...[
-          DropdownButtonFormField<String>(
-            initialValue: _plan,
-            isExpanded: true,
-            decoration: salesInput('Formule d\'abonnement'),
-            items: [
-              for (final p in kPartnerPlans)
-                DropdownMenuItem(value: p, child: Text(p)),
-            ],
-            onChanged: (v) => setState(() => _plan = v ?? _plan),
-          ),
           TextField(
             controller: _hours,
             maxLength: 120,

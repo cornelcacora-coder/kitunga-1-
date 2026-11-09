@@ -307,7 +307,8 @@ void main() {
       expect(created['role'], 'Seller');
       expect(created['email'], 'eclat@test.cg');
       expect(created['category'], 'Boutique');
-      expect(created['subscribeType'], 'Mensuel - 250F');
+      // Vendeurs et livreurs : pas d'abonnement.
+      expect(created.containsKey('subscribeType'), isFalse);
       expect(tester.takeException(), isNull);
 
       // Fiche prête : Le Crisp'nCroc, avec logo, cuisines et menu.
@@ -315,7 +316,7 @@ void main() {
       addTearDown(() => launchLogoUploadOverride = null);
       // Encadré « Partenaires prêts à ajouter » de la page.
       expect(find.text('Partenaires prêts à ajouter'), findsOneWidget);
-      expect(find.text('4 plats (prix à confirmer)'), findsOneWidget);
+      expect(find.text('33 plats'), findsOneWidget); // Zone de Confort
       final add = find.widgetWithText(FilledButton, 'Ajouter').first;
       await tester.ensureVisible(add);
       await tester.pumpAndSettle();

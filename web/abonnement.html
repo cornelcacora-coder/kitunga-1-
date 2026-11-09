@@ -134,11 +134,9 @@
       </div>
 
       <form id="payForm" class="card">
-        <h2>Choisir une formule</h2>
+        <h2>Votre abonnement</h2>
         <div class="plans">
-          <label class="plan"><input type="radio" name="plan" value="monthly" checked><span class="name">Mensuel · 30 jours</span><span class="price">250 F</span></label>
-          <label class="plan"><input type="radio" name="plan" value="quarterly"><span class="name">Trimestriel · 90 jours</span><span class="price">500 F</span></label>
-          <label class="plan"><input type="radio" name="plan" value="annual"><span class="name">Annuel · 365 jours</span><span class="price">1000 F</span></label>
+          <label class="plan selected"><input type="radio" name="plan" value="monthly" checked><span class="name">Abonnement Kitunga · 30 jours</span><span class="price">300 F</span></label>
         </div>
         <label for="phone">Numéro MTN Mobile Money</label>
         <input id="phone" type="tel" inputmode="numeric" placeholder="06 123 45 67" required>
@@ -193,13 +191,7 @@
       $("hello").textContent = "Bonjour " + (data.display_name || user.email);
       if (!$("phone").value && data.phone_number) $("phone").value = data.phone_number;
       showStatus(data.subscribe_close_at ? data.subscribe_close_at.toDate() : null);
-      // Formule choisie à l'inscription, présélectionnée (modifiable).
-      const chosen = {"Mensuel - 250F": "monthly", "Trimestriel - 500 F": "quarterly", "Annuel - 1000 F": "annual"}[data.subscribe_type];
-      const radio = chosen && document.querySelector('.plan input[value="' + chosen + '"]');
-      if (radio) {
-        radio.checked = true;
-        radio.dispatchEvent(new Event("change"));
-      }
+      // Formule unique : 300 F pour 30 jours.
     }
 
     auth.onAuthStateChanged((user) => {

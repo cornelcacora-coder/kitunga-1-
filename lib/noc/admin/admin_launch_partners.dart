@@ -59,14 +59,14 @@ const kLaunchPartners = [
     coverAsset: 'assets/images/partners/zone_de_confort_cover.jpg',
     cuisines: ['Congolaise (Brazzaville)', 'Grillades & braisés'],
     phone: '065376382',
-    bio: 'Ne t\'inquiète plus pour ton midi, on s\'en occupe ! Plats '
-        'africains à partir de 1500 F, tu manges comme à la maison. '
-        'Livraison partout à Brazzaville. 39 rue des Cheminots, Ouenzé '
+    bio: 'Tu manges comme à la maison ! Dès 10h30, nous vous livrons des '
+        'plats savoureux, faits comme à la maison, partout à Brazzaville. '
+        'Plats africains, grillades, liboké, bouillons. 39 rue des Cheminots, Ouenzé '
         '(vers Général Ndeguet). WhatsApp : 06 793 23 29 · '
         'Portable : 06 537 63 82.',
-    // Plats de l'affiche, « à partir de 1500 frs » : prix à confirmer.
+    hours: 'Tous les jours dès 10h30',
+    // Menu complet de l'affiche « Notre Menu ».
     menu: _zoneMenu,
-    menuDraft: true,
   ),
 ];
 
@@ -85,10 +85,47 @@ Future<String?> uploadLaunchImage(String asset) async {
 
 const _zoneMenu = '''
 NOS PLATS AFRICAINS
-Ragoût de bœuf et riz ....... 1500 FCFA
-Saka-saka au poisson ....... 1500 FCFA
-Haricots ....... 1500 FCFA
-Poulet braisé ....... 1500 FCFA
+Poisson salé aux aubergines ....... 2500 FCFA
+Ailes de poulet aux petits pois couscous ....... 2000 FCFA
+Liboké de ndzombo oseille ....... 2500 FCFA
+Poulet yassa riz blanc ....... 2000 FCFA
+Corvina légumes verts ....... 2000 FCFA
+Côtes pimentées ....... 2000 FCFA
+Ngoki à la moambé ....... 2500 FCFA
+Riz gras poulet bananes ....... 1500 FCFA
+Ragoût viande couscous ....... 2500 FCFA
+Poulet mayo ....... 2000 FCFA
+Bouillon de côtes fumées épinards ....... 2000 FCFA
+Liboké de silure ....... 2500 FCFA
+Attiéké poisson ou poulet bananes ....... 1500 FCFA
+Poulet aux courges ....... 2000 FCFA
+Poisson fumé bouillon coco ....... 2500 FCFA
+Queue de bœuf sautée ....... 2500 FCFA
+Ailes de poulet sautées aubergines vertes ....... 2000 FCFA
+Haricots blancs tripes ....... 2000 FCFA
+Pâtes à la bolognaise ....... 1500 FCFA
+Cuisses de poulet (3 pièces) épinards ou coco ....... 2000 FCFA
+
+NOS GRILLADES
+Côtes grillées ....... 1500 FCFA
+Cuisses de poulet grillées ....... 1500 FCFA
+Ailes de poulet grillées ....... 1500 FCFA
+Poisson grillé ....... 1500 FCFA
+
+AUTRES PLATS
+Bouillon d'antilope ....... 2500 FCFA
+Ngoulou mako ....... 2500 FCFA
+Bouillon de mboto / mbessé ....... 2500 FCFA
+
+NOS ACCOMPAGNEMENTS
+Saka-saka ....... 1000 FCFA
+Oseille ....... 500 FCFA
+Frites ....... 500 FCFA
+Bananes ....... 500 FCFA
+Asperges ....... 1000 FCFA
+
+EMBALLAGE
+Barquette plastique ....... 200 FCFA
 ''';
 
 const _crispMenu = '''

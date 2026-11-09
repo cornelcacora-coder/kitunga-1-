@@ -236,7 +236,7 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
   await db.doc("User/buyer").update({subscribe_close_at: new Date(0)});
   const s = await startSubscription({db, momo, uid: "buyer",
     plan: "monthly", phone: "065551234"});
-  assert.equal(s.amount, 250);
+  assert.equal(s.amount, 300); // formule unique : 300 F pour 30 jours
   const r = await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s.referenceId});
   assert.equal(r.status, "paid");
@@ -249,16 +249,21 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
     referenceId: s.referenceId});
   assert.equal((await db.doc("User/buyer").get())
       .get("subscribe_close_at").toDate().getTime(), until.getTime());
-  // Un renouvellement s'ajoute à la fin actuelle.
+  // Un renouvellement s'ajoute à la fin actuelle. Ancienne formule demandée
+  // (page en cache) : c'est la formule unique à 300 F qui est vendue.
   const s2 = await startSubscription({db, momo, uid: "buyer",
     plan: "annual", phone: "065551234"});
+  assert.equal(s2.amount, 300);
   await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s2.referenceId});
   const until2 = (await db.doc("User/buyer").get())
       .get("subscribe_close_at").toDate();
-  assert.equal(until2 - until, 365 * 86400000);
+  assert.equal(until2 - until, 30 * 86400000);
   assert.equal((await db.doc("User/buyer").get()).get("subscribe_type"),
-      "Annuel - 1000 F");
+      "Mensuel - 300 F");
+  // Vendeurs et livreurs : pas d'abonnement à payer.
+  await assert.rejects(startSubscription({db, momo, uid: "seller",
+    plan: "monthly", phone: "065551234"}), /pas besoin d'abonnement/);
   // Le paiement d'abonnement ne peut pas servir à créer une commande.
   await assert.rejects(confirmPayment({db, momo, uid: "buyer",
     referenceId: s.referenceId}), /introuvable/);

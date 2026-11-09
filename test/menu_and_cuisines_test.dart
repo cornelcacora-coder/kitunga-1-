@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:kitunga/backend/kitunga_cuisines.dart';
+import 'package:kitunga/noc/admin/admin_launch_partners.dart';
 import 'package:kitunga/noc/admin/admin_menu_import.dart';
 import 'package:kitunga/noc/sales/sales_common.dart';
 
@@ -31,6 +32,32 @@ void main() {
     expect(r.lines.firstWhere((l) => l.name.startsWith('Poulet doux')),
         (section: 'Grillades', name: 'Poulet doux 1/2', price: 2000));
     expect(r.lines.where((l) => l.section == 'Accompagnements').length, 7);
+  });
+
+  test('menu de Zone de Confort : 33 plats, prix de l\'affiche', () {
+    final zone = kLaunchPartners.firstWhere((p) => p.name == 'Zone de Confort');
+    expect(zone.menuDraft, isFalse);
+    final r = parseMenuText(zone.menu);
+    expect(r.unread, isEmpty);
+    expect(r.lines.length, 33);
+    final count = <String, int>{};
+    for (final l in r.lines) {
+      count[l.section] = (count[l.section] ?? 0) + 1;
+    }
+    expect(count, {
+      'Plats africains': 20,
+      'Grillades': 4,
+      'Autres plats': 3,
+      'Accompagnements': 5,
+      'Emballage': 1,
+    });
+    MenuLine dish(String start) =>
+        r.lines.firstWhere((l) => l.name.startsWith(start));
+    expect(dish('Cuisses de poulet (3 pièces)').price, 2000);
+    expect(dish('Riz gras').price, 1500);
+    expect(dish('Saka-saka').price, 1000);
+    expect(dish('Barquette').price, 200);
+    expect(dish('Bouillon de mboto').name, 'Bouillon de mboto / mbessé');
   });
 
   test('autres écritures de prix', () {

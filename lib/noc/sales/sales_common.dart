@@ -150,11 +150,15 @@ const commissionFlag = <String, String>{
   'assignment_cancelled': 'Affectation annulée',
 };
 
+/// Formules (historique compris). Seule « monthly » est encore vendue.
 const planLabel = <String, String>{
-  'monthly': 'Mensuel (250 F)',
+  'monthly': 'Mensuel (300 F)',
   'quarterly': 'Trimestriel (500 F)',
   'annual': 'Annuel (1000 F)',
 };
+
+/// Formules vendues aujourd'hui (abonnement client unique à 300 F).
+const kOfferedPlans = ['monthly'];
 
 String payoutMethodLabel(Map? m) {
   if (m == null) return 'Aucun moyen de paiement';

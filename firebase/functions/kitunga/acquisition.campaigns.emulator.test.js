@@ -51,7 +51,7 @@ test("barème : figé, réservé à l'admin, anti-fraude", async () => {
   // Activation + abonnement doit rester sous la formule la moins chère.
   await assert.rejects(rule({firstSubscriptionAmount: 450}), /sous le prix/);
   await assert.rejects(rule({eligiblePlans: ["monthly"],
-    firstSubscriptionAmount: 200}), /la moins chère \(250 F\)/);
+    firstSubscriptionAmount: 260}), /la moins chère \(300 F\)/);
   await assert.rejects(rule({eligiblePlans: ["gratuit"]}), /formules/);
   await assert.rejects(rule({eligiblePlans: []}), /formules/);
   await assert.rejects(rule({activationAmount: 10.5}), /Montant invalide/);

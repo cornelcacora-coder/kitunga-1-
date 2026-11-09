@@ -162,7 +162,7 @@ class _RuleFormState extends State<_RuleForm> {
   final _label = TextEditingController();
   final _activation = TextEditingController(text: '50');
   final _subscription = TextEditingController(text: '100');
-  final Set<String> _plans = {'quarterly', 'annual'};
+  final Set<String> _plans = {...kOfferedPlans};
   bool _saving = false;
 
   @override
@@ -237,6 +237,7 @@ class _RuleFormState extends State<_RuleForm> {
                 Text('Formules qui ouvrent droit à la commission',
                     style: salesBody(color: kSalesInk)),
                 for (final p in planLabel.entries)
+                  if (kOfferedPlans.contains(p.key))
                   CheckboxListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
