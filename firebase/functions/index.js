@@ -4,7 +4,8 @@ admin.initializeApp();
 
 const https = require("https");
 const cors = require("cors")({ origin: true });
-const corsProxyRuntimeOptions = { minInstances: 1, timeoutSeconds: 15 };
+// Pas d'instance permanente (coût mensuel) : le proxy ne sert plus qu'en secours.
+const corsProxyRuntimeOptions = { minInstances: 0, timeoutSeconds: 15 };
 const ALLOWED_PROXY_HOSTS = [
   "firebasestorage.googleapis.com",
   "storage.googleapis.com",
