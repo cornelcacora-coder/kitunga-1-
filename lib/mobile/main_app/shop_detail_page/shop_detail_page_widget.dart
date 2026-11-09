@@ -220,6 +220,13 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                   if (shop.horraire.trim().isNotEmpty)
                     _pill(theme, Icons.schedule_rounded, shop.horraire.trim(),
                         theme.secondaryText),
+                  // Restaurants : temps moyen de préparation.
+                  if ((shop.snapshotData['prep_minutes'] as num?) != null)
+                    _pill(
+                        theme,
+                        Icons.timer_outlined,
+                        'Prêt en ~${(shop.snapshotData['prep_minutes'] as num).toInt()} min',
+                        theme.secondaryText),
                   if (shop.verified)
                     _pill(theme, Icons.verified_outlined, 'Certifié',
                         theme.primary),

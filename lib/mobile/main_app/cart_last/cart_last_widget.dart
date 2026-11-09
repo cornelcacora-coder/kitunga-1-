@@ -1,3 +1,4 @@
+import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart' show KitungaClosedNotice;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -1930,6 +1931,10 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                   ),
                                                 ].divide(SizedBox(height: 8.0)),
                                               ),
+                                              // Commerce fermé : prévenu avant de payer.
+                                              if (_sellerRef != null)
+                                                KitungaClosedNotice(
+                                                    sellerRef: _sellerRef!),
                                               Row(
                                                 mainAxisSize: MainAxisSize.max,
                                                 children: [

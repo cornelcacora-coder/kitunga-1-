@@ -45,6 +45,24 @@ const start = () => startPayment({db, momo, uid: "buyer",
   sellerPath: "User/seller", zone: "Talangaï", deliveryLocation: "Rue 1",
   phone: "06 123 45 67"});
 
+test("commerce fermé : pas de commande, message avec l'ouverture",
+    async () => {
+      await seed("Taille : Normal", 1);
+      await db.doc("User/seller").update({display_name: "Chez Paul",
+        Horraire: "Lun-Sam 8h00-18h00 · Dim fermé"});
+      // Dimanche 15 novembre 2026, midi à Brazzaville.
+      const sunday = new Date(Date.UTC(2026, 10, 15, 11));
+      await assert.rejects(startPayment({db, momo, uid: "buyer",
+        sellerPath: "User/seller", zone: "Talangaï", phone: "06 123 45 67",
+        now: sunday}), /Chez Paul est fermé en ce moment \(ouvre demain à 8h00\)/);
+      // Lundi 10h : ouvert.
+      const monday = new Date(Date.UTC(2026, 10, 16, 9));
+      const s = await startPayment({db, momo, uid: "buyer",
+        sellerPath: "User/seller", zone: "Talangaï", phone: "06 123 45 67",
+        now: monday});
+      assert.ok(s.referenceId);
+    });
+
 test("variante épuisée : paiement refusé avant MTN", async () => {
   await seed("Taille : Maxi · Suppléments : Bacon", 2);
   await assert.rejects(start, /Stock insuffisant/);

@@ -11,6 +11,7 @@
 const {priceCart} = require("./pricing");
 const {subscriptionActive} = require("./subscriptions");
 const {PaymentError} = require("./errors");
+const {openingStatus} = require("./hours");
 
 const STOPPED = ["Refusée", "Annulée"];
 
@@ -38,7 +39,7 @@ async function loadCart(db, userRef, sellerRef) {
 
 /** Démarre un paiement. Renvoie {referenceId, amount, subtotal, fee}. */
 async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
-  phone}) {
+  phone, now = new Date()}) {
   if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
   if (!zone) throw new PaymentError("invalid-argument", "Quartier requis.");
   const payer = momo.normalizePhone(phone);
@@ -57,6 +58,16 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
   if (seller.exists && seller.get("account_status") === "suspended") {
     throw new PaymentError("failed-precondition",
         "Ce commerce n'est plus disponible sur Kitunga.");
+  }
+  // En dehors de ses horaires, le commerce ne prend pas de commande
+  // (horaires non renseignés ou illisibles : rien n'est bloqué).
+  const hours = seller.exists ?
+    openingStatus(seller.get("Horraire"), now) : null;
+  if (hours && !hours.open) {
+    const name = seller.get("display_name") || "Ce commerce";
+    throw new PaymentError("failed-precondition",
+        `${name} est fermé en ce moment (${hours.label.replace("Fermé · ", "")}). ` +
+        "Vous pourrez commander dès son ouverture.");
   }
   const carts = await loadCart(db, userRef, sellerRef);
   if (carts.length === 0) {

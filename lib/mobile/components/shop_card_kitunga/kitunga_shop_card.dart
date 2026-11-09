@@ -353,3 +353,70 @@ class KitungaShopListTile extends StatelessWidget {
     );
   }
 }
+
+
+/// Bandeau du panier quand le commerce est fermé (le serveur refuse alors
+/// le paiement) : le client le sait avant de payer.
+class KitungaClosedNotice extends StatelessWidget {
+  const KitungaClosedNotice({super.key, required this.sellerRef, this.now});
+
+  final DocumentReference sellerRef;
+
+  /// Tests : heure imposée.
+  final DateTime? now;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return StreamBuilder<UserRecord>(
+      stream: UserRecord.getDocument(sellerRef),
+      builder: (context, snap) {
+        final shop = snap.data;
+        final status =
+            shop == null ? null : kitungaOpeningStatus(shop.horraire, now);
+        if (status == null || status.open) return const SizedBox.shrink();
+        return KitungaClosedBanner(
+            name: shop!.displayName, label: status.label, theme: theme);
+      },
+    );
+  }
+}
+
+class KitungaClosedBanner extends StatelessWidget {
+  const KitungaClosedBanner(
+      {super.key, required this.name, required this.label, required this.theme});
+
+  final String name;
+  final String label;
+  final FlutterFlowTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: theme.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14.0),
+        border: Border.all(color: theme.error.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.schedule_rounded, color: theme.error),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Text(
+              '${name.isEmpty ? 'Ce commerce' : name} est fermé en ce moment '
+              '(${label.replaceFirst('Fermé · ', '')}). Votre panier est gardé : '
+              'vous pourrez commander dès son ouverture.',
+              style: GoogleFonts.inter(
+                  color: theme.primaryText, fontSize: 13.0, height: 1.3),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

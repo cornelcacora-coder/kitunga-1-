@@ -797,6 +797,9 @@ class SellerSectionsPage extends StatelessWidget {
 // Horaires et profil
 // ─────────────────────────────────────────────────────────────────────────
 
+/// Temps de préparation proposés aux restaurants (minutes).
+const kPrepMinutes = [10, 15, 20, 30, 45, 60, 90];
+
 /// Description et horaires du commerce.
 class SellerProfilePage extends StatefulWidget {
   const SellerProfilePage({super.key, required this.shop});
@@ -811,6 +814,9 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   late final _bio = TextEditingController(text: widget.shop.bio);
   late final _hours = TextEditingController(text: widget.shop.horraire);
   late String _logo = widget.shop.photoUrl;
+
+  /// Restaurants : temps moyen de préparation d'une commande (minutes).
+  late int? _prep = (widget.shop.snapshotData['prep_minutes'] as num?)?.toInt();
   late String _cover = widget.shop.businessCover;
   bool _uploading = false;
   bool _saving = false;
@@ -870,6 +876,8 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
           businessCover: _cover,
         ),
         if (hasCuisines(widget.shop.category)) 'cuisines': _cuisines.toList(),
+        if (hasCuisines(widget.shop.category) && _prep != null)
+          'prep_minutes': _prep,
       });
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
@@ -990,6 +998,28 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
             ),
           ),
           if (hasCuisines(widget.shop.category)) ...[
+            SizedBox(height: 20.0),
+            KitungaFieldLabel('Temps de préparation moyen'),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: [
+                for (final m in kPrepMinutes)
+                  ChoiceChip(
+                    label: Text('$m min'),
+                    selected: _prep == m,
+                    onSelected: (_) => setState(() => _prep = m),
+                  ),
+              ],
+            ),
+            SizedBox(height: 6.0),
+            Text(
+              _prep == null
+                  ? 'Choisissez une durée : elle sera affichée aux clients sur votre vitrine.'
+                  : 'Affiché aux clients sur votre vitrine : « Prêt en ~$_prep min ».',
+              style: GoogleFonts.inter(
+                  color: theme.secondaryText, fontSize: 12.5),
+            ),
             SizedBox(height: 20.0),
             KitungaFieldLabel('Vos cuisines (${_cuisines.length}/8)'),
             Text(
