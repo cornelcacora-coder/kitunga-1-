@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
@@ -212,6 +213,14 @@ class KitungaBannerImage extends StatelessWidget {
           errorBuilder: (_, __, ___) => fallback);
     }
     if (!image.startsWith('http')) return fallback;
+    // Web : image affichée par le navigateur si le stockage refuse (CORS).
+    if (kIsWeb) {
+      return Image.network(image,
+          fit: BoxFit.cover,
+          alignment: Alignment.centerRight,
+          webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+          errorBuilder: (_, __, ___) => fallback);
+    }
     return CachedNetworkImage(
       imageUrl: getCORSProxyUrl(image),
       fit: BoxFit.cover,

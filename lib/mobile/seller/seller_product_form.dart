@@ -57,7 +57,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
   late String _photoUrl = widget.product?.prodImg ?? '';
   late String _unit = (widget.product?.unit.isNotEmpty ?? false)
       ? widget.product!.unit
-      : 'pièce';
+      : sellerUnits(widget.shop.category).first;
   late String _tag = widget.product?.specifications ?? '';
   late bool _express = widget.product?.instantDisponibilty ?? false;
   late bool _prescription = widget.product?.requiresPrescription ?? false;
@@ -80,6 +80,31 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
     _stock.dispose();
     _section.dispose();
     super.dispose();
+  }
+
+  Future<void> _otherUnit() async {
+    final c = TextEditingController();
+    final v = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Autre unité de vente'),
+        content: TextField(
+          controller: c,
+          autofocus: true,
+          maxLength: 30,
+          decoration: InputDecoration(hintText: 'Ex. sachet de 500 g'),
+          onSubmitted: (t) => Navigator.pop(ctx, t),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: Text('Annuler')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, c.text),
+              child: Text('Valider')),
+        ],
+      ),
+    );
+    if (v != null && v.trim().isNotEmpty) setState(() => _unit = v.trim());
   }
 
   Future<void> _pickPhoto() async {
@@ -406,7 +431,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                 spacing: 8.0,
                 runSpacing: 8.0,
                 children: [
-                  for (final u in sellerUnits)
+                  for (final u in {
+                    ...sellerUnits(_category),
+                    if (_unit.isNotEmpty) _unit,
+                  })
                     ChoiceChip(
                       label: Text(u),
                       selected: _unit == u,
@@ -421,6 +449,15 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                       side: BorderSide.none,
                       shape: StadiumBorder(),
                     ),
+                  // Unité absente de la liste : saisie libre.
+                  ActionChip(
+                    avatar: Icon(Icons.edit_outlined, size: 16.0),
+                    label: Text('Autre…'),
+                    onPressed: _otherUnit,
+                    backgroundColor: theme.primaryBackground,
+                    side: BorderSide.none,
+                    shape: StadiumBorder(),
+                  ),
                 ],
               ),
             ],

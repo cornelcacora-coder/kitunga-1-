@@ -3,7 +3,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
-import '/flutter_flow/flutter_flow_util.dart' show getCORSProxyUrl;
 
 /// Image robuste : image de l'application (« assets/… ») ou image distante
 /// qui passe par le cache, et si le cache échoue,
@@ -53,6 +52,24 @@ class KitungaImage extends StatelessWidget {
       if (src.isNotEmpty) debugPrint('Adresse d\'image invalide : "$src"');
       return missing;
     }
+    // Web : le stockage Firebase n'autorise pas toujours la lecture par le
+    // site (CORS). Si le chargement normal est bloqué, le navigateur
+    // affiche l'image lui-même (balise <img>), sans cette autorisation.
+    if (kIsWeb) {
+      return Image.network(
+        src,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+        loadingBuilder: (_, child, progress) =>
+            progress == null ? child : box(),
+        errorBuilder: (_, error, __) {
+          debugPrint('Image (web) en échec : $src → $error');
+          return missing;
+        },
+      );
+    }
     return CachedNetworkImage(
       imageUrl: src,
       width: width,
@@ -72,16 +89,6 @@ class KitungaImage extends StatelessWidget {
               progress == null ? child : box(),
           errorBuilder: (_, directError, __) {
             debugPrint('Image (direct) en échec : $src → $directError');
-            // Web : dernier essai par le proxy d'images de Kitunga.
-            // (une seule fois : jamais une adresse déjà passée par le proxy).
-            final proxied = getCORSProxyUrl(src);
-            if (kIsWeb && proxied != src && !src.contains('/corsProxy?')) {
-              return KitungaImage(proxied,
-                  width: width,
-                  height: height,
-                  fallbackIcon: fallbackIcon,
-                  placeholder: placeholder);
-            }
             return missing;
           },
         );

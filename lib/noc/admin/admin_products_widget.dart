@@ -1,3 +1,4 @@
+import '/backend/kitunga_units.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -647,7 +648,22 @@ class _ProductFormState extends State<_ProductForm> {
           TextField(
             controller: _unit,
             maxLength: 30,
-            decoration: salesInput('Unité de vente', hint: 'Ex. kg, boîte'),
+            decoration: salesInput('Unité de vente', hint: 'Choisir ou saisir')
+                .copyWith(
+              // Unités de l'activité du commerce choisi.
+              suffixIcon: PopupMenuButton<String>(
+                tooltip: 'Unités de vente',
+                icon: const Icon(Icons.arrow_drop_down_rounded),
+                onSelected: (u) => setState(() => _unit.text = u),
+                itemBuilder: (_) => [
+                  for (final u in unitsFor(widget.sellers
+                      .where((x) => x['uid'] == _seller)
+                      .map((x) => x['category'] as String?)
+                      .firstOrNull))
+                    PopupMenuItem(value: u, child: Text(u)),
+                ],
+              ),
+            ),
           ),
         ]),
         DropdownButtonFormField<String>(

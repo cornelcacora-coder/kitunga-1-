@@ -103,12 +103,14 @@ class _OrderDetailState extends State<_OrderDetail> {
                       context: context,
                       builder: (_) => Dialog(
                         clipBehavior: Clip.antiAlias,
-                        child: Image.network(o.photo, fit: BoxFit.contain),
+                        child: Image.network(o.photo,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.fallback, fit: BoxFit.contain),
                       ),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(AdminRadius.sm),
                       child: Image.network(o.photo,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
                           width: 56.0,
                           height: 56.0,
                           fit: BoxFit.cover,
@@ -456,6 +458,7 @@ class _ItemRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(AdminRadius.sm),
             child: img.startsWith('http')
                 ? Image.network(img,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
                     width: 46.0,
                     height: 46.0,
                     fit: BoxFit.cover,

@@ -735,6 +735,7 @@ class AdminAvatar extends StatelessWidget {
     if (!p.startsWith('http')) return initials;
     return ClipOval(
       child: Image.network(p,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
           width: size,
           height: size,
           fit: BoxFit.cover,
