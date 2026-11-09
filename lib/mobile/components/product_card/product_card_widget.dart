@@ -67,9 +67,10 @@ class KitungaProductCard extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
     final p = product;
     final outOfStock = p.quantity <= 0;
-    // Médicament sur ordonnance : visible mais non commandable en ligne.
+    // Médicament sur ordonnance : commandable avec une ordonnance validée
+    // (étiquette mise en évidence, carte non grisée).
     final prescription = p.requiresPrescription;
-    final blocked = outOfStock || prescription;
+    final blocked = outOfStock;
     final lowStock = p.quantity > 0 && p.quantity <= 5;
     final label = prescription
         ? 'Sur ordonnance'
@@ -78,7 +79,7 @@ class KitungaProductCard extends StatelessWidget {
             : lowStock
                 ? 'Plus que ${p.quantity} en stock'
                 : p.specifications;
-    final highlight = blocked || lowStock;
+    final highlight = blocked || lowStock || prescription;
 
     return Material(
       color: theme.secondaryBackground,
@@ -231,7 +232,7 @@ class KitungaProductRow extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
     final p = product;
     final outOfStock = p.quantity <= 0;
-    final blocked = outOfStock || p.requiresPrescription;
+    final blocked = outOfStock;
     final status = p.requiresPrescription
         ? 'Sur ordonnance'
         : outOfStock

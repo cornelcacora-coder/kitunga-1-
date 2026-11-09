@@ -1,3 +1,5 @@
+import '/mobile/components/prescription/kitunga_prescription.dart'
+    show showPrescriptionPhotos;
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/order_status.dart';
@@ -298,6 +300,22 @@ class _SellerOrderCard extends StatelessWidget {
             Text(
               'Motif : ${order.snapshotData['refusal_reason']}',
               style: GoogleFonts.inter(color: theme.error, fontSize: 13.0),
+            ),
+          // Commande sur ordonnance : la pharmacie revoit l'ordonnance.
+          if ((order.snapshotData['prescription_photos'] as List?)
+                  ?.isNotEmpty ==
+              true)
+            Padding(
+              padding: EdgeInsets.only(top: 8.0),
+              child: OutlinedButton.icon(
+                onPressed: () => showPrescriptionPhotos(context, [
+                  for (final x
+                      in order.snapshotData['prescription_photos'] as List)
+                    '$x',
+                ]),
+                icon: Icon(Icons.medical_information_outlined, size: 18.0),
+                label: Text('Commande sur ordonnance · voir l\'ordonnance'),
+              ),
             ),
           SizedBox(height: 10.0),
           Row(

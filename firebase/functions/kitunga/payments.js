@@ -12,6 +12,8 @@ const {priceCart} = require("./pricing");
 const {subscriptionActive} = require("./subscriptions");
 const {PaymentError} = require("./errors");
 const {openingStatus} = require("./hours");
+const {usablePrescription, statusOf: prescriptionStatus} =
+  require("./prescriptions");
 
 const STOPPED = ["Refusée", "Annulée"];
 
@@ -83,7 +85,12 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
       product: product && product.exists ? product.data() : null,
     };
   }));
-  const priced = priceCart(lines, zone);
+  // Médicaments sur ordonnance : ordonnance validée par cette pharmacie.
+  const needs = lines.some((l) => l.product &&
+    l.product.requires_prescription === true);
+  const prescription = needs ?
+    await usablePrescription(db, uid, sellerRef.id, now) : null;
+  const priced = priceCart(lines, zone, {prescriptionOk: !!prescription});
   if (priced.errors.length > 0) {
     throw new PaymentError("failed-precondition", priced.errors.join("\n"));
   }
@@ -98,6 +105,7 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
     amount: priced.total,
     subtotal: priced.subtotal,
     delivery_fees: priced.fee,
+    ...(prescription ? {prescription_id: prescription.id} : {}),
     user_ref: userRef,
     seller_ref: sellerRef,
     cart_ids: carts.map((c) => c.id),
@@ -161,7 +169,15 @@ async function confirmPayment({db, momo, uid, referenceId}) {
       options: c.exists ? c.get("options") || "" : "",
       product: products[i] && products[i].exists ? products[i].data() : null,
     }));
-    const priced = priceCart(lines, fresh.get("delivery_zone"));
+    // Ordonnance retenue au démarrage : encore validée et inutilisée ?
+    const prescriptionId = fresh.get("prescription_id");
+    const prescriptionRef = prescriptionId ?
+      db.doc(`Prescriptions/${prescriptionId}`) : null;
+    const prescription = prescriptionRef ? await tx.get(prescriptionRef) : null;
+    const prescriptionOk = !!prescription && prescription.exists &&
+      prescriptionStatus(prescription.data()) === "approved";
+    const priced = priceCart(lines, fresh.get("delivery_zone"),
+        {prescriptionOk});
 
     // Payé mais plus disponible (stock pris entre-temps) : à rembourser.
     if (priced.errors.length > 0 || priced.total !== fresh.get("amount")) {
@@ -204,7 +220,17 @@ async function confirmPayment({db, momo, uid, referenceId}) {
       order_unique_reference: reference,
       payment_reference: referenceId,
       payment_status: "Réussi",
+      // Médicaments sur ordonnance : la pharmacie retrouve l'ordonnance.
+      ...(priced.needsPrescription && prescriptionOk ? {
+        prescription_ref: prescriptionRef,
+        prescription_photos: prescription.get("photos") || [],
+      } : {}),
     });
+    if (priced.needsPrescription && prescriptionOk) {
+      // Une ordonnance validée sert pour une seule commande.
+      tx.update(prescriptionRef, {status: "used", order_ref: orderRef,
+        used_at: new Date()});
+    }
     priced.lines.forEach((line) => {
       tx.set(db.collection("OrderItems").doc(), {
         order_ref: reference,

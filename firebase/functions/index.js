@@ -385,6 +385,18 @@ exports.kitungaSetSellerBannerActive = acquisitionCallable((data, uid) =>
 exports.kitungaDeleteSellerBanner = acquisitionCallable((data, uid) =>
   banners.deleteSellerBanner({db: admin.firestore(), uid, data}));
 
+// ── Ordonnances (pharmacies) ─────────────────────────────────────────────
+const prescriptions = require("./kitunga/prescriptions");
+
+exports.kitungaSubmitPrescription = acquisitionCallable((data, uid) =>
+  prescriptions.submitPrescription({db: admin.firestore(), uid, data}));
+exports.kitungaMyPrescriptions = acquisitionCallable((data, uid) =>
+  prescriptions.myPrescriptions({db: admin.firestore(), uid, data}));
+exports.kitungaSellerPrescriptions = acquisitionCallable((data, uid) =>
+  prescriptions.sellerPrescriptions({db: admin.firestore(), uid}));
+exports.kitungaReviewPrescription = acquisitionCallable((data, uid) =>
+  prescriptions.reviewPrescription({db: admin.firestore(), uid, data}));
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));

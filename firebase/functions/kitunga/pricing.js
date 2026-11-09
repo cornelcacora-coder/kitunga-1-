@@ -80,8 +80,13 @@ function resolveOptions(summary, groups) {
  * Lignes du panier + produits -> montants et contrôles de stock.
  * lines : [{quantity, options, product: {données du produit}}]
  */
-function priceCart(lines, zone) {
+/**
+ * prescriptionOk : une ordonnance validée par la pharmacie couvre les
+ * médicaments sur ordonnance du panier (voir prescriptions.js).
+ */
+function priceCart(lines, zone, {prescriptionOk = false} = {}) {
   const errors = [];
+  let needsPrescription = false;
   let subtotal = 0;
   const priced = [];
   for (const line of lines) {
@@ -93,7 +98,11 @@ function priceCart(lines, zone) {
     }
     if (p.on_sale === false) errors.push(`« ${p.name} » n'est plus en vente.`);
     if (p.requires_prescription === true) {
-      errors.push(`« ${p.name} » nécessite une ordonnance.`);
+      needsPrescription = true;
+      if (!prescriptionOk) {
+        errors.push(`« ${p.name} » nécessite une ordonnance validée par la ` +
+          "pharmacie : envoyez-la depuis la fiche du médicament.");
+      }
     }
     if ((Number(p.quantity) || 0) < qty) {
       errors.push(`Stock insuffisant pour « ${p.name} ».`);
@@ -115,7 +124,8 @@ function priceCart(lines, zone) {
     priced.push({...line, quantity: qty, unitPrice: unit, picks: opt.picks});
   }
   const fee = deliveryFee(zone);
-  return {errors, lines: priced, subtotal, fee, total: subtotal + fee};
+  return {errors, lines: priced, subtotal, fee, total: subtotal + fee,
+    needsPrescription};
 }
 
 module.exports = {deliveryFee, resolveOptions, priceCart, basePrice};

@@ -1,3 +1,4 @@
+import '/mobile/components/prescription/kitunga_prescription.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/subscription.dart';
@@ -824,24 +825,20 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                               child: AuthUserStreamWidget(
                                 builder: (context) => FFButtonWidget(
                                   onPressed: () async {
-                                    // Médicament sur ordonnance : non commandable en ligne pour
-                                    // l'instant (règles de délivrance à valider).
+                                    // Médicament sur ordonnance : il faut une ordonnance validée
+                                    // par la pharmacie (sinon, envoi de la photo).
                                     if (middleBodyProductRecord.requiresPrescription) {
-                                      await showDialog(
-                                        context: context,
-                                        builder: (dialogContext) => AlertDialog(
-                                          title: Text('Médicament sur ordonnance'),
-                                          content: Text(
-                                              'Ce médicament nécessite une ordonnance. Il ne peut pas être commandé en ligne pour le moment : rendez-vous directement à la pharmacie avec votre ordonnance.'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(dialogContext),
-                                              child: Text('Compris'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                      return;
+                                      final pharmacyRef = middleBodyProductRecord.sellerRef;
+                                      if (pharmacyRef == null) return;
+                                      final pharmacy =
+                                          await UserRecord.getDocumentOnce(pharmacyRef);
+                                      if (!context.mounted) return;
+                                      final ok = await kitungaPrescriptionGate(context,
+                                          sellerUid: pharmacyRef.id,
+                                          sellerName: pharmacy.displayName.isEmpty
+                                              ? 'la pharmacie'
+                                              : pharmacy.displayName);
+                                      if (!ok || !context.mounted) return;
                                     }
                                     // Client abonné (ou commerçant, livreur…) : il peut commander.
                                     if (kitungaCanOrder()) {

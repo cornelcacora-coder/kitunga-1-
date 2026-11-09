@@ -13,6 +13,8 @@ import '/mobile/components/product_card/product_card_widget.dart';
 import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart';
 import 'seller_product_form.dart';
 import 'seller_promotions.dart';
+import '/mobile/components/prescription/kitunga_prescription.dart'
+    show SellerPrescriptionsPage;
 import 'seller_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -341,6 +343,12 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
         label: 'Mes commandes',
         onTap: () => context.pushNamed(OrderWidget.routeName),
       ),
+      if (shop.category == 'Pharmacie')
+        (
+          icon: Icons.medical_information_outlined,
+          label: 'Ordonnances à vérifier',
+          onTap: () => _push(context, const SellerPrescriptionsPage()),
+        ),
       (
         icon: Icons.campaign_outlined,
         label: 'Mes publicités et promotions',

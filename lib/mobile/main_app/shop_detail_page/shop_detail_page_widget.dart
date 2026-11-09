@@ -599,7 +599,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
         final children = <Widget>[
           if (pharmacy)
             _info(theme, Icons.medical_information_outlined,
-                'Les médicaments sur ordonnance sont visibles mais ne peuvent pas être commandés en ligne : présentez votre ordonnance directement à la pharmacie.'),
+                'Médicaments sur ordonnance : envoyez la photo de votre ordonnance depuis la fiche du médicament. Une fois validée par la pharmacie, vous pouvez commander pendant 7 jours.'),
           _searchField(theme, searchHint),
         ];
 
