@@ -76,8 +76,8 @@ void main() {
     await tester.tap(find.text('Définir les horaires'));
     await tester.pumpAndSettle();
     expect(values.last, 'Lun-Sam 8h00-18h00 · Dim fermé');
-    for (final d in kDayLong) {
-      expect(find.text(d), findsOneWidget);
+    for (final d in kDayShort) {
+      expect(find.text(d), findsOneWidget); // écran étroit : jours abrégés
     }
     // Samedi fermé.
     await tester.tap(find.byType(Switch).at(5));

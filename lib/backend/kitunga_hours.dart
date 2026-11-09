@@ -243,6 +243,9 @@ class _KitungaHoursPickerState extends State<KitungaHoursPicker> {
         ],
       );
     }
+    return LayoutBuilder(builder: (context, box) {
+    // Écran étroit : jours abrégés et interrupteurs réduits.
+    final compact = box.maxWidth < 420.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -252,15 +255,18 @@ class _KitungaHoursPickerState extends State<KitungaHoursPicker> {
             child: Row(
               children: [
                 SizedBox(
-                    width: 82.0,
-                    child: Text(kDayLong[i],
+                    width: compact ? 40.0 : 82.0,
+                    child: Text(compact ? kDayShort[i] : kDayLong[i],
                         style: style?.copyWith(fontWeight: FontWeight.w600))),
-                Switch(
+                Transform.scale(
+                  scale: compact ? 0.8 : 1.0,
+                  child: Switch(
                   activeThumbColor: Colors.white,
                   activeTrackColor: widget.accent,
                   value: week[i].open,
                   onChanged: (v) => _set(i,
                       (open: v, from: week[i].from, to: week[i].to)),
+                ),
                 ),
                 const SizedBox(width: 6.0),
                 if (!week[i].open)
@@ -296,5 +302,6 @@ class _KitungaHoursPickerState extends State<KitungaHoursPicker> {
             style: style?.copyWith(fontSize: (style.fontSize ?? 14) - 1.5)),
       ],
     );
+    });
   }
 }
