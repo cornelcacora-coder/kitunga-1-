@@ -111,3 +111,71 @@ test("période de diffusion, désactivation, ordre, suppression", async () => {
   await assert.rejects(b.deleteBanner({db, uid: "admin", data: {id}}),
       /introuvable/);
 });
+
+test("publicité proposée par un vendeur : validation par l'admin",
+    async () => {
+      await list();
+      await db.doc("User/autre").set({role: "Seller", display_name: "Autre"});
+      await db.doc("Product/p2").set({name: "Pas à moi",
+        seller_ref: db.doc("User/autre")});
+      await db.doc("Product/p1").update({prod_img: IMG});
+      const save = (data, uid = "crisp") =>
+        b.saveSellerBanner({db, uid, data});
+      await assert.rejects(save({title1: "X"}, "marie"), /commerces partenaires/);
+      await assert.rejects(save({title1: "X", target: {type: "product",
+        value: "p2"}}), /vos produits/);
+      // Sans photo : celle du produit.
+      const {id, status} = await save({title1: "Mosseka", title2: "-15 %",
+        badge: "PROMO", target: {type: "product", value: "p1"},
+        image: ""});
+      assert.strictEqual(status, "pending");
+      const mine = (await b.sellerBanners({db, uid: "crisp"})).banners;
+      assert.strictEqual(mine[0].image, IMG);
+      assert.strictEqual(mine[0].status, "pending");
+      assert.deepStrictEqual(mine[0].target, {type: "product", value: "p1"});
+      // En attente : pas diffusée.
+      assert.ok(!(await pub()).some((x) => x.id === id));
+      assert.strictEqual((await list()).find((x) => x.id === id).status,
+          "pending");
+
+      // Refus : motif obligatoire, visible par le vendeur.
+      await assert.rejects(b.reviewBanner({db, uid: "admin",
+        data: {id, decision: "reject"}}), /pourquoi/);
+      await assert.rejects(b.reviewBanner({db, uid: "crisp",
+        data: {id, decision: "approve"}}), /administrateurs/);
+      await b.reviewBanner({db, uid: "admin", data: {id, decision: "reject",
+        note: "Photo floue"}});
+      const refused = (await b.sellerBanners({db, uid: "crisp"})).banners[0];
+      assert.strictEqual(refused.status, "rejected");
+      assert.strictEqual(refused.reviewNote, "Photo floue");
+
+      // Corrigée : repasse en validation, puis validée et diffusée.
+      await save({id, title1: "Mosseka", title2: "-15 %", image: IMG,
+        target: {type: "product", value: "p1"}});
+      assert.strictEqual((await b.sellerBanners({db, uid: "crisp"}))
+          .banners[0].status, "pending");
+      await b.reviewBanner({db, uid: "admin", data: {id, decision: "approve"}});
+      assert.ok((await pub()).some((x) => x.id === id));
+
+      // Un autre vendeur ne peut pas y toucher.
+      await assert.rejects(b.deleteSellerBanner({db, uid: "autre",
+        data: {id}}), /introuvable/);
+      // Pause par le vendeur : retirée du carrousel.
+      await b.setSellerBannerActive({db, uid: "crisp",
+        data: {id, active: false}});
+      assert.ok(!(await pub()).some((x) => x.id === id));
+
+      // Trois publicités au plus en même temps.
+      await save({title1: "Deux", image: IMG});
+      await save({title1: "Trois", image: IMG});
+      await assert.rejects(save({title1: "Quatre", image: IMG}),
+          /3 publicités au plus/);
+      await b.deleteSellerBanner({db, uid: "crisp", data: {id}});
+      await save({title1: "Quatre", image: IMG});
+      assert.strictEqual((await b.sellerBanners({db, uid: "crisp"}))
+          .banners.length, 3);
+      const logs = (await db.collection("audit_logs").get()).docs
+          .map((d) => d.get("action"));
+      assert.ok(logs.includes("banner.reject") &&
+        logs.includes("banner.seller_create"));
+    });

@@ -43,6 +43,8 @@ async function handleRequest(req, res) {
     }
     https
       .get(url, (resp) => {
+        // Image introuvable ou refusée : l'erreur est transmise telle quelle.
+        res.status(resp.statusCode || 502);
         res.setHeader(
           "content-type",
           resp.headers["content-type"] || "image/jpeg",
@@ -368,6 +370,17 @@ exports.kitungaPublicBanners = acquisitionCallable(() =>
   banners.publicBanners({db: admin.firestore()}));
 exports.kitungaBannerClick = acquisitionCallable((data) =>
   banners.bannerClick({db: admin.firestore(), data}));
+exports.kitungaReviewBanner = acquisitionCallable((data, uid) =>
+  banners.reviewBanner({db: admin.firestore(), uid, data}));
+// Publicités proposées par les vendeurs depuis l'application.
+exports.kitungaSellerBanners = acquisitionCallable((data, uid) =>
+  banners.sellerBanners({db: admin.firestore(), uid}));
+exports.kitungaSaveSellerBanner = acquisitionCallable((data, uid) =>
+  banners.saveSellerBanner({db: admin.firestore(), uid, data}));
+exports.kitungaSetSellerBannerActive = acquisitionCallable((data, uid) =>
+  banners.setSellerBannerActive({db: admin.firestore(), uid, data}));
+exports.kitungaDeleteSellerBanner = acquisitionCallable((data, uid) =>
+  banners.deleteSellerBanner({db: admin.firestore(), uid, data}));
 
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>

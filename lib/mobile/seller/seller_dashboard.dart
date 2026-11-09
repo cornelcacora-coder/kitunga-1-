@@ -1,3 +1,5 @@
+import '/flutter_flow/upload_data.dart';
+import '/backend/firebase_storage/storage.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_cuisines.dart';
@@ -10,6 +12,7 @@ import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/mobile/components/product_card/product_card_widget.dart';
 import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart';
 import 'seller_product_form.dart';
+import 'seller_promotions.dart';
 import 'seller_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -337,6 +340,11 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
         icon: Icons.receipt_long_outlined,
         label: 'Mes commandes',
         onTap: () => context.pushNamed(OrderWidget.routeName),
+      ),
+      (
+        icon: Icons.campaign_outlined,
+        label: 'Mes publicités et promotions',
+        onTap: () => _push(context, SellerPromotionsPage(shop: shop)),
       ),
       (
         icon: Icons.schedule_rounded,
@@ -802,7 +810,41 @@ class SellerProfilePage extends StatefulWidget {
 class _SellerProfilePageState extends State<SellerProfilePage> {
   late final _bio = TextEditingController(text: widget.shop.bio);
   late final _hours = TextEditingController(text: widget.shop.horraire);
+  late String _logo = widget.shop.photoUrl;
+  late String _cover = widget.shop.businessCover;
+  bool _uploading = false;
   bool _saving = false;
+
+  /// Logo ou couverture : photo choisie puis envoyée dans le stockage.
+  Future<void> _pickImage({required bool cover}) async {
+    final media = await selectMediaWithSourceBottomSheet(
+      context: context,
+      maxWidth: cover ? 1600.0 : 800.0,
+      maxHeight: cover ? 1600.0 : 800.0,
+      imageQuality: 85,
+      allowPhoto: true,
+    );
+    if (media == null ||
+        media.isEmpty ||
+        !mounted ||
+        !validateFileFormat(media.first.storagePath, context)) {
+      return;
+    }
+    setState(() => _uploading = true);
+    try {
+      final url = await uploadData(media.first.storagePath, media.first.bytes);
+      if (url != null && mounted) {
+        setState(() => cover ? _cover = url : _logo = url);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('La photo n\'a pas pu être envoyée. Réessayez.')));
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
 
   /// Cuisines du restaurant (filtre « Cuisine » des clients, suggestions).
   late final Set<String> _cuisines = {
@@ -824,6 +866,8 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
         ...createUserRecordData(
           bio: _bio.text.trim(),
           horraire: _hours.text.trim(),
+          photoUrl: _logo,
+          businessCover: _cover,
         ),
         if (hasCuisines(widget.shop.category)) 'cuisines': _cuisines.toList(),
       });
@@ -848,6 +892,73 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
       body: ListView(
         padding: EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 32.0),
         children: [
+          // Couverture et logo de la vitrine.
+          KitungaFieldLabel('Couverture et logo'),
+          SizedBox(
+            height: 190.0,
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(18.0),
+                  child: KitungaImage(_cover,
+                      width: double.infinity,
+                      height: 150.0,
+                      fallbackIcon: Icons.panorama_outlined),
+                ),
+                Positioned(
+                  right: 10.0,
+                  top: 10.0,
+                  child: FilledButton.tonalIcon(
+                    onPressed: _uploading ? null : () => _pickImage(cover: true),
+                    icon: Icon(Icons.photo_camera_outlined, size: 18.0),
+                    label: Text('Couverture'),
+                  ),
+                ),
+                Positioned(
+                  left: 16.0,
+                  bottom: 0.0,
+                  child: GestureDetector(
+                    onTap: _uploading ? null : () => _pickImage(cover: false),
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 84.0,
+                          height: 84.0,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: theme.secondaryBackground, width: 4.0),
+                          ),
+                          child: ClipOval(
+                            child: KitungaImage(_logo,
+                                width: 76.0,
+                                height: 76.0,
+                                fallbackIcon: Icons.storefront_rounded),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0.0,
+                          bottom: 0.0,
+                          child: CircleAvatar(
+                            radius: 14.0,
+                            backgroundColor: theme.primary,
+                            child: Icon(Icons.edit_rounded,
+                                size: 15.0, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (_uploading)
+                  Positioned.fill(
+                      child: Center(
+                          child: CircularProgressIndicator(
+                              color: theme.primary))),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.0),
           KitungaFieldLabel('Description / spécialité'),
           TextField(
             controller: _bio,

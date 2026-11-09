@@ -1,6 +1,9 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+
+import '/flutter_flow/flutter_flow_util.dart' show getCORSProxyUrl;
 
 /// Image robuste : image de l'application (« assets/… ») ou image distante
 /// qui passe par le cache, et si le cache échoue,
@@ -69,6 +72,16 @@ class KitungaImage extends StatelessWidget {
               progress == null ? child : box(),
           errorBuilder: (_, directError, __) {
             debugPrint('Image (direct) en échec : $src → $directError');
+            // Web : dernier essai par le proxy d'images de Kitunga.
+            // (une seule fois : jamais une adresse déjà passée par le proxy).
+            final proxied = getCORSProxyUrl(src);
+            if (kIsWeb && proxied != src && !src.contains('/corsProxy?')) {
+              return KitungaImage(proxied,
+                  width: width,
+                  height: height,
+                  fallbackIcon: fallbackIcon,
+                  placeholder: placeholder);
+            }
             return missing;
           },
         );

@@ -221,3 +221,122 @@ class KitungaBannerImage extends StatelessWidget {
     );
   }
 }
+
+/// Bannière telle qu'elle apparaît dans le carrousel d'accueil (aperçu des
+/// publicités des vendeurs).
+class KitungaBannerView extends StatelessWidget {
+  const KitungaBannerView(this.b, {super.key, this.dim = false});
+
+  final KitungaBanner b;
+  final bool dim;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 355 / 200,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22.0),
+        child: Opacity(
+          opacity: dim ? 0.5 : 1.0,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              KitungaBannerImage(b.image, color: b.color),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.lerp(b.color, Colors.black, 0.08)!,
+                      b.color,
+                      b.color.withValues(alpha: 0.92),
+                      b.color.withValues(alpha: 0.35),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.35, 0.52, 0.70, 0.88],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 12.0, 100.0, 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (b.badge.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 4.0),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7.0, vertical: 2.0),
+                            decoration: BoxDecoration(
+                                color: b.accent,
+                                borderRadius: BorderRadius.circular(6.0)),
+                            child: Text(b.badge,
+                                style: TextStyle(
+                                    color: b.color,
+                                    fontSize: 10.0,
+                                    fontWeight: FontWeight.w800)),
+                          ),
+                        if (b.title1.isNotEmpty)
+                          Text(b.title1,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 19.0,
+                                  fontWeight: FontWeight.w900,
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.1)),
+                        if (b.title2.isNotEmpty)
+                          Text(b.title2,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: b.accent,
+                                  fontSize: 26.0,
+                                  fontWeight: FontWeight.w900,
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.0)),
+                        const SizedBox(height: 4.0),
+                        Text(b.subtitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                height: 1.2)),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0, vertical: 6.0),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20.0)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(b.button,
+                              style: TextStyle(
+                                  color: b.color,
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.bold)),
+                          Icon(Icons.chevron_right_rounded,
+                              color: b.color, size: 16.0),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

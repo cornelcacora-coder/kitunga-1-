@@ -1,3 +1,4 @@
+import '/mobile/common/security/change_password_page.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/mobile/components/delete_account/delete_account.dart';
 import '/backend/backend.dart';
@@ -361,8 +362,11 @@ class _SecurityWidgetState extends State<SecurityWidget>
                     focusColor: Colors.transparent,
                     hoverColor: Colors.transparent,
                     highlightColor: Colors.transparent,
+                    // Mot de passe actuel vérifié, confirmation contrôlée
+                    // avant tout changement.
                     onTap: () async {
-                      context.pushNamed(ResetPasswordWidget.routeName);
+                      await Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => const ChangePasswordPage()));
                     },
                     child: Container(
                       width: double.infinity,

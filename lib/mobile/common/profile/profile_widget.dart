@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/subscription.dart';
+import '/mobile/components/kitunga_contact.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -82,30 +83,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     context.pushNamedAuth(OnboardingWidget.routeName, context.mounted);
   }
 
-  Future<void> _help() async {
-    await showDialog(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text('Centre d\'aide'),
-        content: Text(
-            'Besoin d\'assistance avec une commande ou votre compte ?\n\nE-mail : contact@ntemoconsulting.com\nDu lundi au samedi, 8h - 18h.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: Text('Fermer')),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(c);
-              launchURL(Uri(
-                scheme: 'mailto',
-                path: 'contact@ntemoconsulting.com',
-                query: 'subject=${Uri.encodeComponent('Assistance Kitunga')}',
-              ).toString());
-            },
-            child: Text('Écrire au support'),
-          ),
-        ],
-      ),
-    );
-  }
+  /// Centre d'aide : appel, WhatsApp et e-mail de NTEMO CONSULTING.
+  Future<void> _help() => showKitungaContact(context);
 
   Widget _group(FlutterFlowTheme theme, String title, List<Widget> items) {
     return Padding(

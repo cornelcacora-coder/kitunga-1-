@@ -118,6 +118,9 @@ async function targetOf(db, raw, sellerUid) {
 
 /** État de diffusion d'une bannière à l'instant `now`. */
 function statusOf(b, now = new Date()) {
+  // Publicité proposée par un vendeur : validée par l'admin avant diffusion.
+  if (b.review === "pending") return "pending";
+  if (b.review === "rejected") return "rejected";
   if (b.active === false) return "off";
   const start = toDate(b.starts_at);
   const end = toDate(b.ends_at);
@@ -166,6 +169,8 @@ async function listBanners({db, uid}) {
       order: b.order ?? 99, active: b.active !== false,
       startsAt: iso(b.starts_at), endsAt: iso(b.ends_at),
       clicks: b.clicks || 0, status: statusOf(b, now),
+      review: b.review || "approved", reviewNote: b.review_note || "",
+      bySeller: b.submitted_by === "seller",
       updatedAt: iso(b.updated_at)};
   })};
 }
@@ -204,6 +209,8 @@ async function saveBanner({db, uid, data}) {
     target: await targetOf(db, data.target, sellerUid),
     active: data.active !== false,
     starts_at: startsAt, ends_at: endsAt,
+    // Enregistrée par l'admin : validée d'office.
+    review: "approved", review_note: "",
     updated_at: ts(),
   };
   const ref = id ? db.doc(`${BANNERS}/${id}`) : db.collection(BANNERS).doc();
@@ -312,6 +319,173 @@ async function bannerClick({db, data}) {
   return {ok: true};
 }
 
+/** Validation (ou refus motivé) d'une publicité proposée par un vendeur. */
+async function reviewBanner({db, uid, data}) {
+  const adminUid = await requireAdmin(db, uid);
+  const ref = db.doc(`${BANNERS}/${text(data.id, 128) || "_"}`);
+  const approve = data.decision === "approve";
+  const note = text(data.note, 300);
+  if (!approve && !note) {
+    throw err("invalid-argument",
+        "Indiquez au vendeur pourquoi la publicité est refusée.");
+  }
+  await db.runTransaction(async (tx) => {
+    const cur = await tx.get(ref);
+    if (!cur.exists) throw err("not-found", "Bannière introuvable.");
+    tx.update(ref, {review: approve ? "approved" : "rejected",
+      review_note: approve ? "" : note, reviewed_by: adminUid,
+      reviewed_at: ts(), updated_at: ts()});
+    audit(tx, db, {actorUid: adminUid, actorRole: "Admin",
+      action: approve ? "banner.approve" : "banner.reject", target: ref.path,
+      details: {sellerUid: cur.get("seller_uid") || "", note}});
+  });
+  return {ok: true};
+}
+
+// ── Publicités proposées par les vendeurs (application) ────────────────
+
+/** Publicités non terminées qu'un vendeur peut avoir en même temps. */
+const MAX_SELLER_BANNERS = 3;
+
+async function sellerOf(db, uid) {
+  if (!uid) throw err("unauthenticated", "Connexion requise.");
+  const u = await db.doc(`User/${uid}`).get();
+  if (!u.exists || u.get("role") !== "Seller") {
+    throw err("permission-denied", "Réservé aux commerces partenaires.");
+  }
+  if (u.get("account_status") === "suspended") {
+    throw err("permission-denied", "Votre commerce est suspendu.");
+  }
+  return u;
+}
+
+async function ownBanner(db, uid, id) {
+  const ref = db.doc(`${BANNERS}/${text(id, 128) || "_"}`);
+  const b = await ref.get();
+  if (!b.exists || b.get("seller_uid") !== uid ||
+    b.get("submitted_by") !== "seller") {
+    throw err("not-found", "Publicité introuvable.");
+  }
+  return b;
+}
+
+function sellerView(d, now) {
+  const b = d.data();
+  return {id: d.id, title1: b.title1 || "", title2: b.title2 || "",
+    subtitle: b.subtitle || "", button: b.button || "", badge: b.badge || "",
+    image: b.image || "", color: b.color || "#E51A1A",
+    accent: b.accent || "#FFD200",
+    target: b.target || {type: "shop", value: ""},
+    active: b.active !== false, startsAt: iso(b.starts_at),
+    endsAt: iso(b.ends_at), clicks: b.clicks || 0,
+    status: statusOf(b, now), reviewNote: b.review_note || "",
+    updatedAt: iso(b.updated_at)};
+}
+
+/** Publicités du vendeur connecté. */
+async function sellerBanners({db, uid}) {
+  await sellerOf(db, uid);
+  const snap = await db.collection(BANNERS)
+      .where("seller_uid", "==", uid).get();
+  const now = new Date();
+  return {max: MAX_SELLER_BANNERS, banners: snap.docs
+      .filter((d) => d.get("submitted_by") === "seller")
+      .map((d) => sellerView(d, now))
+      .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))};
+}
+
+/**
+ * Création ou modification par le vendeur : sa vitrine ou un de ses
+ * produits. Toute modification repasse en validation par l'admin.
+ */
+async function saveSellerBanner({db, uid, data}) {
+  const seller = await sellerOf(db, uid);
+  const id = text(data.id, 128);
+  const title1 = text(data.title1, 30);
+  const title2 = text(data.title2, 24);
+  if (!title1 && !title2) {
+    throw err("invalid-argument", "Indiquez le titre de la publicité.");
+  }
+  const t = data.target && typeof data.target === "object" ? data.target : {};
+  let target = {type: "shop", value: uid};
+  let productImage = "";
+  if (t.type === "product") {
+    const p = await db.doc(`Product/${text(t.value, 128) || "_"}`).get();
+    const owner = p.exists && p.get("seller_ref");
+    if (!owner || owner.id !== uid) {
+      throw err("invalid-argument", "Choisissez un de vos produits.");
+    }
+    target = {type: "product", value: p.id};
+    productImage = p.get("prod_img") || "";
+  }
+  // Sans photo choisie : celle du produit, sinon la couverture du commerce.
+  const image = imageOf(text(data.image, 1000) || productImage ||
+    seller.get("Business_cover") || seller.get("photo_url") || "");
+  const startsAt = dateOf(data.startsAt, "Date de début");
+  const endsAt = dateOf(data.endsAt, "Date de fin");
+  if (startsAt && endsAt && endsAt <= startsAt) {
+    throw err("invalid-argument", "La fin doit être après le début.");
+  }
+  const values = {
+    kind: "seller", seller_uid: uid, submitted_by: "seller",
+    title1, title2, subtitle: text(data.subtitle, 90),
+    button: text(data.button, 20) || "Voir",
+    badge: text(data.badge, 14), image,
+    color: colorOf(data.color, "#E51A1A", "Couleur du fond"),
+    accent: colorOf(data.accent, "#FFD200", "Couleur du titre"),
+    target, starts_at: startsAt, ends_at: endsAt,
+    review: "pending", review_note: "", updated_at: ts(),
+  };
+  const now = new Date();
+  const ref = id ? (await ownBanner(db, uid, id)).ref :
+    db.collection(BANNERS).doc();
+  await db.runTransaction(async (tx) => {
+    if (!id) {
+      const mine = await tx.get(db.collection(BANNERS)
+          .where("seller_uid", "==", uid));
+      const running = mine.docs.filter((d) =>
+        d.get("submitted_by") === "seller" &&
+        !["expired", "rejected"].includes(statusOf(d.data(), now))).length;
+      if (running >= MAX_SELLER_BANNERS) {
+        throw err("failed-precondition",
+            `${MAX_SELLER_BANNERS} publicités au plus en même temps : ` +
+            "supprimez-en une ou attendez la fin d'une diffusion.");
+      }
+      const last = await tx.get(db.collection(BANNERS)
+          .orderBy("order", "desc").limit(1));
+      const order = last.empty ? 0 : (last.docs[0].get("order") ?? 0) + 1;
+      tx.create(ref, {...values, active: true, order, clicks: 0,
+        created_at: ts()});
+    } else {
+      tx.update(ref, values);
+    }
+    audit(tx, db, {actorUid: uid, actorRole: "Seller",
+      action: id ? "banner.seller_update" : "banner.seller_create",
+      target: ref.path, details: {title: `${title1} ${title2}`.trim()}});
+  });
+  return {id: ref.id, status: "pending"};
+}
+
+/** Pause / reprise par le vendeur (sans nouvelle validation). */
+async function setSellerBannerActive({db, uid, data}) {
+  await sellerOf(db, uid);
+  const b = await ownBanner(db, uid, data.id);
+  await b.ref.update({active: data.active === true, updated_at: ts()});
+  return {ok: true};
+}
+
+async function deleteSellerBanner({db, uid, data}) {
+  await sellerOf(db, uid);
+  const b = await ownBanner(db, uid, data.id);
+  await db.runTransaction(async (tx) => {
+    tx.delete(b.ref);
+    audit(tx, db, {actorUid: uid, actorRole: "Seller",
+      action: "banner.seller_delete", target: b.ref.path, details: {}});
+  });
+  return {ok: true};
+}
+
 module.exports = {listBanners, saveBanner, setBannerActive, reorderBanners,
   deleteBanner, publicBanners, bannerClick, seedBanners, statusOf,
-  DEFAULT_BANNERS};
+  reviewBanner, sellerBanners, saveSellerBanner, setSellerBannerActive,
+  deleteSellerBanner, MAX_SELLER_BANNERS, DEFAULT_BANNERS};

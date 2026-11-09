@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'terms_conditions_model.dart';
 export 'terms_conditions_model.dart';
 import '/mobile/components/form_styles/form_styles.dart';
+import '/mobile/components/kitunga_contact.dart';
 
 /// Page d'inscription utilisateur
 class TermsConditionsWidget extends StatefulWidget {
@@ -654,7 +655,7 @@ class _TermsConditionsWidgetState extends State<TermsConditionsWidget>
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(20.0, 16.0, 20.0, 0.0),
                 child: Text(
-                  '9. CONTACTEZ-NOUS\nPour toute question, préoccupation ou exercice de vos droits concernant vos données personnelles, vous pouvez contacter le Responsable de la Protection des Données de Kitunga :\n\nSociété : NTEMO CONSULTING\n\nAdresse : Brazzaville, République du Congo\n\nTéléphone / WhatsApp : +242 06 XXX XX XX / +242 05 XXX XX XX\n\nE-mail de support : support@kitunga.io\n\nSite Web : ntemoconsulting.com',
+                  'Pour toute question, préoccupation ou exercice de vos droits concernant vos données personnelles, vous pouvez contacter le Responsable de la Protection des Données de Kitunga :\n\nSociété : NTEMO CONSULTING\n\nAdresse : Brazzaville, République du Congo\n\nTéléphone / WhatsApp : +242 06 431 38 08 / +242 05 019 57 68\n\nE-mail de support : support@kitunga.io\n\nSite Web : ntemoconsulting.com',
                   style: FlutterFlowTheme.of(context).titleSmall.override(
                         font: GoogleFonts.inter(
                           fontWeight: FontWeight.normal,
@@ -669,6 +670,11 @@ class _TermsConditionsWidgetState extends State<TermsConditionsWidget>
                             FlutterFlowTheme.of(context).titleSmall.fontStyle,
                       ),
                 ),
+              ),
+              // Boutons pour joindre l'entreprise (appel, WhatsApp, e-mail).
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(20.0, 16.0, 20.0, 32.0),
+                child: KitungaContactCard(),
               ),
             ],
           ).animateOnPageLoad(animationsMap['listViewOnPageLoadAnimation']!),

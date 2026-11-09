@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_contact.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -248,23 +249,8 @@ class _SettingsWidgetState extends State<SettingsWidget>
                 ).animateOnPageLoad(
                     animationsMap['containerOnPageLoadAnimation1']!),
                 InkWell(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: Text('Centre d\'aide'),
-                        content: Text(
-                          'Besoin d\'assistance avec une commande ou votre compte ?\n\n• Email : contact@ntemoconsulting.com\n• Disponibilité : Du Lundi au Samedi, 8h - 18h.\n\nNotre équipe vous répond rapidement.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: Text('Compris'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                  // Centre d'aide : appel, WhatsApp, e-mail.
+                  onTap: () => showKitungaContact(context),
                   child: Container(
                     width: 388.0,
                     height: 64.0,

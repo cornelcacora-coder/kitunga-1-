@@ -24,6 +24,8 @@ Future<List<Map<String, dynamic>>> loadAdminBanners() async =>
     listOf((await salesCall('kitungaListBanners', const {}))['banners']);
 
 const _statusLabels = {
+  'pending': 'À valider',
+  'rejected': 'Refusée',
   'live': 'Diffusée',
   'scheduled': 'Programmée',
   'expired': 'Terminée',
@@ -34,6 +36,8 @@ AdminTone _statusTone(String? s) => switch (s) {
       'live' => kToneGreen,
       'scheduled' => kToneBlue,
       'expired' => kToneOrange,
+      'pending' => kToneViolet,
+      'rejected' => kToneRed,
       _ => kToneGrey,
     };
 
@@ -110,6 +114,26 @@ class _AdminBannersWidgetState extends State<AdminBannersWidget> {
     if (ok) _reload();
   }
 
+  /// Publicité proposée par un vendeur : validation ou refus motivé.
+  Future<void> _review(Map<String, dynamic> b, bool approve) async {
+    String? note;
+    if (!approve) {
+      note = await askText(context, 'Refuser cette publicité ?',
+          label: 'Motif (affiché au vendeur)',
+          hint: 'Ex. Photo floue, prix à corriger…');
+      if (note == null || !mounted) return;
+    }
+    final ok = await runSalesAction(
+        context,
+        () => salesCall('kitungaReviewBanner', {
+              'id': b['id'],
+              'decision': approve ? 'approve' : 'reject',
+              if (note != null) 'note': note,
+            }),
+        approve ? 'Publicité validée' : 'Publicité refusée');
+    if (ok) _reload();
+  }
+
   Future<void> _delete(Map<String, dynamic> b) async {
     final ok = await adminConfirm(context,
         title: 'Supprimer cette bannière ?',
@@ -136,6 +160,7 @@ class _AdminBannersWidgetState extends State<AdminBannersWidget> {
               b,
         ];
         final live = all.where((b) => b['status'] == 'live').length;
+        final toReview = all.where((b) => b['status'] == 'pending').length;
         final clicks =
             all.fold<int>(0, (s, b) => s + ((b['clicks'] as num?) ?? 0).toInt());
         return AdminShell(
@@ -223,6 +248,13 @@ class _AdminBannersWidgetState extends State<AdminBannersWidget> {
                       },
                       onChanged: (v) => setState(() => _kind = v),
                     ),
+                    if (toReview > 0)
+                      ActionChip(
+                        avatar: const Icon(Icons.pending_actions_rounded,
+                            size: 18.0),
+                        label: Text('$toReview à valider'),
+                        onPressed: () => setState(() => _status = 'pending'),
+                      ),
                     Text(
                         '$live diffusée${live > 1 ? 's' : ''} sur '
                         '${all.length} · $clicks clic${clicks > 1 ? 's' : ''}',
@@ -252,6 +284,8 @@ class _AdminBannersWidgetState extends State<AdminBannersWidget> {
                           onEdit: () => _edit(b),
                           onToggle: () => _toggle(b),
                           onDelete: () => _delete(b),
+                          onApprove: () => _review(b, true),
+                          onReject: () => _review(b, false),
                         ),
                     ],
                   ),
@@ -417,6 +451,8 @@ class _BannerCard extends StatelessWidget {
     required this.onEdit,
     required this.onToggle,
     required this.onDelete,
+    required this.onApprove,
+    required this.onReject,
   });
 
   final double width;
@@ -428,10 +464,13 @@ class _BannerCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
+  final VoidCallback onApprove;
+  final VoidCallback onReject;
 
   @override
   Widget build(BuildContext context) {
     final b = banner;
+    final pending = b['status'] == 'pending';
     final off = b['active'] == false;
     final clicks = ((b['clicks'] as num?) ?? 0).toInt();
     return SizedBox(
@@ -472,6 +511,37 @@ class _BannerCard extends StatelessWidget {
             _line(Icons.ads_click_rounded, 'Clic : ${_targetText(b)}'),
             _line(Icons.touch_app_rounded,
                 '$clicks clic${clicks > 1 ? 's' : ''}'),
+            if (b['bySeller'] == true)
+              _line(Icons.storefront_rounded,
+                  'Proposée par le commerce depuis son application'),
+            if ((b['reviewNote'] ?? '') != '')
+              _line(Icons.info_outline_rounded, 'Motif du refus : ${b['reviewNote']}'),
+            if (pending) ...[
+              const SizedBox(height: 10.0),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                          backgroundColor: AdminColors.green),
+                      onPressed: onApprove,
+                      icon: const Icon(Icons.check_rounded, size: 18.0),
+                      label: const Text('Valider'),
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                          foregroundColor: AdminColors.red),
+                      onPressed: onReject,
+                      icon: const Icon(Icons.close_rounded, size: 18.0),
+                      label: const Text('Refuser'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 8.0),
             Row(
               children: [
