@@ -4,8 +4,10 @@ admin.initializeApp();
 
 const https = require("https");
 const cors = require("cors")({ origin: true });
-// Pas d'instance permanente (coût mensuel) : le proxy ne sert plus qu'en secours.
-const corsProxyRuntimeOptions = { minInstances: 0, timeoutSeconds: 15 };
+// Pas d'instance permanente (coût mensuel) : le proxy ne sert plus qu'en
+// secours. Ne pas écrire « minInstances » : l'outil Firebase ne connaît pas
+// les tarifs de us-west1 et refuserait le déploiement sans --force.
+const corsProxyRuntimeOptions = { timeoutSeconds: 15 };
 const ALLOWED_PROXY_HOSTS = [
   "firebasestorage.googleapis.com",
   "storage.googleapis.com",
