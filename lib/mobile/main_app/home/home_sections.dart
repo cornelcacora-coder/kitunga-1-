@@ -142,7 +142,9 @@ class KitungaCategoryTile extends StatelessWidget {
             Container(
               width: size,
               height: size,
-              padding: EdgeInsets.all(size * 0.14),
+              padding: kitungaCategoryPadding(
+                  image, EdgeInsets.all(size * 0.14)),
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: kitungaCategoryBackground(context, name),
                 borderRadius: BorderRadius.circular(size * 0.28),
@@ -414,21 +416,31 @@ class _KitungaShopListPageState extends State<KitungaShopListPage> {
 
 /// « Voir plus » des nouveaux produits : grille complète.
 class KitungaProductListPage extends StatelessWidget {
-  const KitungaProductListPage({super.key});
+  const KitungaProductListPage({
+    super.key,
+    this.tag,
+    this.title = 'Nos produits',
+    this.subtitle = 'Les derniers articles ajoutés par nos commerçants',
+  });
+
+  /// Filtre « Nouveauté » ou « Tendance » (champ specifications) ; null : tous.
+  final String? tag;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     return _SeeMoreScaffold(
-      title: 'Nos produits',
-      subtitle: 'Les derniers articles ajoutés par nos commerçants',
+      title: title,
+      subtitle: subtitle,
       child: StreamBuilder<Set<String>>(
         stream: kitungaSuspendedShopPaths(),
         // En cas d'erreur de lecture, rien n'est masqué en plus.
         builder: (context, suspended) => StreamBuilder<List<ProductRecord>>(
         stream: queryProductRecord(
           queryBuilder: (q) => q.orderBy('created_at', descending: true),
-          limit: 60,
+          limit: tag == null ? 60 : 200,
         ),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -439,6 +451,7 @@ class KitungaProductListPage extends StatelessWidget {
           final products = snapshot.data!
               .where(kitungaIsPublished)
               .where((p) => !hidden.contains(p.sellerRef?.path))
+              .where((p) => tag == null || p.specifications == tag)
               .toList();
           return KitungaPagedGrid<ProductRecord>(
             items: products,
@@ -450,6 +463,108 @@ class KitungaProductListPage extends StatelessWidget {
           );
         },
         ),
+      ),
+    );
+  }
+}
+
+
+/// Produits sur l'accueil des clients : Tendances, Nouveautés et Nos produits
+/// (publiés, commerces actifs), en rangées horizontales avec « Voir tout ».
+class KitungaHomeProducts extends StatefulWidget {
+  const KitungaHomeProducts({super.key, this.productsOverride});
+
+  /// Tests : remplace la lecture des produits.
+  final Stream<List<ProductRecord>>? productsOverride;
+
+  @override
+  State<KitungaHomeProducts> createState() => _KitungaHomeProductsState();
+}
+
+class _KitungaHomeProductsState extends State<KitungaHomeProducts> {
+  late final Stream<List<ProductRecord>> _products = widget.productsOverride ??
+      queryProductRecord(
+        queryBuilder: (q) => q.orderBy('created_at', descending: true),
+        limit: 150,
+      );
+  late final Stream<Set<String>> _hidden = widget.productsOverride != null
+      ? Stream.value(const <String>{})
+      : kitungaSuspendedShopPaths();
+
+  /// Récent : ajouté depuis moins de 30 jours.
+  static bool _recent(ProductRecord p) =>
+      p.createdAt != null &&
+      DateTime.now().difference(p.createdAt!) < const Duration(days: 30);
+
+  Widget _row(BuildContext context, String title, List<ProductRecord> list,
+      VoidCallback onSeeAll) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 18.0),
+          child: KitungaSectionHeader(title: title, onMore: onSeeAll),
+        ),
+        SizedBox(
+          height: KitungaProductCard.gridExtent,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            itemCount: list.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12.0),
+            itemBuilder: (context, i) => SizedBox(
+              width: 168.0,
+              child: KitungaProductCard(
+                product: list[i],
+                onTap: () => openKitungaProduct(context, list[i]),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Set<String>>(
+      stream: _hidden,
+      builder: (context, hiddenSnap) => StreamBuilder<List<ProductRecord>>(
+        stream: _products,
+        builder: (context, snap) {
+          final hidden = hiddenSnap.data ?? const <String>{};
+          final all = (snap.data ?? const <ProductRecord>[])
+              .where(kitungaIsPublished)
+              .where((p) => !hidden.contains(p.sellerRef?.path))
+              .toList();
+          if (all.isEmpty) return const SizedBox.shrink();
+          final trending =
+              all.where((p) => p.specifications == 'Tendance').take(12).toList();
+          // Marqués « Nouveauté » d'abord, puis les plus récents.
+          final fresh = [
+            ...all.where((p) => p.specifications == 'Nouveauté'),
+            ...all.where((p) => p.specifications != 'Nouveauté' && _recent(p)),
+          ].take(12).toList();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (trending.isNotEmpty)
+                _row(context, 'Tendances', trending,
+                    () => openSeeMore(context, const KitungaProductListPage(
+                        tag: 'Tendance',
+                        title: 'Tendances',
+                        subtitle: 'Les produits les plus demandés'))),
+              if (fresh.isNotEmpty)
+                _row(context, 'Nouveautés', fresh,
+                    () => openSeeMore(context, const KitungaProductListPage(
+                        tag: 'Nouveauté',
+                        title: 'Nouveautés',
+                        subtitle: 'Les derniers arrivages de nos commerçants'))),
+              _row(context, 'Nos produits', all.take(12).toList(),
+                  () => openSeeMore(context, const KitungaProductListPage())),
+            ],
+          );
+        },
       ),
     );
   }

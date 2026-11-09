@@ -7,6 +7,7 @@ import '/mobile/main_app/search/kitunga_search_page.dart' show openKitungaSearch
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import '/mobile/main_app/home/home_sections.dart' show KitungaHomeProducts;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -299,6 +300,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
 
               // 6. Section "Commerces certifiés"
               _buildCertifiedSection(context, theme),
+
+              // 7. Produits : Tendances, Nouveautés, Nos produits.
+              const KitungaHomeProducts(),
 
               // Reste des sections si l'utilisateur défile
               for (final row in _rows)
@@ -802,7 +806,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     Container(
                       width: 66.0,
                       height: 66.0,
-                      padding: const EdgeInsets.all(11.0),
+                      padding: kitungaCategoryPadding(
+                          c.image, const EdgeInsets.all(11.0)),
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         color: c.pastel,
                         borderRadius: BorderRadius.circular(18.0),

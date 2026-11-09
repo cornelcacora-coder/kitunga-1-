@@ -346,7 +346,11 @@ class _CategoryCard extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(4.0),
-                  child: KitungaCategoryImage(image),
+                  // Photo : coins arrondis comme la carte.
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14.0),
+                    child: KitungaCategoryImage(image),
+                  ),
                 ),
               ),
               SizedBox(height: 8.0),

@@ -197,7 +197,8 @@ class _ShopsWidgetState extends State<ShopsWidget> {
           Container(
             width: 44.0,
             height: 44.0,
-            padding: EdgeInsets.all(6.0),
+            padding: kitungaCategoryPadding(image, EdgeInsets.all(6.0)),
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: kitungaCategoryBackground(context, _category),
               borderRadius: BorderRadius.circular(14.0),
