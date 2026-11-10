@@ -70,7 +70,20 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
     final p = widget.product;
     final missing = missingRequired(_groups, _selection);
     final unit = unitPriceWithOptions(_basePrice, _groups, _selection);
-    final maxQty = p.quantity > 0 ? p.quantity : 1;
+    // Quantité limitée par le stock du produit et des variantes choisies
+    // (ex. plus que 2 en taille M).
+    var maxQty = p.quantity > 0 ? p.quantity : 1;
+    _selection.forEach((g, chosen) {
+      for (final c in chosen) {
+        final stock = _groups[g].choices[c].stock;
+        if (stock != null && stock > 0 && stock < maxQty) maxQty = stock;
+      }
+    });
+    if (_quantity > maxQty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _quantity > maxQty) setState(() => _quantity = maxQty);
+      });
+    }
 
     return DraggableScrollableSheet(
       expand: false,
@@ -307,9 +320,13 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
             Text(
               disabled
                   ? 'Épuisé'
-                  : choice.price > 0
-                      ? '+${kitungaPrice(choice.price)}'
-                      : 'Inclus',
+                  : [
+                      if (choice.stock != null && choice.stock! <= 5)
+                        'Plus que ${choice.stock}',
+                      choice.price > 0
+                          ? '+${kitungaPrice(choice.price)}'
+                          : 'Inclus',
+                    ].join(' · '),
               style: GoogleFonts.inter(
                 color: disabled ? theme.primary : theme.secondaryText,
                 fontSize: 13.0,

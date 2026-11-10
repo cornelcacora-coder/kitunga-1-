@@ -170,6 +170,11 @@ class _RefundsTabState extends State<_RefundsTab> {
                                   'Commande ${(r['status'] as String).toLowerCase()} '
                                   'le ${dateFr(r['updatedAt'] as String?)}',
                                   style: salesBody()),
+                              // Retour accepté : articles seulement.
+                              if ('${r['reason'] ?? ''}'.isNotEmpty)
+                                Text('${r['reason']} · montant des articles, '
+                                    'sans la livraison',
+                                    style: salesBody(color: kSalesInk)),
                               if (r['paymentReference'] != null)
                                 Text('Paiement MTN : ${r['paymentReference']}',
                                     style: salesBody()),

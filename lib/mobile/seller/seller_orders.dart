@@ -1,3 +1,5 @@
+import '/mobile/components/returns/kitunga_returns.dart'
+    show KitungaSellerReturnCard;
 import '/mobile/components/prescription/kitunga_prescription.dart'
     show showPrescriptionPhotos;
 import '/auth/firebase_auth/auth_util.dart';
@@ -301,6 +303,9 @@ class _SellerOrderCard extends StatelessWidget {
               'Motif : ${order.snapshotData['refusal_reason']}',
               style: GoogleFonts.inter(color: theme.error, fontSize: 13.0),
             ),
+          // Retour ou échange demandé par le client.
+          if (KitungaSellerReturnCard.showsFor(order))
+            KitungaSellerReturnCard(order: order),
           // Commande sur ordonnance : la pharmacie revoit l'ordonnance.
           if ((order.snapshotData['prescription_photos'] as List?)
                   ?.isNotEmpty ==

@@ -397,6 +397,14 @@ exports.kitungaSellerPrescriptions = acquisitionCallable((data, uid) =>
 exports.kitungaReviewPrescription = acquisitionCallable((data, uid) =>
   prescriptions.reviewPrescription({db: admin.firestore(), uid, data}));
 
+// ── Retours et échanges (boutiques, magasins) ────────────────────────────
+const returns = require("./kitunga/returns");
+
+exports.kitungaRequestReturn = acquisitionCallable((data, uid) =>
+  returns.requestReturn({db: admin.firestore(), uid, data}));
+exports.kitungaDecideReturn = acquisitionCallable((data, uid) =>
+  returns.decideReturn({db: admin.firestore(), uid, data}));
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));

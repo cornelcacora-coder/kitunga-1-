@@ -10,6 +10,7 @@ import '/backend/order_status.dart';
 import '/backend/server_payment.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/upload_data.dart';
+import '/mobile/components/returns/kitunga_returns.dart' show KitungaReturnSection;
 
 /// Remise sécurisée et reçu, côté application :
 /// - client : code de remise à donner au livreur, bouton « Voir le reçu » ;
@@ -213,7 +214,14 @@ class KitungaDeliveryExtras extends StatelessWidget {
       padding: const EdgeInsets.only(top: 12.0),
       child: showCode
           ? KitungaDeliveryCodeCard(order: order)
-          : KitungaReceiptButton(order: order),
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                KitungaReceiptButton(order: order),
+                // Boutiques et magasins : retour ou échange (7 jours).
+                KitungaReturnSection(order: order),
+              ],
+            ),
     );
   }
 }
