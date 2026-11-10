@@ -91,4 +91,52 @@ void main() {
     await open(tester);
     expect(find.textContaining('commande sans abonnement'), findsOneWidget);
   });
+
+  testWidgets('inscription : formule choisie, payer plus tard ou continuer',
+      (tester) async {
+    state = {'required': true, 'active': false, 'until': null, 'daysLeft': 0,
+      'plans': plans, 'history': []};
+    tester.view.physicalSize = const Size(400, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final results = <bool?>[];
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('fr'),
+      supportedLocales: const [Locale('fr')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: Builder(
+        builder: (context) => TextButton(
+          onPressed: () async => results.add(await Navigator.of(context)
+              .push<bool>(MaterialPageRoute(
+                  builder: (_) => const MySubscriptionPage(
+                      fromSignup: true,
+                      initialPlan: 'annual',
+                      phone: '068139237')))),
+          child: const Text('Créer le compte'),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Créer le compte'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Dernière étape'), findsOneWidget);
+    expect(find.text('Payer 1000 F avec MTN MoMo'), findsOneWidget);
+    expect(find.text('068139237'), findsOneWidget);
+    await tester.tap(find.text('Payer plus tard'));
+    await tester.pumpAndSettle();
+    expect(results, [false]);
+    // Deuxième essai : payé, puis « Continuer ».
+    mtn = 'paid';
+    await tester.tap(find.text('Créer le compte'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Payer 1000 F avec MTN MoMo'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Continuer'));
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    expect(results, [false, true]);
+  });
 }

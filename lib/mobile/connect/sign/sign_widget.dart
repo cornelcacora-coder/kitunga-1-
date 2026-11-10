@@ -1,3 +1,4 @@
+import '/mobile/main_app/subscription/my_subscription_page.dart';
 import '/backend/kitunga_hours.dart';
 import '/backend/subscription.dart';
 import '/backend/server_payment.dart';
@@ -106,6 +107,9 @@ class _SignWidgetState extends State<SignWidget> {
   }
 
   final _userFormKey = GlobalKey<FormState>();
+
+  /// Formule choisie à l'inscription (payée juste après la création).
+  String _signupPlan = 'semester';
   bool _signingUp = false;
 
   Future _signUpUser() async {
@@ -162,6 +166,17 @@ class _SignWidgetState extends State<SignWidget> {
         },
       );
 
+      // Paiement de l'abonnement dès l'inscription (ou plus tard).
+      if (context.mounted) {
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => MySubscriptionPage(
+            fromSignup: true,
+            initialPlan: _signupPlan,
+            phone: _model.phoneUserTextController.text.trim(),
+          ),
+        ));
+      }
+      if (!context.mounted) return;
       context.pushNamedAuth(
         AddProfileWidget.routeName,
         context.mounted,
@@ -364,33 +379,56 @@ class _SignWidgetState extends State<SignWidget> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Abonnement : formule unique.
+                // Abonnement : formule payée juste après l'inscription.
                 const KitungaFieldLabel('Abonnement'),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18.0, vertical: 14.0),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1E242B)
-                        : const Color(0xFFFFF1F1),
-                    borderRadius: BorderRadius.circular(22.0),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.workspace_premium_outlined,
-                          color: FlutterFlowTheme.of(context).primary),
-                      const SizedBox(width: 12.0),
-                      Expanded(
-                        child: Text(
-                          'Pour commander : 300 FCFA pour 6 mois ou 1000 FCFA '
-                          'pour un an, à payer ensuite dans Profil › Mon '
-                          'abonnement.',
-                          style: fieldStyle,
+                for (final p in kSubscriptionPlans)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18.0),
+                      onTap: () => safeSetState(() => _signupPlan = p.key),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 12.0),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1E242B)
+                              : const Color(0xFFFFF1F1),
+                          borderRadius: BorderRadius.circular(18.0),
+                          border: Border.all(
+                            color: _signupPlan == p.key
+                                ? FlutterFlowTheme.of(context).primary
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _signupPlan == p.key
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_unchecked_rounded,
+                              color: FlutterFlowTheme.of(context).primary,
+                            ),
+                            const SizedBox(width: 12.0),
+                            Expanded(
+                              child: Text('${p.name} · ${p.duration}',
+                                  style: fieldStyle),
+                            ),
+                            Text('${p.price} F',
+                                style: fieldStyle.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color:
+                                        FlutterFlowTheme.of(context).primary)),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
+                Text(
+                  'Le paiement MTN MoMo vous sera demandé juste après la '
+                  'création du compte.',
+                  style: fieldStyle.copyWith(fontSize: 12.5),
                 ),
                 const SizedBox(height: 16.0),
 

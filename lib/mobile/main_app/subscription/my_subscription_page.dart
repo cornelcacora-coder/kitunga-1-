@@ -33,7 +33,13 @@ void openMySubscription(BuildContext context) => Navigator.of(context)
     .push(MaterialPageRoute(builder: (_) => const MySubscriptionPage()));
 
 class MySubscriptionPage extends StatefulWidget {
-  const MySubscriptionPage({super.key});
+  const MySubscriptionPage(
+      {super.key, this.fromSignup = false, this.initialPlan, this.phone});
+
+  /// Dernière étape de l'inscription : bouton « Payer plus tard ».
+  final bool fromSignup;
+  final String? initialPlan;
+  final String? phone;
 
   @override
   State<MySubscriptionPage> createState() => _MySubscriptionPageState();
@@ -42,8 +48,9 @@ class MySubscriptionPage extends StatefulWidget {
 class _MySubscriptionPageState extends State<MySubscriptionPage> {
   late Future<Map<String, dynamic>> _future = _load();
   late final _phone = TextEditingController(
-      text: currentUserDocument?.phoneNumber ?? '');
-  String _plan = 'semester';
+      text: widget.phone ?? currentUserDocument?.phoneNumber ?? '');
+  late String _plan = widget.initialPlan ?? 'semester';
+  bool _paid = false;
   bool _paying = false;
   String? _message;
   bool _messageOk = false;
@@ -101,7 +108,10 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
               'abonnement s\'activera dans quelques minutes.',
         };
       });
-      if (status == 'paid') _reload();
+      if (status == 'paid') {
+        _paid = true;
+        _reload();
+      }
     } on ServerPaymentException catch (e) {
       setState(() {
         _message = e.message;
@@ -128,7 +138,8 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
         surfaceTintColor: Colors.transparent,
         elevation: 0.0,
         iconTheme: IconThemeData(color: theme.primaryText),
-        title: Text('Mon abonnement',
+        automaticallyImplyLeading: !widget.fromSignup,
+        title: Text(widget.fromSignup ? 'Votre abonnement' : 'Mon abonnement',
             style: GoogleFonts.interTight(
                 color: theme.primaryText,
                 fontSize: 19.0,
@@ -172,6 +183,15 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(20.0, 4.0, 20.0, 32.0),
             children: [
+              if (widget.fromSignup)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Text(
+                      'Dernière étape : payez votre abonnement pour pouvoir '
+                      'commander. Vous pouvez aussi le faire plus tard dans '
+                      'Profil › Mon abonnement.',
+                      style: small),
+                ),
               // État de l'abonnement.
               Container(
                 padding: const EdgeInsets.all(16.0),
@@ -309,6 +329,23 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                               : theme.error,
                           fontWeight: FontWeight.w600)),
                 ),
+              if (widget.fromSignup) ...[
+                const SizedBox(height: 12.0),
+                _paid
+                    ? FilledButton(
+                        style: FilledButton.styleFrom(
+                            backgroundColor: theme.primary,
+                            minimumSize: const Size.fromHeight(48.0)),
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Continuer'),
+                      )
+                    : TextButton(
+                        onPressed: _paying
+                            ? null
+                            : () => Navigator.pop(context, false),
+                        child: const Text('Payer plus tard'),
+                      ),
+              ],
               if (history.isNotEmpty) ...[
                 const SizedBox(height: 24.0),
                 Text('Mes paiements',
