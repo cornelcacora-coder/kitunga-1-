@@ -1,3 +1,5 @@
+import '/mobile/main_app/search/kitunga_filters.dart';
+import '/mobile/components/product_browser/kitunga_product_browser.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_categories.dart';
 export '/backend/kitunga_categories.dart';
@@ -415,7 +417,15 @@ class _KitungaShopListPageState extends State<KitungaShopListPage> {
 }
 
 /// « Voir plus » des nouveaux produits : grille complète.
-class KitungaProductListPage extends StatelessWidget {
+/// Tests : produits et commerces de la page « Voir tout » (sans Firebase).
+@visibleForTesting
+Stream<List<ProductRecord>> Function()? productListProductsOverride;
+@visibleForTesting
+Stream<List<UserRecord>> Function()? productListShopsOverride;
+
+/// « Voir tout » des produits (Tendances, Nouveautés, Nos produits) : recherche,
+/// filtres (catégorie, cuisine, prix, express…) et tri.
+class KitungaProductListPage extends StatefulWidget {
   const KitungaProductListPage({
     super.key,
     this.tag,
@@ -429,39 +439,82 @@ class KitungaProductListPage extends StatelessWidget {
   final String subtitle;
 
   @override
+  State<KitungaProductListPage> createState() => _KitungaProductListPageState();
+}
+
+class _KitungaProductListPageState extends State<KitungaProductListPage> {
+  late ProductFilter _filter = ProductFilter(tag: widget.tag);
+  late final Stream<List<ProductRecord>> _products =
+      productListProductsOverride?.call() ??
+          queryProductRecord(
+            queryBuilder: (q) => q.orderBy('created_at', descending: true),
+            limit: 300,
+          );
+  late final Stream<List<UserRecord>> _shops = productListShopsOverride
+          ?.call() ??
+      queryUserRecord(queryBuilder: (q) => q.where('role', isEqualTo: 'Seller'));
+
+  @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     return _SeeMoreScaffold(
-      title: title,
-      subtitle: subtitle,
-      child: StreamBuilder<Set<String>>(
-        stream: kitungaSuspendedShopPaths(),
-        // En cas d'erreur de lecture, rien n'est masqué en plus.
-        builder: (context, suspended) => StreamBuilder<List<ProductRecord>>(
-        stream: queryProductRecord(
-          queryBuilder: (q) => q.orderBy('created_at', descending: true),
-          limit: tag == null ? 60 : 200,
-        ),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-                child: CircularProgressIndicator(color: theme.primary));
-          }
-          final hidden = suspended.data ?? const <String>{};
-          final products = snapshot.data!
-              .where(kitungaIsPublished)
-              .where((p) => !hidden.contains(p.sellerRef?.path))
-              .where((p) => tag == null || p.specifications == tag)
-              .toList();
-          return KitungaPagedGrid<ProductRecord>(
-            items: products,
-            itemExtent: KitungaProductCard.gridExtent,
-            itemBuilder: (context, product) => KitungaProductCard(
-              product: product,
-              onTap: () => openKitungaProduct(context, product),
-            ),
-          );
-        },
+      title: widget.title,
+      subtitle: widget.subtitle,
+      child: StreamBuilder<List<UserRecord>>(
+        stream: _shops,
+        builder: (context, shopSnap) => StreamBuilder<List<ProductRecord>>(
+          stream: _products,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || !shopSnap.hasData) {
+              return Center(
+                  child: CircularProgressIndicator(color: theme.primary));
+            }
+            final shops = {
+              for (final s in shopSnap.data!) s.reference.path: s,
+            };
+            final products = snapshot.data!;
+            final filtered = filterProducts(products, shops, _filter);
+            final cuisines = {
+              for (final s in shopSnap.data!) ...shopCuisines(s),
+            }.toList()
+              ..sort();
+            return KitungaPagedGrid<ProductRecord>(
+              items: filtered,
+              perPage: 8,
+              itemExtent: KitungaProductCard.gridExtent,
+              header: Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    KitungaProductToolbar(
+                      filter: _filter,
+                      onChanged: (f) => setState(() => _filter = f),
+                      count: (f) =>
+                          filterProducts(products, shops, f).length,
+                      cuisines: cuisines,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 0.0),
+                      child: Text(
+                        filtered.isEmpty
+                            ? 'Aucun produit ne correspond à votre recherche.'
+                            : '${filtered.length} produit${filtered.length > 1 ? 's' : ''}',
+                        style: GoogleFonts.inter(
+                            color: theme.secondaryText,
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              itemBuilder: (context, product) => KitungaProductCard(
+                product: product,
+                onTap: () => openKitungaProduct(context, product),
+              ),
+            );
+          },
         ),
       ),
     );

@@ -36,6 +36,7 @@ class ProductFilter {
     this.express = false,
     this.cuisine,
     this.tag,
+    this.section,
     this.sort = ProductSort.relevance,
   });
 
@@ -51,6 +52,9 @@ class ProductFilter {
 
   /// « Nouveauté » ou « Tendance » (champ specifications).
   final String? tag;
+
+  /// Rayon ou rubrique du commerce (champ section : « Plats africains »…).
+  final String? section;
   final ProductSort sort;
 
   /// Nombre de filtres actifs (hors texte et tri), pour le badge.
@@ -61,6 +65,7 @@ class ProductFilter {
         express,
         cuisine != null,
         tag != null,
+        section != null,
       ].where((b) => b).length;
 
   ProductFilter copyWith({
@@ -72,6 +77,7 @@ class ProductFilter {
     bool? express,
     String? Function()? cuisine,
     String? Function()? tag,
+    String? Function()? section,
     ProductSort? sort,
   }) =>
       ProductFilter(
@@ -83,6 +89,7 @@ class ProductFilter {
         express: express ?? this.express,
         cuisine: cuisine != null ? cuisine() : this.cuisine,
         tag: tag != null ? tag() : this.tag,
+        section: section != null ? section() : this.section,
         sort: sort ?? this.sort,
       );
 
@@ -189,6 +196,7 @@ List<ProductRecord> filterProducts(List<ProductRecord> products,
     if (f.inStock && p.hasQuantity() && p.quantity <= 0) continue;
     if (f.express && !p.instantDisponibilty) continue;
     if (f.tag != null && p.specifications != f.tag) continue;
+    if (f.section != null && p.section.trim() != f.section) continue;
     final score = _score(q, [
       p.name,
       p.section,

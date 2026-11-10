@@ -327,7 +327,8 @@ class KitungaProductRow extends StatelessWidget {
                       width: 96.0,
                       height: 96.0,
                       fallbackIcon: Icons.image_outlined,
-                      placeholder: kitungaNoPhoto(theme, p, 96.0),
+                      // Ligne : largeur fixe (sinon largeur infinie).
+                      placeholder: kitungaNoPhoto(theme, p, 96.0, width: 96.0),
                     ),
                   ),
                 ),
@@ -367,7 +368,10 @@ bool kitungaIsPublished(ProductRecord p) => !p.hasOnSale() || p.onSale;
 
 /// Vignette d'un produit sans photo (plats de restaurant notamment) :
 /// fond chaud, icône de la rubrique et nom du produit.
-Widget kitungaNoPhoto(FlutterFlowTheme theme, ProductRecord p, double size) {
+/// [width] : largeur de la vignette ; null = toute la largeur disponible
+/// (cartes de la grille). Dans une ligne, passer une largeur fixe.
+Widget kitungaNoPhoto(FlutterFlowTheme theme, ProductRecord p, double size,
+    {double? width}) {
   final section = p.section.toLowerCase();
   final icon = section.contains('boisson')
       ? Icons.local_drink_rounded
@@ -381,7 +385,7 @@ Widget kitungaNoPhoto(FlutterFlowTheme theme, ProductRecord p, double size) {
                       ? Icons.free_breakfast_rounded
                       : Icons.restaurant_menu_rounded;
   return Container(
-    width: double.infinity,
+    width: width ?? double.infinity,
     height: size,
     decoration: const BoxDecoration(
       gradient: LinearGradient(
