@@ -481,13 +481,19 @@ class KitungaHomeProducts extends StatefulWidget {
   State<KitungaHomeProducts> createState() => _KitungaHomeProductsState();
 }
 
+/// Tests : produits de l'accueil (sans Firebase).
+@visibleForTesting
+Stream<List<ProductRecord>>? Function()? kitungaHomeProductsOverride;
+
 class _KitungaHomeProductsState extends State<KitungaHomeProducts> {
-  late final Stream<List<ProductRecord>> _products = widget.productsOverride ??
+  late final Stream<List<ProductRecord>>? _override =
+      widget.productsOverride ?? kitungaHomeProductsOverride?.call();
+  late final Stream<List<ProductRecord>> _products = _override ??
       queryProductRecord(
         queryBuilder: (q) => q.orderBy('created_at', descending: true),
         limit: 150,
       );
-  late final Stream<Set<String>> _hidden = widget.productsOverride != null
+  late final Stream<Set<String>> _hidden = _override != null
       ? Stream.value(const <String>{})
       : kitungaSuspendedShopPaths();
 

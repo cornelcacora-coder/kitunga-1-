@@ -13,3 +13,7 @@ Ne pas mettre `corsProxy` dans la liste : l'outil Firebase ne connaît pas les
 tarifs de us-west1 et exige `--force` pour cette fonction. Si elle doit être
 redéployée : `firebase deploy --only functions:functions:corsProxy --force`
 (depuis `firebase/`, avec `--account` et `-P kitunga-xtvpe4`).
+
+- `bash scripts/mtn_cles.sh` : installe ou remplace les clés MTN MoMo
+  (secrets Firebase, jamais dans le code), puis remet en ligne les fonctions
+  de paiement et de remboursement.

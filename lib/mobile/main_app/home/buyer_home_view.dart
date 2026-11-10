@@ -36,6 +36,10 @@ class BuyerHomeView extends StatefulWidget {
 
 class _BuyerHomeViewState extends State<BuyerHomeView> {
   final _searchController = TextEditingController();
+
+  /// Défilement de l'accueil : le fond rouge suit le contenu, la barre du
+  /// haut reste fixe (fond uni dès que le contenu passe dessous).
+  final _scroll = ScrollController();
   String _query = '';
 
   // Carrousel bannière
@@ -90,6 +94,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     _bannerTimer?.cancel();
     KitungaBannerStore.instance.removeListener(_onBanners);
     _searchController.dispose();
+    _scroll.dispose();
     _bannerController.dispose();
     super.dispose();
   }
@@ -137,8 +142,11 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     final firstName = nameParts.first.trim();
     final displayName = firstName.isNotEmpty ? firstName : 'OKOMBI';
 
+    double offset() => _scroll.hasClients ? _scroll.offset : 0.0;
     return Stack(
       children: [
+        // Fond rouge de l'en-tête : défile avec le contenu (ce n'est pas
+        // une image de fond fixe).
         if (!isDark)
           Positioned(
             top: 0,
@@ -146,20 +154,54 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
             right: 0,
             height: 290.0,
             child: IgnorePointer(
-              child: CustomPaint(
-                painter: HeaderBackgroundWavesPainter(),
+              child: AnimatedBuilder(
+                animation: _scroll,
+                builder: (context, child) => Transform.translate(
+                  offset: Offset(0, -offset().clamp(0.0, 400.0)),
+                  child: child,
+                ),
+                child: CustomPaint(
+                  painter: HeaderBackgroundWavesPainter(),
+                ),
               ),
             ),
           ),
-        ListView(
-          padding: EdgeInsets.only(
-            top: topInset + 4.0,
-            bottom: 32.0,
-          ),
+        Column(
           children: [
-            // 1. Barre d'en-tête (Menu, Logo Kitunga, Mode Nuit, Panier)
-            _buildHeader(context, theme),
-
+            // 1. Barre d'en-tête fixe (Menu, Logo Kitunga, Mode Nuit,
+            // Notifications, Panier).
+            AnimatedBuilder(
+              animation: _scroll,
+              builder: (context, child) {
+                final scrolled = offset() > 4.0;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: EdgeInsets.only(top: topInset + 4.0),
+                  decoration: BoxDecoration(
+                    color: scrolled
+                        ? (isDark
+                            ? const Color(0xFF101418)
+                            : theme.secondaryBackground)
+                        : Colors.transparent,
+                    boxShadow: scrolled
+                        ? const [
+                            BoxShadow(
+                                color: Color(0x14000000),
+                                blurRadius: 8.0,
+                                offset: Offset(0, 2)),
+                          ]
+                        : const [],
+                  ),
+                  child: child,
+                );
+              },
+              child: _buildHeader(context, theme),
+            ),
+            Expanded(
+              child: ListView(
+          controller: _scroll,
+          padding: const EdgeInsets.only(bottom: 32.0),
+          children: [
             // 2. Salutation ("Bonjour, OKOMBI 👋")
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(20.0, 16.0, 20.0, 0.0),
@@ -311,6 +353,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               for (final row in _rows)
                 ..._buildCategoryRow(theme, row.category, row.title),
             ],
+          ],
+        ),
+            ),
           ],
         ),
       ],
