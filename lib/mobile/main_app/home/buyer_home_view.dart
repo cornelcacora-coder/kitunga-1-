@@ -3,6 +3,9 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_categories.dart';
 import '/backend/kitunga_banners.dart';
+import '/backend/kitunga_notifications.dart';
+import '/mobile/main_app/subscription/my_subscription_page.dart'
+    show openMySubscription;
 import '/mobile/main_app/search/kitunga_search_page.dart' show openKitungaSearch;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -453,6 +456,13 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                 ),
               ),
               const SizedBox(width: 6.0),
+
+              // Notifications (rappels d'abonnement, messages de Kitunga).
+              if (currentUserReference != null) ...[
+                KitungaNotificationBell(
+                    onSubscription: (c) => openMySubscription(c)),
+                const SizedBox(width: 6.0),
+              ],
 
               // Bouton Panier avec badge dynamique lié au panier réel
               ListenableBuilder(

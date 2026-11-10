@@ -405,6 +405,25 @@ exports.kitungaRequestReturn = acquisitionCallable((data, uid) =>
 exports.kitungaDecideReturn = acquisitionCallable((data, uid) =>
   returns.decideReturn({db: admin.firestore(), uid, data}));
 
+// ── Notifications et rappels d'abonnement ────────────────────────────────
+const notifications = require("./kitunga/notifications");
+
+exports.kitungaSaveFcmToken = acquisitionCallable((data, uid) =>
+  notifications.saveFcmToken({db: admin.firestore(), uid, data}));
+exports.kitungaMyNotifications = acquisitionCallable((data, uid) =>
+  notifications.myNotifications({db: admin.firestore(), uid}));
+exports.kitungaMarkNotificationsRead = acquisitionCallable((data, uid) =>
+  notifications.markNotificationsRead({db: admin.firestore(), uid}));
+exports.kitungaAdminSendReminder = acquisitionCallable((data, uid) =>
+  notifications.adminSendReminder({db: admin.firestore(),
+    messaging: admin.messaging(), uid, data}));
+
+/** Rappels d'abonnement, chaque matin à 9 h (Brazzaville). */
+exports.kitungaSubscriptionReminders = functions.region("us-west1")
+    .pubsub.schedule("0 9 * * *").timeZone("Africa/Brazzaville")
+    .onRun(() => notifications.subscriptionReminders({
+      db: admin.firestore(), messaging: admin.messaging()}));
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));

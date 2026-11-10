@@ -27,6 +27,37 @@ bool isSubscribed(Map<String, dynamic> c, [DateTime? now]) {
   return end != null && end.isAfter(now ?? DateTime.now());
 }
 
+/// État d'abonnement : active, expiring (7 jours ou moins), expired, never.
+String subscriptionStateOf(Map<String, dynamic> c, [DateTime? now]) {
+  if (c['subscription'] is String) return c['subscription'] as String;
+  final end = DateTime.tryParse(c['subscribeCloseAt'] ?? '');
+  final t = now ?? DateTime.now();
+  if (end == null) return 'never';
+  if (!end.isAfter(t)) return 'expired';
+  return end.difference(t) <= const Duration(days: 7) ? 'expiring' : 'active';
+}
+
+const kSubscriptionGroups = {
+  'active': 'Abonnés',
+  'expiring': 'Expire sous 7 jours',
+  'expired': 'Expirés',
+  'never': 'Jamais abonnés',
+};
+
+/// Messages proposés par groupe (modifiables avant l'envoi).
+const kReminderMessages = {
+  'active': ('Merci d\'être abonné à Kitunga',
+      'Profitez de vos commandes livrées partout à Brazzaville.'),
+  'expiring': ('Votre abonnement se termine bientôt',
+      'Renouvelez-le dans Profil › Mon abonnement pour continuer à commander.'),
+  'expired': ('Votre abonnement est terminé',
+      'Vous ne pouvez plus commander. Renouvelez votre abonnement (300 F pour '
+          '6 mois ou 1000 F pour un an) dans Profil › Mon abonnement.'),
+  'never': ('Abonnez-vous à Kitunga',
+      'Pour commander : 300 F pour 6 mois ou 1000 F pour un an, dans '
+          'Profil › Mon abonnement.'),
+};
+
 class _AdminClientsWidgetState extends State<AdminClientsWidget> {
   String _q = '';
   Timer? _debounce;
@@ -188,8 +219,7 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
                       icon: Icons.workspace_premium_outlined,
                       items: const {
                         'all': 'Abonnés ou non',
-                        'yes': 'Abonnés',
-                        'no': 'Non abonnés',
+                        ...kSubscriptionGroups,
                       },
                       onChanged: (v) => setState(() => _subFilter = v),
                     ),
@@ -237,7 +267,7 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
                     final list = [
                       for (final c in listOf(snap.data!['clients']))
                         if ((_subFilter == 'all' ||
-                                (_subFilter == 'yes') == isSubscribed(c)) &&
+                                subscriptionStateOf(c, now) == _subFilter) &&
                             (_statusFilter == 'all' ||
                                 (c['accountStatus'] ?? 'active') ==
                                     _statusFilter) &&
@@ -251,9 +281,40 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
                     _shown = list;
                     final total =
                         (snap.data!['total'] as num? ?? list.length).toInt();
+                    final counts = snap.data!['counts'] is Map
+                        ? Map<String, dynamic>.from(snap.data!['counts'] as Map)
+                        : <String, dynamic>{};
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // Groupes d'abonnement (cliquables) et rappel.
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            for (final g in kSubscriptionGroups.entries)
+                              ChoiceChip(
+                                label: Text('${g.value} · ${counts[g.key] ?? '—'}'),
+                                selected: _subFilter == g.key,
+                                onSelected: (on) => setState(
+                                    () => _subFilter = on ? g.key : 'all'),
+                              ),
+                            FilledButton.icon(
+                              style: FilledButton.styleFrom(
+                                  backgroundColor: kSalesRed),
+                              onPressed: list.isEmpty
+                                  ? null
+                                  : () => _remind(list),
+                              icon: const Icon(
+                                  Icons.notifications_active_outlined,
+                                  size: 18.0),
+                              label: Text('Envoyer un rappel '
+                                  '(${list.length})'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14.0),
                         if (list.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 10.0),
@@ -332,9 +393,27 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
         ],
       );
 
-  Widget _subscription(Map<String, dynamic> c) => isSubscribed(c)
-      ? AdminBadge('Abonné', tone: kToneBlue)
-      : const AdminBadge('Non abonné', tone: kToneGrey);
+  Widget _subscription(Map<String, dynamic> c) =>
+      switch (subscriptionStateOf(c)) {
+        'active' => const AdminBadge('Abonné', tone: kToneBlue),
+        'expiring' => const AdminBadge('Expire bientôt', tone: kToneOrange),
+        'expired' => const AdminBadge('Expiré', tone: kToneRed),
+        _ => const AdminBadge('Jamais abonné', tone: kToneGrey),
+      };
+
+  /// Rappel (centre de notifications + push) aux clients choisis.
+  Future<void> _remind(List<Map<String, dynamic>> clients) async {
+    final group = _subFilter != 'all'
+        ? _subFilter
+        : clients.length == 1
+            ? subscriptionStateOf(clients.first)
+            : 'expiring';
+    final sent = await showDialog<bool>(
+      context: context,
+      builder: (_) => _ReminderDialog(clients: clients, group: group),
+    );
+    if (sent == true) _reload();
+  }
 
   Widget _status(Map<String, dynamic> c) => c['accountStatus'] == 'suspended'
       ? const AdminBadge('Suspendu', tone: kToneOrange)
@@ -349,7 +428,7 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
           title: 'Aucun client',
           message: 'Aucun compte ne correspond à cette recherche.'),
       onTap: _view,
-      actionsWidth: 164.0,
+      actionsWidth: 200.0,
       actions: (c) {
         final suspended = c['accountStatus'] == 'suspended';
         return [
@@ -362,6 +441,11 @@ class _AdminClientsWidgetState extends State<AdminClientsWidget> {
               tooltip: 'Modifier',
               tone: kToneOrange,
               onTap: () => _edit(c)),
+          AdminActionDot(
+              icon: Icons.notifications_active_outlined,
+              tooltip: 'Envoyer un rappel',
+              tone: kToneBlue,
+              onTap: () => _remind([c])),
           AdminActionDot(
               icon: Icons.card_giftcard_rounded,
               tooltip: 'Offrir un abonnement',
@@ -564,6 +648,94 @@ class _GrantDialogState extends State<_GrantDialog> {
           },
           child: const Text('Offrir'),
         ),
+      ],
+    );
+  }
+}
+
+
+/// Envoi d'un rappel : message proposé selon le groupe, modifiable.
+class _ReminderDialog extends StatefulWidget {
+  const _ReminderDialog({required this.clients, required this.group});
+
+  final List<Map<String, dynamic>> clients;
+  final String group;
+
+  @override
+  State<_ReminderDialog> createState() => _ReminderDialogState();
+}
+
+class _ReminderDialogState extends State<_ReminderDialog> {
+  late final _title = TextEditingController(
+      text: (kReminderMessages[widget.group] ?? kReminderMessages['expiring']!)
+          .$1);
+  late final _body = TextEditingController(
+      text: (kReminderMessages[widget.group] ?? kReminderMessages['expiring']!)
+          .$2);
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _body.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    if (_title.text.trim().isEmpty || _body.text.trim().isEmpty) {
+      return setState(() => _error = 'Écrivez le titre et le message.');
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final ok = await runSalesAction(
+        context,
+        () => salesCall('kitungaAdminSendReminder', {
+              'uids': [for (final c in widget.clients) c['uid']],
+              'title': _title.text.trim(),
+              'body': _body.text.trim(),
+            }),
+        'Rappel envoyé à ${widget.clients.length} client'
+            '${widget.clients.length > 1 ? 's' : ''}');
+    if (!mounted) return;
+    if (ok) {
+      Navigator.pop(context, true);
+    } else {
+      setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final n = widget.clients.length;
+    return AdminFormDialog(
+      icon: Icons.notifications_active_outlined,
+      title: 'Envoyer un rappel',
+      saveLabel: 'Envoyer',
+      saving: _saving,
+      onSave: _send,
+      children: [
+        Text(
+            n == 1
+                ? 'Au client ${widget.clients.first['displayName'] ?? ''} : '
+                    'dans ses notifications Kitunga et sur son téléphone.'
+                : 'Aux $n clients affichés : dans leurs notifications Kitunga '
+                    'et sur leur téléphone.',
+            style: salesBody()),
+        TextField(
+          controller: _title,
+          maxLength: 80,
+          decoration: salesInput('Titre'),
+        ),
+        TextField(
+          controller: _body,
+          maxLength: 400,
+          maxLines: 3,
+          decoration: salesInput('Message'),
+        ),
+        if (_error != null) Text(_error!, style: salesBody(color: kSalesRed)),
       ],
     );
   }

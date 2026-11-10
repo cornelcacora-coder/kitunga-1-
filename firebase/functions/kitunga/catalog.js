@@ -9,6 +9,7 @@ const {AcquisitionError, toDate} = require("./acquisition/model");
 const {requireAdmin} = require("./acquisition/agents");
 const {audit} = require("./acquisition/store");
 const {normalizePhone} = require("./momo");
+const {subscriptionState} = require("./notifications");
 
 const ts = () => admin.firestore.FieldValue.serverTimestamp();
 const text = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -466,15 +467,24 @@ async function listClients(db, data) {
       d.get("phone_number")].some((v) => String(v || "").toLowerCase()
         .includes(q)));
   }
+  // État d'abonnement : abonnés, expire bientôt, expirés, jamais abonnés.
+  const counts = {active: 0, expiring: 0, expired: 0, never: 0};
+  for (const d of docs) counts[subscriptionState(d)]++;
+  const segment = text(data.subscription, 20);
+  if (counts[segment] !== undefined) {
+    docs = docs.filter((d) => subscriptionState(d) === segment);
+  }
   const list = docs.map((d) => {
     const u = d.data();
     return {uid: d.id, displayName: u.display_name || "", email: u.email || "",
       phone: u.phone_number || "", photoUrl: u.photo_url || "",
       createdAt: iso(u.created_time), subscribeCloseAt: iso(u.subscribe_close_at),
+      subscription: subscriptionState(d), plan: u.subscribe_type || "",
+      push: (u.fcm_tokens || []).length > 0,
       accountStatus: u.account_status || "active"};
   });
   list.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-  return {clients: list.slice(0, 300), total: docs.length};
+  return {clients: list.slice(0, 300), total: docs.length, counts};
 }
 
 /**
