@@ -152,13 +152,14 @@ const commissionFlag = <String, String>{
 
 /// Formules (historique compris). Seule « monthly » est encore vendue.
 const planLabel = <String, String>{
-  'monthly': 'Mensuel (300 F)',
+  'semester': 'Semestriel (300 F, 6 mois)',
+  'monthly': 'Mensuel (300 F, ancienne formule)',
   'quarterly': 'Trimestriel (500 F)',
   'annual': 'Annuel (1000 F)',
 };
 
 /// Formules vendues aujourd'hui (abonnement client unique à 300 F).
-const kOfferedPlans = ['monthly'];
+const kOfferedPlans = ['semester', 'annual'];
 
 String payoutMethodLabel(Map? m) {
   if (m == null) return 'Aucun moyen de paiement';

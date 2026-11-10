@@ -430,6 +430,10 @@ exports.kitungaStartSubscription = callable((data, uid) =>
   }));
 
 /** Vérifie le paiement et prolonge l'abonnement. */
+/** Module « Mon abonnement » : état, formules, historique. */
+exports.kitungaMySubscription = acquisitionCallable((data, uid) =>
+  subscriptions.mySubscription({db: admin.firestore(), uid}));
+
 exports.kitungaConfirmSubscription = callable((data, uid) =>
   subscriptions.confirmSubscription({
     db: admin.firestore(), momo, uid, referenceId: String(data.referenceId || ""),

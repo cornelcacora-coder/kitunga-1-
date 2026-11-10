@@ -1,3 +1,4 @@
+import '/mobile/main_app/subscription/my_subscription_page.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/subscription.dart';
 import '/mobile/components/kitunga_contact.dart';
@@ -402,6 +403,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                           ? 'Commandes'
                           : 'Mes commandes',
                       () => context.pushNamed(OrderWidget.routeName)),
+                  // Clients : abonnement consultable et payable à tout moment.
+                  if (role == 'User')
+                    _item(theme, Icons.workspace_premium_outlined,
+                        'Mon abonnement', () => openMySubscription(context)),
                   _item(theme, Icons.lock_outline_rounded, 'Sécurité',
                       () => context.pushNamed(SecurityWidget.routeName)),
                 ]),

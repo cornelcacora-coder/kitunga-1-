@@ -1,3 +1,4 @@
+import '/mobile/main_app/subscription/my_subscription_page.dart';
 import '/mobile/components/prescription/kitunga_prescription.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -1019,6 +1020,13 @@ class _ProductViewWidgetState extends State<ProductViewWidget> {
                                             TextButton(
                                               onPressed: () => Navigator.pop(c),
                                               child: Text('Compris'),
+                                            ),
+                                            FilledButton(
+                                              onPressed: () {
+                                                Navigator.pop(c);
+                                                openMySubscription(context);
+                                              },
+                                              child: Text('S\'abonner'),
                                             ),
                                           ],
                                         ),

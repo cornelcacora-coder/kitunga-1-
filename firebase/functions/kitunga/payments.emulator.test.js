@@ -10,7 +10,8 @@ const assert = require("node:assert");
 const admin = require("firebase-admin");
 const momo = require("./momo");
 const {startPayment, confirmPayment, refundOrder} = require("./payments");
-const {startSubscription, confirmSubscription} = require("./subscriptions");
+const {startSubscription, confirmSubscription, mySubscription} =
+  require("./subscriptions");
 const {reconcilePending} = require("./reconcile");
 
 admin.initializeApp({projectId: "demo-kitunga"});
@@ -253,32 +254,42 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
   await seed("Taille : Normal", 1);
   await db.doc("User/buyer").update({subscribe_close_at: new Date(0)});
   const s = await startSubscription({db, momo, uid: "buyer",
-    plan: "monthly", phone: "065551234"});
-  assert.equal(s.amount, 300); // formule unique : 300 F pour 30 jours
+    plan: "semester", phone: "065551234"});
+  assert.equal(s.amount, 300); // Semestriel : 300 F pour 6 mois
   const r = await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s.referenceId});
   assert.equal(r.status, "paid");
   const until = (await db.doc("User/buyer").get())
       .get("subscribe_close_at").toDate();
   const days = (until - Date.now()) / 86400000;
-  assert.ok(days > 29.9 && days <= 30, `jours : ${days}`);
+  assert.ok(days > 182.9 && days <= 183, `jours : ${days}`);
   // Confirmer deux fois ne prolonge pas deux fois.
   await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s.referenceId});
   assert.equal((await db.doc("User/buyer").get())
       .get("subscribe_close_at").toDate().getTime(), until.getTime());
-  // Un renouvellement s'ajoute à la fin actuelle. Ancienne formule demandée
-  // (page en cache) : c'est la formule unique à 300 F qui est vendue.
+  // Un renouvellement annuel s'ajoute à la fin actuelle.
   const s2 = await startSubscription({db, momo, uid: "buyer",
     plan: "annual", phone: "065551234"});
-  assert.equal(s2.amount, 300);
+  assert.equal(s2.amount, 1000);
   await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s2.referenceId});
   const until2 = (await db.doc("User/buyer").get())
       .get("subscribe_close_at").toDate();
-  assert.equal(until2 - until, 30 * 86400000);
+  assert.equal(until2 - until, 365 * 86400000);
   assert.equal((await db.doc("User/buyer").get()).get("subscribe_type"),
-      "Mensuel - 300 F");
+      "Annuel - 1000 F");
+  // Ancienne formule demandée (page en cache) : formule semestrielle.
+  const s3 = await startSubscription({db, momo, uid: "buyer",
+    plan: "monthly", phone: "065551234"});
+  assert.equal(s3.amount, 300);
+  // Module « Mon abonnement » : état et historique.
+  const me = await mySubscription({db, uid: "buyer"});
+  assert.equal(me.active, true);
+  assert.equal(me.required, true);
+  assert.ok(me.daysLeft > 540 && me.daysLeft <= 549);
+  assert.deepEqual(me.plans.map((p) => p.key), ["semester", "annual"]);
+  assert.equal(me.history.filter((h) => h.status === "Réussi").length, 2);
   // Vendeurs et livreurs : pas d'abonnement à payer.
   await assert.rejects(startSubscription({db, momo, uid: "seller",
     plan: "monthly", phone: "065551234"}), /pas besoin d'abonnement/);
@@ -290,7 +301,7 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
 
 test("reconcile : abonnement et commande en attente", async () => {
   await seed("Taille : Normal", 1);
-  await startSubscription({db, momo, uid: "buyer", plan: "monthly",
+  await startSubscription({db, momo, uid: "buyer", plan: "semester",
     phone: "065551234"});
   await start();
   assert.equal(await reconcilePending({db, momo}), 2);

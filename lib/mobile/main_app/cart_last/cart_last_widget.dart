@@ -1,3 +1,4 @@
+import '/mobile/main_app/subscription/my_subscription_page.dart';
 import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart' show KitungaClosedNotice;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import '/auth/firebase_auth/auth_util.dart';
@@ -2005,6 +2006,13 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                 TextButton(
                                                                   onPressed: () => Navigator.pop(c),
                                                                   child: Text('Compris'),
+                                                                ),
+                                                                FilledButton(
+                                                                  onPressed: () {
+                                                                    Navigator.pop(c);
+                                                                    openMySubscription(context);
+                                                                  },
+                                                                  child: Text('S\'abonner'),
                                                                 ),
                                                               ],
                                                             ),

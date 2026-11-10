@@ -137,7 +137,6 @@ class _SignWidgetState extends State<SignWidget> {
             horraire: _model.horraireTextController.text,
             // Abonnement activé par le serveur après paiement MoMo.
             isSubscribed: false,
-            subscribeType: kSubscriptionLabel,
           ));
 
       // Module commercial : attribution au commercial (sans attendre).
@@ -384,8 +383,9 @@ class _SignWidgetState extends State<SignWidget> {
                       const SizedBox(width: 12.0),
                       Expanded(
                         child: Text(
-                          '$kSubscriptionPrice FCFA par mois, pour commander '
-                          'sur Kitunga.',
+                          'Pour commander : 300 FCFA pour 6 mois ou 1000 FCFA '
+                          'pour un an, à payer ensuite dans Profil › Mon '
+                          'abonnement.',
                           style: fieldStyle,
                         ),
                       ),

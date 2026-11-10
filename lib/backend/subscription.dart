@@ -2,11 +2,14 @@ import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
-/// Formule unique de l'abonnement client (même valeur que le serveur,
+/// Formules de l'abonnement client (mêmes valeurs que le serveur,
 /// firebase/functions/kitunga/subscriptions.js).
-const kSubscriptionPrice = 300;
-const kSubscriptionDays = 30;
-const kSubscriptionLabel = 'Mensuel - 300 F';
+typedef KitungaPlan = ({String key, String name, int price, String duration});
+
+const kSubscriptionPlans = <KitungaPlan>[
+  (key: 'semester', name: 'Semestriel', price: 300, duration: '6 mois'),
+  (key: 'annual', name: 'Annuel', price: 1000, duration: '12 mois'),
+];
 
 /// Abonnement client : payé par MTN MoMo sur la page web Kitunga, activé
 /// par le serveur (User.subscribe_close_at). Seuls les clients (rôle User)
@@ -44,4 +47,4 @@ bool kitungaCanOrder() {
 /// page de paiement : Google Play l'interdit pour un service numérique.
 const kitungaSubscriptionRequired =
     'Un abonnement Kitunga actif est nécessaire pour commander '
-    '(300 F par mois).';
+    '(300 F pour 6 mois ou 1000 F pour un an) : Profil › Mon abonnement.';
