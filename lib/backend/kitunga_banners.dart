@@ -45,6 +45,11 @@ KitungaBanner _default(int i, String image, String t1, String t2, String s) =>
       targetValue: '',
     );
 
+/// Ombre douce sous les textes des bannières (lisibles sur toute photo).
+const kBannerTextShadow = [
+  Shadow(color: Color(0x73000000), blurRadius: 6.0, offset: Offset(0, 1)),
+];
+
 /// Bannières d'origine, incluses dans l'application.
 final kitungaDefaultBanners = <KitungaBanner>[
   _default(0, 'assets/images/Girl_Bag2.jpg', 'Tout au même', 'endroit',
@@ -254,14 +259,15 @@ class KitungaBannerView extends StatelessWidget {
               DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
+                    // Dégradé allégé : la photo reste visible, le texte lisible.
                     colors: [
-                      Color.lerp(b.color, Colors.black, 0.08)!,
-                      b.color,
-                      b.color.withValues(alpha: 0.92),
-                      b.color.withValues(alpha: 0.35),
+                      b.color.withValues(alpha: 0.82),
+                      b.color.withValues(alpha: 0.62),
+                      b.color.withValues(alpha: 0.32),
+                      b.color.withValues(alpha: 0.08),
                       Colors.transparent,
                     ],
-                    stops: const [0.0, 0.35, 0.52, 0.70, 0.88],
+                    stops: const [0.0, 0.30, 0.50, 0.68, 0.82],
                   ),
                 ),
               ),
@@ -298,6 +304,7 @@ class KitungaBannerView extends StatelessWidget {
                                   fontSize: 19.0,
                                   fontWeight: FontWeight.w900,
                                   fontStyle: FontStyle.italic,
+                                  shadows: kBannerTextShadow,
                                   height: 1.1)),
                         if (b.title2.isNotEmpty)
                           Text(b.title2,
@@ -308,6 +315,7 @@ class KitungaBannerView extends StatelessWidget {
                                   fontSize: 26.0,
                                   fontWeight: FontWeight.w900,
                                   fontStyle: FontStyle.italic,
+                                  shadows: kBannerTextShadow,
                                   height: 1.0)),
                         const SizedBox(height: 4.0),
                         Text(b.subtitle,
@@ -317,7 +325,8 @@ class KitungaBannerView extends StatelessWidget {
                                 color: Colors.white,
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w500,
-                                height: 1.2)),
+                                height: 1.2,
+                                shadows: kBannerTextShadow)),
                       ],
                     ),
                     Container(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '/backend/kitunga_banners.dart' show kBannerTextShadow;
 import '/noc/sales/sales_common.dart';
 import '/noc/ui/admin_export.dart';
 import 'admin_categories_widget.dart' show hexColor, loadAdminCategories;
@@ -344,14 +345,15 @@ class BannerPreview extends StatelessWidget {
               DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
+                    // Dégradé allégé : la photo reste visible, le texte lisible.
                     colors: [
-                      Color.lerp(color, Colors.black, 0.08)!,
-                      color,
-                      color.withValues(alpha: 0.92),
-                      color.withValues(alpha: 0.35),
+                      color.withValues(alpha: 0.82),
+                      color.withValues(alpha: 0.62),
+                      color.withValues(alpha: 0.32),
+                      color.withValues(alpha: 0.08),
                       Colors.transparent,
                     ],
-                    stops: const [0.0, 0.35, 0.52, 0.70, 0.88],
+                    stops: const [0.0, 0.30, 0.50, 0.68, 0.82],
                   ),
                 ),
               ),
@@ -388,6 +390,7 @@ class BannerPreview extends StatelessWidget {
                                   fontSize: 19.0,
                                   fontWeight: FontWeight.w900,
                                   fontStyle: FontStyle.italic,
+                                  shadows: kBannerTextShadow,
                                   height: 1.1)),
                         if (title2.isNotEmpty)
                           Text(title2,
@@ -398,6 +401,7 @@ class BannerPreview extends StatelessWidget {
                                   fontSize: 26.0,
                                   fontWeight: FontWeight.w900,
                                   fontStyle: FontStyle.italic,
+                                  shadows: kBannerTextShadow,
                                   height: 1.0)),
                         const SizedBox(height: 4.0),
                         Text(subtitle,
@@ -407,7 +411,8 @@ class BannerPreview extends StatelessWidget {
                                 color: Colors.white,
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w500,
-                                height: 1.2)),
+                                height: 1.2,
+                                shadows: kBannerTextShadow)),
                       ],
                     ),
                     Container(
