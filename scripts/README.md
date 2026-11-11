@@ -2,6 +2,8 @@
 
 À lancer depuis le terminal de VS Code, à la racine du projet.
 
+- `bash scripts/deployer_tout.sh` : met en ligne toutes les fonctions (sauf
+  corsProxy) puis le site. Le plus simple après une série de changements.
 - `bash scripts/deployer.sh <fonctions…>` : met en ligne les fonctions citées,
   puis le site admin. Sans paramètre : le site seulement. Ensuite, purger le
   cache Cloudflare.
