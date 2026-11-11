@@ -52,9 +52,11 @@ const kReminderMessages = {
       'Renouvelez-le dans Profil › Mon abonnement pour continuer à commander.'),
   'expired': ('Votre abonnement est terminé',
       'Vous ne pouvez plus commander. Renouvelez votre abonnement (300 F pour '
-          '6 mois ou 1000 F pour un an) dans Profil › Mon abonnement.'),
+          '3 mois, 500 F pour 6 mois ou 1000 F pour un an) dans Profil › '
+          'Mon abonnement.'),
   'never': ('Abonnez-vous à Kitunga',
-      'Pour commander : 300 F pour 6 mois ou 1000 F pour un an, dans '
+      'Pour commander : 300 F pour 3 mois, 500 F pour 6 mois ou 1000 F pour '
+          'un an, dans '
           'Profil › Mon abonnement.'),
 };
 

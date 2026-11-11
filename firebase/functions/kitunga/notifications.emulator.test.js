@@ -12,7 +12,8 @@ const cat = require("./catalog");
 admin.initializeApp({projectId: "demo-kitunga"});
 const db = admin.firestore();
 const day = 86400000;
-const now = new Date(Date.UTC(2026, 10, 10, 8)); // 9 h à Brazzaville
+// Heure réelle : le comptage des groupes (admin) se fait à l'heure actuelle.
+const now = new Date();
 const pushes = [];
 const messaging = {
   sendEachForMulticast: async (m) => {
@@ -81,7 +82,7 @@ test("admin : groupes d'abonnement et envoi d'un rappel", async () => {
   const sent = await n.adminSendReminder({db, messaging, uid: "admin",
     data: {segment: "never"}, now});
   assert.strictEqual(sent.sent, 1);
-  assert.match((await notes("jamais"))[0].body, /300 F pour 6 mois/);
+  assert.match((await notes("jamais"))[0].body, /300 F pour 3 mois/);
   await n.adminSendReminder({db, messaging, uid: "admin",
     data: {uids: ["actif", "vendeur"], title: "Promo", body: "Livraison offerte"}});
   assert.strictEqual((await notes("actif"))[0].title, "Promo");

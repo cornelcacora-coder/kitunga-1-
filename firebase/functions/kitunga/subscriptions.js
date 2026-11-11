@@ -7,15 +7,15 @@ const {PaymentError} = require("./errors");
 
 const DAY = 24 * 60 * 60 * 1000;
 
-// Formules vendues : Semestriel 300 F (6 mois) et Annuel 1000 F (12 mois).
+// Formules vendues : Trimestriel 300 F (3 mois), Semestriel 500 F (6 mois)
+// et Annuel 1000 F (12 mois).
 // Les anciennes formules (offered: false) restent connues pour terminer un
 // paiement déjà lancé et pour l'historique des commissions.
 const PLANS = {
-  semester: {label: "Semestriel - 300 F", price: 300, days: 183},
+  quarterly: {label: "Trimestriel - 300 F", price: 300, days: 91},
+  semester: {label: "Semestriel - 500 F", price: 500, days: 183},
   annual: {label: "Annuel - 1000 F", price: 1000, days: 365},
   monthly: {label: "Mensuel - 300 F", price: 300, days: 30, offered: false},
-  quarterly: {label: "Trimestriel - 500 F", price: 500, days: 90,
-    offered: false},
 };
 
 function toDate(v) {
@@ -42,8 +42,8 @@ function subscriptionActive(user, now = new Date()) {
 /** Demande MTN pour la formule choisie. Renvoie {referenceId, amount}. */
 async function startSubscription({db, momo, uid, plan, phone}) {
   if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
-  // Ancienne application ou page en cache : formule semestrielle.
-  if (!PLANS[plan] || PLANS[plan].offered === false) plan = "semester";
+  // Ancienne application ou page en cache : formule trimestrielle.
+  if (!PLANS[plan] || PLANS[plan].offered === false) plan = "quarterly";
   const p = PLANS[plan];
   const payer = momo.normalizePhone(phone);
   if (!payer) {

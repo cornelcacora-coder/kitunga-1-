@@ -3,10 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/server_payment.dart';
+import '/backend/subscription.dart' show kSubscriptionPlans;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
-/// Module « Mon abonnement » du client : état, formules (Semestriel 300 F,
+/// Module « Mon abonnement » du client : état, formules (Trimestriel 300 F,
+/// Semestriel 500 F,
 /// Annuel 1000 F), paiement MTN MoMo, historique. Accessible à tout moment
 /// depuis le profil (fonctions kitungaMySubscription, kitungaStartSubscription,
 /// kitungaConfirmSubscription).
@@ -26,6 +28,14 @@ Future<Map<String, dynamic>> _call(String name, Map<String, dynamic> data) =>
 String _day(String? iso) {
   final d = iso == null ? null : DateTime.tryParse(iso)?.toLocal();
   return d == null ? '' : dateTimeFormat('d MMMM y', d);
+}
+
+/// « Trimestriel · 3 mois »… d'après les formules de l'application.
+String planDisplayName(String key) {
+  for (final p in kSubscriptionPlans) {
+    if (p.key == key) return '${p.name} · ${p.duration}';
+  }
+  return key;
 }
 
 /// Ouvre le module (depuis le profil, ou quand une commande est refusée).
@@ -49,7 +59,7 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
   late Future<Map<String, dynamic>> _future = _load();
   late final _phone = TextEditingController(
       text: widget.phone ?? currentUserDocument?.phoneNumber ?? '');
-  late String _plan = widget.initialPlan ?? 'semester';
+  late String _plan = widget.initialPlan ?? 'quarterly';
   bool _paid = false;
   bool _paying = false;
   String? _message;
@@ -264,7 +274,7 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                           const SizedBox(width: 12.0),
                           Expanded(
                             child: Text(
-                                '${p['key'] == 'annual' ? 'Annuel · 12 mois' : 'Semestriel · 6 mois'}',
+                                planDisplayName('${p['key']}'),
                                 style: GoogleFonts.inter(
                                     color: theme.primaryText,
                                     fontSize: 15.0,

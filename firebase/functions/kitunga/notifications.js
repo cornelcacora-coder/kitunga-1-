@@ -118,7 +118,7 @@ const REMINDERS = {
       "maintenant dans Profil › Mon abonnement."}),
   "expired": () => ({title: "Votre abonnement est terminé",
     body: "Vous ne pouvez plus commander. Renouvelez votre abonnement " +
-      "(300 F pour 6 mois ou 1000 F pour un an) dans Profil › Mon abonnement."}),
+      "(300 F pour 3 mois, 500 F pour 6 mois ou 1000 F pour un an) dans Profil › Mon abonnement."}),
 };
 
 /**
@@ -168,7 +168,8 @@ const DEFAULT_MESSAGES = {
       "commander."},
   expired: REMINDERS.expired(),
   never: {title: "Abonnez-vous à Kitunga",
-    body: "Pour commander : 300 F pour 6 mois ou 1000 F pour un an, dans " +
+    body: "Pour commander : 300 F pour 3 mois, 500 F pour 6 mois ou 1000 F " +
+      "pour un an, dans " +
       "Profil › Mon abonnement."},
   all: {title: "Kitunga", body: ""},
 };

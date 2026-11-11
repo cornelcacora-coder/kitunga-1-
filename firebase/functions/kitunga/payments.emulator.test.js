@@ -255,7 +255,7 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
   await db.doc("User/buyer").update({subscribe_close_at: new Date(0)});
   const s = await startSubscription({db, momo, uid: "buyer",
     plan: "semester", phone: "065551234"});
-  assert.equal(s.amount, 300); // Semestriel : 300 F pour 6 mois
+  assert.equal(s.amount, 500); // Semestriel : 500 F pour 6 mois
   const r = await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s.referenceId});
   assert.equal(r.status, "paid");
@@ -279,7 +279,7 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
   assert.equal(until2 - until, 365 * 86400000);
   assert.equal((await db.doc("User/buyer").get()).get("subscribe_type"),
       "Annuel - 1000 F");
-  // Ancienne formule demandée (page en cache) : formule semestrielle.
+  // Ancienne formule demandée (page en cache) : trimestrielle (300 F, 3 mois).
   const s3 = await startSubscription({db, momo, uid: "buyer",
     plan: "monthly", phone: "065551234"});
   assert.equal(s3.amount, 300);
@@ -288,7 +288,8 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
   assert.equal(me.active, true);
   assert.equal(me.required, true);
   assert.ok(me.daysLeft > 540 && me.daysLeft <= 549);
-  assert.deepEqual(me.plans.map((p) => p.key), ["semester", "annual"]);
+  assert.deepEqual(me.plans.map((p) => p.key),
+      ["quarterly", "semester", "annual"]);
   assert.equal(me.history.filter((h) => h.status === "Réussi").length, 2);
   // Vendeurs et livreurs : pas d'abonnement à payer.
   await assert.rejects(startSubscription({db, momo, uid: "seller",

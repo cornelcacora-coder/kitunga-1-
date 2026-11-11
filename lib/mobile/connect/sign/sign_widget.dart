@@ -109,7 +109,7 @@ class _SignWidgetState extends State<SignWidget> {
   final _userFormKey = GlobalKey<FormState>();
 
   /// Formule choisie à l'inscription (payée juste après la création).
-  String _signupPlan = 'semester';
+  String _signupPlan = 'quarterly';
   bool _signingUp = false;
 
   Future _signUpUser() async {

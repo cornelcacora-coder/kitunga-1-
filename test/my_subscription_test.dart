@@ -11,7 +11,8 @@ void main() {
   var state = <String, dynamic>{};
   var mtn = 'paid';
   const plans = [
-    {'key': 'semester', 'label': 'Semestriel - 300 F', 'price': 300, 'days': 183},
+    {'key': 'quarterly', 'label': 'Trimestriel - 300 F', 'price': 300, 'days': 91},
+    {'key': 'semester', 'label': 'Semestriel - 500 F', 'price': 500, 'days': 183},
     {'key': 'annual', 'label': 'Annuel - 1000 F', 'price': 1000, 'days': 365},
   ];
 
