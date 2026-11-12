@@ -5,11 +5,11 @@ import '/mobile/components/prescription/kitunga_prescription.dart'
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/order_status.dart';
+import 'kitunga_seller_actions.dart';
 import '/mobile/components/delivery/kitunga_delivery.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
-import '/mobile/components/order_progress/order_progress_widget.dart';
 import '/mobile/components/product_card/product_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -151,56 +151,6 @@ class _SellerOrderCard extends StatelessWidget {
   String get _ref => order.orderUniqueReference.isNotEmpty
       ? order.orderUniqueReference
       : order.orderId;
-
-  Future<void> _setStatus(String status, [Map<String, dynamic>? extra]) =>
-      order.reference.update({
-        'status': status,
-        'status_updated_at': getCurrentTimestamp,
-        ...?extra,
-      });
-
-  Future<void> _refuse(BuildContext context) async {
-    final controller = TextEditingController();
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text('Refuser la commande'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Le client verra ce motif.'),
-            SizedBox(height: 10.0),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              maxLines: 2,
-              decoration: InputDecoration(
-                hintText: 'Ex : produit en rupture, commerce fermé…',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: Text('Annuler')),
-          TextButton(
-            onPressed: () {
-              if (controller.text.trim().isEmpty) return;
-              Navigator.pop(c, controller.text.trim());
-            },
-            child: Text('Refuser',
-                style: TextStyle(color: FlutterFlowTheme.of(context).error)),
-          ),
-        ],
-      ),
-    );
-    if (reason == null) return;
-    await _setStatus(OrderStatus.refused, {
-      'refusal_reason': reason,
-      ...kitungaRefundFields(order),
-    });
-  }
 
   void _openDetail(BuildContext context) => context.pushNamed(
         OrderViewSellerDeliverWidget.routeName,
@@ -347,7 +297,8 @@ class _SellerOrderCard extends StatelessWidget {
                 ),
               if (status == OrderStatus.pending) ...[
                 OutlinedButton(
-                  onPressed: () => _refuse(context),
+                  // Refus vérifié par le serveur (motif, remboursement).
+                  onPressed: () => sellerRefuse(context, order),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: theme.error),
                     shape: StadiumBorder(),
@@ -358,8 +309,9 @@ class _SellerOrderCard extends StatelessWidget {
                 ),
                 SizedBox(width: 8.0),
                 FilledButton(
-                  onPressed: () => _setStatus(OrderStatus.preparing),
+                  onPressed: () => sellerAccept(context, order),
                   style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
                       backgroundColor: theme.primary, shape: StadiumBorder()),
                   child: Text('Accepter',
                       style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
@@ -367,8 +319,9 @@ class _SellerOrderCard extends StatelessWidget {
               ],
               if (status == OrderStatus.preparing)
                 FilledButton.icon(
-                  onPressed: () => _setStatus(OrderStatus.ready),
+                  onPressed: () => sellerReady(context, order),
                   style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
                       backgroundColor: theme.primary, shape: StadiumBorder()),
                   icon: Icon(Icons.check_rounded),
                   label: Text('Marquer comme prête',
@@ -378,6 +331,19 @@ class _SellerOrderCard extends StatelessWidget {
                 Text('En attente d\'un livreur',
                     style: GoogleFonts.inter(
                         color: theme.secondaryText, fontSize: 12.5)),
+              // Livreur venu chercher la commande : remise confirmée.
+              if (status == OrderStatus.delivering &&
+                  order.snapshotData['handover_confirmed_at'] == null)
+                FilledButton.icon(
+                  onPressed: () => sellerHandover(context, order),
+                  style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFF17A35B),
+                      shape: StadiumBorder()),
+                  icon: Icon(Icons.handshake_rounded),
+                  label: Text('Remis au livreur',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                ),
             ],
           ),
         ],

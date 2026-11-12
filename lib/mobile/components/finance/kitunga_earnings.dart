@@ -347,6 +347,7 @@ class _WithdrawalBoxState extends State<_WithdrawalBox> {
               FilledButton(
                 key: const ValueKey('withdraw-send'),
                 style: FilledButton.styleFrom(
+                    foregroundColor: Colors.white,
                     backgroundColor: _red,
                     minimumSize: const Size.fromHeight(48)),
                 onPressed: () => Navigator.pop(c, true),
@@ -395,6 +396,7 @@ class _WithdrawalBoxState extends State<_WithdrawalBox> {
             FilledButton.icon(
               key: const ValueKey('withdraw-open'),
               style: FilledButton.styleFrom(
+                  foregroundColor: Colors.white,
                   backgroundColor: _green,
                   minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(

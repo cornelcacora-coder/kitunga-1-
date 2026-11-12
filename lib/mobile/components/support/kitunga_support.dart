@@ -388,6 +388,7 @@ class _KitungaNewTicketPageState extends State<KitungaNewTicketPage> {
           FilledButton.icon(
             key: const ValueKey('ticket-send'),
             style: FilledButton.styleFrom(
+                foregroundColor: Colors.white,
                 backgroundColor: _red,
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(

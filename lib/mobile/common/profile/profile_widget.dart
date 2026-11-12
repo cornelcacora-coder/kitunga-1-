@@ -1,3 +1,4 @@
+import '/mobile/seller/kitunga_seller_home.dart' show SellerShopSection;
 import '/mobile/deliverer/kitunga_deliverer_pro.dart' show DelivererActivitySection;
 import '/mobile/components/messaging/kitunga_messages.dart' show KitungaConversationsPage;
 import '/mobile/components/support/kitunga_support.dart' show openKitungaSupport;
@@ -433,6 +434,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
               // Livreur : documents, performances, gains, sécurité.
               if (valueOrDefault(currentUserDocument?.role, '') == 'Deliver')
                 const DelivererActivitySection(),
+              // Vendeur : gestion du commerce.
+              if (valueOrDefault(currentUserDocument?.role, '') == 'Seller')
+                const SellerShopSection(),
               _group(theme, 'Aide et informations légales', [
                 _item(theme, Icons.support_agent_rounded, 'Centre d\'aide',
                     _help),

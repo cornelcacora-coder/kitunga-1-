@@ -840,6 +840,7 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                 FilledButton.icon(
                   key: const ValueKey('mission-picked-up'),
                   style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
                       backgroundColor: _red,
                       minimumSize: const Size.fromHeight(54),
                       shape: RoundedRectangleBorder(
@@ -868,6 +869,7 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                 FilledButton.icon(
                   key: const ValueKey('mission-deliver'),
                   style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
                       backgroundColor: _green,
                       minimumSize: const Size.fromHeight(54),
                       shape: RoundedRectangleBorder(
@@ -1104,6 +1106,7 @@ class KitungaCourseCard extends StatelessWidget {
               const SizedBox(height: 14),
               FilledButton.icon(
                 style: FilledButton.styleFrom(
+                  foregroundColor: Colors.white,
                   backgroundColor: mine ? _red : _green,
                   minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(

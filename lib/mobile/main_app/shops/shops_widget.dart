@@ -103,7 +103,7 @@ class _ShopsWidgetState extends State<ShopsWidget> {
               }
               if (_filter == 'verified' && !s.verified) return false;
               if (_filter == 'open' &&
-                  kitungaOpeningStatus(s.horraire)?.open != true) {
+                  kitungaShopStatus(s)?.open != true) {
                 return false;
               }
               return true;
@@ -352,7 +352,7 @@ class _ShopCategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final s = shop;
-    final status = kitungaOpeningStatus(s.horraire);
+    final status = kitungaShopStatus(s);
     final specialty = s.bio.trim();
     return Material(
       color: theme.secondaryBackground,

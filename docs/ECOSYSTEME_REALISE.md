@@ -245,3 +245,36 @@ stockage : `bash scripts/deployer_regles_stockage.sh`).
 d'appels), retrait automatique MoMo (compte MTN Disbursement approvisionné).
 Le mode hors connexion se limite à l'affichage de l'état réseau et aux
 nouvelles tentatives : aucune action critique n'est validée sans le serveur.
+
+---
+
+## 12. Espace vendeur professionnel
+
+**Audit** : catalogue par catégorie (options, unités, rubriques, menus des
+restaurants, médicaments sur ordonnance), stock vérifié en transaction au
+paiement, commandes par onglets, retours, promotions validées, horaires,
+revenus, messages et support existaient. **L'accueil vendeur avait été
+débranché** par le commit `e2015c2` (retour à l'ancien « Espace Marchand ») ;
+les actions sur les commandes étaient écrites directement par l'application.
+
+**Ajouté et testé**
+
+| Fonction | Serveur | Écran |
+|---|---|---|
+| Accueil : état du commerce, ventes du jour, à traiter, alertes (en retard, ruptures, stocks bas), commandes à traiter / en préparation / collecte, raccourcis, aide, mode sombre | — | `KitungaSellerHome` |
+| Accepter (temps de préparation), refuser (motif, remboursement), prête, remise au livreur — vérifiés et historisés | `kitungaSellerOrderAction` | accueil, Commandes |
+| Ouvert / En pause / Fermé maintenant (aucune nouvelle commande, paiement refusé) | `kitungaSellerSetOpen` | pastille d'état ; côté client « En pause » / « Fermé pour le moment » |
+| Performances : ventes 7 jours, panier moyen, préparation, refus, meilleurs produits, revenus du mois | `kitungaSellerPerformance` | Performances |
+| Avis sur le commerce (note du client), signalement d'un avis abusif au support | `kitungaSellerReviews`, `kitungaSellerReportReview` | Avis ; carte de note côté client |
+| Stock : entrée, sortie, inventaire en transaction, historique (ventes comprises) | `kitungaSellerAdjustStock`, `kitungaSellerStockMovements` | Stock |
+| Navigation : Accueil, Commandes, Catalogue, Messages, Profil ; rubrique « Mon commerce » ; menu ☰ | — | `main.dart`, profil, menu |
+
+**Nouvelle collection** : `StockMovements`. **Nouveaux champs** :
+`shop_state`, `shop_closed_now`, `shop_rating_sum/count` (User),
+`accepted_at`, `prep_minutes`, `handover_confirmed_at`, `shop_rating`
+(Orders) — protégés par les règles.
+
+**Non réalisé (à décider)** : plusieurs employés pour un même commerce
+(propriétaire, gestionnaire, préparateur) — le modèle actuel est d'un compte
+par commerce ; lots et dates d'expiration des produits de pharmacie ;
+substitution d'un produit manquant avec accord du client.

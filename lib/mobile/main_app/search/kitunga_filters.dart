@@ -3,7 +3,7 @@ import '/backend/kitunga_categories.dart' show kitungaShopIsActive;
 import '/mobile/components/product_card/product_card_widget.dart'
     show kitungaIsPublished;
 import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart'
-    show kitungaOpeningStatus;
+    show kitungaShopStatus;
 
 /// Filtres et tris de la recherche client (produits et commerces).
 /// Fonctions pures, testées.
@@ -233,7 +233,7 @@ List<UserRecord> filterShops(List<UserRecord> shops, ShopFilter f,
     if (f.cuisine != null && !shopCuisines(s).contains(f.cuisine)) continue;
     if (f.verified && !s.verified) continue;
     if (f.openNow &&
-        kitungaOpeningStatus(s.horraire, now)?.open != true) {
+        kitungaShopStatus(s, now)?.open != true) {
       continue;
     }
     final score = _score(q, [s.displayName, s.category, '', s.bio]);

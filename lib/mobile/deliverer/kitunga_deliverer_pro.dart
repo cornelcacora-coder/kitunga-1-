@@ -162,6 +162,7 @@ class _DelivererDocumentsState extends State<DelivererDocumentsPage> {
               FilledButton(
                 key: const ValueKey('doc-send'),
                 style: FilledButton.styleFrom(
+                    foregroundColor: Colors.white,
                     backgroundColor: _red,
                     minimumSize: const Size.fromHeight(48)),
                 onPressed: photo == null ? null : () => Navigator.pop(c, true),
@@ -546,7 +547,7 @@ Future<void> sendSafetyAlert(BuildContext context,
             child: const Text('Annuler')),
         FilledButton(
           key: const ValueKey('sos-confirm'),
-          style: FilledButton.styleFrom(backgroundColor: _red),
+          style: FilledButton.styleFrom(foregroundColor: Colors.white,backgroundColor: _red),
           onPressed: () => Navigator.pop(c, true),
           child: const Text('Envoyer l\'alerte'),
         ),
@@ -679,6 +680,7 @@ class _SafetyState extends State<DelivererSafetyPage> {
           const SizedBox(height: 12),
           FilledButton(
             style: FilledButton.styleFrom(
+                foregroundColor: Colors.white,
                 backgroundColor: _red, minimumSize: const Size.fromHeight(46)),
             onPressed: () => _guard(
                 context,

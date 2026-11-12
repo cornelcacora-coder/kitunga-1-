@@ -224,6 +224,18 @@ class KitungaShopCard extends StatelessWidget {
   }
 }
 
+/// Statut d'un commerce pour le client : « En pause » ou « Fermé pour le
+/// moment » s'il l'a décidé, sinon d'après ses horaires.
+({bool open, String label})? kitungaShopStatus(UserRecord shop,
+    [DateTime? now]) {
+  final state = shop.snapshotData['shop_state'];
+  if (state == 'pause') return (open: false, label: 'En pause');
+  if (state == 'closed' || shop.snapshotData['shop_closed_now'] == true) {
+    return (open: false, label: 'Fermé pour le moment');
+  }
+  return kitungaOpeningStatus(shop.horraire, now);
+}
+
 /// Statut d'ouverture calculé à partir des horaires saisis par le commerçant
 /// (« 8h - 18h », « 08h30 à 22h »…). Renvoie null si les horaires ne sont pas
 /// exploitables : rien n'est alors affiché, plutôt qu'un statut inventé.
@@ -269,7 +281,7 @@ class KitungaShopListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final s = shop;
-    final status = kitungaOpeningStatus(s.horraire);
+    final status = kitungaShopStatus(s);
     final catColor = kitungaCategoryColor(theme, s.category);
     return InkWell(
       onTap: () => openKitungaShop(context, s),
@@ -373,7 +385,7 @@ class KitungaClosedNotice extends StatelessWidget {
       builder: (context, snap) {
         final shop = snap.data;
         final status =
-            shop == null ? null : kitungaOpeningStatus(shop.horraire, now);
+            shop == null ? null : kitungaShopStatus(shop, now);
         if (status == null || status.open) return const SizedBox.shrink();
         return KitungaClosedBanner(
             name: shop!.displayName, label: status.label, theme: theme);

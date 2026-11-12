@@ -681,6 +681,7 @@ class _CompleteDeliverySheetState extends State<_CompleteDeliverySheet> {
               const SizedBox(height: 14.0),
               FilledButton(
                 style: FilledButton.styleFrom(
+                  foregroundColor: Colors.white,
                   backgroundColor: theme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
@@ -853,6 +854,7 @@ class KitungaRateDeliverer extends StatefulWidget {
 
 class _KitungaRateDelivererState extends State<KitungaRateDeliverer> {
   int _stars = 0;
+  int _shopStars = 0;
   final _comment = TextEditingController();
   bool _busy = false;
   bool _done = false;
@@ -871,6 +873,7 @@ class _KitungaRateDelivererState extends State<KitungaRateDeliverer> {
         'orderId': widget.order.reference.id,
         'stars': _stars,
         'comment': _comment.text.trim(),
+        if (_shopStars > 0) 'shopStars': _shopStars,
       });
       if (mounted) setState(() => _done = true);
     } on ServerPaymentException catch (e) {
@@ -901,7 +904,7 @@ class _KitungaRateDelivererState extends State<KitungaRateDeliverer> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Notez votre livreur',
+                Text('Notez votre livraison',
                     style: GoogleFonts.inter(
                         fontWeight: FontWeight.w800,
                         color: theme.primaryText)),
@@ -921,6 +924,26 @@ class _KitungaRateDelivererState extends State<KitungaRateDeliverer> {
                   ],
                 ),
                 if (_stars > 0) ...[
+                  // Note du commerce (facultative).
+                  Text('Et le commerce ?',
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          color: theme.primaryText)),
+                  Row(
+                    children: [
+                      for (var i = 1; i <= 5; i++)
+                        IconButton(
+                          key: ValueKey('shop-star-$i'),
+                          onPressed: () => setState(() => _shopStars = i),
+                          icon: Icon(
+                              i <= _shopStars
+                                  ? Icons.star_rounded
+                                  : Icons.star_outline_rounded,
+                              color: const Color(0xFFFFC21A),
+                              size: 28.0),
+                        ),
+                    ],
+                  ),
                   TextField(
                     controller: _comment,
                     maxLength: 300,

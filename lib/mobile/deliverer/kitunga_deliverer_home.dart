@@ -1005,6 +1005,7 @@ class _KitungaOfferCardState extends State<KitungaOfferCard> {
                 child: FilledButton(
                   key: const ValueKey('offer-accept'),
                   style: FilledButton.styleFrom(
+                    foregroundColor: Colors.white,
                     backgroundColor: _green,
                     minimumSize: const Size.fromHeight(48),
                     shape: RoundedRectangleBorder(

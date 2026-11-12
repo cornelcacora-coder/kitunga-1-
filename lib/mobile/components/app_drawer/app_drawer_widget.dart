@@ -1,3 +1,5 @@
+import '/mobile/seller/kitunga_seller_pro.dart'
+    show SellerPerformancePage, SellerReviewsPage, SellerStockPage;
 import '/mobile/deliverer/kitunga_deliverer_pro.dart'
     show DelivererDocumentsPage, DelivererPerformancePage, DelivererSafetyPage;
 import '/mobile/components/finance/kitunga_earnings.dart'
@@ -149,6 +151,35 @@ class AppDrawerWidget extends StatelessWidget {
                                 seller: role == 'Seller');
                           },
                         ),
+                      if (role == 'Seller') ...[
+                        _DrawerItem(
+                          icon: Icons.warehouse_outlined,
+                          label: 'Stock',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const SellerStockPage()));
+                          },
+                        ),
+                        _DrawerItem(
+                          icon: Icons.insights_rounded,
+                          label: 'Performances',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const SellerPerformancePage()));
+                          },
+                        ),
+                        _DrawerItem(
+                          icon: Icons.star_outline_rounded,
+                          label: 'Avis des clients',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const SellerReviewsPage()));
+                          },
+                        ),
+                      ],
                       if (role == 'Deliver') ...[
                         _DrawerItem(
                           icon: Icons.badge_outlined,

@@ -5,6 +5,7 @@ import '/mobile/deliverer/kitunga_deliverer_pages.dart'
     show KitungaDelivererCourses, KitungaDelivererMap;
 import '/mobile/components/messaging/kitunga_messages.dart'
     show KitungaConversationsPage;
+import '/mobile/seller/kitunga_seller_home.dart' show KitungaSellerCatalogTab;
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -258,13 +259,29 @@ class _NavBarPageState extends State<NavBarPage> {
       stream: _role,
       builder: (context, snapshot) => snapshot.data == 'Commercial'
           ? const SalesHomeWidget()
-          : _buildTabs(context, deliverer: snapshot.data == 'Deliver'),
+          : _buildTabs(context,
+              deliverer: snapshot.data == 'Deliver',
+              seller: snapshot.data == 'Seller'),
     );
   }
 
-  Widget _buildTabs(BuildContext context, {bool deliverer = false}) {
+  Widget _buildTabs(BuildContext context,
+      {bool deliverer = false, bool seller = false}) {
     // Livreur : Accueil, Mes courses, Carte, Messages, Profil.
-    final items = deliverer
+    // Vendeur : Accueil, Commandes, Catalogue, Messages, Profil.
+    final items = seller
+        ? const [
+            ('Home', 'Accueil', Icons.home_rounded, Icons.home_outlined),
+            ('Order', 'Commandes', Icons.receipt_long_rounded,
+                Icons.receipt_long_outlined),
+            ('Catalog', 'Catalogue', Icons.inventory_2_rounded,
+                Icons.inventory_2_outlined),
+            ('Messages', 'Messages', Icons.forum_rounded,
+                Icons.forum_outlined),
+            ('Profile', 'Profil', Icons.person_rounded,
+                Icons.person_outline_rounded),
+          ]
+        : deliverer
         ? const [
             ('Home', 'Accueil', Icons.home_rounded, Icons.home_outlined),
             ('Order', 'Courses', Icons.two_wheeler_rounded,
@@ -286,7 +303,8 @@ class _NavBarPageState extends State<NavBarPage> {
       'Home': HomeWidget(),
       'Order': deliverer ? const KitungaDelivererCourses() : OrderWidget(),
       if (deliverer) 'Map': const KitungaDelivererMap(),
-      if (deliverer) 'Messages': const KitungaConversationsPage(),
+      if (deliverer || seller) 'Messages': const KitungaConversationsPage(),
+      if (seller) 'Catalog': const KitungaSellerCatalogTab(),
       'Profile': ProfileWidget(),
     };
     final keys = items.map((i) => i.$1).toList();
@@ -317,12 +335,12 @@ class _NavBarPageState extends State<NavBarPage> {
             top: false,
             child: Padding(
               padding: EdgeInsets.symmetric(
-                  horizontal: deliverer ? 6.0 : 20.0, vertical: 6.0),
+                  horizontal: deliverer || seller ? 6.0 : 20.0, vertical: 6.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   for (var i = 0; i < items.length; i++) ...[
-                    if (!deliverer && items[i].$1 == 'Profile')
+                    if (!deliverer && !seller && items[i].$1 == 'Profile')
                       Container(
                         width: 1.0,
                         height: 26.0,
