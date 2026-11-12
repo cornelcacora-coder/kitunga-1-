@@ -1,3 +1,4 @@
+import '/mobile/components/support/kitunga_support.dart' show openKitungaSupport;
 import '/mobile/main_app/subscription/my_subscription_page.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/subscription.dart';
@@ -430,6 +431,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
               _group(theme, 'Aide et informations légales', [
                 _item(theme, Icons.support_agent_rounded, 'Centre d\'aide',
                     _help),
+                // Demandes écrites au support Kitunga (tickets).
+                _item(theme, Icons.forum_outlined, 'Mes demandes au support',
+                    () => openKitungaSupport(context)),
                 _item(
                     theme,
                     Icons.description_outlined,

@@ -497,6 +497,30 @@ exports.kitungaAdminAnnounce = acquisitionCallable((data, uid) =>
   chat.adminAnnounce({db: admin.firestore(), messaging: admin.messaging(),
     uid, data}));
 
+// ── Support client (tickets) ─────────────────────────────────────────────
+const support = require("./kitunga/support");
+exports.kitungaCreateTicket = acquisitionCallable((data, uid) =>
+  support.createTicket({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+exports.kitungaMyTickets = acquisitionCallable((data, uid) =>
+  support.myTickets({db: admin.firestore(), uid}));
+exports.kitungaTicketThread = acquisitionCallable((data, uid) =>
+  support.ticketThread({db: admin.firestore(), uid, data}));
+exports.kitungaTicketReply = acquisitionCallable((data, uid) =>
+  support.ticketReply({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+exports.kitungaSupportQueue = acquisitionCallable((data, uid) =>
+  support.supportQueue({db: admin.firestore(), uid, data}));
+exports.kitungaTicketUpdate = acquisitionCallable((data, uid) =>
+  support.ticketUpdate({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+exports.kitungaSupportUserLookup = acquisitionCallable((data, uid) =>
+  support.supportUserLookup({db: admin.firestore(), uid, data}));
+exports.kitungaSupportAgents = acquisitionCallable((data, uid) =>
+  support.supportAgents({db: admin.firestore(), uid}));
+exports.kitungaAdminSetSupport = acquisitionCallable((data, uid) =>
+  support.adminSetSupport({db: admin.firestore(), uid, data}));
+
 // ── Suivi en direct de la livraison ──────────────────────────────────────
 const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>

@@ -13,6 +13,7 @@ import '/flutter_flow/upload_data.dart';
 import '/mobile/components/delivery/kitunga_deliverer_panel.dart' show KitungaOrderContacts;
 import '/mobile/components/delivery/kitunga_live_tracking.dart' show KitungaLiveTrackingCard;
 import '/mobile/components/returns/kitunga_returns.dart' show KitungaReturnSection;
+import '/mobile/components/support/kitunga_support.dart' show openNewTicket;
 
 /// Remise sécurisée et reçu, côté application :
 /// - client : code de remise à donner au livreur, bouton « Voir le reçu » ;
@@ -211,7 +212,7 @@ class KitungaDeliveryExtras extends StatelessWidget {
     final showCode =
         KitungaDeliveryCodeCard.showsFor(order, currentUserReference);
     final showReceipt = KitungaReceiptButton.showsFor(order);
-    // Appeler / WhatsApp : client, commerce et livreur entre eux.
+    // Appeler / WhatsApp / Message : client, commerce et livreur entre eux.
     final contacts = KitungaOrderContacts.showsFor(order)
         ? KitungaOrderContacts(order: order)
         : null;
@@ -219,34 +220,38 @@ class KitungaDeliveryExtras extends StatelessWidget {
     final tracking = KitungaLiveTrackingCard.showsFor(order)
         ? KitungaLiveTrackingCard(order: order)
         : null;
-    if (!showCode && !showReceipt) {
-      if (tracking == null) return contacts ?? const SizedBox.shrink();
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [tracking, if (contacts != null) contacts],
-      );
-    }
+    // Toujours possible : écrire au support à propos de cette commande.
+    final help = Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        key: const ValueKey('order-support'),
+        onPressed: () => openNewTicket(context,
+            orderId: order.reference.id,
+            orderRef: order.orderUniqueReference),
+        icon: const Icon(Icons.support_agent_rounded, size: 18.0),
+        label: const Text('Un problème avec cette commande ? Le support'),
+      ),
+    );
     return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: showCode
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (tracking != null) tracking,
-                const SizedBox(height: 12.0),
-                KitungaDeliveryCodeCard(order: order),
-                if (contacts != null) contacts,
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                KitungaReceiptButton(order: order),
-                if (contacts != null) contacts,
-                // Boutiques et magasins : retour ou échange (7 jours).
-                KitungaReturnSection(order: order),
-              ],
-            ),
+      padding: EdgeInsets.only(
+          top: showCode || showReceipt ? 12.0 : 0.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (showCode) ...[
+            if (tracking != null) tracking,
+            const SizedBox(height: 12.0),
+            KitungaDeliveryCodeCard(order: order),
+          ] else if (showReceipt)
+            KitungaReceiptButton(order: order)
+          else if (tracking != null)
+            tracking,
+          if (contacts != null) contacts,
+          // Boutiques et magasins : retour ou échange (7 jours).
+          if (!showCode && showReceipt) KitungaReturnSection(order: order),
+          help,
+        ],
+      ),
     );
   }
 }

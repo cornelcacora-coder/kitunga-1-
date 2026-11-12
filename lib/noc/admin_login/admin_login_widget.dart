@@ -41,14 +41,14 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
 
   /// Rôle relu dans Firestore : juste après la connexion, le profil gardé en
   /// mémoire n'est pas forcément encore chargé.
-  Future<bool> _isAdminAccount(String? uid) async {
-    if (uid == null) return false;
+  Future<String> _roleOf(String? uid) async {
+    if (uid == null) return '';
     try {
       final profile =
           await UserRecord.getDocumentOnce(UserRecord.collection.doc(uid));
-      return profile.role == 'Admin';
+      return profile.role;
     } catch (_) {
-      return false;
+      return '';
     }
   }
 
@@ -64,11 +64,17 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
       );
       if (user == null || !mounted) return;
 
-      if (await _isAdminAccount(user.uid)) {
+      final role = await _roleOf(user.uid);
+      if (role == 'Admin') {
         if (mounted) {
           context.goNamedAuth(
               AdminDashboardWidget.routeName, context.mounted);
         }
+        return;
+      }
+      // Agent du support : son propre espace de travail.
+      if (role == 'Support') {
+        if (mounted) context.goNamedAuth('SupportWorkspace', context.mounted);
         return;
       }
       if (!mounted) return;

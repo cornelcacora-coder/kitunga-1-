@@ -46,6 +46,7 @@ class AdminPaths {
   static const deliveries = '/livraisons';
   static const zones = '/zones';
   static const deliveryPricing = '/tarif-livraison';
+  static const support = '/support';
   static const alerts = '/alertes';
   static const missingImages = '/produits?sansImage=1';
 }
@@ -67,6 +68,8 @@ const List<AdminNavGroup> kAdminMenu = [
         path: AdminPaths.deliveryPricing),
     AdminNavItem('alerts', 'Alertes', Icons.warning_amber_rounded,
         path: AdminPaths.alerts),
+    AdminNavItem('support', 'Support client', Icons.support_agent_rounded,
+        path: AdminPaths.support),
   ]),
   const AdminNavGroup('Catalogue', Icons.inventory_2_rounded, [
     AdminNavItem('categories', 'Catégories', Icons.category_rounded,

@@ -17,6 +17,8 @@ import '/mobile/components/delivery/kitunga_delivery.dart'
     show kitungaTakeDelivery;
 import '/mobile/components/delivery/kitunga_live_tracking.dart';
 import '/mobile/components/kitunga_contact.dart' show kCompanyPhones;
+import '/mobile/components/support/kitunga_support.dart'
+    show openKitungaSupport;
 
 /// Accueil du livreur : outil de travail de la journée.
 ///
@@ -1248,6 +1250,12 @@ class _HelpCard extends StatelessWidget {
                         fontSize: 12.5, color: theme.secondaryText)),
               ],
             ),
+          ),
+          IconButton(
+            key: const ValueKey('deliverer-support'),
+            tooltip: 'Écrire au support',
+            onPressed: () => openKitungaSupport(context),
+            icon: const Icon(Icons.forum_rounded, color: _red),
           ),
           IconButton(
             tooltip: 'Appeler',

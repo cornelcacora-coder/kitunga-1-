@@ -131,13 +131,37 @@ async function onOrderWrite({db, messaging, before, after}) {
         "votre code de remise.", "order");
   }
 
-  // Problème signalé par le livreur : les administrateurs.
+  // Problème signalé par le livreur : les administrateurs, et un ticket
+  // urgent pour le support.
   const issue = after.get("delivery_issue");
   const prevIssue = before.get("delivery_issue");
   if (issue && JSON.stringify(issue) !== JSON.stringify(prevIssue || null)) {
+    const label = issue.label || issue.type || "problème";
     sent += await send(await admins(db), "Problème de livraison",
-        `Commande ${ref(after)} : ${issue.label || issue.type || "problème"}` +
+        `Commande ${ref(after)} : ${label}` +
         `${issue.note ? ` — ${issue.note}` : ""}.`, "admin");
+    const reporter = await userOf(db, after.get("deliverer_ref") ||
+      after.get("deliver_reference"));
+    if (reporter) {
+      await require("./support").createTicketFor({db, messaging,
+        author: reporter, system: true, data: {category: "livraison",
+          priority: "urgent", orderId: after.id,
+          subject: `Incident de livraison : ${label}`,
+          message: `Signalé par le livreur : ${label}` +
+            `${issue.note ? ` — ${issue.note}` : ""}.`}});
+    }
+  }
+
+  // Le client déclare ne pas avoir reçu sa commande : ticket au support.
+  if (was !== now && now === "Non Reçu") {
+    const buyer = await client();
+    if (buyer) {
+      await require("./support").createTicketFor({db, messaging,
+        author: buyer, system: true, data: {category: "livraison",
+          priority: "high", orderId: after.id,
+          subject: `Commande ${ref(after)} non reçue`,
+          message: "Le client indique ne pas avoir reçu sa commande."}});
+    }
   }
   return {sent};
 }
