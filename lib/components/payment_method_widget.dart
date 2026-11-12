@@ -1,13 +1,38 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'payment_method_model.dart';
 export 'payment_method_model.dart';
 
+/// Opérateurs Mobile Money proposés au paiement.
+const kPaymentOperators = {
+  'MTN': (label: 'MTN MoMo', logo: 'assets/images/unnamed.png',
+      prefixes: ['06'], hint: '06 xxx xx xx'),
+  'Airtel': (label: 'Airtel Money', logo: 'assets/images/Airtel.png',
+      prefixes: ['05', '04'], hint: '05 xxx xx xx'),
+};
+
+/// « +242 06 123 45 67 » → « 061234567 » (numéro national à 9 chiffres).
+String nationalPhone(String raw) {
+  var d = raw.replaceAll(RegExp(r'[^0-9]'), '');
+  if (d.startsWith('00')) d = d.substring(2);
+  if (d.startsWith('242') && d.length == 12) d = d.substring(3);
+  if (d.length == 8) d = '0$d';
+  return d;
+}
+
+/// Opérateur d'un numéro (MTN 06, Airtel 05 / 04), ou null.
+String? operatorOfPhone(String raw) {
+  final d = nationalPhone(raw);
+  if (d.length < 2) return null;
+  for (final e in kPaymentOperators.entries) {
+    if (e.value.prefixes.contains(d.substring(0, 2))) return e.key;
+  }
+  return null;
+}
+
+/// Choix du paiement : MTN MoMo ou Airtel Money, et numéro qui paiera.
 class PaymentMethodWidget extends StatefulWidget {
   const PaymentMethodWidget({
     super.key,
@@ -43,311 +68,112 @@ class _PaymentMethodWidgetState extends State<PaymentMethodWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PaymentMethodModel());
-
+    _model.isMoMoValue = true;
+    // Le numéro du compte décide de l'opérateur proposé d'abord.
+    final airtel = operatorOfPhone(widget.airtelNumber) == 'Airtel';
+    final mtn = operatorOfPhone(widget.mtnNumber) == 'MTN';
+    if (!mtn && airtel) _model.operator = 'Airtel';
+    _fillPhone();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
+
+  /// Propose le numéro connu s'il correspond à l'opérateur choisi.
+  void _fillPhone() {
+    final known = [widget.mtnNumber, widget.airtelNumber]
+        .firstWhere((n) => operatorOfPhone(n) == _model.operator,
+            orElse: () => '');
+    final current = _model.phoneController.text;
+    if (current.isEmpty || operatorOfPhone(current) != _model.operator) {
+      _model.phoneController.text = nationalPhone(known);
+    }
   }
 
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
+  }
+
+  Future<void> _choose(String operator) async {
+    setState(() {
+      _model.operator = operator;
+      _model.isMoMoValue = true;
+      _fillPhone();
+    });
+    await widget.isMoMo?.call();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final op = kPaymentOperators[_model.operator]!;
     return Container(
-      height: 170.0,
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
+        color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(24.0),
-        shape: BoxShape.rectangle,
-        border: Border.all(
-          color: FlutterFlowTheme.of(context).accent2,
-          width: 1.0,
-        ),
+        border: Border.all(color: theme.accent2, width: 1.0),
       ),
-      child: Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Container(
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 48.0,
-                          height: 48.0,
-                          decoration: BoxDecoration(
-                            color: valueOrDefault<Color>(
-                              valueOrDefault<bool>(
-                                widget!.selected,
-                                true,
-                              )
-                                  ? Color(0x1AE30613)
-                                  : FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                              Color(0x1AE30613),
-                            ),
-                            borderRadius: BorderRadius.circular(16.0),
-                            shape: BoxShape.rectangle,
-                          ),
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: Container(
-                            width: 30.0,
-                            height: 30.0,
-                            clipBehavior: Clip.antiAlias,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                            ),
-                            child: Image.asset(
-                              'assets/images/unnamed.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Mobile Money',
-                                style: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                              ),
-                              Text(
-                                valueOrDefault<String>(
-                                  widget!.mtnNumber,
-                                  '06xxxxxxx',
-                                ),
-                                style: FlutterFlowTheme.of(context)
-                                    .labelSmall
-                                    .override(
-                                      font: GoogleFonts.inter(
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .labelSmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .labelSmall
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .labelSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .labelSmall
-                                          .fontStyle,
-                                      lineHeight: 1.4,
-                                    ),
-                              ),
-                            ].divide(SizedBox(height: 4.0)),
-                          ),
-                        ),
-                        Theme(
-                          data: ThemeData(
-                            checkboxTheme: CheckboxThemeData(
-                              visualDensity: VisualDensity.compact,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                            ),
-                            unselectedWidgetColor:
-                                FlutterFlowTheme.of(context).tertiary,
-                          ),
-                          child: Checkbox(
-                            value: _model.isMoMoValue ??= true,
-                            onChanged: (newValue) async {
-                              safeSetState(
-                                  () => _model.isMoMoValue = newValue!);
-                              if (newValue!) {
-                                await widget.isMoMo?.call();
-                              }
-                            },
-                            side: (FlutterFlowTheme.of(context).tertiary !=
-                                    null)
-                                ? BorderSide(
-                                    width: 2,
-                                    color:
-                                        FlutterFlowTheme.of(context).tertiary!,
-                                  )
-                                : null,
-                            activeColor: FlutterFlowTheme.of(context).tertiary,
-                            checkColor: Colors.white,
-                          ),
-                        ),
-                      ].divide(SizedBox(width: 16.0)),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 48.0,
-                          height: 48.0,
-                          decoration: BoxDecoration(
-                            color: valueOrDefault<Color>(
-                              valueOrDefault<bool>(
-                                widget!.selected,
-                                true,
-                              )
-                                  ? Color(0x1AE30613)
-                                  : FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                              Color(0x1AE30613),
-                            ),
-                            borderRadius: BorderRadius.circular(16.0),
-                            shape: BoxShape.rectangle,
-                          ),
-                          alignment: AlignmentDirectional(0.0, 0.0),
-                          child: Container(
-                            width: 30.0,
-                            height: 30.0,
-                            clipBehavior: Clip.antiAlias,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                            ),
-                            child: Image.asset(
-                              'assets/images/Airtel.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Airtel Money',
-                                style: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                              ),
-                              Text(
-                                '05xxxxxxx',
-                                style: FlutterFlowTheme.of(context)
-                                    .labelSmall
-                                    .override(
-                                      font: GoogleFonts.inter(
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .labelSmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .labelSmall
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .labelSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .labelSmall
-                                          .fontStyle,
-                                      lineHeight: 1.4,
-                                    ),
-                              ),
-                            ].divide(SizedBox(height: 4.0)),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 8.0, 0.0),
-                          child: InkWell(
-                            splashColor: Colors.transparent,
-                            focusColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            onTap: () async {
-                              await showDialog(
-                                context: context,
-                                builder: (alertDialogContext) {
-                                  return AlertDialog(
-                                    title: Text('Oups ... Non Disponible '),
-                                    content: Text(
-                                        'Airtel Money n\'est pas disponible actuellement, il est en cours d\'intégration. Merci de réessayer ultérieurement.'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(alertDialogContext),
-                                        child: Text('Ok'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            child: Container(
-                              width: 18.5,
-                              height: 18.5,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4.0),
-                                shape: BoxShape.rectangle,
-                                border: Border.all(
-                                  color: FlutterFlowTheme.of(context).tertiary,
-                                  width: 2.0,
-                                ),
-                              ),
-                              alignment: AlignmentDirectional(0.0, 0.0),
-                            ),
-                          ),
-                        ),
-                      ].divide(SizedBox(width: 16.0)),
-                    ),
-                  ].divide(SizedBox(height: 24.0)),
-                ),
-              ),
-            ],
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final e in kPaymentOperators.entries)
+            _tile(context, e.key, e.value.label, e.value.logo),
+          const SizedBox(height: 8.0),
+          TextField(
+            key: const ValueKey('payment-phone'),
+            controller: _model.phoneController,
+            keyboardType: TextInputType.phone,
+            onChanged: (_) => _model.onUpdate(),
+            decoration: InputDecoration(
+              labelText: 'Numéro ${op.label} qui paiera',
+              hintText: op.hint,
+              prefixText: '+242 ',
+              isDense: true,
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.0)),
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tile(BuildContext context, String key, String label, String logo) {
+    final theme = FlutterFlowTheme.of(context);
+    final selected = _model.operator == key;
+    return InkWell(
+      key: ValueKey('payment-$key'),
+      borderRadius: BorderRadius.circular(16.0),
+      onTap: () => _choose(key),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0x1AE30613) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: Row(
+          children: [
+            ClipOval(
+              child: Image.asset(logo,
+                  width: 34.0, height: 34.0, fit: BoxFit.cover),
+            ),
+            const SizedBox(width: 14.0),
+            Expanded(
+              child: Text(label,
+                  style: GoogleFonts.interTight(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15.0,
+                      color: theme.primaryText)),
+            ),
+            Icon(
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
+              color: selected ? theme.primary : theme.secondaryText,
+            ),
+          ],
         ),
       ),
     );

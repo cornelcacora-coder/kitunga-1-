@@ -11,6 +11,7 @@
 const {priceCart} = require("./pricing");
 const {subscriptionActive} = require("./subscriptions");
 const {PaymentError} = require("./errors");
+const {checkPhone, operatorOf} = require("./wallet");
 const {openingStatus} = require("./hours");
 const {usablePrescription, statusOf: prescriptionStatus} =
   require("./prescriptions");
@@ -41,13 +42,11 @@ async function loadCart(db, userRef, sellerRef) {
 
 /** Démarre un paiement. Renvoie {referenceId, amount, subtotal, fee}. */
 async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
-  phone, now = new Date()}) {
+  phone, operator: rawOperator, now = new Date()}) {
   if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
   if (!zone) throw new PaymentError("invalid-argument", "Quartier requis.");
-  const payer = momo.normalizePhone(phone);
-  if (!payer) {
-    throw new PaymentError("invalid-argument", "Numéro MTN invalide.");
-  }
+  const operator = operatorOf(rawOperator);
+  const payer = checkPhone(phone, operator);
   const userRef = db.doc(`User/${uid}`);
   const user = await userRef.get();
   if (!subscriptionActive(user)) {
@@ -96,7 +95,7 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
   }
   const reference = orderReference();
   const referenceId = await momo.requestToPay({
-    amount: priced.total, phone: payer, externalId: reference,
+    amount: priced.total, phone: payer, externalId: reference, operator,
   });
   await db.doc(`Paiement/${referenceId}`).set({
     status: "En attente",
@@ -112,7 +111,7 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
     delivery_zone: zone,
     delivery_location: deliveryLocation || "",
     payer_phone: payer,
-    operator: "MTN",
+    operator,
     created_at: new Date(),
   });
   return {referenceId, amount: priced.total, subtotal: priced.subtotal,
@@ -313,6 +312,7 @@ async function refundOrder({db, momo, orderRef, order, previousStatus}) {
     const transferId = await momo.transfer({
       amount: pay.get("amount"), phone,
       externalId: pay.get("order_unique_reference"),
+      paymentReference: order.payment_reference,
     });
     await orderRef.update({refund_status: "Envoyé", refund_reference: transferId});
     return transferId;

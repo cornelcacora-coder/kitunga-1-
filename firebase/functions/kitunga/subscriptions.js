@@ -4,6 +4,7 @@
  * pour commander : User.subscribe_close_at doit être dans le futur.
  */
 const {PaymentError} = require("./errors");
+const {checkPhone, operatorOf} = require("./wallet");
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -39,16 +40,15 @@ function subscriptionActive(user, now = new Date()) {
   return until != null && until > now;
 }
 
-/** Demande MTN pour la formule choisie. Renvoie {referenceId, amount}. */
-async function startSubscription({db, momo, uid, plan, phone}) {
+/** Demande MTN ou Airtel pour la formule choisie. Renvoie {referenceId, amount}. */
+async function startSubscription({db, momo, uid, plan, phone,
+  operator: rawOperator}) {
   if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
   // Ancienne application ou page en cache : formule trimestrielle.
   if (!PLANS[plan] || PLANS[plan].offered === false) plan = "quarterly";
   const p = PLANS[plan];
-  const payer = momo.normalizePhone(phone);
-  if (!payer) {
-    throw new PaymentError("invalid-argument", "Numéro MTN invalide.");
-  }
+  const operator = operatorOf(rawOperator);
+  const payer = checkPhone(phone, operator);
   const user = await db.doc(`User/${uid}`).get();
   if (!user.exists) {
     throw new PaymentError("failed-precondition",
@@ -62,7 +62,7 @@ async function startSubscription({db, momo, uid, plan, phone}) {
   const reference = `ABO-${Date.now().toString(36).toUpperCase()}`;
   const referenceId = await momo.requestToPay({
     amount: p.price, phone: payer, externalId: reference,
-    note: `abonnement ${p.label}`,
+    note: `abonnement ${p.label}`, operator,
   });
   await db.doc(`Paiement/${referenceId}`).set({
     kind: "subscription",
@@ -73,7 +73,7 @@ async function startSubscription({db, momo, uid, plan, phone}) {
     amount: p.price,
     user_ref: user.ref,
     payer_phone: payer,
-    operator: "MTN",
+    operator,
     created_at: new Date(),
   });
   return {referenceId, amount: p.price, label: p.label};

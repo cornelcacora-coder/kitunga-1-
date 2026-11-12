@@ -19,3 +19,8 @@ redéployée : `firebase deploy --only functions:functions:corsProxy --force`
 - `bash scripts/mtn_cles.sh` : installe ou remplace les clés MTN MoMo
   (secrets Firebase, jamais dans le code), puis remet en ligne les fonctions
   de paiement et de remboursement.
+- `bash scripts/airtel_cles.sh` : installe ou remplace les clés Airtel Money
+  (« Client ID » et « Client Secret » du portail Airtel Africa). **À lancer
+  une première fois avant `deployer_tout.sh`** : les fonctions de paiement
+  en ont besoin. Sans compte Airtel pour l'instant, tapez `absent` : le
+  client qui choisit Airtel Money est invité à payer avec MTN MoMo.

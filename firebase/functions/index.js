@@ -66,7 +66,8 @@ exports.onUserDeleted = functions
   });
 
 // ── Paiement contrôlé par le serveur (voir README-KITUNGA.md) ─────────────
-const momo = require("./kitunga/momo");
+// MTN MoMo ou Airtel Money, selon l'opérateur choisi par le client.
+const momo = require("./kitunga/wallet");
 const payments = require("./kitunga/payments");
 const subscriptions = require("./kitunga/subscriptions");
 const partners = require("./kitunga/partners");
@@ -77,6 +78,8 @@ const {reconcilePending} = require("./kitunga/reconcile");
 // Disbursement approvisionné.
 const COLLECTION_SECRETS = [
   "MOMO_COLLECTION_USER", "MOMO_COLLECTION_KEY", "MOMO_COLLECTION_SUBSCRIPTION",
+  // Airtel Money (valeur « absent » tant qu'Airtel n'est pas activé).
+  "AIRTEL_CLIENT_ID", "AIRTEL_CLIENT_SECRET",
 ];
 const MOMO_SECRETS = [
   ...COLLECTION_SECRETS,
@@ -455,6 +458,7 @@ exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,
   sellerPath: String(data.sellerPath || ""),
   zone: data.zone, deliveryLocation: data.deliveryLocation, phone: data.phone,
+  operator: data.operator,
 }));
 
 /** Vérifie le paiement et crée la commande (stock décrémenté). */
@@ -468,6 +472,7 @@ exports.kitungaStartSubscription = callable((data, uid) =>
   subscriptions.startSubscription({
     db: admin.firestore(), momo, uid,
     plan: String(data.plan || ""), phone: data.phone,
+    operator: data.operator,
   }));
 
 /** Vérifie le paiement et prolonge l'abonnement. */

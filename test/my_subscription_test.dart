@@ -66,8 +66,25 @@ void main() {
     await tester.tap(find.text('Payer 1000 F avec MTN MoMo'));
     await tester.pumpAndSettle();
     expect(calls.firstWhere((c) => c.$1 == 'kitungaStartSubscription').$2,
-        {'plan': 'annual', 'phone': '06 123 45 67'});
+        {'plan': 'annual', 'phone': '06 123 45 67', 'operator': 'MTN'});
     expect(find.textContaining('Paiement de 1000 F reçu'), findsOneWidget);
+  });
+
+  testWidgets('paiement de l\'abonnement avec Airtel Money', (tester) async {
+    state = {'required': true, 'active': false, 'plans': plans,
+      'history': []};
+    mtn = 'paid';
+    calls.clear();
+    await open(tester);
+    await tester.tap(find.text('Airtel Money'));
+    await tester.pumpAndSettle();
+    expect(find.text('Numéro Airtel Money'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '05 123 45 67');
+    await tester.tap(find.text('Payer 300 F avec Airtel Money'));
+    await tester.pumpAndSettle();
+    expect(calls.firstWhere((c) => c.$1 == 'kitungaStartSubscription').$2,
+        {'plan': 'quarterly', 'phone': '05 123 45 67', 'operator': 'Airtel'});
+    expect(find.textContaining('Paiement de 300 F reçu'), findsOneWidget);
   });
 
   testWidgets('actif : jours restants ; paiement refusé par MTN',

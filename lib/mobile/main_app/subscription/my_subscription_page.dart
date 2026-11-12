@@ -4,12 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/server_payment.dart';
 import '/backend/subscription.dart' show kSubscriptionPlans;
+import '/components/payment_method_widget.dart'
+    show kPaymentOperators, operatorOfPhone;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 /// Module « Mon abonnement » du client : état, formules (Trimestriel 300 F,
 /// Semestriel 500 F,
-/// Annuel 1000 F), paiement MTN MoMo, historique. Accessible à tout moment
+/// Annuel 1000 F), paiement MTN MoMo ou Airtel Money, historique. Accessible à tout moment
 /// depuis le profil (fonctions kitungaMySubscription, kitungaStartSubscription,
 /// kitungaConfirmSubscription).
 
@@ -60,6 +62,10 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
   late final _phone = TextEditingController(
       text: widget.phone ?? currentUserDocument?.phoneNumber ?? '');
   late String _plan = widget.initialPlan ?? 'quarterly';
+  // MTN MoMo ou Airtel Money : proposé d'après le numéro du compte.
+  late String _operator = operatorOfPhone(_phone.text) ?? 'MTN';
+  String get _opLabel => kPaymentOperators[_operator]!.label;
+  String get _opShort => _operator == 'Airtel' ? 'Airtel' : 'MTN';
   bool _paid = false;
   bool _paying = false;
   String? _message;
@@ -82,7 +88,7 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
   Future<void> _pay(int price) async {
     if (_phone.text.replaceAll(RegExp(r'\D'), '').length < 9) {
       return setState(() {
-        _message = 'Saisissez votre numéro MTN Mobile Money.';
+        _message = 'Saisissez votre numéro $_opLabel.';
         _messageOk = false;
       });
     }
@@ -92,9 +98,9 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
     });
     try {
       final start = await _call('kitungaStartSubscription',
-          {'plan': _plan, 'phone': _phone.text.trim()});
+          {'plan': _plan, 'phone': _phone.text.trim(), 'operator': _operator});
       final ref = '${start['referenceId']}';
-      // Le client valide sur son téléphone (code PIN MTN) : 2 minutes.
+      // Le client valide sur son téléphone (code PIN) : 2 minutes.
       var status = 'pending';
       for (var i = 0; i < 24 && status == 'pending' && mounted; i++) {
         await Future.delayed(subscriptionPollDelay);
@@ -112,9 +118,9 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
         _message = switch (status) {
           'paid' => 'Paiement de $price F reçu : votre abonnement est actif. '
               'Vous pouvez commander.',
-          'failed' => 'MTN a refusé le paiement. Vérifiez votre solde puis '
+          'failed' => '$_opShort a refusé le paiement. Vérifiez votre solde puis '
               'réessayez.',
-          _ => 'Validation MTN pas encore reçue. Si vous avez validé, votre '
+          _ => 'Validation $_opShort pas encore reçue. Si vous avez validé, votre '
               'abonnement s\'activera dans quelques minutes.',
         };
       });
@@ -291,21 +297,51 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                   ),
                 ),
               const SizedBox(height: 4.0),
+              // Choix de l'opérateur : MTN MoMo ou Airtel Money.
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: SegmentedButton<String>(
+                  key: const ValueKey('subscription-operator'),
+                  showSelectedIcon: false,
+                  segments: [
+                    for (final e in kPaymentOperators.entries)
+                      ButtonSegment(
+                        value: e.key,
+                        label: Text(e.value.label),
+                        icon: ClipOval(
+                          child: Image.asset(e.value.logo,
+                              width: 22.0, height: 22.0, fit: BoxFit.cover),
+                        ),
+                      ),
+                  ],
+                  selected: {_operator},
+                  onSelectionChanged: _paying
+                      ? null
+                      : (v) => setState(() {
+                            _operator = v.first;
+                            _message = null;
+                          }),
+                ),
+              ),
               TextField(
                 controller: _phone,
                 enabled: !_paying,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Numéro MTN Mobile Money',
-                  hintText: '06 123 45 67',
-                  prefixIcon: Icon(Icons.phone_android_rounded),
+                decoration: InputDecoration(
+                  labelText: 'Numéro $_opLabel',
+                  hintText: kPaymentOperators[_operator]!.hint,
+                  prefixIcon: const Icon(Icons.phone_android_rounded),
                 ),
               ),
               const SizedBox(height: 14.0),
               FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFCB05),
-                  foregroundColor: Colors.black,
+                  // Jaune MTN, rouge Airtel.
+                  backgroundColor: _operator == 'Airtel'
+                      ? const Color(0xFFE40000)
+                      : const Color(0xFFFFCB05),
+                  foregroundColor:
+                      _operator == 'Airtel' ? Colors.white : Colors.black,
                   minimumSize: const Size.fromHeight(50.0),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14.0)),
@@ -326,7 +362,7 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                           Text('Validez sur votre téléphone (code PIN)…'),
                         ],
                       )
-                    : Text('Payer ${chosen['price'] ?? ''} F avec MTN MoMo',
+                    : Text('Payer ${chosen['price'] ?? ''} F avec $_opLabel',
                         style: GoogleFonts.inter(fontWeight: FontWeight.w800)),
               ),
               if (_message != null)

@@ -2019,9 +2019,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           );
                                                           return;
                                                         }
-                                                        String rawPhone = widget!.mtnNumber != null && widget!.mtnNumber!.trim().isNotEmpty
-                                                            ? widget!.mtnNumber!.trim()
-                                                            : currentPhoneNumber;
+                                                        // Numéro saisi dans « Moyen de paiement » (MTN ou Airtel).
+                                                        final operator = _model.paymentMethodModel.operator;
+                                                        final typedPhone = _model.paymentMethodModel.phoneController.text.trim();
+                                                        String rawPhone = typedPhone.isNotEmpty
+                                                            ? typedPhone
+                                                            : widget!.mtnNumber != null && widget!.mtnNumber!.trim().isNotEmpty
+                                                                ? widget!.mtnNumber!.trim()
+                                                                : currentPhoneNumber;
                                                         String cleanedPhone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
                                                         if (cleanedPhone.startsWith('06') && cleanedPhone.length == 9) {
                                                           cleanedPhone = '242$cleanedPhone';
@@ -2033,7 +2038,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                             context: context,
                                                             builder: (dialogCtx) => AlertDialog(
                                                               title: Text('Numéro requis'),
-                                                              content: Text('Veuillez renseigner votre numéro MTN Mobile Money avant de valider votre commande.'),
+                                                              content: Text('Veuillez renseigner votre numéro ${kPaymentOperators[operator]!.label} avant de valider votre commande.'),
                                                               actions: [
                                                                 TextButton(
                                                                   onPressed: () => Navigator.pop(dialogCtx),
@@ -2045,7 +2050,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           return;
                                                         }
                                                         if (kServerPayment) {
-                                                          await _payOnServer(cleanedPhone);
+                                                          await _payOnServer(cleanedPhone, operator);
                                                           return;
                                                         }
                                                         showDialog(
@@ -2383,7 +2388,9 @@ class _CartLastWidgetState extends State<CartLastWidget> {
 
   /// Paiement contrôlé par le serveur : prix, stock et commande calculés
   /// par les Cloud Functions (voir lib/backend/server_payment.dart).
-  Future<void> _payOnServer(String phone) async {
+  Future<void> _payOnServer(String phone, [String operator = 'MTN']) async {
+    final label = kPaymentOperators[operator]?.label ?? 'Mobile Money';
+    final short = operator == 'Airtel' ? 'Airtel' : 'MTN';
     final theme = FlutterFlowTheme.of(context);
     final navigator = Navigator.of(context, rootNavigator: true);
     final router = GoRouter.of(context);
@@ -2403,7 +2410,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
               CircularProgressIndicator(color: theme.primary),
               SizedBox(height: 16.0),
               Text(
-                'Validez le paiement sur votre téléphone\n(saisissez votre code PIN MTN)...',
+                'Validez le paiement sur votre téléphone\n(saisissez votre code PIN $label)...',
                 textAlign: TextAlign.center,
                 style: theme.bodyMedium,
               ),
@@ -2421,6 +2428,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
         zone: _model.zoneValue ?? '',
         deliveryLocation: _model.locationTextController.text,
         phone: phone,
+        operator: operator,
       );
       switch (r.status) {
         case 'paid':
@@ -2435,11 +2443,11 @@ class _CartLastWidgetState extends State<CartLastWidget> {
         case 'failed':
           title = 'Paiement refusé';
           message =
-              'MTN a refusé le paiement. Vérifiez votre solde puis réessayez.';
+              '$short a refusé le paiement. Vérifiez votre solde puis réessayez.';
         default:
           title = 'Paiement en attente';
           message =
-              'Nous n\'avons pas encore reçu la validation MTN. Si vous avez validé, votre commande apparaîtra dans « Mes commandes » dans quelques minutes.';
+              'Nous n\'avons pas encore reçu la validation $short. Si vous avez validé, votre commande apparaîtra dans « Mes commandes » dans quelques minutes.';
       }
     } on ServerPaymentException catch (e) {
       title = 'Paiement impossible';

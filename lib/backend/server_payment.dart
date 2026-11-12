@@ -85,6 +85,7 @@ Future<ServerPaymentResult> kitungaServerPay({
   required String zone,
   required String deliveryLocation,
   required String phone,
+  String operator = 'MTN',
   Duration timeout = const Duration(minutes: 2),
 }) async {
   final start = await _call('kitungaStartPayment', {
@@ -92,6 +93,7 @@ Future<ServerPaymentResult> kitungaServerPay({
     'zone': zone,
     'deliveryLocation': deliveryLocation,
     'phone': phone,
+    'operator': operator,
   });
   final referenceId = start['referenceId'] as String;
   final amount = (start['amount'] as num).toDouble();
