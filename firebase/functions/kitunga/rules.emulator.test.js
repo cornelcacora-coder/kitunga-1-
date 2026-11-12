@@ -391,3 +391,44 @@ test("commerces désactivés : la liste publique reste lisible", async () => {
       where("role", "==", "Seller"),
       where("account_status", "==", "suspended"))));
 });
+
+// ── Écosystème : champs et collections tenus par le serveur seul ─────────
+
+test("statuts calculés, règlement et proposition : écrits par le serveur seul",
+    async () => {
+      await seed({status: "Pret"});
+      for (const [uid, field, value] of [
+        ["seller", "delivery_status", "delivered"],
+        ["seller", "finance_status", "settled"],
+        ["buyer", "settled_at", serverTimestamp()],
+        ["driver", "offer_to", "driver"],
+        ["driver", "arrived_at", serverTimestamp()],
+        ["seller", "status_actor", {uid: "admin", role: "Admin"}],
+        ["seller", "shop_zone", "Bacongo"],
+      ]) {
+        await assertFails(updateDoc(orderOf(uid), {[field]: value}));
+      }
+    });
+
+test("grand livre, tickets, conversations, missions : illisibles en direct",
+    async () => {
+      await seed();
+      await env.withSecurityRulesDisabled(async (ctx) => {
+        const d = ctx.firestore();
+        await setDoc(doc(d, "Ledger/o1_seller"), {account_uid: "seller",
+          amount: 2500});
+        await setDoc(doc(d, "Tickets/t1"), {author_uid: "buyer"});
+        await setDoc(doc(d, "Conversations/c1"), {participants: ["buyer"]});
+        await setDoc(doc(d, "Missions/m1"), {deliverer_uid: "driver"});
+        await setDoc(doc(d, "Settings/finance"), {commission_rate: 0});
+      });
+      await assertFails(getDoc(doc(db("seller"), "Ledger/o1_seller")));
+      await assertFails(setDoc(doc(db("seller"), "Ledger/x"),
+          {account_uid: "seller", amount: 999999}));
+      await assertFails(getDoc(doc(db("other"), "Tickets/t1")));
+      await assertFails(getDoc(doc(db("other"), "Conversations/c1")));
+      await assertFails(setDoc(doc(db("driver"), "Missions/m2"),
+          {deliverer_uid: "driver", status: "accepted"}));
+      await assertFails(setDoc(doc(db("seller"), "Settings/finance"),
+          {commission_rate: 0}));
+    });
