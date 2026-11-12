@@ -89,3 +89,52 @@ test("annonce de l'admin aux livreurs", async () => {
     data: {audience: "all", title: "x", body: "y"}}),
   {code: "permission-denied"});
 });
+
+test("message direct de l'équipe, réponse de la personne, boîte partagée",
+    async () => {
+      const {conversationId: id, title} = await m.staffOpenDirect({db,
+        uid: "admin", data: {uid: "l1"}});
+      assert.strictEqual(title, "Jo · Livreur");
+      await m.sendMessage({db, messaging, uid: "admin",
+        data: {conversationId: id, text: "Passez au bureau demain."}});
+      let mine = await m.myConversations({db, uid: "l1"});
+      assert.strictEqual(mine.conversations[0].withRole, "kitunga");
+      assert.strictEqual(mine.unread, 1);
+      assert.ok((await myNotifications({db, uid: "l1"})).notifications
+          .some((n) => n.title === "Message de l'équipe Kitunga"));
+      // Le livreur répond : l'admin et le support sont prévenus.
+      await m.sendMessage({db, messaging, uid: "l1",
+        data: {conversationId: id, text: "D'accord, à 9 h."}});
+      let inbox = await m.staffInbox({db, uid: "sup"});
+      assert.strictEqual(inbox.unread, 1);
+      assert.strictEqual(inbox.conversations[0].targetName, "Jo");
+      assert.ok((await myNotifications({db, uid: "admin"})).notifications
+          .some((n) => n.title === "Message de Jo"));
+      // Un agent du support lit : non-lu de l'équipe remis à zéro.
+      await m.conversationMessages({db, uid: "sup",
+        data: {conversationId: id}});
+      inbox = await m.staffInbox({db, uid: "admin"});
+      assert.strictEqual(inbox.unread, 0);
+      mine = await m.myConversations({db, uid: "l1"});
+      assert.strictEqual(mine.unread, 0);
+      // Un utilisateur ne peut ni ouvrir de message direct ni lire la boîte.
+      await assert.rejects(m.staffOpenDirect({db, uid: "client",
+        data: {uid: "l1"}}), {code: "permission-denied"});
+      await assert.rejects(m.staffInbox({db, uid: "l1"}),
+          {code: "permission-denied"});
+      await assert.rejects(m.staffOpenDirect({db, uid: "admin",
+        data: {uid: "sup"}}), {code: "not-found"});
+    });
+
+test("conversations d'une commande : lisibles par l'équipe (litige)",
+    async () => {
+      const {conversationId: id} = await m.openOrderChat({db, uid: "client",
+        data: {orderId: "o1", with: "livreur"}});
+      await m.sendMessage({db, messaging, uid: "client",
+        data: {conversationId: id, text: "Où êtes-vous ?"}});
+      const r = await m.orderConversations({db, uid: "sup",
+        data: {orderId: "o1"}});
+      assert.strictEqual(r.conversations[0].between, "Client ↔ Livreur");
+      await assert.rejects(m.orderConversations({db, uid: "client",
+        data: {orderId: "o1"}}), {code: "permission-denied"});
+    });

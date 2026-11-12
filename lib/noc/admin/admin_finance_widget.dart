@@ -1,3 +1,4 @@
+import '/noc/messages/staff_inbox.dart' show StaffWriteButton;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -322,6 +323,7 @@ class _AdminFinanceWidgetState extends State<AdminFinanceWidget> {
                                 Text(fcfa(a['balance'] as num),
                                     style: salesTitle(16)),
                                 const SizedBox(width: 10),
+                                StaffWriteButton(uid: '${a['uid']}', dense: true),
                                 TextButton(
                                     onPressed: () => _ledger(a),
                                     child: const Text('Écritures')),

@@ -131,13 +131,20 @@ async function sendMessage({db, messaging, uid, data}) {
   const update = {last_message: body.slice(0, 140), last_at: ts()};
   for (const p of others) update[`unread.${p}`] = inc(1);
   if (participant) update[`unread.${uid}`] = 0;
+  // Message direct : la réponse de l'utilisateur arrive à toute l'équipe.
+  const direct = c.get("kind") === "direct";
+  if (direct && !staff) update.unread_staff = inc(1);
+  if (direct && staff) update.unread_staff = 0;
   batch.update(c.ref, update);
   await batch.commit();
   const users = (await Promise.all(others.map((p) => db.doc(`User/${p}`)
       .get()))).filter((x) => x.exists);
+  if (direct && !staff) users.push(...await staffMembers(db));
   if (users.length) {
     await notifyUsers({db, messaging, users,
-      title: `${u.get("display_name") || "Nouveau message"} · ` +
+      title: direct && staff ? "Message de l'équipe Kitunga" :
+        direct ? `Message de ${u.get("display_name") || "un utilisateur"}` :
+        `${u.get("display_name") || "Nouveau message"} · ` +
         `${c.get("title") || "Kitunga"}`,
       body: body.slice(0, 140), kind: "message",
       data: {conversationId: c.id}});
@@ -152,6 +159,10 @@ async function conversationMessages({db, uid, data}) {
       .limitToLast(200).get();
   if (participant && ((c.get("unread") || {})[uid] || 0) > 0) {
     await c.ref.update({[`unread.${uid}`]: 0});
+  }
+  if (!participant && c.get("kind") === "direct" &&
+      (c.get("unread_staff") || 0) > 0) {
+    await c.ref.update({unread_staff: 0});
   }
   let open = true;
   if (c.get("kind") === "order") {
@@ -176,13 +187,100 @@ async function myConversations({db, uid}) {
       .where("participants", "array-contains", uid).get();
   const list = snap.docs.map((c) => ({id: c.id, kind: c.get("kind"),
     title: c.get("title") || "", orderId: c.get("order_id") || null,
-    withRole: Object.entries(c.get("roles") || {})
-        .filter(([k]) => k !== uid).map(([, v]) => v)[0] || "",
+    withRole: c.get("kind") === "direct" ? "kitunga" :
+      Object.entries(c.get("roles") || {})
+          .filter(([k]) => k !== uid).map(([, v]) => v)[0] || "",
     lastMessage: c.get("last_message") || "", lastAt: iso(c.get("last_at")),
     unread: (c.get("unread") || {})[uid] || 0}))
       .sort((a, b) => String(b.lastAt).localeCompare(String(a.lastAt)));
   return {conversations: list.slice(0, 100),
     unread: list.reduce((s, c) => s + c.unread, 0)};
+}
+
+/** Admins et agents du support (boîte partagée de l'équipe). */
+async function staffMembers(db) {
+  const out = [];
+  for (const r of STAFF) {
+    out.push(...(await db.collection("User").where("role", "==", r).get())
+        .docs);
+  }
+  return out;
+}
+
+async function requireStaff(db, uid) {
+  const u = await me(db, uid);
+  if (!STAFF.includes(u.get("role"))) {
+    throw err("permission-denied", "Réservé à l'équipe Kitunga.");
+  }
+  return u;
+}
+
+const ROLE_KEY = {User: "client", Seller: "commerce", Deliver: "livreur"};
+
+/**
+ * L'équipe (admin ou support) ouvre la conversation directe avec un
+ * client, un commerce ou un livreur. Une conversation par personne,
+ * partagée par toute l'équipe ; la personne peut répondre.
+ */
+async function staffOpenDirect({db, uid, data}) {
+  await requireStaff(db, uid);
+  const t = await db.doc(`User/${String(data.uid || "_").slice(0, 128)}`)
+      .get();
+  if (!t.exists || !ROLE_KEY[t.get("role") || "User"]) {
+    throw err("not-found", "Compte introuvable.");
+  }
+  const ref = db.doc(`Conversations/direct_${t.id}`);
+  await db.runTransaction(async (tx) => {
+    const c = await tx.get(ref);
+    const fields = {target_uid: t.id,
+      target_name: t.get("display_name") || t.get("email") || t.id,
+      target_role: t.get("role") || "User"};
+    if (c.exists) {
+      tx.update(ref, fields);
+      return;
+    }
+    tx.set(ref, {kind: "direct", title: "Équipe Kitunga",
+      participants: [t.id],
+      roles: {[t.id]: ROLE_KEY[t.get("role") || "User"]},
+      unread: {[t.id]: 0}, unread_staff: 0, last_message: "",
+      last_at: ts(), created_at: ts(), ...fields});
+  });
+  return {conversationId: ref.id,
+    title: `${t.get("display_name") || t.id} · ` +
+      `${{client: "Client", commerce: "Commerce", livreur: "Livreur"}[
+          ROLE_KEY[t.get("role") || "User"]]}`};
+}
+
+/** Boîte de l'équipe : conversations directes, non-lus d'abord. */
+async function staffInbox({db, uid}) {
+  await requireStaff(db, uid);
+  const snap = await db.collection("Conversations")
+      .where("kind", "==", "direct").get();
+  const list = snap.docs.map((c) => ({id: c.id,
+    targetUid: c.get("target_uid"), targetName: c.get("target_name") || "",
+    targetRole: c.get("target_role") || "",
+    lastMessage: c.get("last_message") || "", lastAt: iso(c.get("last_at")),
+    unread: c.get("unread_staff") || 0}))
+      .filter((c) => c.lastMessage)
+      .sort((a, b) => (b.unread > 0) - (a.unread > 0) ||
+        String(b.lastAt).localeCompare(String(a.lastAt)));
+  return {conversations: list.slice(0, 200),
+    unread: list.reduce((s, c) => s + c.unread, 0)};
+}
+
+/** Conversations d'une commande (litige) : équipe Kitunga seulement. */
+async function orderConversations({db, uid, data}) {
+  await requireStaff(db, uid);
+  const snap = await db.collection("Conversations")
+      .where("order_id", "==", String(data.orderId || "_").slice(0, 128))
+      .get();
+  const label = {client: "Client", commerce: "Commerce", livreur: "Livreur"};
+  return {conversations: snap.docs.map((c) => ({id: c.id,
+    between: Object.values(c.get("roles") || {}).map((r) => label[r] || r)
+        .sort().join(" ↔ "),
+    lastMessage: c.get("last_message") || "",
+    lastAt: iso(c.get("last_at"))}))
+      .sort((a, b) => String(b.lastAt).localeCompare(String(a.lastAt)))};
 }
 
 const AUDIENCES = {
@@ -229,4 +327,5 @@ async function adminAnnounce({db, messaging, uid, data}) {
 }
 
 module.exports = {openOrderChat, sendMessage, conversationMessages,
-  myConversations, adminAnnounce, writable, AUDIENCES};
+  myConversations, adminAnnounce, writable, AUDIENCES, staffOpenDirect,
+  staffInbox, orderConversations};

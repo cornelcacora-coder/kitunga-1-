@@ -33,6 +33,7 @@ const kChatRoleLabels = {
   'admin': 'Kitunga',
   'support': 'Support Kitunga',
   'destinataire': 'Kitunga',
+  'kitunga': 'Équipe Kitunga',
 };
 
 List<Map<String, dynamic>> _list(dynamic v) => (v as List? ?? const [])
@@ -74,6 +75,29 @@ Future<void> openOrderChat(
     if (context.mounted) _snack(context, 'Connexion impossible. Réessayez.');
   }
 }
+
+/// L'équipe (admin ou support) écrit directement à une personne.
+Future<void> openStaffDirectChat(BuildContext context, String uid) async {
+  try {
+    final r = await _call('kitungaStaffOpenDirect', {'uid': uid});
+    if (!context.mounted) return;
+    await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => KitungaChatPage(
+            conversationId: '${r['conversationId']}',
+            title: '${r['title'] ?? 'Message direct'}')));
+  } on ServerPaymentException catch (e) {
+    if (context.mounted) _snack(context, e.message);
+  } catch (_) {
+    if (context.mounted) _snack(context, 'Connexion impossible. Réessayez.');
+  }
+}
+
+/// Ouvre une conversation existante (équipe Kitunga : litige, boîte).
+Future<void> openConversation(
+        BuildContext context, String conversationId, String title) =>
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) =>
+            KitungaChatPage(conversationId: conversationId, title: title)));
 
 /// Nombre total de messages non lus (pour les badges).
 Future<int> kitungaUnreadMessages() async {
@@ -203,8 +227,10 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
                           conversationId: '${c['id']}',
                           title: c['kind'] == 'announcement'
                               ? 'Annonces Kitunga'
-                              : '${kChatRoleLabels[c['withRole']] ?? ''} · '
-                                  '${c['title']}')));
+                              : c['kind'] == 'direct'
+                                  ? 'Équipe Kitunga'
+                                  : '${kChatRoleLabels[c['withRole']] ?? ''} · '
+                                      '${c['title']}')));
                   _load();
                 },
               ),
@@ -237,9 +263,12 @@ class _ConversationTile extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
     final unread = (c['unread'] as num?)?.toInt() ?? 0;
     final announce = c['kind'] == 'announcement';
+    final direct = c['kind'] == 'direct';
     final role = '${c['withRole'] ?? ''}';
     final icon = announce
         ? Icons.campaign_rounded
+        : direct
+            ? Icons.support_agent_rounded
         : role == 'livreur'
             ? Icons.delivery_dining_rounded
             : role == 'commerce'
@@ -264,7 +293,9 @@ class _ConversationTile extends StatelessWidget {
           title: Text(
               announce
                   ? 'Annonces Kitunga'
-                  : '${kChatRoleLabels[role] ?? ''} · ${c['title']}',
+                  : direct
+                      ? 'Équipe Kitunga'
+                      : '${kChatRoleLabels[role] ?? ''} · ${c['title']}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(

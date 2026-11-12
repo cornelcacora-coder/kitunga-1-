@@ -36,6 +36,7 @@ const _webAdminPaths = {
   '/support',
   '/finances',
   '/supervision',
+  '/messages',
   '/forgotPassword',
   '/forgotPasswordLink',
 };

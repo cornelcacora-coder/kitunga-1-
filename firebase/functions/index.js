@@ -493,6 +493,12 @@ exports.kitungaConversationMessages = acquisitionCallable((data, uid) =>
   chat.conversationMessages({db: admin.firestore(), uid, data}));
 exports.kitungaMyConversations = acquisitionCallable((data, uid) =>
   chat.myConversations({db: admin.firestore(), uid}));
+exports.kitungaStaffOpenDirect = acquisitionCallable((data, uid) =>
+  chat.staffOpenDirect({db: admin.firestore(), uid, data}));
+exports.kitungaStaffInbox = acquisitionCallable((data, uid) =>
+  chat.staffInbox({db: admin.firestore(), uid}));
+exports.kitungaOrderConversations = acquisitionCallable((data, uid) =>
+  chat.orderConversations({db: admin.firestore(), uid, data}));
 exports.kitungaAdminAnnounce = acquisitionCallable((data, uid) =>
   chat.adminAnnounce({db: admin.firestore(), messaging: admin.messaging(),
     uid, data}));

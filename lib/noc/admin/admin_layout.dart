@@ -49,6 +49,7 @@ class AdminPaths {
   static const support = '/support';
   static const finance = '/finances';
   static const supervision = '/supervision';
+  static const messages = '/messages';
   static const alerts = '/alertes';
   static const missingImages = '/produits?sansImage=1';
 }
@@ -73,6 +74,8 @@ const List<AdminNavGroup> kAdminMenu = [
         path: AdminPaths.deliveryPricing),
     AdminNavItem('alerts', 'Alertes', Icons.warning_amber_rounded,
         path: AdminPaths.alerts),
+    AdminNavItem('messages', 'Messages', Icons.forum_rounded,
+        path: AdminPaths.messages),
     AdminNavItem('support', 'Support client', Icons.support_agent_rounded,
         path: AdminPaths.support),
   ]),

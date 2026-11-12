@@ -1,3 +1,4 @@
+import '/noc/messages/staff_inbox.dart' show StaffWriteButton;
 import 'package:flutter/material.dart';
 
 import '/backend/order_status.dart';
@@ -280,6 +281,9 @@ class _OrderDetailState extends State<_OrderDetail> {
           ),
           if ((p?.phone ?? '').isNotEmpty)
             Text(p!.phone, style: AdminText.label()),
+          // Message direct de l'équipe Kitunga.
+          if (p != null && path != null)
+            StaffWriteButton(uid: path.split('/').last, dense: true),
         ],
       ),
     );

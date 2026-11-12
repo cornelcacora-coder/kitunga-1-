@@ -1,3 +1,4 @@
+import '/noc/messages/staff_inbox.dart' show StaffWriteButton, SupportMessagesPage;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -113,6 +114,12 @@ class _SupportWorkspaceState extends State<SupportWorkspaceWidget> {
           ],
         ),
         actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const SupportMessagesPage())),
+            icon: const Icon(Icons.forum_rounded),
+            label: const Text('Messages'),
+          ),
           TextButton.icon(
             onPressed: _lookup,
             icon: const Icon(Icons.person_search_rounded),
@@ -549,6 +556,11 @@ class _TicketDetailState extends State<_TicketDetail> {
                           icon: const Icon(Icons.north_east_rounded, size: 18),
                           label: const Text('Escalader'),
                         ),
+                      // Écrire directement à l'auteur (hors du ticket).
+                      if (t['authorUid'] != null &&
+                          ['User', 'Seller', 'Deliver']
+                              .contains(t['authorRole']))
+                        StaffWriteButton(uid: '${t['authorUid']}'),
                       if (t['status'] != 'resolved')
                         FilledButton.icon(
                           style: FilledButton.styleFrom(
@@ -735,10 +747,19 @@ class _UserLookupDialog extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                            '${u['name']} · ${_roleLabels[u['role']] ?? u['role']}'
-                            '${u['accountStatus'] == 'suspended' ? ' · SUSPENDU' : ''}',
-                            style: AdminText.strong()),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                  '${u['name']} · ${_roleLabels[u['role']] ?? u['role']}'
+                                  '${u['accountStatus'] == 'suspended' ? ' · SUSPENDU' : ''}',
+                                  style: AdminText.strong()),
+                            ),
+                            if (['User', 'Seller', 'Deliver']
+                                .contains(u['role']))
+                              StaffWriteButton(uid: '${u['uid']}', dense: true),
+                          ],
+                        ),
                         Text('${u['phone']} · ${u['email']} · '
                             '${u['tickets']} ticket(s)',
                             style: AdminText.label()),

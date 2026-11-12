@@ -1,3 +1,4 @@
+import '/noc/messages/staff_inbox.dart' show StaffWriteButton;
 import 'package:flutter/material.dart';
 
 import '/noc/sales/sales_common.dart';
@@ -336,6 +337,7 @@ class _AdminSupervisionState extends State<AdminSupervisionWidget> {
                                     ],
                                   ),
                                 ),
+                                StaffWriteButton(uid: '${dl['uid']}', dense: true),
                                 TextButton(
                                     onPressed: () => _history(dl),
                                     child: const Text('Historique')),

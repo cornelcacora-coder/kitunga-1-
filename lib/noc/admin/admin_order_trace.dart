@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '/noc/sales/sales_common.dart' show salesCall, listOf, dateFr;
 import '/noc/ui/admin_kit.dart';
+import '/mobile/components/messaging/kitunga_messages.dart'
+    show openConversation;
 
 /// Détail d'une commande (admin) : à quels livreurs la course a été
 /// proposée, pourquoi, leur réponse ; puis l'historique des statuts
@@ -44,15 +46,25 @@ const _roleLabels = {
 };
 
 class _AdminOrderTraceState extends State<AdminOrderTrace> {
-  late final Future<(List<Map<String, dynamic>>, List<Map<String, dynamic>>)>
-      _data = _load();
+  late final Future<
+      (
+        List<Map<String, dynamic>>,
+        List<Map<String, dynamic>>,
+        List<Map<String, dynamic>>
+      )> _data = _load();
 
-  Future<(List<Map<String, dynamic>>, List<Map<String, dynamic>>)>
-      _load() async {
+  Future<
+      (
+        List<Map<String, dynamic>>,
+        List<Map<String, dynamic>>,
+        List<Map<String, dynamic>>
+      )> _load() async {
     final r = await Future.wait([
       salesCall('kitungaOrderMissions', {'orderId': widget.orderId})
           .catchError((_) => <String, dynamic>{}),
       salesCall('kitungaOrderHistory', {'orderId': widget.orderId})
+          .catchError((_) => <String, dynamic>{}),
+      salesCall('kitungaOrderConversations', {'orderId': widget.orderId})
           .catchError((_) => <String, dynamic>{}),
     ]);
     return (
@@ -60,18 +72,24 @@ class _AdminOrderTraceState extends State<AdminOrderTrace> {
       listOf(r[1]['history'])
           .where((h) => h['field'] == 'status')
           .toList(),
+      listOf(r[2]['conversations']),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<
-        (List<Map<String, dynamic>>, List<Map<String, dynamic>>)>(
+        (
+          List<Map<String, dynamic>>,
+          List<Map<String, dynamic>>,
+          List<Map<String, dynamic>>
+        )>(
       future: _data,
       builder: (context, snap) {
         final missions = snap.data?.$1 ?? const [];
         final history = snap.data?.$2 ?? const [];
-        if (missions.isEmpty && history.isEmpty) {
+        final chats = snap.data?.$3 ?? const [];
+        if (missions.isEmpty && history.isEmpty && chats.isEmpty) {
           return const SizedBox.shrink();
         }
         return Column(
@@ -116,6 +134,29 @@ class _AdminOrderTraceState extends State<AdminOrderTrace> {
                       ),
                     ],
                   ),
+                ),
+            ],
+            // Conversations entre les acteurs (litige, vérification).
+            if (chats.isNotEmpty) ...[
+              const SizedBox(height: 14.0),
+              Text('CONVERSATIONS', style: AdminText.caps()),
+              const SizedBox(height: 4.0),
+              for (final c in chats)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.forum_rounded,
+                      color: AdminColors.red),
+                  title: Text('${c['between']}', style: AdminText.strong()),
+                  subtitle: Text('${c['lastMessage']}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AdminText.label(size: 12.5)),
+                  trailing: Text(
+                      dateFr(c['lastAt'] as String?, withTime: true),
+                      style: AdminText.label(size: 11.5)),
+                  onTap: () => openConversation(
+                      context, '${c['id']}', '${c['between']}'),
                 ),
             ],
             if (history.isNotEmpty) ...[

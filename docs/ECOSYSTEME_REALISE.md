@@ -86,6 +86,11 @@ seulement), `kitungaRespondMission` (accepter / refuser), `kitungaTakeDelivery`
 (statut, priorité, attribution, escalade), `kitungaSupportUserLookup`,
 `kitungaSupportAgents`.
 
+**Équipe Kitunga (admin et support)** : `kitungaStaffOpenDirect` (message
+direct à un client, commerce ou livreur), `kitungaStaffInbox` (boîte
+partagée, non-lus), `kitungaOrderConversations` (conversations d'une
+commande, pour un litige).
+
 **Admin** : `kitungaAdminSupervision`, `kitungaAdminDelivererHistory`,
 `kitungaAdminAnnounce`, `kitungaAdminDispatchSettings`,
 `kitungaOrderMissions`, `kitungaAdminDeliveryPricing`,
@@ -117,6 +122,7 @@ tickets d'incident), `kitungaOrderLifecycle` (statuts calculés, historique),
 | Non reçue | ticket support |
 | Prête depuis 20 min sans livreur | admins |
 | Message | autre participant |
+| Message direct de l'équipe | la personne ; sa réponse : tous les admins et agents du support |
 | Ticket : nouveau / réponse / résolu / escalade | support / auteur / admins |
 | Versement | commerce ou livreur |
 | Annonce | groupe choisi par l'admin |
@@ -163,7 +169,9 @@ Toutes les actions sensibles de l'admin et du support sont journalisées
 - **Client** : suivi en direct (carte, étapes, livreur), Message / Appeler /
   WhatsApp, Aide & support, Mes messages.
 - **Vendeur** : Mes revenus, Messages, Aide & support, quartier du commerce.
-- **Admin (web)** : Supervision en direct, Tarif et attribution, Finances,
+- **Admin (web)** : Messages (boîte partagée, nouveau message, bouton
+  « Écrire » sur les livreurs, comptes, personnes d'une commande, tickets),
+  conversations d'une commande dans son détail, Supervision en direct, Tarif et attribution, Finances,
   Support client, attribution et historique dans le détail d'une commande.
 - **Support (web)** : `/support` — file, filtres, recherche, fil, notes
   internes, attribution, priorité, statut, escalade, recherche d'utilisateur.
@@ -172,7 +180,7 @@ Toutes les actions sensibles de l'admin et du support sont journalisées
 
 ## 9. Tests
 
-- Serveur (émulateur Firestore) : 252 tests, dont le **scénario complet à
+- Serveur (émulateur Firestore) : 254 tests, dont le **scénario complet à
   cinq acteurs** (`scenario.emulator.test.js` : paiement → vendeur →
   proposition → acceptation → récupération → suivi → messages → incident →
   ticket → arrivée → remise → règlement → supervision → résolution), les
