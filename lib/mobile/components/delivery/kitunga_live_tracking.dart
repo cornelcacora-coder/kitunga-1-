@@ -80,6 +80,8 @@ List<TrackingStep> trackingSteps(Map<String, dynamic> t,
       OrderStatus.successful.contains(status);
   final picked = t['pickedUpAt'] != null ||
       OrderStatus.successful.contains(status);
+  final arrived = t['arrivedAt'] != null ||
+      OrderStatus.successful.contains(status);
   final delivered = OrderStatus.successful.contains(status);
   final ready = taken || status == OrderStatus.ready;
   final raw = <(String, String, bool)>[
@@ -94,6 +96,11 @@ List<TrackingStep> trackingSteps(Map<String, dynamic> t,
       forDeliverer ? 'Livrer le client' : 'Le livreur arrive',
       zone.isEmpty ? 'En route' : 'En route vers $zone',
       picked
+    ),
+    (
+      forDeliverer ? 'Arrivé chez le client' : 'Le livreur est arrivé',
+      forDeliverer ? 'Prévenez le client' : 'Il vous attend',
+      arrived
     ),
     ('Livrée', 'Commande remise', delivered),
   ];
@@ -530,11 +537,14 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
     }
   }
 
-  Future<void> _pickedUp() async {
+  Future<void> _pickedUp() => _step('picked_up');
+
+  /// Étape de la course : 'picked_up' (récupérée) ou 'arrived' (arrivé).
+  Future<void> _step(String step) async {
     setState(() => _busy = true);
     try {
       await _call('kitungaDeliveryStep',
-          {'orderId': widget.orderRef.id, 'step': 'picked_up'});
+          {'orderId': widget.orderRef.id, 'step': step});
       await _load();
     } on ServerPaymentException catch (e) {
       _snack(e.message);
@@ -696,6 +706,20 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                   label: Text('J\'ai récupéré la commande',
                       style: GoogleFonts.inter(
                           fontWeight: FontWeight.w800, fontSize: 16)),
+                ),
+              if (onTheWay && picked && _t?['arrivedAt'] == null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('mission-arrived'),
+                    style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16))),
+                    onPressed: _busy ? null : () => _step('arrived'),
+                    icon: const Icon(Icons.where_to_vote_rounded),
+                    label: const Text('Je suis arrivé chez le client'),
+                  ),
                 ),
               if (onTheWay && picked)
                 FilledButton.icon(

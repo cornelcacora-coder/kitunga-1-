@@ -29,7 +29,11 @@ void main() {
       calls.add((name, data));
       if (name == 'kitungaDeliveryTracking') return tracking;
       if (name == 'kitungaDeliveryStep') {
-        tracking = {...tracking, 'pickedUpAt': '2026-11-12T10:20:00Z'};
+        tracking = {
+          ...tracking,
+          data['step'] == 'arrived' ? 'arrivedAt' : 'pickedUpAt':
+              '2026-11-12T10:20:00Z'
+        };
       }
       if (name == 'kitungaOrderContacts') return {'contacts': []};
       return {'ok': true};
@@ -60,11 +64,14 @@ void main() {
 
   test('étapes selon l\'avancement', () {
     var s = trackingSteps({'status': 'Pret', 'zone': 'Bacongo'});
-    expect(s.map((e) => e.done).toList(), [true, true, false, false, false]);
+    expect(s.map((e) => e.done).toList(),
+        [true, true, false, false, false, false]);
     expect(s[2].current, isTrue);
     s = trackingSteps({'status': 'encours', 'pickedUpAt': 'x'});
     expect(s.where((e) => e.done).length, 4);
     expect(s[4].current, isTrue);
+    s = trackingSteps({'status': 'encours', 'pickedUpAt': 'x', 'arrivedAt': 'y'});
+    expect(s[5].current, isTrue);
     s = trackingSteps({'status': 'Livrer'});
     expect(s.every((e) => e.done), isTrue);
   });
@@ -105,6 +112,10 @@ void main() {
         c.$1 == 'kitungaDeliveryStep' && c.$2['step'] == 'picked_up'), isTrue);
     expect(find.text('Étape 2 · Livrer le client'), findsOneWidget);
     expect(find.byKey(const ValueKey('mission-deliver')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('mission-arrived')));
+    await tester.pumpAndSettle();
+    expect(calls.any((c) => c.$2['step'] == 'arrived'), isTrue);
+    expect(find.byKey(const ValueKey('mission-arrived')), findsNothing);
     await stream.close();
   });
 

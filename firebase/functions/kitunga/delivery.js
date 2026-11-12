@@ -137,6 +137,8 @@ async function confirmDelivery({db, uid, data}) {
     }
     tx.update(codeRef, {used_at: ts(), used_by: me.uid});
     tx.update(orderRef, {status: "Livrer", delivered_at: ts(),
+      status_actor: {uid: me.uid, role: "Deliver", at: Date.now()},
+      status_reason: null,
       status_updated_at: ts(), delivery_photo: photo,
       delivery_code_verified: true, deliverer_ref: me.uid,
       delivery_issue: admin.firestore.FieldValue.delete()});
@@ -285,6 +287,8 @@ async function takeDelivery({db, uid, data}) {
       deliverer_ref: uid,
       deliver_reference: db.doc(`User/${uid}`),
       taken_at: ts(),
+      status_actor: {uid, role: "Deliver", at: Date.now()},
+      status_reason: null,
     });
     return {ok: true};
   });

@@ -48,16 +48,24 @@ Stream<Map<String, dynamic>> _myState() {
 
 /// État du livreur, lu en direct (en service, quartiers).
 class DelivererState {
-  const DelivererState({required this.available, required this.zones});
+  const DelivererState(
+      {required this.available, required this.zones, String? state})
+      : state = state ?? (available ? 'on' : 'off');
 
   factory DelivererState.of(Map<String, dynamic> data) => DelivererState(
         available: data['delivery_available'] == true,
+        state: const ['on', 'pause', 'off'].contains(data['delivery_state'])
+            ? data['delivery_state'] as String
+            : null,
         zones: ((data['delivery_zones'] as List?) ?? const [])
             .map((z) => '$z')
             .toList(),
       );
 
   final bool available;
+
+  /// 'on' (en service), 'pause' (en pause), 'off' (hors service).
+  final String state;
   final List<String> zones;
 }
 
@@ -122,7 +130,18 @@ class _KitungaDelivererPanelState extends State<KitungaDelivererPanel> {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final s = widget.state;
-    final color = s.available ? _green : theme.secondaryText;
+    final color = s.state == 'on'
+        ? _green
+        : s.state == 'pause'
+            ? const Color(0xFFE08A00)
+            : theme.secondaryText;
+    const labels = {'on': 'En service', 'pause': 'En pause',
+      'off': 'Hors service'};
+    const hints = {
+      'on': 'Vous recevez les nouvelles courses.',
+      'pause': 'Pas de nouvelle course ; vous terminez vos courses en cours.',
+      'off': 'Passez en service pour recevoir des courses.',
+    };
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
@@ -137,24 +156,23 @@ class _KitungaDelivererPanelState extends State<KitungaDelivererPanel> {
           Row(
             children: [
               Icon(
-                  s.available
+                  s.state == 'on'
                       ? Icons.delivery_dining_rounded
-                      : Icons.bedtime_outlined,
+                      : s.state == 'pause'
+                          ? Icons.coffee_rounded
+                          : Icons.bedtime_outlined,
                   color: color),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(s.available ? 'En service' : 'Hors service',
+                    Text(labels[s.state]!,
                         style: GoogleFonts.inter(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                             color: theme.primaryText)),
-                    Text(
-                        s.available
-                            ? 'Vous recevez les nouvelles courses.'
-                            : 'Activez pour recevoir les nouvelles courses.',
+                    Text(hints[s.state]!,
                         style: GoogleFonts.inter(
                             fontSize: 12.5, color: theme.secondaryText)),
                   ],
@@ -162,15 +180,35 @@ class _KitungaDelivererPanelState extends State<KitungaDelivererPanel> {
               ),
               Switch(
                 key: const ValueKey('deliverer-available'),
-                value: s.available,
+                value: s.state == 'on',
                 activeThumbColor: _green,
                 onChanged: _busy
                     ? null
-                    : (v) => _save({'available': v},
+                    : (v) => _save({'state': v ? 'on' : 'off'},
                         v ? 'Vous êtes en service.' : 'Vous êtes hors service.'),
               ),
             ],
           ),
+          // Pause : plus de nouvelles courses, sans quitter le service.
+          if (s.state != 'off')
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const ValueKey('deliverer-pause'),
+                onPressed: _busy
+                    ? null
+                    : () => s.state == 'pause'
+                        ? _save({'state': 'on'}, 'Vous êtes en service.')
+                        : _save({'state': 'pause'}, 'Vous êtes en pause.'),
+                icon: Icon(
+                    s.state == 'pause'
+                        ? Icons.play_arrow_rounded
+                        : Icons.pause_rounded,
+                    size: 18),
+                label: Text(
+                    s.state == 'pause' ? 'Reprendre le service' : 'Faire une pause'),
+              ),
+            ),
           const SizedBox(height: 4),
           InkWell(
             borderRadius: BorderRadius.circular(10),

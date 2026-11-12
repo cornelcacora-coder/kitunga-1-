@@ -44,14 +44,22 @@ async function requireMyDelivery(db, uid, data) {
   return o;
 }
 
-/** Le livreur a récupéré la commande au commerce. */
+/** Étapes du livreur : commande récupérée, arrivé chez le client. */
 async function deliveryStep({db, uid, data}) {
   const o = await requireMyDelivery(db, uid, data);
-  if (data.step !== "picked_up") {
-    throw err("invalid-argument", "Étape inconnue.");
+  if (data.step === "picked_up") {
+    if (!o.get("picked_up_at")) await o.ref.update({picked_up_at: ts()});
+    return {ok: true};
   }
-  if (!o.get("picked_up_at")) await o.ref.update({picked_up_at: ts()});
-  return {ok: true};
+  if (data.step === "arrived") {
+    if (!o.get("picked_up_at")) {
+      throw err("failed-precondition",
+          "Confirmez d'abord la récupération de la commande.");
+    }
+    if (!o.get("arrived_at")) await o.ref.update({arrived_at: ts()});
+    return {ok: true};
+  }
+  throw err("invalid-argument", "Étape inconnue.");
 }
 
 const inRange = (v, min, max) => typeof v === "number" &&
@@ -99,6 +107,8 @@ async function deliveryTracking({db, uid, data}) {
     readyAt: iso(o.get("ready_at")),
     takenAt: iso(o.get("taken_at")),
     pickedUpAt: iso(o.get("picked_up_at")),
+    arrivedAt: iso(o.get("arrived_at")),
+    deliveryStatus: o.get("delivery_status") || "",
     deliveredAt: iso(o.get("delivered_at")),
     shop: shop && shop.exists ? {name: shop.get("display_name") || ""} : null,
     deliverer: d && d.exists ? {name: d.get("display_name") || "",

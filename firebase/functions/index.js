@@ -449,6 +449,19 @@ exports.kitungaSetDelivererStatus = acquisitionCallable((data, uid) =>
 exports.kitungaOrderContacts = acquisitionCallable((data, uid) =>
   orderEvents.orderContacts({db: admin.firestore(), uid, data}));
 
+// ── Cycle de vie des commandes : statuts calculés et historique ──────────
+const lifecycle = require("./kitunga/lifecycle");
+exports.kitungaOrderLifecycle = functions.region("us-west1")
+    .firestore.document("Orders/{orderId}")
+    .onWrite((change) => lifecycle.onOrderLifecycle({
+      before: change.before, after: change.after}));
+exports.kitungaOrderHistory = acquisitionCallable((data, uid) =>
+  lifecycle.orderHistoryFor({db: admin.firestore(), uid, data}));
+/** Positions GPS des courses terminées : effacées après 24 h. */
+exports.kitungaPurgePositions = functions.region("us-west1")
+    .pubsub.schedule("every 6 hours")
+    .onRun(() => lifecycle.purgeOldPositions({db: admin.firestore()}));
+
 // ── Suivi en direct de la livraison ──────────────────────────────────────
 const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>

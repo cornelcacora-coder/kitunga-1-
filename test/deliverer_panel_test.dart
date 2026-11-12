@@ -64,10 +64,19 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('deliverer-available')));
     await tester.pumpAndSettle();
     expect(calls.single.$1, 'kitungaSetDelivererStatus');
-    expect(calls.single.$2, {'available': true});
+    expect(calls.single.$2, {'state': 'on'});
     state.add({'delivery_available': true, 'delivery_zones': []});
     await tester.pumpAndSettle();
     expect(find.text('En service'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('deliverer-pause')));
+    await tester.pumpAndSettle();
+    expect(calls.last.$2, {'state': 'pause'});
+    state.add({'delivery_available': false, 'delivery_state': 'pause'});
+    await tester.pumpAndSettle();
+    expect(find.text('En pause'), findsOneWidget);
+    expect(find.text('Reprendre le service'), findsOneWidget);
+    state.add({'delivery_available': true, 'delivery_zones': []});
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Modifier'));
     await tester.pumpAndSettle();

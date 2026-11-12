@@ -85,7 +85,10 @@ async function adminOrderAction({db, uid, data}) {
       changes = {status: S.delivered, delivered_at: ts()};
     }
     tx.update(ref, {...changes, status_updated_at: ts(),
-      admin_updated_by: adminUid});
+      admin_updated_by: adminUid,
+      // Historique : l'admin est l'auteur du changement.
+      status_actor: {uid: adminUid, role: "Admin", at: Date.now()},
+      status_reason: reason || null});
     audit(tx, db, {actorUid: adminUid, actorRole: "Admin",
       action: `order.${action}`, target: ref.path,
       details: {from: status, to: changes.status,

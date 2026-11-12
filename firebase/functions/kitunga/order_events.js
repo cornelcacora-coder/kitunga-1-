@@ -129,6 +129,13 @@ async function onOrderWrite({db, messaging, before, after}) {
         "« Mes commandes ».", "order");
   }
 
+  // Le livreur est arrivé chez le client.
+  if (after.get("arrived_at") && !before.get("arrived_at")) {
+    sent += await send([await client()], "Votre livreur est arrivé",
+        `Votre livreur vous attend avec la commande ${ref(after)}. Préparez ` +
+        "votre code de remise.", "order");
+  }
+
   // Problème signalé par le livreur : les administrateurs.
   const issue = after.get("delivery_issue");
   const prevIssue = before.get("delivery_issue");
@@ -163,7 +170,15 @@ async function staleReadyOrders({db, messaging, now = new Date()}) {
   return {count: stale.length};
 }
 
-/** Le livreur indique s'il est en service et ses quartiers. */
+/** Disponibilités du livreur : en service, en pause, hors service. */
+const STATES = ["on", "pause", "off"];
+
+/**
+ * Le livreur indique sa disponibilité et ses quartiers. En pause ou hors
+ * service, il ne reçoit plus de nouvelles courses mais termine celles
+ * qu'il a déjà acceptées. Chaque changement est historisé
+ * (DelivererAvailability) pour l'administration.
+ */
 async function setDelivererStatus({db, uid, data}) {
   if (!uid) throw err("unauthenticated", "Connexion requise.");
   const u = await db.doc(`User/${uid}`).get();
@@ -171,9 +186,20 @@ async function setDelivererStatus({db, uid, data}) {
     throw err("permission-denied", "Réservé aux livreurs.");
   }
   const changes = {};
-  if (data.available !== undefined) {
-    changes.delivery_available = data.available === true;
+  // Ancienne application : available true / false.
+  const state = STATES.includes(data.state) ? data.state :
+    data.available === undefined ? null : data.available === true ? "on" :
+    "off";
+  if (data.state !== undefined && !STATES.includes(data.state)) {
+    throw err("invalid-argument", "Disponibilité inconnue.");
+  }
+  if (state) {
+    changes.delivery_state = state;
+    changes.delivery_available = state === "on";
     changes.delivery_available_at = ts();
+    await db.collection("DelivererAvailability").add({deliverer_uid: uid,
+      state, from: u.get("delivery_state") ||
+        (u.get("delivery_available") === true ? "on" : "off"), at: ts()});
   }
   if (data.zones !== undefined) {
     if (!Array.isArray(data.zones)) {
