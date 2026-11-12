@@ -11,6 +11,7 @@ import '/backend/server_payment.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/upload_data.dart';
 import '/mobile/components/delivery/kitunga_deliverer_panel.dart' show KitungaOrderContacts;
+import '/mobile/components/delivery/kitunga_live_tracking.dart' show KitungaLiveTrackingCard;
 import '/mobile/components/returns/kitunga_returns.dart' show KitungaReturnSection;
 
 /// Remise sécurisée et reçu, côté application :
@@ -214,13 +215,25 @@ class KitungaDeliveryExtras extends StatelessWidget {
     final contacts = KitungaOrderContacts.showsFor(order)
         ? KitungaOrderContacts(order: order)
         : null;
-    if (!showCode && !showReceipt) return contacts ?? const SizedBox.shrink();
+    // Suivi en direct : carte du livreur et étapes.
+    final tracking = KitungaLiveTrackingCard.showsFor(order)
+        ? KitungaLiveTrackingCard(order: order)
+        : null;
+    if (!showCode && !showReceipt) {
+      if (tracking == null) return contacts ?? const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [tracking, if (contacts != null) contacts],
+      );
+    }
     return Padding(
       padding: const EdgeInsets.only(top: 12.0),
       child: showCode
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (tracking != null) tracking,
+                const SizedBox(height: 12.0),
                 KitungaDeliveryCodeCard(order: order),
                 if (contacts != null) contacts,
               ],

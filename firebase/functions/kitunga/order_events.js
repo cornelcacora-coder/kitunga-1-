@@ -7,6 +7,7 @@
  * - Prête : les livreurs en service qui couvrent le quartier (tous les
  *   livreurs en service s'ils n'ont choisi aucun quartier).
  * - En livraison : le client et le commerce.
+ * - Récupérée au commerce : le client (le livreur arrive).
  * - Livrée : le client (confirmer la réception).
  * - Refusée / annulée : le client ou le commerce.
  * - Problème signalé par le livreur : les administrateurs.
@@ -119,6 +120,13 @@ async function onOrderWrite({db, messaging, before, after}) {
       default:
         break;
     }
+  }
+
+  // Le livreur a récupéré la commande : le client sait qu'il arrive.
+  if (after.get("picked_up_at") && !before.get("picked_up_at")) {
+    sent += await send([await client()], "Votre livreur arrive",
+        `Commande ${ref(after)} récupérée. Suivez le livreur en direct dans ` +
+        "« Mes commandes ».", "order");
   }
 
   // Problème signalé par le livreur : les administrateurs.

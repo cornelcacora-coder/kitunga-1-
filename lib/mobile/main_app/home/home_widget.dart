@@ -18,8 +18,9 @@ import 'dart:math';
 import 'dart:ui';
 import '/index.dart';
 import '/backend/kitunga_categories.dart' show kitungaShopIsActive;
-import '/mobile/components/delivery/kitunga_delivery.dart' show kitungaCompleteDelivery, kitungaTakeDelivery;
+import '/mobile/components/delivery/kitunga_delivery.dart' show kitungaTakeDelivery;
 import '/mobile/components/delivery/kitunga_deliverer_panel.dart' show DelivererStateBuilder, KitungaDelivererPanel, delivererCovers;
+import '/mobile/components/delivery/kitunga_live_tracking.dart' show KitungaActiveDeliveryBanner, KitungaCourseCard, openDelivererMission;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -2003,6 +2004,17 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                 builder: (context, deliverer) =>
                                                     Column(
                                                   children: [
+                                                    // Course en cours : accès direct à la carte et aux étapes.
+                                                    StreamBuilder<List<OrdersRecord>>(
+                                                      stream: queryOrdersRecord(
+                                                        queryBuilder: (o) => o
+                                                            .where('deliverer_ref', isEqualTo: currentUserUid)
+                                                            .where('status', isEqualTo: OrderStatus.delivering),
+                                                      ),
+                                                      builder: (context, mine) =>
+                                                          KitungaActiveDeliveryBanner(
+                                                              orders: mine.data ?? const []),
+                                                    ),
                                                     KitungaDelivererPanel(
                                                         state: deliverer),
                                                     Expanded(
@@ -2082,20 +2094,14 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       final listViewOrdersRecord =
                                                           listViewOrdersRecordList[
                                                               listViewIndex];
-                                                      return Padding(
-                                                        padding: EdgeInsets.all(
-                                                            20.0),
-                                                        child: InkWell(
-                                                          splashColor: Colors
-                                                              .transparent,
-                                                          focusColor: Colors
-                                                              .transparent,
-                                                          hoverColor: Colors
-                                                              .transparent,
-                                                          highlightColor: Colors
-                                                              .transparent,
-                                                          onTap: () async {
-                                                            context.pushNamed(
+                                                      final listMine = listViewOrdersRecord.deliverReference == currentUserReference ||
+                                                          listViewOrdersRecord.delivererRef == currentUserReference?.id;
+                                                      // Carte d'une course : commerce → quartier, gain, action.
+                                                      return KitungaCourseCard(
+                                                        order: listViewOrdersRecord,
+                                                        mine: listMine,
+                                                        onDetails: () {
+                                                          context.pushNamed(
                                                               OrderViewSellerDeliverWidget
                                                                   .routeName,
                                                               queryParameters: {
@@ -2134,399 +2140,19 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                                 ),
                                                               }.withoutNulls,
                                                             );
-                                                          },
-                                                          child: Container(
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .primaryBackground,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          14.0),
-                                                            ),
-                                                            child: Padding(
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .all(
-                                                                          10.0),
-                                                              child: Column(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .min,
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .start,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .stretch,
-                                                                children: [
-                                                                  Column(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .start,
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Row(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.max,
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceBetween,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.center,
-                                                                        children: [
-                                                                          Row(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.max,
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.start,
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.center,
-                                                                            children:
-                                                                                [
-                                                                              Text(
-                                                                                valueOrDefault<String>(
-                                                                                  listViewOrdersRecord.orderId,
-                                                                                  '#-0',
-                                                                                ),
-                                                                                style: FlutterFlowTheme.of(context).labelMedium.override(
-                                                                                      font: GoogleFonts.inter(
-                                                                                        fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                      ),
-                                                                                      color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                              Icon(
-                                                                                Icons.schedule_rounded,
-                                                                                color: FlutterFlowTheme.of(context).warning,
-                                                                                size: 18.0,
-                                                                              ),
-                                                                              Text(
-                                                                                valueOrDefault<String>(
-                                                                                  dateTimeFormat("d/M H:mm", listViewOrdersRecord.createdAt),
-                                                                                  '-',
-                                                                                ),
-                                                                                style: FlutterFlowTheme.of(context).bodySmall.override(
-                                                                                      font: GoogleFonts.inter(
-                                                                                        fontWeight: FlutterFlowTheme.of(context).bodySmall.fontWeight,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).bodySmall.fontStyle,
-                                                                                      ),
-                                                                                      color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FlutterFlowTheme.of(context).bodySmall.fontWeight,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).bodySmall.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                            ].divide(SizedBox(width: 8.0)),
-                                                                          ),
-                                                                          Row(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.max,
-                                                                            children: [
-                                                                              Text(
-                                                                                '+',
-                                                                                style: FlutterFlowTheme.of(context).titleMedium.override(
-                                                                                      font: GoogleFonts.interTight(
-                                                                                        fontWeight: FontWeight.bold,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                                                                                      ),
-                                                                                      color: FlutterFlowTheme.of(context).success,
-                                                                                      fontSize: 14.0,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.bold,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                              Text(
-                                                                                valueOrDefault<String>(
-                                                                                  listViewOrdersRecord.deliveryFees.toString(),
-                                                                                  '1000',
-                                                                                ),
-                                                                                style: FlutterFlowTheme.of(context).titleMedium.override(
-                                                                                      font: GoogleFonts.interTight(
-                                                                                        fontWeight: FontWeight.bold,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                                                                                      ),
-                                                                                      color: FlutterFlowTheme.of(context).success,
-                                                                                      fontSize: 14.0,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.bold,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                              Text(
-                                                                                'F',
-                                                                                style: FlutterFlowTheme.of(context).titleMedium.override(
-                                                                                      font: GoogleFonts.interTight(
-                                                                                        fontWeight: FontWeight.bold,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                                                                                      ),
-                                                                                      color: FlutterFlowTheme.of(context).success,
-                                                                                      fontSize: 14.0,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.bold,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      Row(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.max,
-                                                                        children:
-                                                                            [
-                                                                          Row(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.max,
-                                                                            children:
-                                                                                [
-                                                                              Icon(
-                                                                                Icons.calendar_month,
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                size: 18.0,
-                                                                              ),
-                                                                              Text(
-                                                                                valueOrDefault<String>(
-                                                                                  listViewOrdersRecord.status,
-                                                                                  'Pret',
-                                                                                ),
-                                                                                style: FlutterFlowTheme.of(context).titleMedium.override(
-                                                                                      font: GoogleFonts.interTight(
-                                                                                        fontWeight: FontWeight.w800,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                                                                                      ),
-                                                                                      color: valueOrDefault<Color>(
-                                                                                        () {
-                                                                                          if (listViewOrdersRecord.status == 'Pret') {
-                                                                                            return FlutterFlowTheme.of(context).primary;
-                                                                                          } else if (listViewOrdersRecord.status == 'encours') {
-                                                                                            return FlutterFlowTheme.of(context).success;
-                                                                                          } else if (listViewOrdersRecord.status == 'Livrer') {
-                                                                                            return Color(0xFF6C23AF);
-                                                                                          } else {
-                                                                                            return FlutterFlowTheme.of(context).primaryText;
-                                                                                          }
-                                                                                        }(),
-                                                                                        FlutterFlowTheme.of(context).secondaryText,
-                                                                                      ),
-                                                                                      fontSize: 14.0,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.w800,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                            ].divide(SizedBox(width: 8.0)),
-                                                                          ),
-                                                                        ].divide(SizedBox(width: 20.0)),
-                                                                      ),
-                                                                    ].divide(SizedBox(
-                                                                        height:
-                                                                            5.0)),
-                                                                  ),
-                                                                  Divider(
-                                                                    thickness:
-                                                                        1.0,
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .divider,
-                                                                  ),
-                                                                  Row(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .start,
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .center,
-                                                                    children: [
-                                                                      Container(
-                                                                        width:
-                                                                            30.0,
-                                                                        height:
-                                                                            30.0,
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).secondaryBackground,
-                                                                          shape:
-                                                                              BoxShape.circle,
-                                                                        ),
-                                                                        child:
-                                                                            Icon(
-                                                                          Icons
-                                                                              .location_on,
-                                                                          color:
-                                                                              FlutterFlowTheme.of(context).secondary,
-                                                                          size:
-                                                                              18.0,
-                                                                        ),
-                                                                      ),
-                                                                      Expanded(
-                                                                        flex: 1,
-                                                                        child:
-                                                                            Column(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.min,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.start,
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.start,
-                                                                          children:
-                                                                              [
-                                                                            Text(
-                                                                              valueOrDefault<String>(
-                                                                                listViewOrdersRecord.deliveryZone,
-                                                                                'Zone non précisée',
-                                                                              ),
-                                                                              maxLines: 1,
-                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                    font: GoogleFonts.inter(
-                                                                                      fontWeight: FontWeight.w600,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                    ),
-                                                                                    color: FlutterFlowTheme.of(context).secondary,
-                                                                                    fontSize: 12.0,
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FontWeight.w600,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                              overflow: TextOverflow.ellipsis,
-                                                                            ),
-                                                                            Text(
-                                                                              valueOrDefault<String>(
-                                                                                listViewOrdersRecord.deliveryLocation,
-                                                                                '62 bis Av Corniche',
-                                                                              ),
-                                                                              maxLines: 1,
-                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                    font: GoogleFonts.inter(
-                                                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                    ),
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    fontSize: 12.0,
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                  ),
-                                                                              overflow: TextOverflow.ellipsis,
-                                                                            ),
-                                                                          ].divide(SizedBox(height: 4.0)),
-                                                                        ),
-                                                                      ),
-                                                                      if (listViewOrdersRecord
-                                                                              .status !=
-                                                                          'En attente')
-                                                                        FFButtonWidget(
-                                                                          onPressed:
-                                                                              () async {
-                                                                            final assignedToMe = listViewOrdersRecord.deliverReference == currentUserReference ||
-                                                                                listViewOrdersRecord.delivererRef == currentUserReference?.id;
-                                                                            final assignedToOther = !assignedToMe &&
-                                                                                (listViewOrdersRecord.deliverReference != null ||
-                                                                                    listViewOrdersRecord.delivererRef.isNotEmpty);
-                                                                            if (listViewOrdersRecord.status == 'Pret' && !assignedToOther) {
-                                                                              // Accepter : le serveur attribue la commande à un seul livreur.
-                                                                              await kitungaTakeDelivery(context, listViewOrdersRecord);
-                                                                            } else if (listViewOrdersRecord.status == 'encours' && assignedToMe) {
-                                                                              // Remise : code du client + photo, vérifiés par le serveur.
-                                                                              await kitungaCompleteDelivery(context, listViewOrdersRecord);
-                                                                            } else {
-                                                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                                                SnackBar(
-                                                                                  content: Text(assignedToOther
-                                                                                      ? 'Cette commande a déjà été prise par un autre livreur.'
-                                                                                      : 'Cette commande n\'est plus disponible.'),
-                                                                                  duration: Duration(seconds: 3),
-                                                                                ),
-                                                                              );
-                                                                            }
-                                                                            safeSetState(() {});
-                                                                          },
-                                                                          text:
-                                                                              valueOrDefault<String>(
-                                                                            () {
-                                                                              if (listViewOrdersRecord.status == 'Pret') {
-                                                                                return 'Accepter';
-                                                                              } else if (listViewOrdersRecord.status == 'encours') {
-                                                                                return 'Terminer';
-                                                                              } else if (listViewOrdersRecord.status == 'Livrer') {
-                                                                                return 'Expirer';
-                                                                              } else {
-                                                                                return 'Expirer';
-                                                                              }
-                                                                            }(),
-                                                                            'Expirer',
-                                                                          ),
-                                                                          options:
-                                                                              FFButtonOptions(
-                                                                            height:
-                                                                                30.0,
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                16.0,
-                                                                                0.0,
-                                                                                16.0,
-                                                                                0.0),
-                                                                            iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                                                                0.0,
-                                                                                0.0,
-                                                                                0.0,
-                                                                                0.0),
-                                                                            color:
-                                                                                valueOrDefault<Color>(
-                                                                              () {
-                                                                                if (listViewOrdersRecord.status == 'Pret') {
-                                                                                  return Color(0xFFFF2D87);
-                                                                                } else if (listViewOrdersRecord.status == 'encours') {
-                                                                                  return FlutterFlowTheme.of(context).warning;
-                                                                                } else if (listViewOrdersRecord.status == 'Livrer') {
-                                                                                  return FlutterFlowTheme.of(context).primaryText;
-                                                                                } else {
-                                                                                  return FlutterFlowTheme.of(context).secondaryText;
-                                                                                }
-                                                                              }(),
-                                                                              FlutterFlowTheme.of(context).primaryText,
-                                                                            ),
-                                                                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                                                                                  font: GoogleFonts.interTight(
-                                                                                    fontWeight: FontWeight.w600,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                  ),
-                                                                                  color: Colors.white,
-                                                                                  fontSize: 10.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.w600,
-                                                                                  fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                ),
-                                                                            elevation:
-                                                                                0.0,
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(24.0),
-                                                                          ),
-                                                                        ),
-                                                                    ].divide(SizedBox(
-                                                                        width:
-                                                                            16.0)),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
+                                                        },
+                                                        onAction: () async {
+                                                          if (listMine && listViewOrdersRecord.status == 'encours') {
+                                                            // Course en cours : récupération, itinéraire, remise (code + photo).
+                                                            await openDelivererMission(context, listViewOrdersRecord);
+                                                          } else if (listViewOrdersRecord.status == 'Pret') {
+                                                            // Accepter : le serveur attribue la commande à un seul livreur.
+                                                            final taken = await kitungaTakeDelivery(context, listViewOrdersRecord);
+                                                            if (taken && context.mounted) {
+                                                              await openDelivererMission(context, listViewOrdersRecord);
+                                                            }
+                                                          }
+                                                        },
                                                       );
                                                     },
                                                   );

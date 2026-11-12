@@ -449,6 +449,15 @@ exports.kitungaSetDelivererStatus = acquisitionCallable((data, uid) =>
 exports.kitungaOrderContacts = acquisitionCallable((data, uid) =>
   orderEvents.orderContacts({db: admin.firestore(), uid, data}));
 
+// ── Suivi en direct de la livraison ──────────────────────────────────────
+const tracking = require("./kitunga/delivery_tracking");
+exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>
+  tracking.deliveryStep({db: admin.firestore(), uid, data}));
+exports.kitungaDeliveryPosition = acquisitionCallable((data, uid) =>
+  tracking.deliveryPosition({db: admin.firestore(), uid, data}));
+exports.kitungaDeliveryTracking = acquisitionCallable((data, uid) =>
+  tracking.deliveryTracking({db: admin.firestore(), uid, data}));
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));

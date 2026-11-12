@@ -132,3 +132,10 @@ test("contacts : chacun voit les autres acteurs de sa commande", async () => {
   await assert.rejects(ev.orderContacts({db, uid: "l2",
     data: {orderId: "o1"}}), {code: "not-found"});
 });
+
+test("commande récupérée : le client est prévenu", async () => {
+  await order.set({status: "encours", user_ref: db.doc("User/client"),
+    seller_ref: db.doc("User/shop"), deliverer_ref: "l1"});
+  await change({picked_up_at: new Date()});
+  assert.deepStrictEqual(await titles("client"), ["Votre livreur arrive"]);
+});

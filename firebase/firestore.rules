@@ -168,7 +168,8 @@ service cloud.firestore {
       return isAdmin() || !request.resource.data.diff(resource.data).affectedKeys()
         .hasAny(['delivery_code_verified', 'delivery_photo', 'delivered_at',
           'delivery_issue', 'receipt_number', 'receipt_at', 'cancel_reason',
-          'cancelled_by', 'admin_updated_by', 'taken_at',
+          'cancelled_by', 'admin_updated_by', 'taken_at', 'picked_up_at',
+          'ready_at', 'stale_alert_at',
           'prescription_ref', 'prescription_photos',
           'return_status', 'return_reason', 'return_wish', 'return_note',
           'return_photos', 'return_requested_at', 'return_decided_at',

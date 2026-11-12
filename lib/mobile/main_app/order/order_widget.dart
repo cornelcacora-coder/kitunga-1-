@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/mobile/components/delivery/kitunga_delivery.dart';
+import '/mobile/components/delivery/kitunga_live_tracking.dart' show openDelivererMission;
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -1042,8 +1043,8 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                   if (listViewOrdersRecord
                                                                           .status ==
                                                                       'encours') {
-                                                                    // Remise : code du client + photo, vérifiés par le serveur.
-                                                                    await kitungaCompleteDelivery(context, listViewOrdersRecord);
+                                                                    // Course en cours : carte, récupération, remise (code + photo).
+                                                                    await openDelivererMission(context, listViewOrdersRecord);
                                                                   } else {
                                                                     if (listViewOrdersRecord
                                                                             .status ==
