@@ -540,6 +540,13 @@ exports.kitungaAdminFinanceOverview = acquisitionCallable((data, uid) =>
 exports.kitungaAdminAccountLedger = acquisitionCallable((data, uid) =>
   finance.adminAccountLedger({db: admin.firestore(), uid, data}));
 
+// ── Supervision de l'admin ───────────────────────────────────────────────
+const supervision = require("./kitunga/supervision");
+exports.kitungaAdminSupervision = acquisitionCallable((data, uid) =>
+  supervision.adminSupervision({db: admin.firestore(), uid}));
+exports.kitungaAdminDelivererHistory = acquisitionCallable((data, uid) =>
+  supervision.adminDelivererHistory({db: admin.firestore(), uid, data}));
+
 // ── Suivi en direct de la livraison ──────────────────────────────────────
 const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>

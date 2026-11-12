@@ -48,6 +48,7 @@ class AdminPaths {
   static const deliveryPricing = '/tarif-livraison';
   static const support = '/support';
   static const finance = '/finances';
+  static const supervision = '/supervision';
   static const alerts = '/alertes';
   static const missingImages = '/produits?sansImage=1';
 }
@@ -58,6 +59,9 @@ const kDashboardItem = AdminNavItem(
 
 const List<AdminNavGroup> kAdminMenu = [
   const AdminNavGroup('Opérations', Icons.local_shipping_rounded, [
+    AdminNavItem('supervision', 'Supervision en direct',
+        Icons.monitor_heart_rounded,
+        path: AdminPaths.supervision),
     AdminNavItem('orders', 'Commandes', Icons.receipt_long_rounded,
         path: AdminPaths.orders),
     AdminNavItem('deliveries', 'Livraisons', Icons.delivery_dining_rounded,
