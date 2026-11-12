@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -100,15 +103,29 @@ class KitungaBannerStore extends ChangeNotifier {
   @visibleForTesting
   static Future<Map<String, dynamic>> Function()? fetchOverride;
 
-  List<KitungaBanner> _list = kitungaDefaultBanners;
+  // Au démarrage : rien (jamais les anciennes bannières intégrées), puis
+  // les dernières reçues gardées sur le téléphone, puis celles du serveur.
+  List<KitungaBanner> _list = const [];
   DateTime? _lastTry;
   bool _loading = false;
   bool _loaded = false;
+  bool _cacheRead = false;
+  bool _fromCache = false;
+
+  static const _cacheKey = 'kitunga_banners_cache';
+
+  /// Première ouverture, rien encore reçu : afficher une zone d'attente
+  /// plutôt que d'anciennes images.
+  bool get waiting => !_loaded && !_fromCache;
 
   /// Bannières à diffuser ; chargement au premier appel, puis au plus une
   /// tentative par minute en cas d'échec et une mise à jour toutes les
   /// 15 minutes.
   List<KitungaBanner> get list {
+    if (!_cacheRead) {
+      _cacheRead = true;
+      Future.microtask(_readCache);
+    }
     final now = DateTime.now();
     final wait =
         _loaded ? const Duration(minutes: 15) : const Duration(minutes: 1);
@@ -127,12 +144,10 @@ class KitungaBannerStore extends ChangeNotifier {
       final raw = res['banners'];
       if (raw is List) {
         // Liste vide = l'admin a tout désactivé : plus de carrousel.
-        _list = List.unmodifiable([
-          for (final b in raw)
-            if (b is Map) kitungaBannerFromServer(Map<String, dynamic>.from(b)),
-        ].whereType<KitungaBanner>());
+        _list = _parse(raw);
         _loaded = true;
         notifyListeners();
+        _writeCache(raw);
       }
     } catch (_) {
       // Hors connexion : on garde les bannières actuelles.
@@ -147,12 +162,43 @@ class KitungaBannerStore extends ChangeNotifier {
     return _load();
   }
 
+  static List<KitungaBanner> _parse(List raw) => List.unmodifiable([
+        for (final b in raw)
+          if (b is Map) kitungaBannerFromServer(Map<String, dynamic>.from(b)),
+      ].whereType<KitungaBanner>());
+
+  /// Dernières bannières reçues, affichées tout de suite à l'ouverture.
+  Future<void> _readCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final json = prefs.getString(_cacheKey);
+      if (json == null || _loaded) return;
+      final raw = jsonDecode(json);
+      if (raw is List) {
+        _list = _parse(raw);
+        _fromCache = true;
+        notifyListeners();
+      }
+    } catch (_) {
+      // Pas de copie locale : on attend le serveur.
+    }
+  }
+
+  Future<void> _writeCache(List raw) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cacheKey, jsonEncode(raw));
+    } catch (_) {}
+  }
+
   @visibleForTesting
-  void resetForTest() {
-    _list = kitungaDefaultBanners;
-    _lastTry = null;
+  void resetForTest({bool readCache = false}) {
+    _list = const [];
+    _lastTry = readCache ? DateTime.now() : null;
     _loading = false;
     _loaded = false;
+    _cacheRead = !readCache; // copie locale lue seulement si demandé
+    _fromCache = false;
   }
 }
 

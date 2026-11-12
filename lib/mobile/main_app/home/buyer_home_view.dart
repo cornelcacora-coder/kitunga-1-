@@ -585,7 +585,23 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
   /// Bannière Hero carrousel avec PageView et points de pagination
   Widget _buildHeroBanner(BuildContext context) {
     // Aucune bannière diffusée (toutes désactivées par l'admin).
-    if (_bannerSlides.isEmpty) return const SizedBox.shrink();
+    if (_bannerSlides.isEmpty) {
+      // Première ouverture : zone d'attente à la place des publicités
+      // (jamais d'anciennes images) ; rien si l'admin les a toutes retirées.
+      if (!KitungaBannerStore.instance.waiting) return const SizedBox.shrink();
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Container(
+          key: const ValueKey('banner-placeholder'),
+          height: 200.0,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E242B) : const Color(0xFFF1F4F8),
+            borderRadius: BorderRadius.circular(26.0),
+          ),
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(

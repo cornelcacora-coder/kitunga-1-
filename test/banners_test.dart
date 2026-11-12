@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -143,16 +146,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  test('application : bannières du serveur, repli sur celles d\'origine',
+  test('application : bannières du serveur, jamais les anciennes au démarrage',
       () async {
     final store = KitungaBannerStore.instance..resetForTest();
-    expect(store.list.length, 3); // d'origine, chargement lancé
+    // Au démarrage : aucune ancienne image, zone d'attente.
+    expect(store.list, isEmpty);
+    expect(store.waiting, isTrue);
     KitungaBannerStore.fetchOverride = () async => {'banners': [
           banners[1],
           {'id': 'x', 'title1': '', 'title2': '', 'image': img}, // inutilisable
         ]};
     addTearDown(() => KitungaBannerStore.fetchOverride = null);
     await store.reload();
+    expect(store.waiting, isFalse);
     final b = store.list.single;
     expect(b.title2, '-20 %');
     expect(b.badge, 'PROMO');
@@ -170,6 +176,19 @@ void main() {
     KitungaBannerStore.fetchOverride = () async => throw 'hors ligne';
     await store.reload();
     expect(store.list, isEmpty);
+    store.resetForTest();
+  });
+
+  test('application : dernières bannières gardées sur le téléphone',
+      () async {
+    SharedPreferences.setMockInitialValues({
+      'kitunga_banners_cache': jsonEncode([banners[1]]),
+    });
+    final store = KitungaBannerStore.instance..resetForTest(readCache: true);
+    expect(store.list, isEmpty); // lecture de la copie locale lancée
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(store.list.single.title2, '-20 %');
+    expect(store.waiting, isFalse);
     store.resetForTest();
   });
 }
