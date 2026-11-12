@@ -24,3 +24,7 @@ redéployée : `firebase deploy --only functions:functions:corsProxy --force`
   une première fois avant `deployer_tout.sh`** : les fonctions de paiement
   en ont besoin. Sans compte Airtel pour l'instant, tapez `absent` : le
   client qui choisit Airtel Money est invité à payer avec MTN MoMo.
+
+- `bash scripts/deployer_regles_firestore.sh` : règles Firestore. **Seulement
+  après la publication de la nouvelle version Android** (voir
+  docs/ECOSYSTEME_REALISE.md).
