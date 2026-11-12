@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'order_view_seller_deliver_model.dart';
+import '/mobile/components/delivery/kitunga_deliverer_panel.dart' show KitungaOrderContacts;
 import '/mobile/components/form_styles/form_styles.dart';
 export 'order_view_seller_deliver_model.dart';
 
@@ -729,6 +730,25 @@ class _OrderViewSellerDeliverWidgetState
                         ),
                       ),
                     ),
+                  ),
+                  // Appeler / WhatsApp : client, commerce, livreur.
+                  StreamBuilder<List<OrdersRecord>>(
+                    stream: queryOrdersRecord(
+                      queryBuilder: (o) => o.where('order_unique_reference',
+                          isEqualTo: widget.orderRefer),
+                      singleRecord: true,
+                    ),
+                    builder: (context, snap) {
+                      final order = (snap.data ?? const []).firstOrNull;
+                      if (order == null ||
+                          !KitungaOrderContacts.showsFor(order)) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: KitungaOrderContacts(order: order),
+                      );
+                    },
                   ),
                 ].divide(SizedBox(height: 16.0)),
               ),

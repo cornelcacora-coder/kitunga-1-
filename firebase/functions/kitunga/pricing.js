@@ -128,4 +128,6 @@ function priceCart(lines, zone, {prescriptionOk = false} = {}) {
     needsPrescription};
 }
 
-module.exports = {deliveryFee, resolveOptions, priceCart, basePrice};
+const ZONES = ZONE_FEES.flatMap(([, zones]) => zones);
+
+module.exports = {deliveryFee, resolveOptions, priceCart, basePrice, ZONES};

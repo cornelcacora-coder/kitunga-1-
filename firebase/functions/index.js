@@ -407,6 +407,7 @@ exports.kitungaDecideReturn = acquisitionCallable((data, uid) =>
 
 // ── Notifications et rappels d'abonnement ────────────────────────────────
 const notifications = require("./kitunga/notifications");
+const orderEvents = require("./kitunga/order_events");
 
 exports.kitungaSaveFcmToken = acquisitionCallable((data, uid) =>
   notifications.saveFcmToken({db: admin.firestore(), uid, data}));
@@ -423,6 +424,27 @@ exports.kitungaSubscriptionReminders = functions.region("us-west1")
     .pubsub.schedule("0 9 * * *").timeZone("Africa/Brazzaville")
     .onRun(() => notifications.subscriptionReminders({
       db: admin.firestore(), messaging: admin.messaging()}));
+
+/** Notifications au fil des commandes (commerce, livreurs, client, admin). */
+exports.kitungaOrderEvents = functions.region("us-west1")
+    .firestore.document("Orders/{orderId}")
+    .onWrite((change) => orderEvents.onOrderWrite({
+      db: admin.firestore(), messaging: admin.messaging(),
+      before: change.before, after: change.after}));
+
+/** Commandes prêtes depuis 20 min sans livreur : alerte admin. */
+exports.kitungaStaleReadyOrders = functions.region("us-west1")
+    .pubsub.schedule("every 10 minutes")
+    .onRun(() => orderEvents.staleReadyOrders({
+      db: admin.firestore(), messaging: admin.messaging()}));
+
+/** Le livreur : en service / hors service, quartiers couverts. */
+exports.kitungaSetDelivererStatus = acquisitionCallable((data, uid) =>
+  orderEvents.setDelivererStatus({db: admin.firestore(), uid, data}));
+
+/** Coordonnées des autres acteurs d'une commande (appel, WhatsApp). */
+exports.kitungaOrderContacts = acquisitionCallable((data, uid) =>
+  orderEvents.orderContacts({db: admin.firestore(), uid, data}));
 
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>

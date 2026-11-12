@@ -19,6 +19,7 @@ import 'dart:ui';
 import '/index.dart';
 import '/backend/kitunga_categories.dart' show kitungaShopIsActive;
 import '/mobile/components/delivery/kitunga_delivery.dart' show kitungaCompleteDelivery, kitungaTakeDelivery;
+import '/mobile/components/delivery/kitunga_deliverer_panel.dart' show DelivererStateBuilder, KitungaDelivererPanel, delivererCovers;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -1998,7 +1999,14 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                     FlutterFlowTheme.of(context)
                                                         .secondaryBackground,
                                               ),
-                                              child: StreamBuilder<
+                                              child: DelivererStateBuilder(
+                                                builder: (context, deliverer) =>
+                                                    Column(
+                                                  children: [
+                                                    KitungaDelivererPanel(
+                                                        state: deliverer),
+                                                    Expanded(
+                                                      child: StreamBuilder<
                                                   List<OrdersRecord>>(
                                                 stream: queryOrdersRecord(
                                                   queryBuilder:
@@ -2028,9 +2036,22 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                       ),
                                                     );
                                                   }
+                                                  // Courses prêtes : seulement les quartiers
+                                                  // du livreur ; les siennes, toujours.
                                                   List<OrdersRecord>
                                                       listViewOrdersRecordList =
-                                                      snapshot.data!;
+                                                      snapshot.data!
+                                                          .where((o) =>
+                                                              o.delivererRef ==
+                                                                  currentUserUid ||
+                                                              (o.status ==
+                                                                      OrderStatus
+                                                                          .ready &&
+                                                                  delivererCovers(
+                                                                      deliverer
+                                                                          .zones,
+                                                                      o.deliveryZone)))
+                                                          .toList();
                                                   if (listViewOrdersRecordList
                                                       .isEmpty) {
                                                     return EmptyCardWidget(
@@ -2510,6 +2531,10 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                     },
                                                   );
                                                 },
+                                              ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ]

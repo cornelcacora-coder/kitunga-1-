@@ -10,6 +10,7 @@ import '/backend/order_status.dart';
 import '/backend/server_payment.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/upload_data.dart';
+import '/mobile/components/delivery/kitunga_deliverer_panel.dart' show KitungaOrderContacts;
 import '/mobile/components/returns/kitunga_returns.dart' show KitungaReturnSection;
 
 /// Remise sécurisée et reçu, côté application :
@@ -209,15 +210,26 @@ class KitungaDeliveryExtras extends StatelessWidget {
     final showCode =
         KitungaDeliveryCodeCard.showsFor(order, currentUserReference);
     final showReceipt = KitungaReceiptButton.showsFor(order);
-    if (!showCode && !showReceipt) return const SizedBox.shrink();
+    // Appeler / WhatsApp : client, commerce et livreur entre eux.
+    final contacts = KitungaOrderContacts.showsFor(order)
+        ? KitungaOrderContacts(order: order)
+        : null;
+    if (!showCode && !showReceipt) return contacts ?? const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 12.0),
       child: showCode
-          ? KitungaDeliveryCodeCard(order: order)
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                KitungaDeliveryCodeCard(order: order),
+                if (contacts != null) contacts,
+              ],
+            )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 KitungaReceiptButton(order: order),
+                if (contacts != null) contacts,
                 // Boutiques et magasins : retour ou échange (7 jours).
                 KitungaReturnSection(order: order),
               ],
