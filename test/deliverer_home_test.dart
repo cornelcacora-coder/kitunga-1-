@@ -149,6 +149,22 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('bouton menu : ouvre le menu latéral', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+            drawer: Drawer(child: Text('MENU KITUNGA')),
+            body: KitungaDelivererHome())));
+    state.add({'delivery_available': true, 'delivery_state': 'on'});
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('deliverer-menu')));
+    await tester.pumpAndSettle();
+    expect(find.text('MENU KITUNGA'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('hors service', (tester) async {
     await open(tester);
     state.add({'delivery_available': false});

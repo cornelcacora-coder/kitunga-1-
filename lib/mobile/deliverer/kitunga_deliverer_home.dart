@@ -446,6 +446,19 @@ class _Header extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  // Menu latéral (comme sur l'accueil client).
+                  Material(
+                    color: Colors.white,
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      key: const ValueKey('deliverer-menu'),
+                      tooltip: 'Menu',
+                      onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
+                      icon: const Icon(Icons.menu_rounded,
+                          color: Color(0xFF1E242B)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                   Stack(
                     children: [
                       CircleAvatar(

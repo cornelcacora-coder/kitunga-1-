@@ -1,3 +1,9 @@
+import '/mobile/components/finance/kitunga_earnings.dart'
+    show openKitungaEarnings;
+import '/mobile/components/messaging/kitunga_messages.dart'
+    show KitungaConversationsPage;
+import '/mobile/components/support/kitunga_support.dart'
+    show openKitungaSupport;
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -122,9 +128,35 @@ class AppDrawerWidget extends StatelessWidget {
                       ),
                       if (!isGuest)
                         _DrawerItem(
-                          icon: Icons.receipt_long_outlined,
-                          label: 'Mes commandes',
+                          icon: role == 'Deliver'
+                              ? Icons.two_wheeler_rounded
+                              : Icons.receipt_long_outlined,
+                          label: role == 'Deliver'
+                              ? 'Mes courses'
+                              : 'Mes commandes',
                           onTap: () => open(OrderWidget.routeName),
+                        ),
+                      // Livreur et commerce : gains / revenus.
+                      if (role == 'Deliver' || role == 'Seller')
+                        _DrawerItem(
+                          icon: Icons.account_balance_wallet_outlined,
+                          label: role == 'Deliver' ? 'Mes gains' : 'Mes revenus',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            openKitungaEarnings(context,
+                                seller: role == 'Seller');
+                          },
+                        ),
+                      if (!isGuest)
+                        _DrawerItem(
+                          icon: Icons.forum_outlined,
+                          label: 'Messages',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const KitungaConversationsPage(
+                                    showAppBar: true)));
+                          },
                         ),
                       if (role == 'User')
                         _DrawerItem(
@@ -132,6 +164,8 @@ class AppDrawerWidget extends StatelessWidget {
                           label: 'Mon panier',
                           onTap: () => open(CartLastWidget.routeName),
                         ),
+                      // Les boutiques ne concernent pas le livreur.
+                      if (role != 'Deliver')
                       _DrawerItem(
                         icon: Icons.storefront_outlined,
                         label: 'Boutiques',
@@ -147,6 +181,15 @@ class AppDrawerWidget extends StatelessWidget {
                           icon: Icons.person_outline_rounded,
                           label: 'Mon profil',
                           onTap: () => open(MyProfileWidget.routeName),
+                        ),
+                      if (!isGuest)
+                        _DrawerItem(
+                          icon: Icons.support_agent_outlined,
+                          label: 'Aide & support',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            openKitungaSupport(context);
+                          },
                         ),
                       _DrawerItem(
                         icon: Icons.settings_outlined,
