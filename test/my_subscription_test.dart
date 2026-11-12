@@ -3,6 +3,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:kitunga/components/payment_method_widget.dart'
+    show airtelAvailableOverride;
 import 'package:kitunga/mobile/main_app/subscription/my_subscription_page.dart';
 
 /// Module « Mon abonnement » : état, formules, paiement MoMo, historique.
@@ -30,6 +32,7 @@ void main() {
     };
   });
   setUp(calls.clear);
+  setUpAll(() => airtelAvailableOverride = () async => true);
 
   Future<void> open(WidgetTester tester) async {
     tester.view.physicalSize = const Size(400, 1000);
@@ -156,5 +159,17 @@ void main() {
     await tester.tap(find.text('Continuer'));
     await tester.pumpAndSettle();
     expect(results, [false, true]);
+  });
+
+  testWidgets('Airtel pas encore activé : grisé', (tester) async {
+    airtelAvailableOverride = () async => false;
+    addTearDown(() => airtelAvailableOverride = () async => true);
+    state = {'required': true, 'active': false, 'plans': plans,
+      'history': []};
+    await open(tester);
+    expect(find.textContaining('Bientôt disponible'), findsOneWidget);
+    await tester.tap(find.textContaining('Airtel Money'));
+    await tester.pumpAndSettle();
+    expect(find.text('Payer 300 F avec MTN MoMo'), findsOneWidget);
   });
 }

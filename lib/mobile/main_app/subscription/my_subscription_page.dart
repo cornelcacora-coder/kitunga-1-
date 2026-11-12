@@ -5,7 +5,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/server_payment.dart';
 import '/backend/subscription.dart' show kSubscriptionPlans;
 import '/components/payment_method_widget.dart'
-    show kPaymentOperators, operatorOfPhone;
+    show kPaymentOperators, kitungaAirtelAvailable, operatorOfPhone;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
@@ -62,8 +62,22 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
   late final _phone = TextEditingController(
       text: widget.phone ?? currentUserDocument?.phoneNumber ?? '');
   late String _plan = widget.initialPlan ?? 'quarterly';
-  // MTN MoMo ou Airtel Money : proposé d'après le numéro du compte.
-  late String _operator = operatorOfPhone(_phone.text) ?? 'MTN';
+  // MTN MoMo par défaut ; Airtel Money grisé tant qu'il n'est pas activé.
+  String _operator = 'MTN';
+  bool _airtelOn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    kitungaAirtelAvailable().then((on) {
+      if (!mounted || !on) return;
+      setState(() {
+        _airtelOn = true;
+        if (operatorOfPhone(_phone.text) == 'Airtel') _operator = 'Airtel';
+      });
+    });
+  }
+
   String get _opLabel => kPaymentOperators[_operator]!.label;
   String get _opShort => _operator == 'Airtel' ? 'Airtel' : 'MTN';
   bool _paid = false;
@@ -307,7 +321,11 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                     for (final e in kPaymentOperators.entries)
                       ButtonSegment(
                         value: e.key,
-                        label: Text(e.value.label),
+                        enabled: e.key != 'Airtel' || _airtelOn,
+                        label: Text(e.key == 'Airtel' && !_airtelOn
+                            ? '${e.value.label}\nBientôt disponible'
+                            : e.value.label,
+                            textAlign: TextAlign.center),
                         icon: ClipOval(
                           child: Image.asset(e.value.logo,
                               width: 22.0, height: 22.0, fit: BoxFit.cover),

@@ -462,6 +462,13 @@ exports.kitungaDeliveryTracking = acquisitionCallable((data, uid) =>
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));
 
+/**
+ * Opérateurs disponibles : Airtel Money s'active tout seul dès que ses clés
+ * sont installées (scripts/airtel_cles.sh), sans nouvelle version de l'app.
+ */
+exports.kitungaPaymentOptions = callable(() => ({
+  mtn: true, airtel: require("./kitunga/airtel").enabled()}));
+
 /** Démarre un paiement MoMo : montant recalculé par le serveur. */
 exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,
