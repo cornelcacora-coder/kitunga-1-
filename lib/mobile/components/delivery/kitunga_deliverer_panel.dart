@@ -7,6 +7,7 @@ import '/backend/order_status.dart';
 import '/backend/server_payment.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/mobile/components/messaging/kitunga_messages.dart' show openOrderChat;
 import '/noc/admin/brazzaville_zones.dart' show kBrazzavilleZones;
 
 /// Livreurs et contacts autour d'une commande :
@@ -469,6 +470,13 @@ class _KitungaOrderContactsState extends State<KitungaOrderContacts> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
+          ),
+          // Messagerie Kitunga (conversation liée à la commande).
+          IconButton(
+            tooltip: 'Message',
+            icon: Icon(Icons.forum_rounded, color: theme.primary),
+            onPressed: () => openOrderChat(
+                context, widget.order.reference.id, '${c['role']}'),
           ),
           IconButton(
             tooltip: 'Appeler',

@@ -32,6 +32,22 @@ Stream<List<OrdersRecord>>? delivererMyOrdersOverride;
 @visibleForTesting
 Stream<List<OrdersRecord>>? delivererOpenOrdersOverride;
 
+/// Mes courses (toutes), en direct.
+Stream<List<OrdersRecord>> delivererMyOrdersStream() =>
+    delivererMyOrdersOverride ??
+    queryOrdersRecord(
+        queryBuilder: (o) => o.where('deliverer_ref', isEqualTo: currentUserUid));
+
+/// Courses prêtes ou en livraison (pour les propositions et la carte).
+Stream<List<OrdersRecord>> delivererOpenOrdersStream() =>
+    delivererOpenOrdersOverride ??
+    queryOrdersRecord(
+        queryBuilder: (o) =>
+            o.where('status', whereIn: OrderStatus.forDeliverers));
+
+/// Commandes simulées (tests) : ni GPS ni carte réseau.
+bool get delivererSimulated => delivererMyOrdersOverride != null;
+
 /// Course proposée en exclusivité à ce livreur (champs écrits par le
 /// serveur : offer_to, offer_expires_at, offer_mission).
 DateTime? offerExpiry(OrdersRecord o) {

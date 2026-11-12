@@ -1,6 +1,10 @@
 import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '/mobile/deliverer/kitunga_deliverer_pages.dart'
+    show KitungaDelivererCourses, KitungaDelivererMap;
+import '/mobile/components/messaging/kitunga_messages.dart'
+    show KitungaConversationsPage;
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -254,21 +258,43 @@ class _NavBarPageState extends State<NavBarPage> {
       stream: _role,
       builder: (context, snapshot) => snapshot.data == 'Commercial'
           ? const SalesHomeWidget()
-          : _buildTabs(context),
+          : _buildTabs(context, deliverer: snapshot.data == 'Deliver'),
     );
   }
 
-  Widget _buildTabs(BuildContext context) {
-    final tabs = {
+  Widget _buildTabs(BuildContext context, {bool deliverer = false}) {
+    // Livreur : Accueil, Mes courses, Carte, Messages, Profil.
+    final items = deliverer
+        ? const [
+            ('Home', 'Accueil', Icons.home_rounded, Icons.home_outlined),
+            ('Order', 'Courses', Icons.two_wheeler_rounded,
+                Icons.two_wheeler_outlined),
+            ('Map', 'Carte', Icons.map_rounded, Icons.map_outlined),
+            ('Messages', 'Messages', Icons.forum_rounded,
+                Icons.forum_outlined),
+            ('Profile', 'Profil', Icons.person_rounded,
+                Icons.person_outline_rounded),
+          ]
+        : const [
+            ('Home', 'Accueil', Icons.home_rounded, Icons.home_outlined),
+            ('Order', 'Commandes', Icons.shopping_bag_rounded,
+                Icons.shopping_bag_outlined),
+            ('Profile', 'Profil', Icons.person_rounded,
+                Icons.person_outline_rounded),
+          ];
+    final tabs = <String, Widget>{
       'Home': HomeWidget(),
-      'Order': OrderWidget(),
+      'Order': deliverer ? const KitungaDelivererCourses() : OrderWidget(),
+      if (deliverer) 'Map': const KitungaDelivererMap(),
+      if (deliverer) 'Messages': const KitungaConversationsPage(),
       'Profile': ProfileWidget(),
     };
-    final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
+    final keys = items.map((i) => i.$1).toList();
+    final currentIndex = keys.indexOf(_currentPageName);
 
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
-      body: _currentPage ?? tabs[_currentPageName],
+      body: _currentPage ?? tabs[_currentPageName] ?? tabs['Home'],
       bottomNavigationBar: Visibility(
         visible: responsiveVisibility(
           context: context,
@@ -290,51 +316,31 @@ class _NavBarPageState extends State<NavBarPage> {
           child: SafeArea(
             top: false,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
+              padding: EdgeInsets.symmetric(
+                  horizontal: deliverer ? 6.0 : 20.0, vertical: 6.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildNavItem(
-                    context: context,
-                    index: 0,
-                    currentIndex: currentIndex,
-                    label: 'Accueil',
-                    activeIcon: Icons.home_rounded,
-                    inactiveIcon: Icons.home_outlined,
-                    onTap: () => safeSetState(() {
-                      _currentPage = null;
-                      _currentPageName = 'Home';
-                    }),
-                  ),
-                  _buildNavItem(
-                    context: context,
-                    index: 1,
-                    currentIndex: currentIndex,
-                    label: 'Commandes',
-                    activeIcon: Icons.shopping_bag_rounded,
-                    inactiveIcon: Icons.shopping_bag_outlined,
-                    onTap: () => safeSetState(() {
-                      _currentPage = null;
-                      _currentPageName = 'Order';
-                    }),
-                  ),
-                  Container(
-                    width: 1.0,
-                    height: 26.0,
-                    color: Color(0xFFE5E7EB),
-                  ),
-                  _buildNavItem(
-                    context: context,
-                    index: 2,
-                    currentIndex: currentIndex,
-                    label: 'Profil',
-                    activeIcon: Icons.person_rounded,
-                    inactiveIcon: Icons.person_outline_rounded,
-                    onTap: () => safeSetState(() {
-                      _currentPage = null;
-                      _currentPageName = 'Profile';
-                    }),
-                  ),
+                  for (var i = 0; i < items.length; i++) ...[
+                    if (!deliverer && items[i].$1 == 'Profile')
+                      Container(
+                        width: 1.0,
+                        height: 26.0,
+                        color: Color(0xFFE5E7EB),
+                      ),
+                    _buildNavItem(
+                      context: context,
+                      index: i,
+                      currentIndex: currentIndex,
+                      label: items[i].$2,
+                      activeIcon: items[i].$3,
+                      inactiveIcon: items[i].$4,
+                      onTap: () => safeSetState(() {
+                        _currentPage = null;
+                        _currentPageName = items[i].$1;
+                      }),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -482,6 +482,21 @@ exports.kitungaAdminDispatchSettings = acquisitionCallable((data, uid) =>
 exports.kitungaOrderMissions = acquisitionCallable((data, uid) =>
   dispatch.orderMissions({db: admin.firestore(), uid, data}));
 
+// ── Messagerie et annonces ───────────────────────────────────────────────
+const chat = require("./kitunga/messaging");
+exports.kitungaOpenOrderChat = acquisitionCallable((data, uid) =>
+  chat.openOrderChat({db: admin.firestore(), uid, data}));
+exports.kitungaSendMessage = acquisitionCallable((data, uid) =>
+  chat.sendMessage({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+exports.kitungaConversationMessages = acquisitionCallable((data, uid) =>
+  chat.conversationMessages({db: admin.firestore(), uid, data}));
+exports.kitungaMyConversations = acquisitionCallable((data, uid) =>
+  chat.myConversations({db: admin.firestore(), uid}));
+exports.kitungaAdminAnnounce = acquisitionCallable((data, uid) =>
+  chat.adminAnnounce({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+
 // ── Suivi en direct de la livraison ──────────────────────────────────────
 const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>
