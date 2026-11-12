@@ -28,6 +28,21 @@ Future<Map<String, dynamic>> _call(String name, Map<String, dynamic> data) =>
         ? delivererBackendOverride!(name, data)
         : kitungaCallFunction(name, data);
 
+/// Appel serveur du livreur (remplaçable dans les tests).
+Future<Map<String, dynamic>> delivererCall(
+        String name, Map<String, dynamic> data) =>
+    _call(name, data);
+
+/// Ouvre le choix des quartiers ; renvoie la liste choisie (null = annulé).
+Future<List<String>?> pickDelivererZones(
+        BuildContext context, List<String> initial) =>
+    showModalBottomSheet<List<String>>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _ZonesSheet(initial: initial),
+    );
+
 const _green = Color(0xFF17A35B);
 const _whatsappGreen = Color(0xFF25D366);
 
