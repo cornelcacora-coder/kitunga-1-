@@ -181,7 +181,7 @@ Toutes les actions sensibles de l'admin et du support sont journalisées
 
 ## 9. Tests
 
-- Serveur (émulateur Firestore) : 254 tests, dont le **scénario complet à
+- Serveur (émulateur Firestore) : 260 tests, dont le **scénario complet à
   cinq acteurs** (`scenario.emulator.test.js` : paiement → vendeur →
   proposition → acceptation → récupération → suivi → messages → incident →
   ticket → arrivée → remise → règlement → supervision → résolution), les
@@ -207,3 +207,41 @@ Toutes les actions sensibles de l'admin et du support sont journalisées
 7. Points d'amélioration : position GPS du client à la commande (destination
    exacte), position du commerce, notation des livreurs par les clients,
    préférences de notification par utilisateur.
+
+---
+
+## 11. Espace livreur professionnel (mise à jour)
+
+**Audit de départ** : navigation, disponibilité, propositions, course en
+cours, suivi, messagerie, support et gains existaient déjà. Il manquait :
+documents et vérification, note des clients, performances, retraits, retard,
+arrivée au commerce, incidents chez le commerce, alerte de sécurité, heure
+d'arrivée estimée, onglets « Proposées » et « Refusées », accusés de lecture.
+
+**Ajouté et testé**
+
+| Fonction | Serveur | Écran |
+|---|---|---|
+| Documents (identité, permis, carte grise, assurance) : dépôt dans un dossier privé, validation ou refus motivé par l'admin, expiration, badge « vérifié » | `kitungaSubmitDocument`, `kitungaMyDocuments`, `kitungaAdminDocuments`, `kitungaAdminReviewDocument` | Mes documents ; bandeau d'état sur l'accueil ; admin › Supervision › Documents |
+| Option « livreurs vérifiés seulement » pour l'attribution (désactivée par défaut) | `Settings/dispatch.require_verified` | admin › Tarif et attribution |
+| Note du client (1 à 5 étoiles, une fois) et moyenne | `kitungaRateDelivery` | carte « Notez votre livreur » ; ★ dans l'en-tête du livreur |
+| Performances : livraisons, taux de réussite (annulations des autres non imputées), acceptation, temps moyen, distance, gains du mois, graphique 8 semaines | `kitungaMyPerformance` | Mes performances |
+| Demande de retrait (plafonnée, une à la fois) ; l'admin verse ou refuse avec motif | `kitungaRequestWithdrawal`, `kitungaMyWithdrawals`, `kitungaAdminWithdrawals`, `kitungaAdminDecideWithdrawal` | Mes gains ; admin › Finances |
+| Gains du mois | `kitungaMyEarnings.month` | Mes gains |
+| Arrivée au commerce (le vendeur est prévenu) | `kitungaArrivedAtShop` | Course en cours |
+| Retard annoncé (client et commerce prévenus) | `kitungaReportDelay` | Course en cours ; suivi client |
+| Incidents : commerce fermé, commande pas prête / incorrecte, produit manquant, panne, accident, GPS, paiement | `kitungaReportDeliveryIssue` | Signaler un problème |
+| Alerte de sécurité (accident, danger, santé) avec position, contact d'urgence, ticket urgent | `kitungaSafetyAlert`, `kitungaSetEmergencyContact` | Sécurité et urgence ; bouton SOS (course, accueil) |
+| Heure d'arrivée estimée | calcul local (distance × 1,3, 22 km/h) | Course en cours ; suivi client |
+| Onglets Proposées, Refusées, recherche | `kitungaMyMissions` | Courses |
+| Accusés de lecture (✓ / ✓✓), recherche de conversations | `kitungaConversationMessages.otherReadAt` | Messages |
+| Rubrique « Mon activité de livreur » | — | Profil, menu ☰ |
+
+**Nouvelles collections** : `DelivererDocuments`, `Withdrawals`,
+`SafetyAlerts`. **Storage** : `documents/{uid}/` privé (déployer les règles de
+stockage : `bash scripts/deployer_regles_stockage.sh`).
+
+**Non réalisable sans service externe** : numéros masqués (fournisseur
+d'appels), retrait automatique MoMo (compte MTN Disbursement approvisionné).
+Le mode hors connexion se limite à l'affichage de l'état réseau et aux
+nouvelles tentatives : aucune action critique n'est validée sans le serveur.

@@ -16,6 +16,8 @@ import '/mobile/components/delivery/kitunga_deliverer_panel.dart'
     show KitungaOrderContacts;
 import '/mobile/components/delivery/kitunga_delivery.dart'
     show kitungaCompleteDelivery, kitungaReportDeliveryIssue;
+import '/mobile/deliverer/kitunga_deliverer_pro.dart'
+    show proCall, sendSafetyAlert;
 import '/noc/admin/brazzaville_zones.dart'
     show kBrazzavilleCenter, kBrazzavilleZones;
 
@@ -52,6 +54,19 @@ const _trackedStatuses = {
 DateTime? _date(dynamic v) => v is String ? DateTime.tryParse(v) : null;
 
 ll.LatLng? _zonePoint(String zone) => kBrazzavilleZones[zone];
+
+/// Minutes estimées entre deux points : route ≈ vol d'oiseau × 1,3, à
+/// 22 km/h de moyenne en ville, + 2 min (stationnement, remise).
+int etaMinutes(ll.LatLng a, ll.LatLng b) {
+  final km = const ll.Distance().as(ll.LengthUnit.Meter, a, b) / 1000 * 1.3;
+  return (km / 22 * 60).ceil() + 2;
+}
+
+String _clockIn(int minutes) {
+  final t = DateTime.now().add(Duration(minutes: minutes));
+  return '${t.hour.toString().padLeft(2, '0')}:'
+      '${t.minute.toString().padLeft(2, '0')}';
+}
 
 String _ago(DateTime? at) {
   if (at == null) return '';
@@ -397,6 +412,25 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
               style:
                   GoogleFonts.inter(fontSize: 12, color: theme.secondaryText),
             ),
+            // Heure d'arrivée estimée (commande récupérée, position connue).
+            if (rider != null && dest != null && t['pickedUpAt'] != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                    'Arrivée estimée vers '
+                    '${_clockIn(etaMinutes(rider, dest))} '
+                    '(≈ ${etaMinutes(rider, dest)} min)',
+                    key: const ValueKey('client-eta'),
+                    style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w800,
+                        color: theme.primaryText)),
+              ),
+            if (t['delay'] is Map)
+              Text(
+                  'Retard annoncé : ${(t['delay'] as Map)['minutes']} min'
+                  '${'${(t['delay'] as Map)['reason'] ?? ''}'.isEmpty ? '' : ' (${(t['delay'] as Map)['reason']})'}',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.5, color: _red, fontWeight: FontWeight.w600)),
           ],
           if (d != null) ...[
             const SizedBox(height: 12),
@@ -539,6 +573,69 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
 
   Future<void> _pickedUp() => _step('picked_up');
 
+  /// Arrivée au commerce (le vendeur est prévenu).
+  Future<void> _atShop() async {
+    setState(() => _busy = true);
+    try {
+      await proCall('kitungaArrivedAtShop', {'orderId': widget.orderRef.id});
+      _snack('Le commerce est prévenu de votre arrivée.');
+      await _load();
+    } on ServerPaymentException catch (e) {
+      _snack(e.message);
+    } catch (_) {
+      _snack('Impossible pour le moment. Réessayez.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Retard annoncé au client et au commerce.
+  Future<void> _delay() async {
+    final minutes = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      builder: (c) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Retard estimé',
+                  style: GoogleFonts.interTight(
+                      fontSize: 18, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 6),
+              const Text('Le client et le commerce seront prévenus.'),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: [
+                  for (final m in const [10, 20, 30, 45, 60])
+                    ActionChip(
+                      key: ValueKey('delay-$m'),
+                      label: Text('$m min'),
+                      onPressed: () => Navigator.pop(c, m),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (minutes == null) return;
+    try {
+      await proCall('kitungaReportDelay',
+          {'orderId': widget.orderRef.id, 'minutes': minutes});
+      _snack('Retard annoncé au client et au commerce.');
+      await _load();
+    } on ServerPaymentException catch (e) {
+      _snack(e.message);
+    } catch (_) {
+      _snack('Impossible pour le moment. Réessayez.');
+    }
+  }
+
   /// Étape de la course : 'picked_up' (récupérée) ou 'arrived' (arrivé).
   Future<void> _step(String step) async {
     setState(() => _busy = true);
@@ -583,6 +680,16 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
         elevation: 0,
         title: Text('Course en cours',
             style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+        actions: [
+          // Urgence : prévient l'équipe avec la position.
+          IconButton(
+            key: const ValueKey('mission-sos'),
+            tooltip: 'Urgence',
+            onPressed: () =>
+                sendSafetyAlert(context, orderId: widget.orderRef.id),
+            icon: const Icon(Icons.sos_rounded, color: _red),
+          ),
+        ],
       ),
       body: StreamBuilder<OrdersRecord>(
         stream: widget.stream ?? OrdersRecord.getDocument(widget.orderRef),
@@ -671,6 +778,27 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                         ].join(' · '),
                         style: GoogleFonts.inter(
                             fontSize: 13, color: theme.secondaryText)),
+                    // Temps estimé depuis ma position (commerce, puis client).
+                    Builder(builder: (context) {
+                      final target = !picked &&
+                              _zonePoint('${_t?['shopZone'] ?? ''}') != null
+                          ? _zonePoint('${_t?['shopZone']}')
+                          : _zonePoint(o.deliveryZone);
+                      if (_me == null || target == null) {
+                        return const SizedBox.shrink();
+                      }
+                      final m = etaMinutes(_me!, target);
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                            '≈ $m min · arrivée vers ${_clockIn(m)}',
+                            key: const ValueKey('mission-eta'),
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: _green)),
+                      );
+                    }),
                     const SizedBox(height: 10),
                     OutlinedButton.icon(
                       onPressed: () => _route(o),
@@ -693,6 +821,21 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                       steps: trackingSteps(t, forDeliverer: true)),
                 ),
               const SizedBox(height: 16),
+              // Arrivée au commerce : le vendeur est prévenu.
+              if (onTheWay && !picked && _t?['atShopAt'] == null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('mission-at-shop'),
+                    style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16))),
+                    onPressed: _busy ? null : _atShop,
+                    icon: const Icon(Icons.storefront_rounded),
+                    label: const Text('Je suis arrivé au commerce'),
+                  ),
+                ),
               if (onTheWay && !picked)
                 FilledButton.icon(
                   key: const ValueKey('mission-picked-up'),
@@ -737,6 +880,13 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                   label: Text('Remettre au client (code + photo)',
                       style: GoogleFonts.inter(
                           fontWeight: FontWeight.w800, fontSize: 16)),
+                ),
+              if (onTheWay)
+                TextButton.icon(
+                  key: const ValueKey('mission-delay'),
+                  onPressed: _delay,
+                  icon: const Icon(Icons.schedule_rounded),
+                  label: const Text('Je suis en retard'),
                 ),
               if (onTheWay)
                 TextButton.icon(

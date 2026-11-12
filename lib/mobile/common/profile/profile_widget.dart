@@ -1,3 +1,4 @@
+import '/mobile/deliverer/kitunga_deliverer_pro.dart' show DelivererActivitySection;
 import '/mobile/components/messaging/kitunga_messages.dart' show KitungaConversationsPage;
 import '/mobile/components/support/kitunga_support.dart' show openKitungaSupport;
 import '/mobile/main_app/subscription/my_subscription_page.dart';
@@ -429,6 +430,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   ),
                 ),
               ]),
+              // Livreur : documents, performances, gains, sécurité.
+              if (valueOrDefault(currentUserDocument?.role, '') == 'Deliver')
+                const DelivererActivitySection(),
               _group(theme, 'Aide et informations légales', [
                 _item(theme, Icons.support_agent_rounded, 'Centre d\'aide',
                     _help),

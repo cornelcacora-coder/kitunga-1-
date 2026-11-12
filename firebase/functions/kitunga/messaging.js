@@ -157,13 +157,18 @@ async function conversationMessages({db, uid, data}) {
   const {c, participant} = await access(db, uid, data.conversationId);
   const snap = await c.ref.collection("messages").orderBy("at", "asc")
       .limitToLast(200).get();
-  if (participant && ((c.get("unread") || {})[uid] || 0) > 0) {
-    await c.ref.update({[`unread.${uid}`]: 0});
+  // Lecture : non-lus remis à zéro et heure de lecture (accusé « Lu »).
+  const direct = c.get("kind") === "direct";
+  if (participant) {
+    await c.ref.update({[`unread.${uid}`]: 0, [`read_at.${uid}`]: ts()});
+  } else if (direct) {
+    await c.ref.update({unread_staff: 0, staff_read_at: ts()});
   }
-  if (!participant && c.get("kind") === "direct" &&
-      (c.get("unread_staff") || 0) > 0) {
-    await c.ref.update({unread_staff: 0});
-  }
+  const readAt = c.get("read_at") || {};
+  const others = (c.get("participants") || []).filter((p) => p !== uid);
+  const seen = [...others.map((p) => toDate(readAt[p])),
+    ...(direct && participant ? [toDate(c.get("staff_read_at"))] : [])]
+      .filter(Boolean).sort((x, y) => y - x)[0] || null;
   let open = true;
   if (c.get("kind") === "order") {
     const o = await db.doc(`Orders/${c.get("order_id")}`).get();
@@ -174,6 +179,7 @@ async function conversationMessages({db, uid, data}) {
   return {
     title: c.get("title") || "",
     open,
+    otherReadAt: seen ? seen.toISOString() : null,
     messages: snap.docs.map((m) => ({id: m.id, mine: m.get("from_uid") === uid,
       fromRole: m.get("from_role") || "", fromName: m.get("from_name") || "",
       text: m.get("text") || "", at: iso(m.get("at"))})),

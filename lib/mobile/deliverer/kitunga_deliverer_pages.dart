@@ -19,6 +19,7 @@ import '/mobile/components/delivery/kitunga_live_tracking.dart';
 import '/noc/admin/brazzaville_zones.dart'
     show kBrazzavilleCenter, kBrazzavilleZones;
 import 'kitunga_deliverer_home.dart';
+import 'kitunga_deliverer_pro.dart' show proCall;
 
 /// Onglets « Mes courses » et « Carte » de l'espace livreur.
 
@@ -61,12 +62,27 @@ class KitungaDelivererCourses extends StatefulWidget {
 
 class _KitungaDelivererCoursesState extends State<KitungaDelivererCourses> {
   late final Stream<List<OrdersRecord>> _stream = _myOrders();
+  late final Stream<List<OrdersRecord>> _open = _openOrders();
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  bool _matches(OrdersRecord o) {
+    final q = _search.text.trim().toLowerCase();
+    if (q.isEmpty) return true;
+    return [o.orderUniqueReference, o.deliveryZone, o.deliveryLocation]
+        .any((v) => v.toLowerCase().contains(q));
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     return DefaultTabController(
-      length: 3,
+      length: 5,
       child: Scaffold(
         backgroundColor: theme.primaryBackground,
         appBar: AppBar(
@@ -77,13 +93,17 @@ class _KitungaDelivererCoursesState extends State<KitungaDelivererCourses> {
           title: Text('Mes courses',
               style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
           bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             labelColor: _red,
             indicatorColor: _red,
             unselectedLabelColor: theme.secondaryText,
             labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w700),
             tabs: const [
               Tab(text: 'En cours'),
+              Tab(text: 'Proposées'),
               Tab(text: 'Terminées'),
+              Tab(text: 'Refusées'),
               Tab(text: 'Incidents'),
             ],
           ),
@@ -107,7 +127,8 @@ class _KitungaDelivererCoursesState extends State<KitungaDelivererCourses> {
             final running =
                 all.where((o) => o.status == OrderStatus.delivering).toList();
             final done = all
-                .where((o) => OrderStatus.finished.contains(o.status))
+                .where((o) =>
+                    OrderStatus.finished.contains(o.status) && _matches(o))
                 .toList();
             final incidents = all.where(_isIncident).toList();
             final total = done
@@ -119,7 +140,50 @@ class _KitungaDelivererCoursesState extends State<KitungaDelivererCourses> {
                     orders: running,
                     empty: 'Aucune course en cours. Acceptez une course '
                         'depuis l\'accueil.'),
-                _CourseList(
+                // Propositions en cours pour moi (compte à rebours).
+                StreamBuilder<List<OrdersRecord>>(
+                  stream: _open,
+                  builder: (context, open) {
+                    final now = DateTime.now();
+                    final mine = (open.data ?? const <OrdersRecord>[])
+                        .where((o) => offeredToMe(o, currentUserUid, now))
+                        .toList();
+                    if (mine.isEmpty) {
+                      return const _Message(
+                          icon: Icons.notifications_none_rounded,
+                          text: 'Aucune proposition en ce moment. Restez en '
+                              'service : vous serez prévenu.');
+                    }
+                    return ListView(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      children: [
+                        for (final o in mine) KitungaOfferCard(order: o),
+                      ],
+                    );
+                  },
+                ),
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: TextField(
+                        key: const ValueKey('courses-search'),
+                        controller: _search,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          hintText: 'N° de commande, quartier…',
+                          filled: true,
+                          fillColor: theme.secondaryBackground,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _CourseList(
                     orders: done,
                     header: done.isEmpty
                         ? null
@@ -127,6 +191,10 @@ class _KitungaDelivererCoursesState extends State<KitungaDelivererCourses> {
                             'livrées · ${NumberFormat.decimalPattern('fr').format(total)} F '
                             'de frais de livraison',
                     empty: 'Pas encore de course terminée.'),
+                    ),
+                  ],
+                ),
+                const _DeclinedList(),
                 _CourseList(
                     orders: incidents,
                     empty: 'Aucun incident. Tant mieux !'),
@@ -503,4 +571,64 @@ class _Pin extends StatelessWidget {
         ),
         child: Icon(icon, color: Colors.white, size: size * 0.55),
       );
+}
+
+
+/// Propositions refusées ou laissées sans réponse.
+class _DeclinedList extends StatelessWidget {
+  const _DeclinedList();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return FutureBuilder<Map<String, dynamic>>(
+      future: proCall('kitungaMyMissions', const {}),
+      builder: (context, snap) {
+        if (snap.hasError) {
+          return const _Message(
+              icon: Icons.wifi_off_rounded, text: 'Connexion impossible.');
+        }
+        if (!snap.hasData) {
+          return const Center(child: CircularProgressIndicator(color: _red));
+        }
+        final list = (snap.data!['missions'] as List? ?? const [])
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .where((m) => ['declined', 'expired'].contains(m['status']))
+            .toList();
+        if (list.isEmpty) {
+          return const _Message(
+              icon: Icons.thumb_up_alt_outlined,
+              text: 'Aucune proposition refusée.');
+        }
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          children: [
+            for (final m in list)
+              Card(
+                elevation: 0,
+                color: theme.secondaryBackground,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: theme.alternate)),
+                child: ListTile(
+                  leading: Icon(
+                      m['status'] == 'declined'
+                          ? Icons.do_not_disturb_alt_rounded
+                          : Icons.timer_off_rounded,
+                      color: theme.secondaryText),
+                  title: Text('N° ${m['reference'] ?? ''} · ${m['zone'] ?? ''}',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                      m['status'] == 'declined' ? 'Refusée' : 'Sans réponse',
+                      style: GoogleFonts.inter(fontSize: 12.5)),
+                  trailing: Text(
+                      '${NumberFormat.decimalPattern('fr').format(m['fees'] ?? 0)} F',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
 }

@@ -68,7 +68,11 @@ class DelivererState {
       {required this.available,
       required this.zones,
       String? state,
-      this.vehicle = 'moto'})
+      this.vehicle = 'moto',
+      this.rating,
+      this.ratingCount = 0,
+      this.suspended = false,
+      this.verification = 'missing'})
       : state = state ?? (available ? 'on' : 'off');
 
   factory DelivererState.of(Map<String, dynamic> data) => DelivererState(
@@ -79,6 +83,16 @@ class DelivererState {
         vehicle: const ['moto', 'voiture'].contains(data['vehicle'])
             ? data['vehicle'] as String
             : 'moto',
+        rating: (data['rating_count'] as num? ?? 0) > 0
+            ? ((data['rating_sum'] as num? ?? 0) /
+                    (data['rating_count'] as num))
+                .toDouble()
+            : null,
+        ratingCount: (data['rating_count'] as num? ?? 0).toInt(),
+        suspended: data['account_status'] == 'suspended',
+        verification: data['verified'] == true
+            ? 'verified'
+            : '${data['verification'] ?? 'missing'}',
         zones: ((data['delivery_zones'] as List?) ?? const [])
             .map((z) => '$z')
             .toList(),
@@ -91,6 +105,16 @@ class DelivererState {
 
   /// Véhicule : 'moto' ou 'voiture' (capacité de courses).
   final String vehicle;
+
+  /// Note moyenne des clients (null : pas encore d'avis).
+  final double? rating;
+  final int ratingCount;
+
+  /// Compte suspendu par l'admin.
+  final bool suspended;
+
+  /// verified, pending, missing, rejected ou expired (documents).
+  final String verification;
   final List<String> zones;
 }
 

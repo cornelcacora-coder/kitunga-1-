@@ -124,6 +124,7 @@ class KitungaConversationsPage extends StatefulWidget {
 
 class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
   List<Map<String, dynamic>>? _items;
+  final _search = TextEditingController();
   String? _error;
   Timer? _timer;
 
@@ -139,6 +140,7 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _search.dispose();
     super.dispose();
   }
 
@@ -161,7 +163,13 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final items = _items;
+    final q = _search.text.trim().toLowerCase();
+    final items = _items
+        ?.where((c) =>
+            q.isEmpty ||
+            [c['title'], c['lastMessage'], kChatRoleLabels[c['withRole']]]
+                .any((v) => '${v ?? ''}'.toLowerCase().contains(q)))
+        .toList();
     final body = RefreshIndicator(
       color: _red,
       onRefresh: _load,
@@ -178,6 +186,25 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
                       color: theme.primaryText)),
+            ),
+          if ((_items ?? const []).length > 3)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: TextField(
+                key: const ValueKey('messages-search'),
+                controller: _search,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  isDense: true,
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  hintText: 'Rechercher une conversation…',
+                  filled: true,
+                  fillColor: theme.secondaryBackground,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none),
+                ),
+              ),
             ),
           if (_error != null)
             Padding(
@@ -353,6 +380,7 @@ class _KitungaChatPageState extends State<KitungaChatPage> {
   final _scroll = ScrollController();
   List<Map<String, dynamic>>? _messages;
   bool _open = true;
+  DateTime? _otherReadAt;
   bool _sending = false;
   bool _offline = false;
   Timer? _timer;
@@ -383,6 +411,7 @@ class _KitungaChatPageState extends State<KitungaChatPage> {
       setState(() {
         _messages = _list(r['messages']);
         _open = r['open'] != false;
+        _otherReadAt = DateTime.tryParse('${r['otherReadAt'] ?? ''}');
         _offline = false;
       });
       if ((_messages?.length ?? 0) != before) _toBottom();
@@ -463,7 +492,8 @@ class _KitungaChatPageState extends State<KitungaChatPage> {
                         controller: _scroll,
                         padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
                         itemCount: messages.length,
-                        itemBuilder: (_, i) => _Bubble(m: messages[i]),
+                        itemBuilder: (_, i) => _Bubble(
+                            m: messages[i], otherReadAt: _otherReadAt),
                       ),
           ),
           SafeArea(
@@ -526,9 +556,12 @@ class _KitungaChatPageState extends State<KitungaChatPage> {
 }
 
 class _Bubble extends StatelessWidget {
-  const _Bubble({required this.m});
+  const _Bubble({required this.m, this.otherReadAt});
 
   final Map<String, dynamic> m;
+
+  /// Heure à laquelle l'autre a lu la conversation (accusé « Lu »).
+  final DateTime? otherReadAt;
 
   @override
   Widget build(BuildContext context) {
@@ -572,15 +605,36 @@ class _Bubble extends StatelessWidget {
                     fontSize: 14.5,
                     color: mine ? Colors.white : theme.primaryText)),
             const SizedBox(height: 2),
-            Text(_time(m['at'] as String?),
-                style: GoogleFonts.inter(
-                    fontSize: 10.5,
-                    color: mine
-                        ? Colors.white.withValues(alpha: 0.8)
-                        : theme.secondaryText)),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_time(m['at'] as String?),
+                    style: GoogleFonts.inter(
+                        fontSize: 10.5,
+                        color: mine
+                            ? Colors.white.withValues(alpha: 0.8)
+                            : theme.secondaryText)),
+                // ✓ envoyé, ✓✓ lu par l'autre.
+                if (mine) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                      _read ? Icons.done_all_rounded : Icons.done_rounded,
+                      key: ValueKey(_read ? 'msg-read' : 'msg-sent'),
+                      size: 14,
+                      color: _read
+                          ? const Color(0xFF9EF5C4)
+                          : Colors.white.withValues(alpha: 0.8)),
+                ],
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  bool get _read {
+    final at = DateTime.tryParse('${m['at'] ?? ''}');
+    return otherReadAt != null && at != null && !otherReadAt!.isBefore(at);
   }
 }

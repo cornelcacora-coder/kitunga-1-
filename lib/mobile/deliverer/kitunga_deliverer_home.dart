@@ -19,6 +19,8 @@ import '/mobile/components/delivery/kitunga_live_tracking.dart';
 import '/mobile/components/finance/kitunga_earnings.dart'
     show kitungaMyEarnings, openKitungaEarnings;
 import '/mobile/components/kitunga_contact.dart' show kCompanyPhones;
+import 'kitunga_deliverer_pro.dart'
+    show DelivererDocumentsPage, DelivererSafetyPage, kVerification;
 import '/mobile/components/support/kitunga_support.dart'
     show openKitungaSupport;
 
@@ -289,7 +291,28 @@ class _DelivererHomeBody extends StatelessWidget {
               text: 'Connexion perdue. Les informations affichées peuvent '
                   'ne pas être à jour.',
             ),
-          for (final o in forMe) _OfferCard(order: o),
+          // Compte suspendu ou documents à régler : action proposée.
+          if (state.suspended)
+            _AccountBanner(
+              icon: Icons.block_rounded,
+              title: 'Compte suspendu',
+              text: 'Vous ne recevez plus de courses. Contactez le support '
+                  'Kitunga pour en connaître la raison.',
+              action: 'Contacter le support',
+              onTap: () => openKitungaSupport(context),
+            )
+          else if (state.verification != 'verified')
+            _AccountBanner(
+              icon: Icons.badge_outlined,
+              title: kVerification[state.verification]?.$1 ??
+                  'Documents à compléter',
+              text: kVerification[state.verification]?.$3 ??
+                  'Déposez vos documents pour être vérifié.',
+              action: 'Mes documents',
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => const DelivererDocumentsPage())),
+            ),
+          for (final o in forMe) KitungaOfferCard(order: o),
           if (active.isNotEmpty) KitungaActiveDeliveryBanner(orders: active),
           _AvailabilityStrip(state: state),
           _SectionTitle(
@@ -513,9 +536,13 @@ class _Header extends StatelessWidget {
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                  verified
-                                      ? 'Livreur vérifié'
-                                      : 'Vérification en attente',
+                                  [
+                                    verified
+                                        ? 'Livreur vérifié'
+                                        : 'Vérification en attente',
+                                    if (state.rating != null)
+                                      '★ ${state.rating!.toStringAsFixed(1)} (${state.ratingCount})',
+                                  ].join('  ·  '),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.inter(
@@ -757,16 +784,16 @@ class _MoneyCard extends StatelessWidget {
 // ── Course proposée ──────────────────────────────────────────────────────
 
 /// Course proposée en exclusivité : compte à rebours, Accepter / Refuser.
-class _OfferCard extends StatefulWidget {
-  const _OfferCard({required this.order});
+class KitungaOfferCard extends StatefulWidget {
+  const KitungaOfferCard({required this.order});
 
   final OrdersRecord order;
 
   @override
-  State<_OfferCard> createState() => _OfferCardState();
+  State<KitungaOfferCard> createState() => _KitungaOfferCardState();
 }
 
-class _OfferCardState extends State<_OfferCard> {
+class _KitungaOfferCardState extends State<KitungaOfferCard> {
   bool _busy = false;
 
   Future<void> _answer(bool accept) async {
@@ -1293,6 +1320,13 @@ class _HelpCard extends StatelessWidget {
             ),
           ),
           IconButton(
+            key: const ValueKey('deliverer-sos'),
+            tooltip: 'Urgence',
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const DelivererSafetyPage())),
+            icon: const Icon(Icons.sos_rounded, color: _red),
+          ),
+          IconButton(
             key: const ValueKey('deliverer-support'),
             tooltip: 'Écrire au support',
             onPressed: () => openKitungaSupport(context),
@@ -1307,6 +1341,69 @@ class _HelpCard extends StatelessWidget {
             tooltip: 'WhatsApp',
             onPressed: () => launchURL('https://wa.me/242$n'),
             icon: const Icon(Icons.chat_rounded, color: Color(0xFF25D366)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+/// Bandeau d'état du compte (suspendu, documents).
+class _AccountBanner extends StatelessWidget {
+  const _AccountBanner({
+    required this.icon,
+    required this.title,
+    required this.text,
+    required this.action,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String text;
+  final String action;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return Container(
+      key: const ValueKey('account-banner'),
+      margin: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 8),
+      decoration: BoxDecoration(
+        color: _orange.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _orange.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: _orange),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w800,
+                            color: theme.primaryText)),
+                    Text(text,
+                        style: GoogleFonts.inter(
+                            fontSize: 12.5, color: theme.secondaryText)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(onPressed: onTap, child: Text(action)),
           ),
         ],
       ),

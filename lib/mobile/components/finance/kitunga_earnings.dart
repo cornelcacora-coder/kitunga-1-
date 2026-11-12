@@ -140,42 +140,46 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 2.6,
                   children: [
                     for (final (label, key) in const [
                       ('Aujourd\'hui', 'today'),
                       ('7 jours', 'week'),
+                      ('Ce mois', 'month'),
                       ('Depuis le début', 'total'),
-                    ]) ...[
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: theme.secondaryBackground,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: theme.alternate),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(label,
-                                  style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: theme.secondaryText)),
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(fcfaOf(d[key] as num? ?? 0),
-                                    style: GoogleFonts.interTight(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                        color: theme.primaryText)),
-                              ),
-                            ],
-                          ),
+                    ])
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: theme.secondaryBackground,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: theme.alternate),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(label,
+                                style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: theme.secondaryText)),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(fcfaOf(d[key] as num? ?? 0),
+                                  style: GoogleFonts.interTight(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: theme.primaryText)),
+                            ),
+                          ],
                         ),
                       ),
-                      if (key != 'total') const SizedBox(width: 8),
-                    ],
                   ],
                 ),
                 Padding(
@@ -184,6 +188,10 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
                       style: GoogleFonts.inter(
                           fontSize: 12.5, color: theme.secondaryText)),
                 ),
+                const SizedBox(height: 14),
+                // Retrait : demande validée par Kitunga (versement).
+                _WithdrawalBox(
+                    balance: d['balance'] as num? ?? 0, onDone: _reload),
                 const SizedBox(height: 18),
                 Text('Détail',
                     style: GoogleFonts.interTight(
@@ -256,6 +264,181 @@ class _EntryTile extends StatelessWidget {
                 fontWeight: FontWeight.w800,
                 color: amount >= 0 ? _green : _red)),
       ),
+    );
+  }
+}
+
+
+Future<Map<String, dynamic>> _fin(String name, Map<String, dynamic> data) =>
+    earningsBackendOverride != null
+        ? earningsBackendOverride!(name, data)
+        : kitungaCallFunction(name, data);
+
+const _withdrawalStatus = {
+  'pending': ('En attente de versement', Color(0xFFE08A00)),
+  'paid': ('Versé', _green),
+  'rejected': ('Refusé', _red),
+};
+
+/// Demande de retrait et suivi des demandes.
+class _WithdrawalBox extends StatefulWidget {
+  const _WithdrawalBox({required this.balance, required this.onDone});
+
+  final num balance;
+  final Future<void> Function() onDone;
+
+  @override
+  State<_WithdrawalBox> createState() => _WithdrawalBoxState();
+}
+
+class _WithdrawalBoxState extends State<_WithdrawalBox> {
+  late Future<Map<String, dynamic>> _list = _fin('kitungaMyWithdrawals', {});
+
+  Future<void> _request() async {
+    final amount =
+        TextEditingController(text: '${widget.balance.round()}');
+    final phone = TextEditingController();
+    var method = 'MoMo';
+    final go = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (c) => StatefulBuilder(
+        builder: (c, set) => Padding(
+          padding: EdgeInsets.fromLTRB(
+              20, 0, 20, MediaQuery.viewInsetsOf(c).bottom + 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Demander un retrait',
+                  style: GoogleFonts.interTight(
+                      fontSize: 18, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 4),
+              Text('Solde disponible : ${fcfaOf(widget.balance)}. '
+                  'Kitunga verse puis confirme dans l\'application.',
+                  style: GoogleFonts.inter(fontSize: 13)),
+              const SizedBox(height: 12),
+              TextField(
+                key: const ValueKey('withdraw-amount'),
+                controller: amount,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                    labelText: 'Montant (F)', helperText: 'Minimum 500 F'),
+              ),
+              const SizedBox(height: 10),
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'MoMo', label: Text('MTN MoMo')),
+                  ButtonSegment(value: 'Airtel', label: Text('Airtel Money')),
+                ],
+                selected: {method},
+                onSelectionChanged: (v) => set(() => method = v.first),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: phone,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                    labelText: 'Numéro qui reçoit',
+                    helperText: 'Vide : le numéro de votre compte'),
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                key: const ValueKey('withdraw-send'),
+                style: FilledButton.styleFrom(
+                    backgroundColor: _red,
+                    minimumSize: const Size.fromHeight(48)),
+                onPressed: () => Navigator.pop(c, true),
+                child: const Text('Envoyer la demande'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (go != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await _fin('kitungaRequestWithdrawal', {
+        'amount': int.tryParse(amount.text.trim()) ?? 0,
+        'method': method,
+        'phone': phone.text.trim(),
+      });
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Demande envoyée : Kitunga vous préviendra.')));
+      setState(() {
+        _list = _fin('kitungaMyWithdrawals', {});
+      });
+      await widget.onDone();
+    } on ServerPaymentException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Connexion impossible. Réessayez.')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _list,
+      builder: (context, snap) {
+        final list = (snap.data?['withdrawals'] as List? ?? const [])
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+        final pending = list.any((w) => w['status'] == 'pending');
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FilledButton.icon(
+              key: const ValueKey('withdraw-open'),
+              style: FilledButton.styleFrom(
+                  backgroundColor: _green,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14))),
+              onPressed: pending || widget.balance < 500 ? null : _request,
+              icon: const Icon(Icons.account_balance_wallet_rounded),
+              label: Text(pending
+                  ? 'Retrait en cours de traitement'
+                  : widget.balance < 500
+                      ? 'Retrait possible dès 500 F'
+                      : 'Demander un retrait'),
+            ),
+            for (final w in list.take(5))
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.swap_vert_rounded,
+                        color: theme.secondaryText, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                          'Retrait ${fcfaOf(w['amount'] as num? ?? 0)} · '
+                          '${w['method']}'
+                          '${'${w['reason'] ?? ''}'.isEmpty ? '' : ' · ${w['reason']}'}',
+                          style: GoogleFonts.inter(
+                              fontSize: 13, color: theme.primaryText)),
+                    ),
+                    Text(
+                        (_withdrawalStatus[w['status']] ??
+                                ('${w['status']}', theme.secondaryText))
+                            .$1,
+                        style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: (_withdrawalStatus[w['status']] ??
+                                    ('', theme.secondaryText))
+                                .$2)),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

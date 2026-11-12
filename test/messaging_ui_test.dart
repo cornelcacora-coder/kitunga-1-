@@ -115,16 +115,20 @@ void main() {
       order('b', 'Livrer'),
       order('c', 'Non Reçu'),
     ]);
-    addTearDown(() => delivererMyOrdersOverride = null);
+    delivererOpenOrdersOverride = Stream.value(const []);
+    addTearDown(() {
+      delivererMyOrdersOverride = null;
+      delivererOpenOrdersOverride = null;
+    });
     await tester.pumpWidget(const MaterialApp(home: KitungaDelivererCourses()));
     await tester.pumpAndSettle();
     expect(find.text('En cours'), findsWidgets);
     await tester.tap(find.text('Terminées'));
     await tester.pumpAndSettle();
     expect(find.textContaining('1 livrées'), findsOneWidget);
-    await tester.tap(find.text('Incidents'));
+    await tester.tap(find.text('Proposées'));
     await tester.pumpAndSettle();
-    expect(find.text('Litige'), findsOneWidget);
+    expect(find.textContaining('Aucune proposition'), findsOneWidget);
   });
 
   testWidgets('Carte : courses prêtes de mes quartiers', (tester) async {

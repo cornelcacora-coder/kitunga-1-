@@ -247,6 +247,9 @@ class KitungaDeliveryExtras extends StatelessWidget {
           else if (tracking != null)
             tracking,
           if (contacts != null) contacts,
+          // Le client note son livreur (une fois, après la livraison).
+          if (KitungaRateDeliverer.showsFor(order, currentUserReference))
+            KitungaRateDeliverer(order: order),
           // Boutiques et magasins : retour ou échange (7 jours).
           if (!showCode && showReceipt) KitungaReturnSection(order: order),
           help,
@@ -717,10 +720,21 @@ class _CompleteDeliverySheetState extends State<_CompleteDeliverySheet> {
 
 /// Problèmes de livraison proposés au livreur (mêmes clés que le serveur).
 const kDeliveryIssues = {
+  // Chez le commerce.
+  'shop_absent': 'Commerce fermé ou vendeur absent',
+  'not_ready': 'Commande pas prête',
+  'wrong_order': 'Commande incorrecte',
+  'missing_item': 'Produit manquant',
+  // Chez le client.
   'absent': 'Client injoignable',
   'refused': 'Commande refusée par le client',
   'address': 'Adresse introuvable',
   'damaged': 'Colis abîmé',
+  // Pendant le trajet.
+  'breakdown': 'Véhicule en panne',
+  'accident': 'Accident ou problème de sécurité',
+  'gps': 'Problème de GPS',
+  'payment': 'Problème de paiement',
   'other': 'Autre problème',
 };
 
@@ -815,6 +829,112 @@ class _IssueDialogState extends State<_IssueDialog> {
           child: const Text('Envoyer'),
         ),
       ],
+    );
+  }
+}
+
+
+/// Note du livreur par le client : 1 à 5 étoiles et un mot facultatif.
+class KitungaRateDeliverer extends StatefulWidget {
+  const KitungaRateDeliverer({super.key, required this.order});
+
+  final OrdersRecord order;
+
+  static bool showsFor(OrdersRecord order, DocumentReference? me) =>
+      me != null &&
+      order.userRef == me &&
+      OrderStatus.successful.contains(order.status) &&
+      order.snapshotData['rating'] == null &&
+      (order.delivererRef.isNotEmpty || order.deliverReference != null);
+
+  @override
+  State<KitungaRateDeliverer> createState() => _KitungaRateDelivererState();
+}
+
+class _KitungaRateDelivererState extends State<KitungaRateDeliverer> {
+  int _stars = 0;
+  final _comment = TextEditingController();
+  bool _busy = false;
+  bool _done = false;
+
+  @override
+  void dispose() {
+    _comment.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await _call('kitungaRateDelivery', {
+        'orderId': widget.order.reference.id,
+        'stars': _stars,
+        'comment': _comment.text.trim(),
+      });
+      if (mounted) setState(() => _done = true);
+    } on ServerPaymentException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Connexion impossible. Réessayez.')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return Container(
+      margin: const EdgeInsets.only(top: 12.0),
+      padding: const EdgeInsets.all(14.0),
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: theme.alternate),
+      ),
+      child: _done
+          ? Text('Merci pour votre avis !',
+              style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w700, color: _green))
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Notez votre livreur',
+                    style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w800,
+                        color: theme.primaryText)),
+                Row(
+                  children: [
+                    for (var i = 1; i <= 5; i++)
+                      IconButton(
+                        key: ValueKey('star-$i'),
+                        onPressed: () => setState(() => _stars = i),
+                        icon: Icon(
+                            i <= _stars
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            color: const Color(0xFFFFC21A),
+                            size: 32.0),
+                      ),
+                  ],
+                ),
+                if (_stars > 0) ...[
+                  TextField(
+                    controller: _comment,
+                    maxLength: 300,
+                    decoration: const InputDecoration(
+                        hintText: 'Un mot sur la livraison (facultatif)'),
+                  ),
+                  FilledButton(
+                    key: const ValueKey('rate-send'),
+                    onPressed: _busy ? null : _send,
+                    child: const Text('Envoyer mon avis'),
+                  ),
+                ],
+              ],
+            ),
     );
   }
 }

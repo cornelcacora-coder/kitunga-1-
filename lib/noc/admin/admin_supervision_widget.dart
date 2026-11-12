@@ -1,3 +1,4 @@
+import 'admin_documents_dialog.dart' show showAdminDocuments;
 import '/noc/messages/staff_inbox.dart' show StaffWriteButton;
 import 'package:flutter/material.dart';
 
@@ -209,6 +210,10 @@ class _AdminSupervisionState extends State<AdminSupervisionWidget> {
           title: 'Supervision en direct',
           subtitle: 'Acteurs, commandes, livraisons, incidents, support',
           actions: [
+            OutlinedButton.icon(
+                onPressed: () => showAdminDocuments(context),
+                icon: const Icon(Icons.badge_outlined, size: 18),
+                label: const Text('Documents à vérifier')),
             FilledButton.icon(
                 onPressed: _announce,
                 icon: const Icon(Icons.campaign_rounded, size: 18),
@@ -338,6 +343,11 @@ class _AdminSupervisionState extends State<AdminSupervisionWidget> {
                                   ),
                                 ),
                                 StaffWriteButton(uid: '${dl['uid']}', dense: true),
+                                TextButton(
+                                    onPressed: () => showAdminDocuments(context,
+                                        uid: '${dl['uid']}',
+                                        name: '${dl['name']}'),
+                                    child: const Text('Documents')),
                                 TextButton(
                                     onPressed: () => _history(dl),
                                     child: const Text('Historique')),

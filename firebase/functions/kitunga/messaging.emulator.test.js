@@ -138,3 +138,18 @@ test("conversations d'une commande : lisibles par l'équipe (litige)",
       await assert.rejects(m.orderConversations({db, uid: "client",
         data: {orderId: "o1"}}), {code: "permission-denied"});
     });
+
+test("accusé de lecture : l'autre participant a lu", async () => {
+  const {conversationId: id} = await m.openOrderChat({db, uid: "client",
+    data: {orderId: "o1", with: "livreur"}});
+  await m.sendMessage({db, messaging, uid: "client",
+    data: {conversationId: id, text: "Bonjour"}});
+  let r = await m.conversationMessages({db, uid: "client",
+    data: {conversationId: id}});
+  assert.strictEqual(r.otherReadAt, null);
+  await m.conversationMessages({db, uid: "l1", data: {conversationId: id}});
+  r = await m.conversationMessages({db, uid: "client",
+    data: {conversationId: id}});
+  assert.ok(r.otherReadAt);
+  assert.ok(new Date(r.otherReadAt) >= new Date(r.messages[0].at));
+});

@@ -149,6 +149,8 @@ async function myEarnings({db, uid, now = new Date()}) {
     today: sum(earned.filter((e) => e.at && day(new Date(e.at)) === today)),
     week: sum(earned.filter((e) => e.at &&
       new Date(e.at).getTime() >= weekAgo)),
+    month: sum(earned.filter((e) => e.at &&
+      day(new Date(e.at)).slice(0, 7) === today.slice(0, 7))),
     total: sum(earned),
     paidOut: -sum(list.filter((e) => e.type === "payout")),
     entries: list.slice(0, 100),

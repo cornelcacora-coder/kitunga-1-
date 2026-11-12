@@ -269,6 +269,7 @@ class _DispatchSettingsCard extends StatefulWidget {
 
 class _DispatchSettingsCardState extends State<_DispatchSettingsCard> {
   bool _auto = true;
+  bool _verified = false;
   final _seconds = TextEditingController();
   final _attempts = TextEditingController();
   final _cap = {
@@ -284,6 +285,7 @@ class _DispatchSettingsCardState extends State<_DispatchSettingsCard> {
       if (!mounted) return;
       setState(() {
         _auto = s['auto'] != false;
+        _verified = s['require_verified'] == true;
         _seconds.text = '${s['offer_seconds']}';
         _attempts.text = '${s['max_attempts']}';
         final c = Map<String, dynamic>.from(s['capacity'] as Map);
@@ -308,6 +310,7 @@ class _DispatchSettingsCardState extends State<_DispatchSettingsCard> {
       () => salesCall('kitungaAdminDispatchSettings', {
             'save': {
               'auto': _auto,
+              'require_verified': _verified,
               'offer_seconds': int.tryParse(_seconds.text) ?? 60,
               'max_attempts': int.tryParse(_attempts.text) ?? 3,
               'capacity': {
@@ -352,6 +355,16 @@ class _DispatchSettingsCardState extends State<_DispatchSettingsCard> {
                 'La course est proposée au livreur le mieux placé (le plus '
                 'proche, disponible, couvrant le quartier, le moins chargé). '
                 'Désactivée : ouverte à tous, le premier qui accepte la prend.'),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _verified,
+            onChanged: _loaded ? (v) => setState(() => _verified = v) : null,
+            title: const Text('Livreurs vérifiés seulement'),
+            subtitle: const Text(
+                'Les courses ne sont proposées qu\'aux livreurs dont les '
+                'documents sont validés. À activer quand vos livreurs ont '
+                'déposé leurs documents.'),
           ),
           Wrap(
             spacing: 12,

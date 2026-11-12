@@ -228,6 +228,9 @@ class _AdminFinanceWidgetState extends State<AdminFinanceWidget> {
                           ],
                         ),
                         const SizedBox(height: 16),
+                        // Demandes de retrait des livreurs et commerces.
+                        _Withdrawals(onChanged: _reload),
+                        const SizedBox(height: 16),
                         SalesCard(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -338,6 +341,92 @@ class _AdminFinanceWidgetState extends State<AdminFinanceWidget> {
                           ),
                       ],
                     ),
+        );
+      },
+    );
+  }
+}
+
+
+class _Withdrawals extends StatefulWidget {
+  const _Withdrawals({required this.onChanged});
+
+  final VoidCallback onChanged;
+
+  @override
+  State<_Withdrawals> createState() => _WithdrawalsState();
+}
+
+class _WithdrawalsState extends State<_Withdrawals> {
+  late Future<Map<String, dynamic>> _data =
+      salesCall('kitungaAdminWithdrawals', const {});
+
+  Future<void> _decide(Map<String, dynamic> w, bool approve) async {
+    final answer = await askText(
+        context,
+        approve
+            ? 'Verser ${fcfa(w['amount'] as num)} à ${w['name']}'
+            : 'Refuser la demande de ${w['name']}',
+        label: approve
+            ? 'Référence de la transaction (${w['method']} ${w['phone']})'
+            : 'Motif du refus (le demandeur le verra)',
+        required: !approve ? true : false);
+    if (answer == null && !approve) return;
+    if (!mounted) return;
+    final ok = await runSalesAction(
+        context,
+        () => salesCall('kitungaAdminDecideWithdrawal', {
+              'id': w['id'],
+              'approve': approve,
+              if (approve) 'reference': answer ?? '',
+              if (!approve) 'reason': answer ?? '',
+            }),
+        approve ? 'Versement enregistré.' : 'Demande refusée.');
+    if (ok) {
+      setState(() {
+        _data = salesCall('kitungaAdminWithdrawals', const {});
+      });
+      widget.onChanged();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _data,
+      builder: (context, snap) {
+        final list = listOf(snap.data?['withdrawals']);
+        if (list.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: SalesCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Demandes de retrait (${list.length})',
+                    style: salesTitle()),
+                const SizedBox(height: 8),
+                for (final w in list)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                            '${w['name']} · ${w['role'] == 'Seller' ? 'Commerce' : 'Livreur'} · '
+                            '${fcfa(w['amount'] as num)} par ${w['method']} '
+                            '(${w['phone']}) · ${dateFr(w['createdAt'] as String?, withTime: true)}',
+                            style: salesBody()),
+                      ),
+                      TextButton(
+                          onPressed: () => _decide(w, false),
+                          child: const Text('Refuser')),
+                      FilledButton(
+                          onPressed: () => _decide(w, true),
+                          child: const Text('Versé')),
+                    ],
+                  ),
+              ],
+            ),
+          ),
         );
       },
     );

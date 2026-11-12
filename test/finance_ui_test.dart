@@ -46,6 +46,9 @@ void main() {
   });
 
   testWidgets('Mes gains : solde, versements, règle', (tester) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(const MaterialApp(home: KitungaEarningsPage()));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('earnings-balance')), findsOneWidget);

@@ -1,3 +1,5 @@
+import '/mobile/deliverer/kitunga_deliverer_pro.dart'
+    show DelivererDocumentsPage, DelivererPerformancePage, DelivererSafetyPage;
 import '/mobile/components/finance/kitunga_earnings.dart'
     show openKitungaEarnings;
 import '/mobile/components/messaging/kitunga_messages.dart'
@@ -147,6 +149,37 @@ class AppDrawerWidget extends StatelessWidget {
                                 seller: role == 'Seller');
                           },
                         ),
+                      if (role == 'Deliver') ...[
+                        _DrawerItem(
+                          icon: Icons.badge_outlined,
+                          label: 'Mes documents',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) =>
+                                    const DelivererDocumentsPage()));
+                          },
+                        ),
+                        _DrawerItem(
+                          icon: Icons.insights_rounded,
+                          label: 'Mes performances',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) =>
+                                    const DelivererPerformancePage()));
+                          },
+                        ),
+                        _DrawerItem(
+                          icon: Icons.health_and_safety_outlined,
+                          label: 'Sécurité et urgence',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const DelivererSafetyPage()));
+                          },
+                        ),
+                      ],
                       if (!isGuest)
                         _DrawerItem(
                           icon: Icons.forum_outlined,
