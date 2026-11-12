@@ -102,3 +102,49 @@ test("performances : ventes, panier, préparation, meilleurs produits, stock",
       await assert.rejects(sp.sellerPerformance({db, uid: "client"}),
           {code: "permission-denied"});
     });
+
+test("pause, avis du commerce, signalement d'un avis", async () => {
+  assert.deepStrictEqual(await sp.sellerSetOpen({db, uid: "shop",
+    data: {state: "pause"}}), {state: "pause", open: false});
+  assert.strictEqual((await db.doc("User/shop").get()).get("shop_closed_now"),
+      true);
+  await order.update({status: "Livrer", deliverer_ref: "l1"});
+  await db.doc("User/l1").set({role: "Deliver"});
+  const {rateDelivery} = require("./deliverer_pro");
+  await rateDelivery({db, uid: "client", data: {orderId: "o1", stars: 5,
+    shopStars: 2, shopComment: "Froid"}});
+  const r = await sp.sellerReviews({db, uid: "shop"});
+  assert.strictEqual(r.rating, 2);
+  assert.strictEqual(r.reviews[0].comment, "Froid");
+  await assert.rejects(sp.sellerReportReview({db, messaging: null,
+    uid: "shop", data: {orderId: "o1"}}), {code: "invalid-argument"});
+  await sp.sellerReportReview({db, messaging: null, uid: "shop",
+    data: {orderId: "o1", reason: "Client jamais livré par nous"}});
+  assert.strictEqual((await sp.sellerReviews({db, uid: "shop"}))
+      .reviews[0].reported, true);
+  // L'avis reste : le vendeur ne peut pas le supprimer.
+  assert.ok((await order.get()).get("shop_rating"));
+});
+
+test("stock : entrée, sortie, inventaire, historique ; pas chez un autre",
+    async () => {
+      await db.doc("Product/p1").set({name: "Pain", quantity: 5,
+        seller_ref: db.doc("User/shop")});
+      assert.deepStrictEqual(await sp.sellerAdjustStock({db, uid: "shop",
+        data: {productId: "p1", kind: "in", quantity: 10,
+          reason: "Livraison fournisseur"}}), {before: 5, after: 15});
+      await sp.sellerAdjustStock({db, uid: "shop",
+        data: {productId: "p1", kind: "out", quantity: 3, reason: "Abîmés"}});
+      await sp.sellerAdjustStock({db, uid: "shop",
+        data: {productId: "p1", kind: "count", quantity: 11}});
+      await assert.rejects(sp.sellerAdjustStock({db, uid: "shop",
+        data: {productId: "p1", kind: "out", quantity: 99}}),
+      {code: "failed-precondition"});
+      await assert.rejects(sp.sellerAdjustStock({db, uid: "other",
+        data: {productId: "p1", kind: "in", quantity: 1}}),
+      {code: "not-found"});
+      const m = await sp.sellerStockMovements({db, uid: "shop", data: {}});
+      assert.strictEqual(m.movements.length, 3);
+      assert.strictEqual((await db.doc("Product/p1").get()).get("quantity"),
+          11);
+    });

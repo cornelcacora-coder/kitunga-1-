@@ -214,6 +214,15 @@ async function rateDelivery({db, uid, data}) {
       at: ts()}});
     tx.update(db.doc(`User/${d}`), {rating_sum: inc(stars),
       rating_count: inc(1)});
+    // Note du commerce (facultative), donnée en même temps.
+    const shopStars = Math.round(Number(data.shopStars));
+    if (shopStars >= 1 && shopStars <= 5 && o.get("seller_ref") &&
+        !o.get("shop_rating")) {
+      tx.update(ref, {shop_rating: {stars: shopStars,
+        comment: text(data.shopComment, 300), at: ts()}});
+      tx.update(o.get("seller_ref"), {shop_rating_sum: inc(shopStars),
+        shop_rating_count: inc(1)});
+    }
     return {ok: true};
   });
 }

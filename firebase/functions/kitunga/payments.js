@@ -214,6 +214,16 @@ async function confirmPayment({db, momo, uid, referenceId}) {
         }));
       }
       tx.update(line.productRef, update);
+      // Historique du stock : vente payée.
+      tx.set(db.collection("StockMovements").doc(), {
+        product_id: line.productRef.id,
+        seller_uid: fresh.get("seller_ref").id,
+        product_name: line.product.name || "", kind: "sale",
+        quantity: line.quantity,
+        before: Number(line.product.quantity) || 0,
+        after: (Number(line.product.quantity) || 0) - line.quantity,
+        reason: `Commande ${fresh.get("order_unique_reference")}`,
+        by: "system", at: new Date()});
     });
 
     const reference = fresh.get("order_unique_reference");

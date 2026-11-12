@@ -88,13 +88,107 @@ async function sellerOrderAction({db, uid, data}) {
   });
 }
 
-/** Ouvert / fermé maintenant (fermeture momentanée). */
+/**
+ * Disponibilité du commerce : open (ouvert selon ses horaires), pause
+ * (pause courte) ou closed (fermé maintenant). En pause ou fermé, aucune
+ * nouvelle commande ; les commandes acceptées continuent.
+ */
 async function sellerSetOpen({db, uid, data}) {
   const u = await seller(db, uid);
-  const closed = data.open === false;
-  await u.ref.update({shop_closed_now: closed,
-    shop_closed_since: closed ? ts() : null});
-  return {open: !closed};
+  const state = ["open", "pause", "closed"].includes(data.state) ?
+    data.state : data.open === false ? "closed" : "open";
+  await u.ref.update({shop_state: state, shop_closed_now: state !== "open",
+    shop_closed_since: state === "open" ? null : ts()});
+  await db.collection("audit_logs").add({actor_uid: uid,
+    actor_role: "Seller", action: "shop.state", target: u.ref.path,
+    details: {state}, created_at: ts()});
+  return {state, open: state === "open"};
+}
+
+/**
+ * Ajustement de stock par le vendeur (entrée, sortie, inventaire), en
+ * transaction, sur ses propres produits seulement, historisé
+ * (StockMovements).
+ */
+async function sellerAdjustStock({db, uid, data}) {
+  await seller(db, uid);
+  const ref = db.doc(`Product/${text(data.productId, 128) || "_"}`);
+  const kind = ["in", "out", "count"].includes(data.kind) ? data.kind : null;
+  const qty = Math.round(Number(data.quantity));
+  if (!kind || !Number.isFinite(qty) || qty < 0 || qty > 100000) {
+    throw err("invalid-argument", "Quantité invalide.");
+  }
+  const reason = text(data.reason, 200);
+  return db.runTransaction(async (tx) => {
+    const p = await tx.get(ref);
+    if (!p.exists || !p.get("seller_ref") || p.get("seller_ref").id !== uid) {
+      throw err("not-found", "Produit introuvable.");
+    }
+    const before = Number(p.get("quantity")) || 0;
+    const after = kind === "in" ? before + qty : kind === "out" ?
+      before - qty : qty;
+    if (after < 0) throw err("failed-precondition", "Stock insuffisant.");
+    tx.update(ref, {quantity: after});
+    tx.set(db.collection("StockMovements").doc(), {product_id: ref.id,
+      seller_uid: uid, product_name: p.get("name") || "", kind,
+      quantity: qty, before, after, reason, by: uid, at: ts()});
+    return {before, after};
+  });
+}
+
+/** Mouvements de stock (le sien seulement). */
+async function sellerStockMovements({db, uid, data}) {
+  await seller(db, uid);
+  let q = db.collection("StockMovements").where("seller_uid", "==", uid);
+  if (data.productId) q = q.where("product_id", "==", text(data.productId, 128));
+  const snap = await q.get();
+  return {movements: snap.docs.map((m) => {
+    const at = toDate(m.get("at"));
+    return {product: m.get("product_name"), kind: m.get("kind"),
+      quantity: m.get("quantity"), before: m.get("before"),
+      after: m.get("after"), reason: m.get("reason") || "",
+      at: at ? at.toISOString() : null};
+  }).sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 200)};
+}
+
+/** Avis des clients sur le commerce (le vendeur ne peut pas les supprimer). */
+async function sellerReviews({db, uid}) {
+  const u = await seller(db, uid);
+  const snap = await db.collection("Orders").where("seller_ref", "==", u.ref)
+      .get();
+  const reviews = snap.docs.filter((o) => o.get("shop_rating"))
+      .map((o) => {
+        const r = o.get("shop_rating");
+        const at = toDate(r.at);
+        return {orderId: o.id,
+          reference: o.get("order_unique_reference") || o.id,
+          stars: r.stars, comment: r.comment || "",
+          reported: r.reported === true,
+          at: at ? at.toISOString() : null};
+      }).sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const count = u.get("shop_rating_count") || 0;
+  return {rating: count ? Math.round((u.get("shop_rating_sum") || 0) * 10 /
+    count) / 10 : null, count, reviews: reviews.slice(0, 100)};
+}
+
+/** Signaler un avis abusif : ticket au support (modération). */
+async function sellerReportReview({db, messaging, uid, data}) {
+  const u = await seller(db, uid);
+  const ref = db.doc(`Orders/${text(data.orderId, 128) || "_"}`);
+  const o = await ref.get();
+  if (!o.exists || !o.get("seller_ref") || o.get("seller_ref").id !== uid ||
+      !o.get("shop_rating")) {
+    throw err("not-found", "Avis introuvable.");
+  }
+  const reason = text(data.reason, 300);
+  if (!reason) throw err("invalid-argument", "Expliquez pourquoi.");
+  await ref.update({"shop_rating.reported": true});
+  await require("./support").createTicketFor({db, messaging, author: u,
+    data: {category: "autre", orderId: o.id, priority: "normal",
+      subject: "Avis signalé comme abusif",
+      message: `Avis : ${o.get("shop_rating").stars}★ « ` +
+        `${o.get("shop_rating").comment || ""} ». Motif : ${reason}`}});
+  return {ok: true};
 }
 
 /** Performances du commerce (données réelles). */
@@ -175,4 +269,5 @@ async function sellerPerformance({db, uid, now = new Date()}) {
 }
 
 module.exports = {sellerOrderAction, sellerSetOpen, sellerPerformance,
+  sellerReviews, sellerReportReview, sellerAdjustStock, sellerStockMovements,
   LOW_STOCK};

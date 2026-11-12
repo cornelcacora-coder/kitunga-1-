@@ -592,6 +592,15 @@ exports.kitungaSellerOrderAction = acquisitionCallable((data, uid) =>
   sellerPro.sellerOrderAction({db: admin.firestore(), uid, data}));
 exports.kitungaSellerSetOpen = acquisitionCallable((data, uid) =>
   sellerPro.sellerSetOpen({db: admin.firestore(), uid, data}));
+exports.kitungaSellerReviews = acquisitionCallable((data, uid) =>
+  sellerPro.sellerReviews({db: admin.firestore(), uid}));
+exports.kitungaSellerReportReview = acquisitionCallable((data, uid) =>
+  sellerPro.sellerReportReview({db: admin.firestore(),
+    messaging: admin.messaging(), uid, data}));
+exports.kitungaSellerAdjustStock = acquisitionCallable((data, uid) =>
+  sellerPro.sellerAdjustStock({db: admin.firestore(), uid, data}));
+exports.kitungaSellerStockMovements = acquisitionCallable((data, uid) =>
+  sellerPro.sellerStockMovements({db: admin.firestore(), uid, data}));
 exports.kitungaSellerPerformance = acquisitionCallable((data, uid) =>
   sellerPro.sellerPerformance({db: admin.firestore(), uid}));
 
