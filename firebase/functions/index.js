@@ -586,6 +586,15 @@ exports.kitungaSafetyAlert = acquisitionCallable((data, uid) =>
 exports.kitungaMyMissions = acquisitionCallable((data, uid) =>
   pro.myMissions({db: admin.firestore(), uid, data}));
 
+// ── Espace professionnel du vendeur ─────────────────────────────────────
+const sellerPro = require("./kitunga/seller_pro");
+exports.kitungaSellerOrderAction = acquisitionCallable((data, uid) =>
+  sellerPro.sellerOrderAction({db: admin.firestore(), uid, data}));
+exports.kitungaSellerSetOpen = acquisitionCallable((data, uid) =>
+  sellerPro.sellerSetOpen({db: admin.firestore(), uid, data}));
+exports.kitungaSellerPerformance = acquisitionCallable((data, uid) =>
+  sellerPro.sellerPerformance({db: admin.firestore(), uid}));
+
 // ── Suivi en direct de la livraison ──────────────────────────────────────
 const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>

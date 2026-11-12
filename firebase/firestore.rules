@@ -177,6 +177,7 @@ service cloud.firestore {
           'finance_status', 'status_actor', 'status_reason', 'offer_to',
           'offer_expires_at', 'dispatch_reason', 'settled_at', 'settlement',
           'settlement_reversed_at', 'rating', 'delay', 'at_shop_at',
+          'handover_confirmed_at', 'accepted_at',
           'ready_at', 'stale_alert_at',
           'prescription_ref', 'prescription_photos',
           'return_status', 'return_reason', 'return_wish', 'return_note',

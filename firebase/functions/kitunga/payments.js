@@ -61,6 +61,12 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
     throw new PaymentError("failed-precondition",
         "Ce commerce n'est plus disponible sur Kitunga.");
   }
+  // Fermé momentanément par le commerçant (« Fermé maintenant »).
+  if (seller.exists && seller.get("shop_closed_now") === true) {
+    throw new PaymentError("failed-precondition",
+        `${seller.get("display_name") || "Ce commerce"} est fermé pour le ` +
+        "moment. Réessayez plus tard.");
+  }
   // En dehors de ses horaires, le commerce ne prend pas de commande
   // (horaires non renseignés ou illisibles : rien n'est bloqué).
   const hours = seller.exists ?
