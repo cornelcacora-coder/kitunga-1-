@@ -282,7 +282,18 @@ async function takeDelivery({db, uid, data}) {
     if (o.get("status") !== "Pret") {
       throw err("failed-precondition", "Cette commande n'est plus disponible.");
     }
+    // Course proposée en exclusivité à un autre livreur (quelques secondes).
+    const until = toDate(o.get("offer_expires_at"));
+    if (o.get("offer_to") && o.get("offer_to") !== uid && until &&
+        until > new Date()) {
+      throw err("failed-precondition",
+          "Cette course est proposée à un autre livreur. Réessayez dans " +
+          "un instant.");
+    }
     tx.update(ref, {
+      offer_to: admin.firestore.FieldValue.delete(),
+      offer_expires_at: admin.firestore.FieldValue.delete(),
+      offer_mission: admin.firestore.FieldValue.delete(),
       status: "encours",
       deliverer_ref: uid,
       deliver_reference: db.doc(`User/${uid}`),

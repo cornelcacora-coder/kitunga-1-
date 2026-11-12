@@ -128,8 +128,8 @@ class _AdminDeliveryPricingWidgetState
     final sim = simulateDeliveryFee(_values, _shop, _client);
     return AdminShell(
       current: 'deliveryPricing',
-      title: 'Tarif de livraison',
-      subtitle: 'Frais selon la distance entre le commerce et le client',
+      title: 'Livraison : tarif et attribution',
+      subtitle: 'Frais selon la distance ; choix automatique du livreur',
       actions: [
         FilledButton.icon(
           onPressed: _loading || _saving ? null : _save,
@@ -196,6 +196,8 @@ class _AdminDeliveryPricingWidgetState
                       ),
                     ),
                     const SizedBox(height: 16),
+                    const _DispatchSettingsCard(),
+                    const SizedBox(height: 16),
                     SalesCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -251,6 +253,121 @@ class _AdminDeliveryPricingWidgetState
                     ),
                   ],
                 ),
+    );
+  }
+}
+
+
+/// Attribution automatique des livreurs : durée d'une proposition,
+/// nombre d'essais, capacité par véhicule.
+class _DispatchSettingsCard extends StatefulWidget {
+  const _DispatchSettingsCard();
+
+  @override
+  State<_DispatchSettingsCard> createState() => _DispatchSettingsCardState();
+}
+
+class _DispatchSettingsCardState extends State<_DispatchSettingsCard> {
+  bool _auto = true;
+  final _seconds = TextEditingController();
+  final _attempts = TextEditingController();
+  final _cap = {
+    for (final v in ['moto', 'velo', 'voiture']) v: TextEditingController()
+  };
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    salesCall('kitungaAdminDispatchSettings', const {}).then((r) {
+      final s = Map<String, dynamic>.from(r['settings'] as Map);
+      if (!mounted) return;
+      setState(() {
+        _auto = s['auto'] != false;
+        _seconds.text = '${s['offer_seconds']}';
+        _attempts.text = '${s['max_attempts']}';
+        final c = Map<String, dynamic>.from(s['capacity'] as Map);
+        for (final e in _cap.entries) {
+          e.value.text = '${c[e.key]}';
+        }
+        _loaded = true;
+      });
+    }).catchError((_) {});
+  }
+
+  @override
+  void dispose() {
+    for (final c in [_seconds, _attempts, ..._cap.values]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() => runSalesAction(
+      context,
+      () => salesCall('kitungaAdminDispatchSettings', {
+            'save': {
+              'auto': _auto,
+              'offer_seconds': int.tryParse(_seconds.text) ?? 60,
+              'max_attempts': int.tryParse(_attempts.text) ?? 3,
+              'capacity': {
+                for (final e in _cap.entries)
+                  e.key: int.tryParse(e.value.text) ?? 1,
+              },
+            }
+          }),
+      'Attribution enregistrée.');
+
+  @override
+  Widget build(BuildContext context) {
+    Widget field(TextEditingController c, String label, String help) =>
+        SizedBox(
+          width: 200,
+          child: TextField(
+            controller: c,
+            enabled: _loaded,
+            keyboardType: TextInputType.number,
+            decoration: salesInput(label, helper: help),
+          ),
+        );
+    return SalesCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                  child: Text('Attribution des livreurs', style: salesTitle())),
+              FilledButton(
+                  onPressed: _loaded ? _save : null,
+                  child: const Text('Enregistrer')),
+            ],
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _auto,
+            onChanged: _loaded ? (v) => setState(() => _auto = v) : null,
+            title: const Text('Attribution automatique'),
+            subtitle: const Text(
+                'La course est proposée au livreur le mieux placé (le plus '
+                'proche, disponible, couvrant le quartier, le moins chargé). '
+                'Désactivée : ouverte à tous, le premier qui accepte la prend.'),
+          ),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              field(_seconds, 'Durée d\'une proposition (s)',
+                  'Temps pour accepter avant de passer au suivant.'),
+              field(_attempts, 'Essais avant ouverture à tous',
+                  'Puis tous les livreurs du quartier sont prévenus.'),
+              field(_cap['moto']!, 'Courses simultanées : moto', ''),
+              field(_cap['velo']!, 'Courses simultanées : vélo', ''),
+              field(_cap['voiture']!, 'Courses simultanées : voiture', ''),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

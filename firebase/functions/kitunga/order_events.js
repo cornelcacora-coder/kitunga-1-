@@ -35,17 +35,6 @@ async function admins(db) {
   return (await db.collection("User").where("role", "==", "Admin").get()).docs;
 }
 
-/** Livreurs en service qui couvrent ce quartier. */
-async function deliverersFor(db, zone) {
-  const snap = await db.collection("User").where("role", "==", "Deliver")
-      .where("delivery_available", "==", true).get();
-  return snap.docs.filter((u) => {
-    if (u.get("account_status") === "suspended") return false;
-    const zones = u.get("delivery_zones") || [];
-    return zones.length === 0 || !zone || zones.includes(zone);
-  });
-}
-
 const ref = (o) => o.get("order_unique_reference") || o.id;
 
 /**
@@ -73,6 +62,13 @@ async function onOrderWrite({db, messaging, before, after}) {
   }
 
   if (was !== now) {
+    // Plus « Prête » : les propositions encore ouvertes sont closes.
+    if (was === "Pret") {
+      await require("./dispatch").closeMissions({db, orderId: after.id,
+        status: now === "encours" &&
+          after.get("deliverer_ref") === before.get("offer_to") ?
+          "accepted" : "cancelled"});
+    }
     const shop = await seller();
     const shopName = shop ? shop.get("display_name") || "Le commerce" :
       "Le commerce";
@@ -82,13 +78,12 @@ async function onOrderWrite({db, messaging, before, after}) {
             `${shopName} prépare votre commande ${ref(after)}.`, "order");
         break;
       case "Pret": {
-        const zone = after.get("delivery_zone") || "";
-        const fees = Math.round(Number(after.get("delivery_fees")) || 0);
-        sent += await send(await deliverersFor(db, zone),
-            "Nouvelle commande à livrer",
-            `${shopName} → ${zone || "Brazzaville"} · frais de livraison ` +
-            `${fees} F. Le premier qui accepte la prend.`, "delivery");
+        // Attribution : proposée au meilleur livreur (60 s), puis au
+        // suivant ; à défaut, ouverte à tous ceux du quartier.
         await after.ref.update({ready_at: ts()});
+        const r = await require("./dispatch").offerNext({db, messaging,
+          orderId: after.id});
+        sent += r.offered ? 1 : r.notified || 0;
         break;
       }
       case "encours": {

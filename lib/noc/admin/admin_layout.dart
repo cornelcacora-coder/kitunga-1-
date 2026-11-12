@@ -62,7 +62,7 @@ const List<AdminNavGroup> kAdminMenu = [
         path: AdminPaths.deliveries),
     AdminNavItem('zones', 'Livraisons par zone', Icons.place_rounded,
         path: AdminPaths.zones),
-    AdminNavItem('deliveryPricing', 'Tarif de livraison',
+    AdminNavItem('deliveryPricing', 'Tarif et attribution',
         Icons.price_change_rounded,
         path: AdminPaths.deliveryPricing),
     AdminNavItem('alerts', 'Alertes', Icons.warning_amber_rounded,

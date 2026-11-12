@@ -6,6 +6,7 @@ import '/noc/sales/sales_common.dart'
 import '/noc/ui/admin_kit.dart';
 import '/noc/ui/admin_export.dart' show downloadReceiptPdf;
 import 'admin_dashboard_data.dart';
+import 'admin_order_trace.dart';
 
 /// Fiche d'une commande : client, commerce, livreur, adresse, articles.
 Future<void> showAdminOrderDetail(BuildContext context, DashOrder order,
@@ -401,6 +402,8 @@ class _OrderDetailState extends State<_OrderDetail> {
                       ),
                     ],
                     _proof(o),
+                    // Pourquoi ce livreur, et qui a fait quoi.
+                    AdminOrderTrace(orderId: o.id),
                     const SizedBox(height: 20.0),
                     Text('ARTICLES', style: AdminText.caps()),
                     const SizedBox(height: 8.0),

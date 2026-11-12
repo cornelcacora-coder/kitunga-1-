@@ -64,7 +64,10 @@ Stream<Map<String, dynamic>> _myState() {
 /// État du livreur, lu en direct (en service, quartiers).
 class DelivererState {
   const DelivererState(
-      {required this.available, required this.zones, String? state})
+      {required this.available,
+      required this.zones,
+      String? state,
+      this.vehicle = 'moto'})
       : state = state ?? (available ? 'on' : 'off');
 
   factory DelivererState.of(Map<String, dynamic> data) => DelivererState(
@@ -72,6 +75,9 @@ class DelivererState {
         state: const ['on', 'pause', 'off'].contains(data['delivery_state'])
             ? data['delivery_state'] as String
             : null,
+        vehicle: const ['moto', 'velo', 'voiture'].contains(data['vehicle'])
+            ? data['vehicle'] as String
+            : 'moto',
         zones: ((data['delivery_zones'] as List?) ?? const [])
             .map((z) => '$z')
             .toList(),
@@ -81,6 +87,9 @@ class DelivererState {
 
   /// 'on' (en service), 'pause' (en pause), 'off' (hors service).
   final String state;
+
+  /// Véhicule : 'moto', 'velo' ou 'voiture' (capacité de courses).
+  final String vehicle;
   final List<String> zones;
 }
 

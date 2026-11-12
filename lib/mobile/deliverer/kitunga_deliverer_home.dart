@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
@@ -29,6 +32,32 @@ Stream<List<OrdersRecord>>? delivererMyOrdersOverride;
 @visibleForTesting
 Stream<List<OrdersRecord>>? delivererOpenOrdersOverride;
 
+/// Course proposée en exclusivité à ce livreur (champs écrits par le
+/// serveur : offer_to, offer_expires_at, offer_mission).
+DateTime? offerExpiry(OrdersRecord o) {
+  final v = o.snapshotData['offer_expires_at'];
+  if (v is DateTime) return v;
+  try {
+    return (v as dynamic)?.toDate() as DateTime?;
+  } catch (_) {
+    return null;
+  }
+}
+
+bool offeredToOther(OrdersRecord o, String me, DateTime now) {
+  final to = o.snapshotData['offer_to'];
+  final until = offerExpiry(o);
+  return to is String && to.isNotEmpty && to != me &&
+      until != null && until.isAfter(now);
+}
+
+bool offeredToMe(OrdersRecord o, String me, DateTime now) {
+  final until = offerExpiry(o);
+  return o.snapshotData['offer_to'] == me &&
+      until != null && until.isAfter(now) &&
+      o.status == OrderStatus.ready;
+}
+
 const _red = Color(0xFFE51A1A);
 const _redDark = Color(0xFFB0101A);
 const _yellow = Color(0xFFFFC21A);
@@ -57,8 +86,56 @@ String _fcfa(num v) => '${NumberFormat.decimalPattern('fr').format(v)} F';
   return (label: 'Annulée', color: const Color(0xFF8A94A6));
 }
 
-class KitungaDelivererHome extends StatelessWidget {
+class KitungaDelivererHome extends StatefulWidget {
   const KitungaDelivererHome({super.key});
+
+  @override
+  State<KitungaDelivererHome> createState() => _KitungaDelivererHomeState();
+}
+
+class _KitungaDelivererHomeState extends State<KitungaDelivererHome> {
+  Timer? _ping;
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    // Position envoyée toutes les 2 minutes, seulement en service (le
+    // serveur l'ignore sinon) : elle sert à choisir le livreur le plus
+    // proche.
+    // (Pas de GPS dans les tests, où les commandes sont simulées.)
+    if (delivererMyOrdersOverride == null) {
+      _sendPosition();
+      _ping = Timer.periodic(
+          const Duration(minutes: 2), (_) => _sendPosition());
+    }
+    // Compte à rebours des propositions.
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ping?.cancel();
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _sendPosition() async {
+    try {
+      final p = await Geolocator.checkPermission();
+      if (p == LocationPermission.denied ||
+          p == LocationPermission.deniedForever) {
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition();
+      await delivererCall('kitungaDelivererPing',
+          {'lat': pos.latitude, 'lng': pos.longitude});
+    } catch (_) {
+      // GPS ou réseau indisponible : nouvel essai au prochain passage.
+    }
+  }
 
   Stream<List<OrdersRecord>> _mine() =>
       delivererMyOrdersOverride ??
@@ -71,13 +148,17 @@ class KitungaDelivererHome extends StatelessWidget {
           queryBuilder: (o) =>
               o.where('status', whereIn: OrderStatus.forDeliverers));
 
+  // Créés une fois : l'écran se redessine chaque seconde (compte à rebours).
+  late final Stream<List<OrdersRecord>> _mineStream = _mine();
+  late final Stream<List<OrdersRecord>> _openStream = _open();
+
   @override
   Widget build(BuildContext context) {
     return DelivererStateBuilder(
       builder: (context, state) => StreamBuilder<List<OrdersRecord>>(
-        stream: _mine(),
+        stream: _mineStream,
         builder: (context, mineSnap) => StreamBuilder<List<OrdersRecord>>(
-          stream: _open(),
+          stream: _openStream,
           builder: (context, openSnap) => _DelivererHomeBody(
             state: state,
             mine: mineSnap.data,
@@ -127,10 +208,19 @@ class _DelivererHomeBody extends StatelessWidget {
               OrderStatus.refused
             ].contains(o.status))
         .length;
+    final me = currentUserUid;
+    final forMe = [
+      for (final o in open ?? const <OrdersRecord>[])
+        if (offeredToMe(o, me, now)) o
+    ];
+    // Courses ouvertes : ni proposées à un autre livreur en ce moment, ni
+    // déjà prises.
     final offers = [
       for (final o in open ?? const <OrdersRecord>[])
         if (o.status == OrderStatus.ready &&
             o.delivererRef.isEmpty &&
+            !offeredToMe(o, me, now) &&
+            !offeredToOther(o, me, now) &&
             delivererCovers(state.zones, o.deliveryZone))
           o
     ];
@@ -152,6 +242,7 @@ class _DelivererHomeBody extends StatelessWidget {
               text: 'Connexion perdue. Les informations affichées peuvent '
                   'ne pas être à jour.',
             ),
+          for (final o in forMe) _OfferCard(order: o),
           if (active.isNotEmpty) KitungaActiveDeliveryBanner(orders: active),
           _AvailabilityStrip(state: state),
           _SectionTitle(
@@ -603,6 +694,176 @@ class _MoneyCard extends StatelessWidget {
   }
 }
 
+// ── Course proposée ──────────────────────────────────────────────────────
+
+/// Course proposée en exclusivité : compte à rebours, Accepter / Refuser.
+class _OfferCard extends StatefulWidget {
+  const _OfferCard({required this.order});
+
+  final OrdersRecord order;
+
+  @override
+  State<_OfferCard> createState() => _OfferCardState();
+}
+
+class _OfferCardState extends State<_OfferCard> {
+  bool _busy = false;
+
+  Future<void> _answer(bool accept) async {
+    final mission = widget.order.snapshotData['offer_mission'];
+    if (mission is! String) return;
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    try {
+      await delivererCall('kitungaRespondMission',
+          {'missionId': mission, 'accept': accept});
+      if (!mounted) return;
+      if (accept) {
+        messenger.showSnackBar(const SnackBar(
+            content: Text('Course acceptée. Bonne route !')));
+        await openDelivererMission(context, widget.order);
+      } else {
+        messenger.showSnackBar(const SnackBar(
+            content: Text('Course refusée : elle est proposée à un autre '
+                'livreur.')));
+      }
+    } on ServerPaymentException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Connexion impossible. Réessayez.')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final o = widget.order;
+    final until = offerExpiry(o);
+    final left = until == null
+        ? 0
+        : until.difference(DateTime.now()).inSeconds.clamp(0, 600);
+    final km = o.snapshotData['delivery_km'];
+    final shopZone = '${o.snapshotData['shop_zone'] ?? ''}';
+    return Container(
+      key: ValueKey('offer-${o.reference.id}'),
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _red, width: 2),
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x33E51A1A), blurRadius: 18, offset: Offset(0, 6))
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.notifications_active_rounded, color: _red),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Course proposée pour vous',
+                    style: GoogleFonts.interTight(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF1E242B))),
+              ),
+              SizedBox(
+                width: 46,
+                height: 46,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      value: left / 60.0 > 1 ? 1 : left / 60.0,
+                      strokeWidth: 4,
+                      color: left <= 10 ? _red : _green,
+                      backgroundColor: const Color(0xFFF1F4F8),
+                    ),
+                    Text('$left s',
+                        style: GoogleFonts.inter(
+                            fontSize: 12, fontWeight: FontWeight.w800)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        '${shopZone.isEmpty ? 'Commerce' : shopZone} → '
+                        '${o.deliveryZone.isEmpty ? 'Brazzaville' : o.deliveryZone}',
+                        style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E242B))),
+                    if (km is num)
+                      Text('≈ ${km.toStringAsFixed(1).replaceAll('.', ',')} km',
+                          style: GoogleFonts.inter(
+                              fontSize: 12.5,
+                              color: const Color(0xFF6B7280))),
+                  ],
+                ),
+              ),
+              Text(_fcfa(o.deliveryFees),
+                  style: GoogleFonts.interTight(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: _green)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  key: const ValueKey('offer-decline'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _red,
+                    side: const BorderSide(color: _red),
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: _busy || left == 0 ? null : () => _answer(false),
+                  child: const Text('Refuser'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: FilledButton(
+                  key: const ValueKey('offer-accept'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _green,
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: _busy || left == 0 ? null : () => _answer(true),
+                  child: Text('Accepter',
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w800, fontSize: 15)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Sections ─────────────────────────────────────────────────────────────
 
 class _AvailabilityStrip extends StatelessWidget {
@@ -610,50 +871,94 @@ class _AvailabilityStrip extends StatelessWidget {
 
   final DelivererState state;
 
+  static const _vehicles = [
+    ('moto', 'Moto', Icons.two_wheeler_rounded),
+    ('velo', 'Vélo', Icons.pedal_bike_rounded),
+    ('voiture', 'Voiture', Icons.directions_car_rounded),
+  ];
+
+  Future<void> _save(BuildContext context, String name,
+      Map<String, dynamic> data, String done) async {
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    try {
+      await delivererCall(name, data);
+      messenger.showSnackBar(SnackBar(content: Text(done)));
+    } on ServerPaymentException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Enregistrement impossible. Réessayez.')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      padding: const EdgeInsets.fromLTRB(14, 4, 6, 4),
+      padding: const EdgeInsets.fromLTRB(14, 4, 6, 10),
       decoration: BoxDecoration(
         color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: theme.alternate),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.place_outlined, size: 20, color: _red),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              state.zones.isEmpty
-                  ? 'Mes quartiers : toute la ville'
-                  : 'Mes quartiers : ${state.zones.join(', ')}',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                  fontSize: 13.5, color: theme.primaryText),
-            ),
+          Row(
+            children: [
+              const Icon(Icons.place_outlined, size: 20, color: _red),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  state.zones.isEmpty
+                      ? 'Mes quartiers : toute la ville'
+                      : 'Mes quartiers : ${state.zones.join(', ')}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                      fontSize: 13.5, color: theme.primaryText),
+                ),
+              ),
+              TextButton(
+                key: const ValueKey('deliverer-zones'),
+                onPressed: () async {
+                  final chosen =
+                      await pickDelivererZones(context, state.zones);
+                  if (chosen == null || !context.mounted) return;
+                  await _save(context, 'kitungaSetDelivererStatus',
+                      {'zones': chosen}, 'Quartiers enregistrés.');
+                },
+                child: const Text('Modifier',
+                    style:
+                        TextStyle(color: _red, fontWeight: FontWeight.w700)),
+              ),
+            ],
           ),
-          TextButton(
-            key: const ValueKey('deliverer-zones'),
-            onPressed: () async {
-              final chosen = await pickDelivererZones(context, state.zones);
-              if (chosen == null || !context.mounted) return;
-              final messenger = ScaffoldMessenger.of(context);
-              try {
-                await delivererCall(
-                    'kitungaSetDelivererStatus', {'zones': chosen});
-                messenger.showSnackBar(
-                    const SnackBar(content: Text('Quartiers enregistrés.')));
-              } catch (_) {
-                messenger.showSnackBar(const SnackBar(
-                    content: Text('Enregistrement impossible. Réessayez.')));
-              }
-            },
-            child: const Text('Modifier',
-                style: TextStyle(color: _red, fontWeight: FontWeight.w700)),
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final (key, label, icon) in _vehicles)
+                ChoiceChip(
+                  key: ValueKey('vehicle-$key'),
+                  avatar: Icon(icon,
+                      size: 18,
+                      color: state.vehicle == key ? Colors.white : _red),
+                  label: Text(label),
+                  selected: state.vehicle == key,
+                  selectedColor: _red,
+                  showCheckmark: false,
+                  labelStyle: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      color: state.vehicle == key
+                          ? Colors.white
+                          : theme.primaryText),
+                  onSelected: (_) => state.vehicle == key
+                      ? null
+                      : _save(context, 'kitungaSetVehicle', {'vehicle': key},
+                          'Véhicule enregistré : $label.'),
+                ),
+            ],
           ),
         ],
       ),

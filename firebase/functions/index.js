@@ -462,6 +462,26 @@ exports.kitungaPurgePositions = functions.region("us-west1")
     .pubsub.schedule("every 6 hours")
     .onRun(() => lifecycle.purgeOldPositions({db: admin.firestore()}));
 
+// ── Attribution des courses (dispatch) ───────────────────────────────────
+const dispatch = require("./kitunga/dispatch");
+/** Le livreur accepte ou refuse la course proposée. */
+exports.kitungaRespondMission = acquisitionCallable((data, uid) =>
+  dispatch.respondMission({db: admin.firestore(),
+    messaging: admin.messaging(), uid, data}));
+/** Propositions expirées : la course passe au livreur suivant. */
+exports.kitungaExpireOffers = functions.region("us-west1")
+    .pubsub.schedule("every 1 minutes")
+    .onRun(() => dispatch.expireOffers({db: admin.firestore(),
+      messaging: admin.messaging()}));
+exports.kitungaDelivererPing = acquisitionCallable((data, uid) =>
+  dispatch.delivererPing({db: admin.firestore(), uid, data}));
+exports.kitungaSetVehicle = acquisitionCallable((data, uid) =>
+  dispatch.setVehicle({db: admin.firestore(), uid, data}));
+exports.kitungaAdminDispatchSettings = acquisitionCallable((data, uid) =>
+  dispatch.adminDispatchSettings({db: admin.firestore(), uid, data}));
+exports.kitungaOrderMissions = acquisitionCallable((data, uid) =>
+  dispatch.orderMissions({db: admin.firestore(), uid, data}));
+
 // ── Suivi en direct de la livraison ──────────────────────────────────────
 const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>

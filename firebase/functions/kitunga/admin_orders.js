@@ -76,7 +76,12 @@ async function adminOrderAction({db, uid, data}) {
       }
       // Comme l'acceptation par le livreur dans l'application.
       changes = {status: S.delivering, deliverer_ref: deliverer.id,
-        deliver_reference: deliverer.ref};
+        deliver_reference: deliverer.ref,
+        // Proposition automatique en cours : remplacée par ce choix.
+        offer_to: admin.firestore.FieldValue.delete(),
+        offer_expires_at: admin.firestore.FieldValue.delete(),
+        offer_mission: admin.firestore.FieldValue.delete(),
+        dispatch_mode: "admin"};
     } else {
       if (status !== S.delivering) {
         throw err("failed-precondition",

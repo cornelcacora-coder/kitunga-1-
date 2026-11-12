@@ -60,9 +60,11 @@ test("parcours complet : commerce, livreurs du quartier, client", async () => {
   assert.strictEqual(pushes.at(-1).tokens[0], "tel-client");
 
   await change({status: "Pret"});
-  // En service et couvrant Bacongo (ou sans quartier choisi).
-  assert.deepStrictEqual(await titles("l1"), ["Nouvelle commande à livrer"]);
-  assert.deepStrictEqual(await titles("l2"), ["Nouvelle commande à livrer"]);
+  // Proposée à un seul livreur, en service et couvrant Bacongo (ou sans
+  // quartier choisi) ; ni au livreur hors service, ni à celui de Mfilou.
+  const offered = [...await titles("l1"), ...await titles("l2")];
+  assert.deepStrictEqual(offered, ["Course proposée : répondez vite"]);
+  assert.ok(["l1", "l2"].includes((await order.get()).get("offer_to")));
   assert.deepStrictEqual(await titles("l3"), []);
   assert.deepStrictEqual(await titles("l4"), []);
   assert.ok((await order.get()).get("ready_at"));

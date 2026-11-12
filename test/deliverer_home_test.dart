@@ -110,6 +110,45 @@ void main() {
     expect(calls.single.$2, {'state': 'on'});
   });
 
+  testWidgets('course proposée : compte à rebours, accepter', (tester) async {
+    delivererOpenOrdersOverride = Stream.value([
+      OrdersRecord.getDocumentFromData({
+        'status': 'Pret',
+        'delivery_zone': 'Bacongo',
+        'shop_zone': 'Poto-Poto',
+        'delivery_fees': 1500,
+        'delivery_km': 3.4,
+        'offer_to': '',
+        'offer_mission': 'm1',
+        'offer_expires_at': DateTime.now().add(const Duration(seconds: 45)),
+      }, _Ref('Orders/p1')),
+    ]);
+    await open(tester);
+    state.add({'delivery_available': true, 'delivery_state': 'on'});
+    await tester.pump();
+    await tester.pump();
+    // currentUserUid est vide dans les tests : la proposition est « pour moi ».
+    expect(find.text('Course proposée pour vous'), findsOneWidget);
+    expect(find.text('Poto-Poto → Bacongo'), findsOneWidget);
+    expect(find.textContaining('3,4 km'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('offer-decline')));
+    await tester.pump();
+    await tester.pump();
+    expect(calls.single.$1, 'kitungaRespondMission');
+    expect(calls.single.$2, {'missionId': 'm1', 'accept': false});
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('véhicule', (tester) async {
+    await open(tester);
+    state.add({'delivery_available': true, 'delivery_state': 'on'});
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('vehicle-velo')));
+    await tester.pumpAndSettle();
+    expect(calls.single.$2, {'vehicle': 'velo'});
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('hors service', (tester) async {
     await open(tester);
     state.add({'delivery_available': false});
