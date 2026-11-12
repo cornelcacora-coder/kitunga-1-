@@ -76,7 +76,7 @@ class DelivererState {
         state: const ['on', 'pause', 'off'].contains(data['delivery_state'])
             ? data['delivery_state'] as String
             : null,
-        vehicle: const ['moto', 'velo', 'voiture'].contains(data['vehicle'])
+        vehicle: const ['moto', 'voiture'].contains(data['vehicle'])
             ? data['vehicle'] as String
             : 'moto',
         zones: ((data['delivery_zones'] as List?) ?? const [])
@@ -89,7 +89,7 @@ class DelivererState {
   /// 'on' (en service), 'pause' (en pause), 'off' (hors service).
   final String state;
 
-  /// Véhicule : 'moto', 'velo' ou 'voiture' (capacité de courses).
+  /// Véhicule : 'moto' ou 'voiture' (capacité de courses).
   final String vehicle;
   final List<String> zones;
 }

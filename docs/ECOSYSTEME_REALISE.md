@@ -152,7 +152,8 @@ Toutes les actions sensibles de l'admin et du support sont journalisées
 
 - **Opérations › Tarif et attribution** : frais selon la distance (base,
   prix au km, coefficient route, minimum, maximum, arrondi) ; attribution
-  automatique (durée d'une proposition, essais, capacité par véhicule).
+  automatique (durée d'une proposition, essais, capacité par véhicule :
+  moto ou voiture — pas de vélo).
 - **Gestion › Finances** : commission Kitunga (0 % par défaut, comme
   avant), part du livreur (100 % des frais par défaut).
 - **Support client › Équipe** : donner le rôle Support à un compte.

@@ -933,7 +933,6 @@ class _AvailabilityStrip extends StatelessWidget {
 
   static const _vehicles = [
     ('moto', 'Moto', Icons.two_wheeler_rounded),
-    ('velo', 'Vélo', Icons.pedal_bike_rounded),
     ('voiture', 'Voiture', Icons.directions_car_rounded),
   ];
 

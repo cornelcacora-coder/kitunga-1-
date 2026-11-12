@@ -10,7 +10,7 @@
  * Choix du livreur (le score le plus bas gagne) :
  * - disponible (en service), compte actif, couvre le quartier du client ;
  * - capacité : nombre de courses en cours inférieur à celle de son
- *   véhicule (moto, vélo, voiture) ;
+ *   véhicule (moto, voiture) ;
  * - distance jusqu'au commerce depuis sa dernière position, si elle a moins
  *   de 10 minutes ; sinon « position inconnue » (pénalité de 5 km) ;
  * - +2 par course déjà en cours.
@@ -39,9 +39,10 @@ const DEFAULTS = {
   auto: true, // false : ouverte à tous (premier qui accepte)
   offer_seconds: 60,
   max_attempts: 3,
-  capacity: {moto: 2, velo: 1, voiture: 3},
+  capacity: {moto: 2, voiture: 3},
 };
-const VEHICLES = ["moto", "velo", "voiture"];
+// Pas de vélos chez Kitunga : un ancien choix « velo » compte comme moto.
+const VEHICLES = ["moto", "voiture"];
 
 async function loadSettings(db) {
   const s = await db.doc(SETTINGS).get();
@@ -336,7 +337,6 @@ async function adminDispatchSettings({db, uid, data}) {
       offer_seconds: n(s.offer_seconds, 15, 600),
       max_attempts: n(s.max_attempts, 1, 10),
       capacity: {moto: n((s.capacity || {}).moto, 1, 10),
-        velo: n((s.capacity || {}).velo, 1, 10),
         voiture: n((s.capacity || {}).voiture, 1, 10)}};
     await db.doc(SETTINGS).set({...next, updated_by: adminUid,
       updated_at: ts()});

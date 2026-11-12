@@ -272,7 +272,7 @@ class _DispatchSettingsCardState extends State<_DispatchSettingsCard> {
   final _seconds = TextEditingController();
   final _attempts = TextEditingController();
   final _cap = {
-    for (final v in ['moto', 'velo', 'voiture']) v: TextEditingController()
+    for (final v in ['moto', 'voiture']) v: TextEditingController()
   };
   bool _loaded = false;
 
@@ -362,7 +362,6 @@ class _DispatchSettingsCardState extends State<_DispatchSettingsCard> {
               field(_attempts, 'Essais avant ouverture à tous',
                   'Puis tous les livreurs du quartier sont prévenus.'),
               field(_cap['moto']!, 'Courses simultanées : moto', ''),
-              field(_cap['velo']!, 'Courses simultanées : vélo', ''),
               field(_cap['voiture']!, 'Courses simultanées : voiture', ''),
             ],
           ),

@@ -25,7 +25,7 @@ const _stateLabels = {
   'off': ('Hors service', AdminColors.grey),
 };
 
-const _vehicles = {'moto': 'Moto', 'velo': 'Vélo', 'voiture': 'Voiture'};
+const _vehicles = {'moto': 'Moto', 'voiture': 'Voiture'};
 
 class _AdminSupervisionState extends State<AdminSupervisionWidget> {
   late Future<Map<String, dynamic>> _data =

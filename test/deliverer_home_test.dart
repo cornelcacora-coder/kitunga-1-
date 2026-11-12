@@ -143,9 +143,10 @@ void main() {
     await open(tester);
     state.add({'delivery_available': true, 'delivery_state': 'on'});
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('vehicle-velo')));
+    expect(find.byKey(const ValueKey('vehicle-velo')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('vehicle-voiture')));
     await tester.pumpAndSettle();
-    expect(calls.single.$2, {'vehicle': 'velo'});
+    expect(calls.single.$2, {'vehicle': 'voiture'});
     await tester.pumpWidget(const SizedBox());
   });
 

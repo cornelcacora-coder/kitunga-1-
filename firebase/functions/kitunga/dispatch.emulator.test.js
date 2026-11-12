@@ -50,10 +50,12 @@ test("classement : le plus proche, quartier couvert, en service",
       assert.match(ranked[0].reason, /km du commerce/);
     });
 
-test("capacité : un vélo avec une course en cours n'en reçoit pas d'autre",
+test("capacité : une moto avec deux courses en cours n'en reçoit pas d'autre",
     async () => {
-      await db.doc("User/pres").update({vehicle: "velo"});
+      await db.doc("User/pres").update({vehicle: "moto"});
       await db.doc("Orders/autre").set({status: "encours",
+        deliverer_ref: "pres"});
+      await db.doc("Orders/autre2").set({status: "encours",
         deliverer_ref: "pres"});
       const ranked = await d.rankDeliverers({db, order: await order(),
         settings: d.DEFAULTS, now});
@@ -150,7 +152,10 @@ test("position : seulement en service ; véhicule ; réglages admin",
         data: {vehicle: "avion"}}), {code: "invalid-argument"});
       const s = await d.adminDispatchSettings({db, uid: "admin", data: {
         save: {auto: true, offer_seconds: 90, max_attempts: 2,
-          capacity: {moto: 2, velo: 1, voiture: 4}}}});
+          capacity: {moto: 2, voiture: 4}}}});
+      // Plus de vélo : refusé.
+      await assert.rejects(d.setVehicle({db, uid: "inconnu",
+        data: {vehicle: "velo"}}), {code: "invalid-argument"});
       assert.strictEqual(s.settings.offer_seconds, 90);
       await assert.rejects(d.adminDispatchSettings({db, uid: "pres",
         data: {}}), {code: "permission-denied"});
