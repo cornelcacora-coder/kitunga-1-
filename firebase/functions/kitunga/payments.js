@@ -12,6 +12,7 @@ const {priceCart} = require("./pricing");
 const {subscriptionActive} = require("./subscriptions");
 const {PaymentError} = require("./errors");
 const {checkPhone, operatorOf} = require("./wallet");
+const {feeFor} = require("./delivery_pricing");
 const {openingStatus} = require("./hours");
 const {usablePrescription, statusOf: prescriptionStatus} =
   require("./prescriptions");
@@ -89,7 +90,10 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
     l.product.requires_prescription === true);
   const prescription = needs ?
     await usablePrescription(db, uid, sellerRef.id, now) : null;
-  const priced = priceCart(lines, zone, {prescriptionOk: !!prescription});
+  // Frais selon la distance commerce → client (tarif réglé par l'admin).
+  const delivery = await feeFor(db, seller, zone);
+  const priced = priceCart(lines, zone, {prescriptionOk: !!prescription,
+    fee: delivery.fee});
   if (priced.errors.length > 0) {
     throw new PaymentError("failed-precondition", priced.errors.join("\n"));
   }
@@ -104,6 +108,8 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
     amount: priced.total,
     subtotal: priced.subtotal,
     delivery_fees: priced.fee,
+    delivery_km: delivery.km,
+    shop_zone: seller.exists ? seller.get("shop_zone") || "" : "",
     ...(prescription ? {prescription_id: prescription.id} : {}),
     user_ref: userRef,
     seller_ref: sellerRef,
@@ -175,8 +181,9 @@ async function confirmPayment({db, momo, uid, referenceId}) {
     const prescription = prescriptionRef ? await tx.get(prescriptionRef) : null;
     const prescriptionOk = !!prescription && prescription.exists &&
       prescriptionStatus(prescription.data()) === "approved";
+    // Frais vus et payés par le client (même si l'admin change le tarif).
     const priced = priceCart(lines, fresh.get("delivery_zone"),
-        {prescriptionOk});
+        {prescriptionOk, fee: fresh.get("delivery_fees")});
 
     // Payé mais plus disponible (stock pris entre-temps) : à rembourser.
     if (priced.errors.length > 0 || priced.total !== fresh.get("amount")) {
@@ -215,6 +222,9 @@ async function confirmPayment({db, momo, uid, referenceId}) {
       delivery_fees: priced.fee,
       delivery_zone: fresh.get("delivery_zone"),
       delivery_location: fresh.get("delivery_location"),
+      // Quartier du commerce et distance : le livreur sait où récupérer.
+      shop_zone: fresh.get("shop_zone") || "",
+      delivery_km: fresh.get("delivery_km") ?? null,
       order_id: reference,
       order_unique_reference: reference,
       payment_reference: referenceId,

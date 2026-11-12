@@ -6,6 +6,7 @@
  *
  * db et auth sont injectés (tests avec l'émulateur).
  */
+const {ZONES} = require("./pricing");
 const {PaymentError} = require("./errors");
 
 const ROLES = ["Seller", "Deliver"];
@@ -65,6 +66,8 @@ async function createPartner({db, auth, uid, data}) {
       verified: data.verified === true,
       bio: text(data.bio),
       Horraire: text(data.horraire),
+      ...(data.role === "Seller" && ZONES.includes(text(data.shopZone)) ?
+        {shop_zone: text(data.shopZone)} : {}),
       is_subscribed: true,
       subscribe_type: text(data.subscribeType),
     });

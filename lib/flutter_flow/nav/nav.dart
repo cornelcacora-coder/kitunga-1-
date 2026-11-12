@@ -4,6 +4,7 @@ import '/noc/sales/sales_admin_widget.dart';
 import '/noc/ops/admin_ops_widget.dart';
 import '/noc/admin/admin_categories_widget.dart';
 import '/noc/admin/admin_banners_widget.dart';
+import '/noc/admin/admin_delivery_pricing_widget.dart';
 import '/noc/admin/admin_clients_widget.dart';
 import '/noc/admin/admin_dashboard_widget.dart';
 import '/noc/admin/admin_monitoring_widgets.dart';
@@ -149,6 +150,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: AdminCategoriesWidget.routePath,
           builder: (context, params) =>
               KitungaAdminGuard(child: AdminCategoriesWidget()),
+        ),
+        FFRoute(
+          name: AdminDeliveryPricingWidget.routeName,
+          path: AdminDeliveryPricingWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminDeliveryPricingWidget()),
         ),
         FFRoute(
           name: AdminBannersWidget.routeName,

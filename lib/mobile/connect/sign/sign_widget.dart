@@ -1,5 +1,6 @@
 import '/mobile/main_app/subscription/my_subscription_page.dart';
 import '/backend/kitunga_hours.dart';
+import '/mobile/components/kitunga_zone_field.dart';
 import '/backend/subscription.dart';
 import '/backend/server_payment.dart';
 import '/auth/firebase_auth/auth_util.dart';
@@ -39,6 +40,9 @@ class SignWidget extends StatefulWidget {
 }
 
 class _SignWidgetState extends State<SignWidget> {
+  /// Quartier du commerce (inscription d'un vendeur).
+  String? _shopZone;
+
   late SignModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -1709,6 +1713,19 @@ class _SignWidgetState extends State<SignWidget> {
                                                       .text = v,
                                                 ),
                                               ),
+                                            // Commerce : quartier (collecte, frais de livraison).
+                                            if (widget!.accessibility == 'Seller' ||
+                                                _model.userTypeValue == 'Vendeur')
+                                              Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        20.0, 14.0, 20.0, 0.0),
+                                                child: KitungaShopZoneField(
+                                                  value: _shopZone,
+                                                  onChanged: (v) => safeSetState(
+                                                      () => _shopZone = v),
+                                                ),
+                                              ),
                                             Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -2328,6 +2345,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                               ? _model.bioTextController.text
                                                               : 'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
                                                           'horraire': _model.horraireTextController.text,
+                                                          if (_shopZone != null) 'shopZone': _shopZone,
                                                         },
                                                       );
                                                       partnerId = created['uid'] as String;

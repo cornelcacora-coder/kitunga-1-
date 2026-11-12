@@ -59,7 +59,41 @@ class _CartLastWidgetState extends State<CartLastWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  /// Frais calculés par le serveur (distance commerce → client), par
+  /// « commerce|quartier ». Le paiement utilise le même calcul.
+  final Map<String, double> _quotes = {};
+  final Set<String> _quoting = {};
+
   double getDeliveryFeeForZone(String? zone) {
+    final seller = _sellerRef;
+    if (seller != null && zone != null && zone.isNotEmpty) {
+      final key = '${seller.path}|$zone';
+      final quoted = _quotes[key];
+      if (quoted != null) return quoted;
+      if (_quoting.add(key)) {
+        kitungaCallFunction('kitungaDeliveryQuote',
+                {'sellerPath': seller.path, 'zone': zone})
+            .then((r) {
+          final fee = (r['fee'] as num?)?.toDouble();
+          if (fee == null || !mounted) return;
+          safeSetState(() {
+            _quotes[key] = fee;
+            if (_model.zoneValue == zone) {
+              _model.deliveryFees = fee;
+              FFAppState().fixedShippingFee = fee;
+              FFAppState().GrandTotalCart = FFAppState().totalCart + fee;
+            }
+          });
+        }).catchError((_) {
+          _quoting.remove(key); // nouvel essai au prochain affichage
+        });
+      }
+    }
+    // En attendant la réponse du serveur : ancien tarif par quartier.
+    return _zoneFee(zone);
+  }
+
+  double _zoneFee(String? zone) {
     if (zone == null || zone.isEmpty) return 1000.0;
     if ([
       'Makélékélé', 'Centre sportif', 'Kinsoundi', 'Diata', 'Kingouari',

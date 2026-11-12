@@ -591,9 +591,13 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             children: [
+              // Avant la récupération : vers le commerce ; ensuite : le client.
               _TrackingMap(
                   rider: _me,
-                  destination: _zonePoint(o.deliveryZone),
+                  destination: !picked &&
+                          _zonePoint('${_t?['shopZone'] ?? ''}') != null
+                      ? _zonePoint('${_t?['shopZone']}')
+                      : _zonePoint(o.deliveryZone),
                   height: 240),
               if (_gpsProblem != null)
                 Padding(

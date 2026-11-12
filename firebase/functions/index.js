@@ -469,6 +469,15 @@ exports.kitungaPublicCategories = acquisitionCallable(() =>
 exports.kitungaPaymentOptions = callable(() => ({
   mtn: true, airtel: require("./kitunga/airtel").enabled()}));
 
+// ── Tarif de livraison selon la distance ─────────────────────────────────
+const deliveryPricing = require("./kitunga/delivery_pricing");
+/** Frais de livraison affichés dans le panier, avant le paiement. */
+exports.kitungaDeliveryQuote = acquisitionCallable((data, uid) =>
+  deliveryPricing.deliveryQuote({db: admin.firestore(), uid, data}));
+/** L'admin lit ou règle le tarif de livraison. */
+exports.kitungaAdminDeliveryPricing = acquisitionCallable((data, uid) =>
+  deliveryPricing.adminDeliveryPricing({db: admin.firestore(), uid, data}));
+
 /** Démarre un paiement MoMo : montant recalculé par le serveur. */
 exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,

@@ -84,7 +84,11 @@ function resolveOptions(summary, groups) {
  * prescriptionOk : une ordonnance validée par la pharmacie couvre les
  * médicaments sur ordonnance du panier (voir prescriptions.js).
  */
-function priceCart(lines, zone, {prescriptionOk = false} = {}) {
+/**
+ * fee : frais de livraison déjà calculés (distance commerce → client, voir
+ * delivery_pricing.js) ; à défaut, ancien tarif par quartier du client.
+ */
+function priceCart(lines, zone, {prescriptionOk = false, fee: fixedFee} = {}) {
   const errors = [];
   let needsPrescription = false;
   let subtotal = 0;
@@ -123,7 +127,8 @@ function priceCart(lines, zone, {prescriptionOk = false} = {}) {
     subtotal += unit * qty;
     priced.push({...line, quantity: qty, unitPrice: unit, picks: opt.picks});
   }
-  const fee = deliveryFee(zone);
+  const fee = Number.isFinite(Number(fixedFee)) && fixedFee !== null &&
+    fixedFee !== undefined ? Math.round(Number(fixedFee)) : deliveryFee(zone);
   return {errors, lines: priced, subtotal, fee, total: subtotal + fee,
     needsPrescription};
 }

@@ -384,6 +384,7 @@ async function listPartners(db, data) {
       email: u.email || "", phone: u.phone_number || "",
       category: u.category || "", bio: u.bio || "",
       horraire: u.Horraire || "", photoUrl: u.photo_url || "",
+      shopZone: u.shop_zone || "",
       businessCover: u.Business_cover || "", verified: u.verified === true,
       accountStatus: u.account_status || "active",
       accountStatusReason: u.account_status_reason || null,
@@ -396,6 +397,14 @@ async function listPartners(db, data) {
 }
 
 /** Modification de la fiche d'un commerçant, d'un livreur ou d'un client. */
+/** Quartier de commerce valide (liste des quartiers de livraison) ou "". */
+function checkShopZone(v) {
+  const {ZONES} = require("./pricing");
+  const z = text(v, 60);
+  if (z && !ZONES.includes(z)) throw err("invalid-argument", "Quartier inconnu.");
+  return z;
+}
+
 async function savePartner({db, uid, data}) {
   const adminUid = await requireAdmin(db, uid);
   const ref = db.doc(`User/${text(data.uid, 128) || "_"}`);
@@ -430,6 +439,10 @@ async function savePartner({db, uid, data}) {
   }
   if (data.bio !== undefined) changes.bio = text(data.bio, 500);
   if (data.horraire !== undefined) changes.Horraire = text(data.horraire, 120);
+  // Quartier du commerce : point de collecte et calcul des frais.
+  if (data.shopZone !== undefined && role === "Seller") {
+    changes.shop_zone = checkShopZone(data.shopZone);
+  }
   if (data.photoUrl !== undefined) {
     changes.photo_url = imageOf(data.photoUrl, {keep: u.get("photo_url")});
   }

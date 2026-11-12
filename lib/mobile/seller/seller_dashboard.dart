@@ -4,6 +4,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_cuisines.dart';
 import '/backend/kitunga_hours.dart';
+import '/mobile/components/kitunga_zone_field.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -821,6 +822,7 @@ class SellerProfilePage extends StatefulWidget {
 class _SellerProfilePageState extends State<SellerProfilePage> {
   late final _bio = TextEditingController(text: widget.shop.bio);
   late final _hours = TextEditingController(text: widget.shop.horraire);
+  late String? _shopZone = widget.shop.snapshotData['shop_zone'] as String?;
   late String _logo = widget.shop.photoUrl;
 
   /// Restaurants : temps moyen de préparation d'une commande (minutes).
@@ -883,6 +885,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
           photoUrl: _logo,
           businessCover: _cover,
         ),
+        if (_shopZone != null) 'shop_zone': _shopZone,
         if (hasCuisines(widget.shop.category)) 'cuisines': _cuisines.toList(),
         if (hasCuisines(widget.shop.category) && _prep != null)
           'prep_minutes': _prep,
@@ -987,6 +990,11 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
           ),
           SizedBox(height: 16.0),
           KitungaFieldLabel('Horaires d\'ouverture'),
+          KitungaShopZoneField(
+            value: _shopZone,
+            onChanged: (v) => setState(() => _shopZone = v),
+          ),
+          const SizedBox(height: 16),
           KitungaHoursPicker(
             initial: _hours.text,
             onChanged: (v) => setState(() => _hours.text = v),

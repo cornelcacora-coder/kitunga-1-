@@ -9,6 +9,7 @@ import 'admin_products_widget.dart' show loadAdminPartners;
 import 'admin_shell.dart';
 import '/backend/kitunga_cuisines.dart';
 import '/backend/kitunga_hours.dart';
+import '/mobile/components/kitunga_zone_field.dart';
 import 'admin_menu_import.dart';
 import 'admin_launch_partners.dart';
 import '/noc/ui/admin_export.dart';
@@ -584,6 +585,8 @@ class _PartnerFormState extends State<_PartnerForm> {
   late final _phone = TextEditingController(text: _p['phone'] ?? '');
   late final _bio = TextEditingController(text: _p['bio'] ?? '');
   late final _hours = TextEditingController(text: _p['horraire'] ?? '');
+  late String? _shopZone =
+      '${_p['shopZone'] ?? ''}'.isEmpty ? null : '${_p['shopZone']}';
   late String? _category = widget.categories.contains(_p['category'])
       ? _p['category'] as String
       : null;
@@ -627,6 +630,7 @@ class _PartnerFormState extends State<_PartnerForm> {
               if (_seller) ...{
                 'category': _category,
                 'horraire': _hours.text.trim(),
+                if (_shopZone != null) 'shopZone': _shopZone,
                 'businessCover': _cover,
                 if (hasCuisines(_category ?? ''))
                   'cuisines': _cuisines.toList(),
@@ -690,6 +694,11 @@ class _PartnerFormState extends State<_PartnerForm> {
             ),
         ]),
         if (_seller) ...[
+          KitungaShopZoneField(
+            value: _shopZone,
+            onChanged: (v) => setState(() => _shopZone = v),
+          ),
+          const SizedBox(height: 12),
           Text('Horaires d\'ouverture', style: salesBody(color: kSalesInk)),
           KitungaHoursPicker(
             initial: _hours.text,
@@ -755,6 +764,7 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _hours = TextEditingController();
+  String? _shopZone;
   final _bio = TextEditingController();
   String? _category;
   String _photo = '';
@@ -808,6 +818,7 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         'verified': _verified,
         'bio': _bio.text.trim(),
         'horraire': _hours.text.trim(),
+        if (_seller && _shopZone != null) 'shopZone': _shopZone,
       });
       // Logo et couverture : ajoutés à la fiche juste après la création.
       if (_photo.isNotEmpty || _cover.isNotEmpty || _cuisines.isNotEmpty) {
@@ -969,6 +980,11 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
             ),
         ]),
         if (_seller) ...[
+          KitungaShopZoneField(
+            value: _shopZone,
+            onChanged: (v) => setState(() => _shopZone = v),
+          ),
+          const SizedBox(height: 12),
           Text('Horaires d\'ouverture', style: salesBody(color: kSalesInk)),
           KitungaHoursPicker(
             // Fiche prête : ses horaires remplacent la saisie.

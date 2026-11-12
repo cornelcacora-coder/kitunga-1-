@@ -92,6 +92,8 @@ async function deliveryTracking({db, uid, data}) {
   return {
     status: o.get("status") || "",
     zone: o.get("delivery_zone") || "",
+    shopZone: o.get("shop_zone") || "",
+    km: o.get("delivery_km") ?? null,
     address: o.get("delivery_location") || "",
     acceptedAt: iso(o.get("accepted_at") || o.get("status_updated_at")),
     readyAt: iso(o.get("ready_at")),
