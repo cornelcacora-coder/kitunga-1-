@@ -1,3 +1,4 @@
+import '/mobile/components/messaging/kitunga_messages.dart' show KitungaConversationsPage;
 import '/mobile/components/support/kitunga_support.dart' show openKitungaSupport;
 import '/mobile/main_app/subscription/my_subscription_page.dart';
 import '/auth/firebase_auth/auth_util.dart';
@@ -434,6 +435,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                 // Demandes écrites au support Kitunga (tickets).
                 _item(theme, Icons.forum_outlined, 'Mes demandes au support',
                     () => openKitungaSupport(context)),
+                _item(theme, Icons.chat_bubble_outline_rounded, 'Mes messages',
+                    () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const KitungaConversationsPage(
+                            showAppBar: true)))),
                 _item(
                     theme,
                     Icons.description_outlined,

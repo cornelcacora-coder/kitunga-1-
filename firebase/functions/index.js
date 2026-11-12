@@ -521,6 +521,25 @@ exports.kitungaSupportAgents = acquisitionCallable((data, uid) =>
 exports.kitungaAdminSetSupport = acquisitionCallable((data, uid) =>
   support.adminSetSupport({db: admin.firestore(), uid, data}));
 
+// ── Finances : grand livre, gains, versements ────────────────────────────
+const finance = require("./kitunga/finance");
+/** Règlement d'une commande livrée (et annulation si remboursée). */
+exports.kitungaOrderFinance = functions.region("us-west1")
+    .firestore.document("Orders/{orderId}")
+    .onWrite((change) => finance.onOrderFinance({db: admin.firestore(),
+      after: change.after}));
+exports.kitungaMyEarnings = acquisitionCallable((data, uid) =>
+  finance.myEarnings({db: admin.firestore(), uid}));
+exports.kitungaAdminFinanceSettings = acquisitionCallable((data, uid) =>
+  finance.adminFinanceSettings({db: admin.firestore(), uid, data}));
+exports.kitungaAdminRecordPayout = acquisitionCallable((data, uid) =>
+  finance.adminRecordPayout({db: admin.firestore(),
+    messaging: admin.messaging(), uid, data}));
+exports.kitungaAdminFinanceOverview = acquisitionCallable((data, uid) =>
+  finance.adminFinanceOverview({db: admin.firestore(), uid}));
+exports.kitungaAdminAccountLedger = acquisitionCallable((data, uid) =>
+  finance.adminAccountLedger({db: admin.firestore(), uid, data}));
+
 // ── Suivi en direct de la livraison ──────────────────────────────────────
 const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>

@@ -47,6 +47,7 @@ class AdminPaths {
   static const zones = '/zones';
   static const deliveryPricing = '/tarif-livraison';
   static const support = '/support';
+  static const finance = '/finances';
   static const alerts = '/alertes';
   static const missingImages = '/produits?sansImage=1';
 }
@@ -94,6 +95,8 @@ const List<AdminNavGroup> kAdminMenu = [
         path: AdminPaths.clients),
   ]),
   const AdminNavGroup('Gestion', Icons.admin_panel_settings_rounded, [
+    AdminNavItem('finance', 'Finances', Icons.payments_rounded,
+        path: AdminPaths.finance),
     AdminNavItem('ops', 'Remboursements & comptes',
         Icons.account_balance_wallet_rounded,
         path: AdminPaths.ops),

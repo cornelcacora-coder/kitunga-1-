@@ -16,6 +16,8 @@ import '/mobile/components/delivery/kitunga_deliverer_panel.dart';
 import '/mobile/components/delivery/kitunga_delivery.dart'
     show kitungaTakeDelivery;
 import '/mobile/components/delivery/kitunga_live_tracking.dart';
+import '/mobile/components/finance/kitunga_earnings.dart'
+    show kitungaMyEarnings, openKitungaEarnings;
 import '/mobile/components/kitunga_contact.dart' show kCompanyPhones;
 import '/mobile/components/support/kitunga_support.dart'
     show openKitungaSupport;
@@ -115,6 +117,17 @@ class _KitungaDelivererHomeState extends State<KitungaDelivererHome> {
   Timer? _ping;
   Timer? _tick;
 
+  // Gains du jour (grand livre du serveur), rechargés après chaque course
+  // livrée.
+  num? _earnedToday;
+  int _deliveredSeen = -1;
+
+  void _loadEarnings() {
+    kitungaMyEarnings().then((r) {
+      if (mounted) setState(() => _earnedToday = r['today'] as num?);
+    }).catchError((_) {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -175,15 +188,27 @@ class _KitungaDelivererHomeState extends State<KitungaDelivererHome> {
     return DelivererStateBuilder(
       builder: (context, state) => StreamBuilder<List<OrdersRecord>>(
         stream: _mineStream,
-        builder: (context, mineSnap) => StreamBuilder<List<OrdersRecord>>(
-          stream: _openStream,
-          builder: (context, openSnap) => _DelivererHomeBody(
-            state: state,
-            mine: mineSnap.data,
-            open: openSnap.data,
-            offline: mineSnap.hasError || openSnap.hasError,
-          ),
-        ),
+        builder: (context, mineSnap) {
+          final delivered = (mineSnap.data ?? const <OrdersRecord>[])
+              .where((o) => OrderStatus.successful.contains(o.status))
+              .length;
+          if (mineSnap.hasData && delivered != _deliveredSeen &&
+              !delivererSimulated) {
+            _deliveredSeen = delivered;
+            WidgetsBinding.instance
+                .addPostFrameCallback((_) => _loadEarnings());
+          }
+          return StreamBuilder<List<OrdersRecord>>(
+            stream: _openStream,
+            builder: (context, openSnap) => _DelivererHomeBody(
+              state: state,
+              mine: mineSnap.data,
+              open: openSnap.data,
+              offline: mineSnap.hasError || openSnap.hasError,
+              earnedToday: _earnedToday,
+            ),
+          );
+        },
       ),
     );
   }
@@ -195,12 +220,16 @@ class _DelivererHomeBody extends StatelessWidget {
     required this.mine,
     required this.open,
     required this.offline,
+    this.earnedToday,
   });
 
   final DelivererState state;
   final List<OrdersRecord>? mine;
   final List<OrdersRecord>? open;
   final bool offline;
+
+  /// Gains du jour selon le serveur (null tant qu'ils ne sont pas chargés).
+  final num? earnedToday;
 
   @override
   Widget build(BuildContext context) {
@@ -251,7 +280,7 @@ class _DelivererHomeBody extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
-          _Header(state: state, feesToday: feesToday,
+          _Header(state: state, feesToday: earnedToday ?? feesToday,
               coursesToday: doneToday.length),
           if (offline)
             const _Notice(
@@ -352,8 +381,8 @@ class _DelivererHomeBody extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
             child: Text(
-              'Les frais de livraison affichés sont ceux payés par les '
-              'clients pour vos courses livrées aujourd\'hui.',
+              'Gains calculés par Kitunga à chaque course livrée ; le '
+              'détail et vos versements sont dans « Mes gains ».',
               style: GoogleFonts.inter(
                   fontSize: 11.5, color: theme.secondaryText),
             ),
@@ -385,7 +414,7 @@ class _Header extends StatelessWidget {
       required this.coursesToday});
 
   final DelivererState state;
-  final double feesToday;
+  final num feesToday;
   final int coursesToday;
 
   @override
@@ -500,11 +529,11 @@ class _Header extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _MoneyCard(
-                      title: 'Frais du jour',
+                      title: 'Gains du jour',
                       value: _fcfa(feesToday),
                       colors: const [Color(0xFF2A2F3A), Color(0xFF151922)],
-                      button: 'Mes courses',
-                      onTap: () => context.pushNamed(OrderWidget.routeName),
+                      button: 'Mes gains',
+                      onTap: () => openKitungaEarnings(context),
                     ),
                   ),
                   const SizedBox(width: 12),

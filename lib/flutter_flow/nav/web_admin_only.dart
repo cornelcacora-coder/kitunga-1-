@@ -34,6 +34,7 @@ const _webAdminPaths = {
   '/zones',
   '/tarif-livraison',
   '/support',
+  '/finances',
   '/forgotPassword',
   '/forgotPasswordLink',
 };

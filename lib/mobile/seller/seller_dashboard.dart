@@ -1,3 +1,9 @@
+import '/mobile/components/finance/kitunga_earnings.dart'
+    show openKitungaEarnings;
+import '/mobile/components/messaging/kitunga_messages.dart'
+    show KitungaConversationsPage;
+import '/mobile/components/support/kitunga_support.dart'
+    show openKitungaSupport;
 import '/flutter_flow/upload_data.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/auth/firebase_auth/auth_util.dart';
@@ -343,6 +349,23 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
         icon: Icons.receipt_long_outlined,
         label: 'Mes commandes',
         onTap: () => context.pushNamed(OrderWidget.routeName),
+      ),
+      // Grand livre : ventes livrées, commission, versements de Kitunga.
+      (
+        icon: Icons.account_balance_wallet_outlined,
+        label: 'Mes revenus',
+        onTap: () => openKitungaEarnings(context, seller: true),
+      ),
+      (
+        icon: Icons.forum_outlined,
+        label: 'Messages',
+        onTap: () => _push(
+            context, const KitungaConversationsPage(showAppBar: true)),
+      ),
+      (
+        icon: Icons.support_agent_outlined,
+        label: 'Aide & support',
+        onTap: () => openKitungaSupport(context),
       ),
       if (shop.category == 'Pharmacie')
         (

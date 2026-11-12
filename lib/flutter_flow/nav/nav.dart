@@ -6,6 +6,7 @@ import '/noc/admin/admin_categories_widget.dart';
 import '/noc/admin/admin_banners_widget.dart';
 import '/noc/admin/admin_delivery_pricing_widget.dart';
 import '/noc/support/support_workspace.dart';
+import '/noc/admin/admin_finance_widget.dart';
 import '/noc/admin/admin_clients_widget.dart';
 import '/noc/admin/admin_dashboard_widget.dart';
 import '/noc/admin/admin_monitoring_widgets.dart';
@@ -151,6 +152,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: AdminCategoriesWidget.routePath,
           builder: (context, params) =>
               KitungaAdminGuard(child: AdminCategoriesWidget()),
+        ),
+        FFRoute(
+          name: AdminFinanceWidget.routeName,
+          path: AdminFinanceWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminFinanceWidget()),
         ),
         // Espace du support client : agents « Support » et admins.
         FFRoute(
