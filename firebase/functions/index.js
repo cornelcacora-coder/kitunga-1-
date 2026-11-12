@@ -553,6 +553,39 @@ exports.kitungaAdminSupervision = acquisitionCallable((data, uid) =>
 exports.kitungaAdminDelivererHistory = acquisitionCallable((data, uid) =>
   supervision.adminDelivererHistory({db: admin.firestore(), uid, data}));
 
+// ── Espace professionnel du livreur ──────────────────────────────────────
+const pro = require("./kitunga/deliverer_pro");
+exports.kitungaSubmitDocument = acquisitionCallable((data, uid) =>
+  pro.submitDocument({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaMyDocuments = acquisitionCallable((data, uid) =>
+  pro.myDocuments({db: admin.firestore(), uid, data}));
+exports.kitungaAdminDocuments = acquisitionCallable((data, uid) =>
+  pro.adminDocuments({db: admin.firestore(), uid, data}));
+exports.kitungaAdminReviewDocument = acquisitionCallable((data, uid) =>
+  pro.adminReviewDocument({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaRateDelivery = acquisitionCallable((data, uid) =>
+  pro.rateDelivery({db: admin.firestore(), uid, data}));
+exports.kitungaMyPerformance = acquisitionCallable((data, uid) =>
+  pro.myPerformance({db: admin.firestore(), uid, data}));
+exports.kitungaRequestWithdrawal = acquisitionCallable((data, uid) =>
+  pro.requestWithdrawal({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaMyWithdrawals = acquisitionCallable((data, uid) =>
+  pro.myWithdrawals({db: admin.firestore(), uid, data}));
+exports.kitungaAdminWithdrawals = acquisitionCallable((data, uid) =>
+  pro.adminWithdrawals({db: admin.firestore(), uid, data}));
+exports.kitungaAdminDecideWithdrawal = acquisitionCallable((data, uid) =>
+  pro.adminDecideWithdrawal({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaReportDelay = acquisitionCallable((data, uid) =>
+  pro.reportDelay({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaArrivedAtShop = acquisitionCallable((data, uid) =>
+  pro.arrivedAtShop({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaSetEmergencyContact = acquisitionCallable((data, uid) =>
+  pro.setEmergencyContact({db: admin.firestore(), uid, data}));
+exports.kitungaSafetyAlert = acquisitionCallable((data, uid) =>
+  pro.safetyAlert({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaMyMissions = acquisitionCallable((data, uid) =>
+  pro.myMissions({db: admin.firestore(), uid, data}));
+
 // ── Suivi en direct de la livraison ──────────────────────────────────────
 const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>

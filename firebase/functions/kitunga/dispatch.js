@@ -37,6 +37,7 @@ const UNKNOWN_KM = 5;
 
 const DEFAULTS = {
   auto: true, // false : ouverte à tous (premier qui accepte)
+  require_verified: false, // true : livreurs aux documents validés
   offer_seconds: 60,
   max_attempts: 3,
   capacity: {moto: 2, voiture: 3},
@@ -87,6 +88,8 @@ async function rankDeliverers({db, order, exclude = [], settings,
   for (const u of users.docs) {
     if (exclude.includes(u.id)) continue;
     if (u.get("account_status") === "suspended") continue;
+    // Option de l'admin : seulement les livreurs aux documents validés.
+    if (settings.require_verified && u.get("verified") !== true) continue;
     const zones = u.get("delivery_zones") || [];
     if (zones.length && zone && !zones.includes(zone)) continue;
     const vehicle = VEHICLES.includes(u.get("vehicle")) ?
@@ -334,6 +337,7 @@ async function adminDispatchSettings({db, uid, data}) {
       return Math.round(x);
     };
     const next = {auto: s.auto !== false,
+      require_verified: s.require_verified === true,
       offer_seconds: n(s.offer_seconds, 15, 600),
       max_attempts: n(s.max_attempts, 1, 10),
       capacity: {moto: n((s.capacity || {}).moto, 1, 10),
@@ -345,7 +349,8 @@ async function adminDispatchSettings({db, uid, data}) {
       details: next, created_at: ts()});
   }
   const s = await loadSettings(db);
-  return {settings: {auto: s.auto, offer_seconds: s.offer_seconds,
+  return {settings: {auto: s.auto, require_verified: s.require_verified,
+    offer_seconds: s.offer_seconds,
     max_attempts: s.max_attempts, capacity: s.capacity}};
 }
 

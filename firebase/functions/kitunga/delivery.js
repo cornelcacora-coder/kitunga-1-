@@ -23,10 +23,21 @@ const text = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 const MAX_ATTEMPTS = 5;
 const DELIVERED = ["Livrer", "Reçu", "Non Reçu"];
 const ISSUES = {
+  // Chez le commerce.
+  shop_absent: "Commerce fermé ou vendeur absent",
+  not_ready: "Commande pas prête",
+  wrong_order: "Commande incorrecte",
+  missing_item: "Produit manquant",
+  // Chez le client.
   absent: "Client injoignable",
   refused: "Commande refusée par le client",
   address: "Adresse introuvable",
   damaged: "Colis abîmé",
+  // Pendant le trajet.
+  breakdown: "Véhicule en panne",
+  accident: "Accident ou problème de sécurité",
+  gps: "Problème de GPS",
+  payment: "Problème de paiement",
   other: "Autre problème",
 };
 

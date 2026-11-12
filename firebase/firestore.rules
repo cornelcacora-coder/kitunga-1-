@@ -68,7 +68,11 @@ service cloud.firestore {
             <= request.time + duration.value(1, 'h');
       allow update: if signedIn() && request.auth.uid == document
         && subscriptionUnchanged()
-        && roleChangeAllowed();
+        && roleChangeAllowed()
+        // Note, vérification, position, contact d'urgence : serveur seul.
+        && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['rating_sum', 'rating_count', 'verification',
+              'last_position', 'emergency_contact']);
       // À la création d'un partenaire, l'administrateur ajoute son logo et sa
       // couverture. Il ne peut rien modifier d'autre sur ce profil.
       allow update: if isAdmin()
@@ -172,7 +176,7 @@ service cloud.firestore {
           'shop_zone', 'delivery_km', 'arrived_at', 'delivery_status',
           'finance_status', 'status_actor', 'status_reason', 'offer_to',
           'offer_expires_at', 'dispatch_reason', 'settled_at', 'settlement',
-          'settlement_reversed_at',
+          'settlement_reversed_at', 'rating', 'delay', 'at_shop_at',
           'ready_at', 'stale_alert_at',
           'prescription_ref', 'prescription_photos',
           'return_status', 'return_reason', 'return_wish', 'return_note',
