@@ -315,7 +315,7 @@ class _Header extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          height: top + 232,
+          height: top + 248,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
                 colors: [_red, _redDark],
@@ -429,7 +429,7 @@ class _Header extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 34),
               IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

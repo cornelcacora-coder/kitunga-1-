@@ -20,7 +20,11 @@ import '/mobile/components/finance/kitunga_earnings.dart'
     show kitungaMyEarnings, openKitungaEarnings;
 import '/mobile/components/kitunga_contact.dart' show kCompanyPhones;
 import 'kitunga_deliverer_pro.dart'
-    show DelivererDocumentsPage, DelivererSafetyPage, kVerification;
+    show
+        DelivererDocumentsPage,
+        DelivererPerformancePage,
+        DelivererSafetyPage,
+        kVerification;
 import '/mobile/components/support/kitunga_support.dart'
     show openKitungaSupport;
 
@@ -366,7 +370,13 @@ class _DelivererHomeBody extends StatelessWidget {
                   }
                 },
               ),
-          const _SectionTitle(title: 'Aperçu'),
+          // Statistiques détaillées : page « Mes performances ».
+          _SectionTitle(
+            title: 'Aperçu',
+            action: 'Mes performances',
+            onAction: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const DelivererPerformancePage())),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -481,7 +491,7 @@ class _Header extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          height: top + 232,
+          height: top + 248,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [_red, _redDark],
@@ -608,7 +618,7 @@ class _Header extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 34),
               // 3. Chiffres du jour (cartes entières cliquables).
               IntrinsicHeight(
                 child: Row(
