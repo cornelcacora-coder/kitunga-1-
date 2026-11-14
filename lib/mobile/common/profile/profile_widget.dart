@@ -411,7 +411,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   if (role == 'User')
                     _item(theme, Icons.workspace_premium_outlined,
                         'Mon abonnement', () => openMySubscription(context)),
-                  _item(theme, Icons.lock_outline_rounded, 'Sécurité',
+                  _item(theme, Icons.lock_outline_rounded, 'Compte et sécurité',
                       () => context.pushNamed(SecurityWidget.routeName)),
                 ]),
               _group(theme, 'Préférences', [

@@ -62,6 +62,14 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                     icon: Icons.phone_outlined,
                     label: 'Téléphone',
                     value: currentPhoneNumber),
+                if ('${currentUserDocument?.snapshotData['phone_number_2'] ?? ''}'
+                    .trim()
+                    .isNotEmpty)
+                  _Row(
+                      icon: Icons.phone_android_outlined,
+                      label: 'Autre numéro',
+                      value:
+                          '${currentUserDocument?.snapshotData['phone_number_2']}'),
                 _Row(
                     icon: Icons.notes_rounded,
                     label: 'Présentation',

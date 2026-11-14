@@ -31,6 +31,10 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
   final _form = GlobalKey<FormState>();
   bool _saving = false;
 
+  /// Second numéro (facultatif) : autre opérateur, numéro de travail…
+  late final TextEditingController _phone2 = TextEditingController(
+      text: '${currentUserDocument?.snapshotData['phone_number_2'] ?? ''}');
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +49,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
 
   @override
   void dispose() {
+    _phone2.dispose();
     _model.dispose();
     super.dispose();
   }
@@ -85,13 +90,16 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
     setState(() => _saving = true);
     try {
       final photo = _model.uploadedFileUrl_userPictureUpladed;
-      await currentUserReference!.update(createUserRecordData(
-        displayName: _model.nameTextController!.text.trim(),
-        phoneNumber: _model.telephoneTextController!.text.trim(),
-        bio: _model.bioTextController!.text.trim(),
-        // Pas de nouvelle photo : on garde l'ancienne.
-        photoUrl: photo.isNotEmpty ? photo : null,
-      ));
+      await currentUserReference!.update({
+        ...createUserRecordData(
+          displayName: _model.nameTextController!.text.trim(),
+          phoneNumber: _model.telephoneTextController!.text.trim(),
+          bio: _model.bioTextController!.text.trim(),
+          // Pas de nouvelle photo : on garde l'ancienne.
+          photoUrl: photo.isNotEmpty ? photo : null,
+        ),
+        'phone_number_2': _phone2.text.trim(),
+      });
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Profil enregistré.')));
@@ -200,8 +208,23 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                   controller: _model.telephoneTextController,
                   focusNode: _model.telephoneFocusNode,
                   keyboardType: TextInputType.phone,
-                  decoration: deco('Téléphone', Icons.phone_outlined,
+                  decoration: deco('Téléphone principal', Icons.phone_outlined,
                       hint: 'Ex. 06 123 45 67'),
+                  validator: (v) {
+                    final digits = (v ?? '').replaceAll(RegExp(r'\D'), '');
+                    if (digits.isEmpty) return null;
+                    return digits.length < 9
+                        ? 'Numéro incomplet (9 chiffres).'
+                        : null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _phone2,
+                  keyboardType: TextInputType.phone,
+                  decoration: deco('Autre numéro (facultatif)',
+                      Icons.phone_android_outlined,
+                      hint: 'Ex. 05 123 45 67 (Airtel)'),
                   validator: (v) {
                     final digits = (v ?? '').replaceAll(RegExp(r'\D'), '');
                     if (digits.isEmpty) return null;

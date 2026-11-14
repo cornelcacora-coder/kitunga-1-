@@ -285,9 +285,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
     final typed = _model.paymentMethodModel.phoneController.text.trim();
     final raw = typed.isNotEmpty
         ? typed
-        : (widget.mtnNumber ?? '').trim().isNotEmpty
-            ? widget.mtnNumber!.trim()
-            : currentPhoneNumber;
+        : _mtnDefault.trim();
     var phone = raw.replaceAll(RegExp(r'[^0-9]'), '');
     if (phone.startsWith('06') && phone.length == 9) {
       phone = '242$phone';
@@ -395,6 +393,23 @@ class _CartLastWidgetState extends State<CartLastWidget> {
     if (paid) router.pushNamed(HomeWidget.routeName);
   }
 
+  /// Numéro MTN du compte : le principal, sinon le second s'il est MTN
+  /// (06…), pour préremplir le paiement.
+  String get _mtnDefault {
+    if ((widget.mtnNumber ?? '').isNotEmpty) return widget.mtnNumber!;
+    final second =
+        '${currentUserDocument?.snapshotData['phone_number_2'] ?? ''}'.trim();
+    bool mtn(String n) {
+      final d = n.replaceAll(RegExp(r'\D'), '');
+      final local = d.startsWith('242') ? d.substring(3) : d;
+      return local.startsWith('06');
+    }
+    if (!mtn(currentPhoneNumber) && second.isNotEmpty && mtn(second)) {
+      return second;
+    }
+    return currentPhoneNumber;
+  }
+
   void _back() {
     if (Navigator.of(context).canPop()) {
       context.safePop();
@@ -498,9 +513,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                   (widget.airtelNumber ?? '').isNotEmpty
                                       ? widget.airtelNumber!
                                       : currentPhoneNumber,
-                              mtnNumber: (widget.mtnNumber ?? '').isNotEmpty
-                                  ? widget.mtnNumber!
-                                  : currentPhoneNumber,
+                              mtnNumber: _mtnDefault,
                               isMoMo: () async {
                                 _model.paymentMethodModel.isMoMoValue = true;
                                 safeSetState(() {});
