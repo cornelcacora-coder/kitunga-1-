@@ -189,15 +189,13 @@ class _OrderViewSellerDeliverWidgetState
                           snapshot.data!;
                       if (listViewOrderItemsRecordList.isEmpty) {
                         return EmptyCardWidget(
-                          title: 'Panier vide !',
+                          title: 'Articles non disponibles',
                           description:
-                              'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
-                          buttonText: 'Explorer',
+                              'Le détail des articles de cette commande n\'est pas disponible.',
+                          buttonText: 'Retour',
                           photo:
                               'assets/images/app/emptycart.png',
-                          action: () async {
-                            context.pushNamed(HomeWidget.routeName);
-                          },
+                          action: () async => context.safePop(),
                         );
                       }
 
@@ -289,7 +287,7 @@ class _OrderViewSellerDeliverWidgetState
                                               Text(
                                                 valueOrDefault<String>(
                                                   productProductRecord.name,
-                                                  'Aucun produit Dispo',
+                                                  'Produit indisponible',
                                                 ),
                                                 maxLines: 1,
                                                 style:
@@ -344,7 +342,7 @@ class _OrderViewSellerDeliverWidgetState
                                                     valueOrDefault<String>(
                                                       productProductRecord
                                                           .specifications,
-                                                      'Aucune specification',
+                                                      'Aucune précision',
                                                     ),
                                                     style: FlutterFlowTheme.of(
                                                             context)

@@ -376,7 +376,7 @@ class _SellerReviewsState extends State<SellerReviewsPage> {
                                   fontSize: 12, color: theme.secondaryText)),
                         ],
                       ),
-                      if ('${r['comment']}'.isNotEmpty)
+                      if ((r['comment'] ?? '').toString().isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text('${r['comment']}',
@@ -587,7 +587,7 @@ class _SellerStockState extends State<SellerStockPage> {
                       style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
                   subtitle: Text(
                       '${m['before']} → ${m['after']}'
-                      '${'${m['reason']}'.isEmpty ? '' : ' · ${m['reason']}'}'),
+                      '${(m['reason'] ?? '').toString().isEmpty ? '' : ' · ${m['reason']}'}'),
                   trailing: Text(
                       m['at'] == null
                           ? ''

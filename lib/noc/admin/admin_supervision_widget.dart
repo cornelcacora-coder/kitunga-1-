@@ -291,7 +291,7 @@ class _AdminSupervisionState extends State<AdminSupervisionWidget> {
                                     child: Text(
                                         '${i['reference']} · ${i['zone']} · '
                                         '${i['label']}'
-                                        '${'${i['note']}'.isEmpty ? '' : ' — ${i['note']}'}',
+                                        '${(i['note'] ?? '').toString().isEmpty ? '' : ' — ${i['note']}'}',
                                         style: salesBody()),
                                   ),
                                 ],

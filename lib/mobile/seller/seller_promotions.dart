@@ -262,7 +262,7 @@ class _SellerPromotionsPageState extends State<SellerPromotionsPage> {
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700)),
           ),
-          if (b['status'] == 'rejected' && '${b['reviewNote']}'.isNotEmpty)
+          if (b['status'] == 'rejected' && (b['reviewNote'] ?? '').toString().isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 6.0),
               child: Text('Motif : ${b['reviewNote']} — modifiez-la puis '

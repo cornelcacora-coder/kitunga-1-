@@ -459,7 +459,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Veuillez entré le meme mot de passe svp',
+                                'Les deux mots de passe ne correspondent pas.',
                                 style: TextStyle(
                                   color:
                                       FlutterFlowTheme.of(context).primaryText,

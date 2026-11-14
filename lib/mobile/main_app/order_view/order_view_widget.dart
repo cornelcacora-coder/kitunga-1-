@@ -8,6 +8,7 @@ import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/mobile/components/order_progress/order_progress_widget.dart';
 import '/mobile/components/product_card/product_card_widget.dart'
     show kitungaPrice;
+import '/mobile/components/kitunga_contact.dart' show kCompanyPhones;
 import '/mobile/components/support/kitunga_support.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -525,7 +526,8 @@ class _HelpTile extends StatelessWidget {
             // Comme avant : contact direct de l'équipe Kitunga sur WhatsApp.
             IconButton(
               tooltip: 'WhatsApp Kitunga',
-              onPressed: () => launchURL('https://wa.me/242069232569'),
+              onPressed: () => launchURL('https://wa.me/242${kCompanyPhones.first}'
+                  '?text=${Uri.encodeComponent('Bonjour Kitunga, au sujet de la commande ${reference} : ')}'),
               icon: const Icon(Icons.chat_rounded, color: Color(0xFF1E9E5A)),
             ),
           ]),

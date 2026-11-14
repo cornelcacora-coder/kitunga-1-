@@ -655,7 +655,7 @@ class _TermsConditionsWidgetState extends State<TermsConditionsWidget>
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(20.0, 16.0, 20.0, 0.0),
                 child: Text(
-                  'Pour toute question, préoccupation ou exercice de vos droits concernant vos données personnelles, vous pouvez contacter le Responsable de la Protection des Données de Kitunga :\n\nSociété : NTEMO CONSULTING\n\nAdresse : Brazzaville, République du Congo\n\nTéléphone / WhatsApp : +242 06 431 38 08 / +242 05 019 57 68\n\nE-mail de support : support@kitunga.io\n\nSite Web : ntemoconsulting.com',
+                  'Pour toute question, préoccupation ou exercice de vos droits concernant vos données personnelles, vous pouvez contacter le Responsable de la Protection des Données de Kitunga :\n\nSociété : NTEMO CONSULTING\n\nAdresse : Brazzaville, République du Congo\n\nTéléphone / WhatsApp : +242 06 431 38 08 / +242 05 019 57 68\n\nE-mail de support : contact@ntemoconsulting.com\n\nSite Web : ntemoconsulting.com',
                   style: FlutterFlowTheme.of(context).titleSmall.override(
                         font: GoogleFonts.inter(
                           fontWeight: FontWeight.normal,

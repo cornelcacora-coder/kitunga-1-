@@ -75,7 +75,7 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
             },
           ),
           title: Text(
-            'Mot de Passe Oublier',
+            'Mot de passe oublié',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
                   font: GoogleFonts.interTight(
                     fontWeight: FontWeight.w500,

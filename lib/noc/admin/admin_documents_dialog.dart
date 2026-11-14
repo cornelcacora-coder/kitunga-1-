@@ -118,11 +118,11 @@ class _DocumentsDialogState extends State<_DocumentsDialog> {
                                   [
                                     (_status[d['status']]?.$1 ??
                                         '${d['status']}'),
-                                    if ('${d['number']}'.isNotEmpty)
+                                    if ((d['number'] ?? '').toString().isNotEmpty)
                                       'n° ${d['number']}',
                                     if (d['expiresAt'] != null)
                                       'expire le ${dateFr(d['expiresAt'] as String?)}',
-                                    if ('${d['rejectReason']}'.isNotEmpty)
+                                    if ((d['rejectReason'] ?? '').toString().isNotEmpty)
                                       'motif : ${d['rejectReason']}',
                                   ].join(' · '),
                                   style: salesBody(size: 12.5).copyWith(
