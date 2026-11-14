@@ -55,6 +55,12 @@ DateTime? _date(dynamic v) => v is String ? DateTime.tryParse(v) : null;
 
 ll.LatLng? _zonePoint(String zone) => kBrazzavilleZones[zone];
 
+/// Position exacte reçue du serveur ({lat, lng}), ou null.
+ll.LatLng? exactPointOf(dynamic v) => v is Map && v['lat'] is num &&
+        v['lng'] is num
+    ? ll.LatLng((v['lat'] as num).toDouble(), (v['lng'] as num).toDouble())
+    : null;
+
 /// Minutes estimées entre deux points : route ≈ vol d'oiseau × 1,3, à
 /// 22 km/h de moyenne en ville, + 2 min (stationnement, remise).
 int etaMinutes(ll.LatLng a, ll.LatLng b) {
@@ -354,7 +360,9 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
         ? null
         : ll.LatLng((pos['lat'] as num).toDouble(),
             (pos['lng'] as num).toDouble());
-    final dest = _zonePoint('${t['zone'] ?? ''}');
+    // Porte du client si sa position exacte est connue, sinon son quartier.
+    final dest = exactPointOf(t['deliveryPoint']) ??
+        _zonePoint('${t['zone'] ?? ''}');
     final d = t['deliverer'] as Map?;
     final onTheWay = t['status'] == OrderStatus.delivering;
     return Container(
@@ -659,8 +667,16 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
       ..showSnackBar(SnackBar(content: Text(m)));
   }
 
-  void _route(OrdersRecord o) {
-    final dest = _zonePoint(o.deliveryZone);
+  /// Destination du livreur : le commerce avant la récupération, le client
+  /// ensuite ; position exacte si connue, sinon centre du quartier.
+  ll.LatLng? _target(OrdersRecord o, bool picked) => picked
+      ? exactPointOf(_t?['deliveryPoint']) ?? _zonePoint(o.deliveryZone)
+      : exactPointOf(_t?['shopPoint']) ??
+          _zonePoint('${_t?['shopZone'] ?? ''}') ??
+          _zonePoint(o.deliveryZone);
+
+  void _route(OrdersRecord o, bool picked) {
+    final dest = _target(o, picked);
     final url = dest != null
         ? 'https://www.google.com/maps/dir/?api=1&destination='
             '${dest.latitude},${dest.longitude}&travelmode=driving'
@@ -710,12 +726,7 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
             children: [
               // Avant la récupération : vers le commerce ; ensuite : le client.
               _TrackingMap(
-                  rider: _me,
-                  destination: !picked &&
-                          _zonePoint('${_t?['shopZone'] ?? ''}') != null
-                      ? _zonePoint('${_t?['shopZone']}')
-                      : _zonePoint(o.deliveryZone),
-                  height: 240),
+                  rider: _me, destination: _target(o, picked), height: 240),
               if (_gpsProblem != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -780,10 +791,7 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                             fontSize: 13, color: theme.secondaryText)),
                     // Temps estimé depuis ma position (commerce, puis client).
                     Builder(builder: (context) {
-                      final target = !picked &&
-                              _zonePoint('${_t?['shopZone'] ?? ''}') != null
-                          ? _zonePoint('${_t?['shopZone']}')
-                          : _zonePoint(o.deliveryZone);
+                      final target = _target(o, picked);
                       if (_me == null || target == null) {
                         return const SizedBox.shrink();
                       }
@@ -801,9 +809,12 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                     }),
                     const SizedBox(height: 10),
                     OutlinedButton.icon(
-                      onPressed: () => _route(o),
+                      key: const ValueKey('mission-route'),
+                      onPressed: () => _route(o, picked),
                       icon: const Icon(Icons.navigation_rounded),
-                      label: const Text('Itinéraire vers le client'),
+                      label: Text(picked
+                          ? 'Itinéraire vers le client'
+                          : 'Itinéraire vers le commerce'),
                     ),
                   ],
                 ),

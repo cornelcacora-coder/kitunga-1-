@@ -86,9 +86,11 @@ Future<ServerPaymentResult> kitungaServerPay({
   required String deliveryLocation,
   required String phone,
   String operator = 'MTN',
+  Map<String, double>? deliveryPoint,
   Duration timeout = const Duration(minutes: 2),
 }) async {
   final start = await _call('kitungaStartPayment', {
+    if (deliveryPoint != null) 'deliveryPoint': deliveryPoint,
     'sellerPath': sellerRef.path,
     'zone': zone,
     'deliveryLocation': deliveryLocation,

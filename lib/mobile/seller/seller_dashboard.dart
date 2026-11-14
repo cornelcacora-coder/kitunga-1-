@@ -1,3 +1,6 @@
+import '/backend/server_payment.dart' show ServerPaymentException;
+import '/mobile/components/delivery/kitunga_exact_point.dart';
+import 'kitunga_seller_actions.dart' show sellerCall;
 import '/mobile/components/finance/kitunga_earnings.dart'
     show openKitungaEarnings;
 import '/mobile/components/messaging/kitunga_messages.dart'
@@ -846,6 +849,32 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
   late final _bio = TextEditingController(text: widget.shop.bio);
   late final _hours = TextEditingController(text: widget.shop.horraire);
   late String? _shopZone = widget.shop.snapshotData['shop_zone'] as String?;
+
+  /// Position exacte du commerce (point de collecte des livreurs).
+  late Map<String, double>? _shopPoint = () {
+    final p = widget.shop.snapshotData['shop_point'];
+    if (p is! Map || p['lat'] is! num || p['lng'] is! num) return null;
+    return {
+      'lat': (p['lat'] as num).toDouble(),
+      'lng': (p['lng'] as num).toDouble(),
+    };
+  }();
+
+  Future<void> _saveShopPoint(Map<String, double>? p) async {
+    if (p == null) return setState(() => _shopPoint = null);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await sellerCall('kitungaSellerSetLocation', p);
+      if (mounted) setState(() => _shopPoint = p);
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Position du commerce enregistrée.')));
+    } on ServerPaymentException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Connexion impossible. Réessayez.')));
+    }
+  }
   late String _logo = widget.shop.photoUrl;
 
   /// Restaurants : temps moyen de préparation d'une commande (minutes).
@@ -1016,6 +1045,16 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
           KitungaShopZoneField(
             value: _shopZone,
             onChanged: (v) => setState(() => _shopZone = v),
+          ),
+          const SizedBox(height: 12),
+          // À faire une fois, depuis le commerce : collecte à la bonne porte
+          // et frais calculés au plus juste.
+          KitungaExactPointButton(
+            point: _shopPoint,
+            onChanged: _saveShopPoint,
+            label: 'Enregistrer la position du commerce',
+            hint: 'À faire depuis votre commerce : les livreurs viennent à '
+                'la bonne porte.',
           ),
           const SizedBox(height: 16),
           KitungaHoursPicker(

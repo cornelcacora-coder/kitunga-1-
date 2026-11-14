@@ -278,3 +278,22 @@ les actions sur les commandes étaient écrites directement par l'application.
 (propriétaire, gestionnaire, préparateur) — le modèle actuel est d'un compte
 par commerce ; lots et dates d'expiration des produits de pharmacie ;
 substitution d'un produit manquant avec accord du client.
+
+---
+
+## 13. Position exacte (porte à porte)
+
+- **Client** : « Utiliser ma position exacte » dans le panier ; les frais
+  sont recalculés de porte à porte et la position est gardée dans la
+  commande (`delivery_point`).
+- **Commerce** : « Enregistrer la position du commerce » dans Horaires et
+  profil (`kitungaSellerSetLocation`, `shop_point`).
+- **Serveur** : seules les positions situées à Brazzaville sont acceptées ;
+  frais = distance entre positions exactes, sinon centres de quartier ;
+  attribution du livreur depuis la position exacte du commerce.
+- **Livreur** : carte, heure d'arrivée et itinéraire Google Maps vers la
+  porte du commerce, puis du client (« Itinéraire vers le commerce / le
+  client ») ; onglet Carte aux positions exactes.
+- **Client** : suivi vers sa porte, heure d'arrivée depuis la position du
+  livreur.
+- Sans position exacte, tout continue de fonctionner avec le quartier.

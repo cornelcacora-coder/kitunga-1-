@@ -418,11 +418,16 @@ class _KitungaDelivererMapState extends State<KitungaDelivererMap> {
                         !offeredToOther(o, currentUserUid, now) &&
                         delivererCovers(state.zones, o.deliveryZone))
                     .toList();
+            // Position exacte du commerce / du client, sinon le quartier.
             ll.LatLng? pointOf(OrdersRecord o, {bool pickup = false}) {
-              final shop = '${o.snapshotData['shop_zone'] ?? ''}';
-              return pickup && kBrazzavilleZones[shop] != null
-                  ? kBrazzavilleZones[shop]
-                  : kBrazzavilleZones[o.deliveryZone];
+              if (pickup) {
+                final shop = '${o.snapshotData['shop_zone'] ?? ''}';
+                return exactPointOf(o.snapshotData['shop_point']) ??
+                    kBrazzavilleZones[shop] ??
+                    kBrazzavilleZones[o.deliveryZone];
+              }
+              return exactPointOf(o.snapshotData['delivery_point']) ??
+                  kBrazzavilleZones[o.deliveryZone];
             }
 
             final markers = <Marker>[

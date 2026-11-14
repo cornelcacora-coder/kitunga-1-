@@ -5,6 +5,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/server_payment.dart';
+import '/mobile/components/delivery/kitunga_exact_point.dart';
 import '/backend/subscription.dart';
 import '/components/payment_method_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
@@ -64,15 +65,22 @@ class _CartLastWidgetState extends State<CartLastWidget> {
   final Map<String, double> _quotes = {};
   final Set<String> _quoting = {};
 
+  /// Position exacte du client (facultative) : frais de porte à porte.
+  Map<String, double>? _deliveryPoint;
+
   double getDeliveryFeeForZone(String? zone) {
     final seller = _sellerRef;
     if (seller != null && zone != null && zone.isNotEmpty) {
-      final key = '${seller.path}|$zone';
+      final key = '${seller.path}|$zone|'
+          '${_deliveryPoint?['lat']},${_deliveryPoint?['lng']}';
       final quoted = _quotes[key];
       if (quoted != null) return quoted;
       if (_quoting.add(key)) {
-        kitungaCallFunction('kitungaDeliveryQuote',
-                {'sellerPath': seller.path, 'zone': zone})
+        kitungaCallFunction('kitungaDeliveryQuote', {
+          'sellerPath': seller.path,
+          'zone': zone,
+          if (_deliveryPoint != null) 'point': _deliveryPoint,
+        })
             .then((r) {
           final fee = (r['fee'] as num?)?.toDouble();
           if (fee == null || !mounted) return;
@@ -1325,6 +1333,20 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                           ),
                                         ),
                                       ),
+                                      // Position exacte : livraison à la porte.
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 10.0),
+                                        child: KitungaExactPointButton(
+                                          point: _deliveryPoint,
+                                          onChanged: (p) => safeSetState(() {
+                                            _deliveryPoint = p;
+                                            final fee = getDeliveryFeeForZone(_model.zoneValue);
+                                            _model.deliveryFees = fee;
+                                            FFAppState().fixedShippingFee = fee;
+                                            FFAppState().GrandTotalCart = FFAppState().totalCart + fee;
+                                          }),
+                                        ),
+                                      ),
                                       InkWell(
                                         splashColor: Colors.transparent,
                                         focusColor: Colors.transparent,
@@ -2463,6 +2485,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
         deliveryLocation: _model.locationTextController.text,
         phone: phone,
         operator: operator,
+        deliveryPoint: _deliveryPoint,
       );
       switch (r.status) {
         case 'paid':
