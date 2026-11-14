@@ -16,20 +16,21 @@ const db = admin.firestore();
 // « _p~iF~ps|U_ulLnnqC_mqNvxq`@ » : 3 points (exemple de la doc Google).
 const POLY = "_p~iF~ps|U_ulLnnqC_mqNvxq`@";
 let calls = 0;
-const google = {get: async (url, opts) => {
+const google = {post: async (url, body, opts) => {
   calls++;
-  assert.match(url, /directions\/json/);
-  return {data: {status: "OK", routes: [{overview_polyline: {points: POLY},
-    legs: [{distance: {value: 9600}, duration: {value: 1500},
-      duration_in_traffic: opts.params.departure_time ?
-        {value: 2100} : undefined}]}]}};
+  assert.match(url, /routes\.googleapis\.com\/directions\/v2:computeRoutes/);
+  assert.strictEqual(opts.headers["X-Goog-Api-Key"], "CLE");
+  const traffic = body.routingPreference === "TRAFFIC_AWARE";
+  return {data: {routes: [{distanceMeters: 9600,
+    duration: traffic ? "2100s" : "1500s",
+    polyline: {encodedPolyline: POLY}}]}};
 }};
 const ors = {post: async () => {
   calls++;
   return {data: {routes: [{summary: {distance: 9100, duration: 1320},
     geometry: POLY}]}};
 }};
-const down = {get: async () => {
+const down = {post: async () => {
   throw new Error("réseau");
 }};
 

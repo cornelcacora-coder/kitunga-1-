@@ -4,7 +4,7 @@
 # code : vous la collez quand on vous la demande (elle ne s'affiche pas).
 #
 # Valeur à coller, au choix :
-#   google:VOTRE_CLÉ   Google Maps « Directions API » (vraies routes ET
+#   google:VOTRE_CLÉ   Google Maps « Routes API » (vraies routes ET
 #                      circulation en temps réel) — recommandé.
 #   ors:VOTRE_CLÉ      OpenRouteService (vraies routes, sans circulation,
 #                      gratuit jusqu'à ~2000 calculs par jour).

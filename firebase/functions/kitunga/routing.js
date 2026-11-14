@@ -3,8 +3,8 @@
  * tracé sur la carte).
  *
  * Secret Firebase ROUTING_API_KEY (scripts/routing_cle.sh) :
- *   google:CLÉ  → Google Directions : vraies routes ET circulation en temps
- *                 réel (heure d'arrivée).
+ *   google:CLÉ  → Google Routes API : vraies routes ET circulation en
+ *                 temps réel (heure d'arrivée).
  *   ors:CLÉ     → OpenRouteService : vraies routes (OpenStreetMap), sans
  *                 la circulation.
  *   absent      → pas de service : l'application utilise l'estimation
@@ -69,21 +69,28 @@ const r4 = (v) => Math.round(v * 1e4) / 1e4;
 
 async function callProvider(cfg, from, to, traffic, http) {
   if (cfg.provider === "google") {
-    const res = await http.get(
-        "https://maps.googleapis.com/maps/api/directions/json", {
-          params: {origin: `${from[0]},${from[1]}`,
-            destination: `${to[0]},${to[1]}`, mode: "driving",
-            ...(traffic ? {departure_time: "now"} : {}),
-            region: "cg", language: "fr", key: cfg.key},
-          timeout: 10000});
+    // Google Routes API (remplace l'ancienne Directions API pour les
+    // nouveaux projets). Circulation : TRAFFIC_AWARE (heure d'arrivée).
+    const latLng = (p) => ({location: {latLng: {latitude: p[0],
+      longitude: p[1]}}});
+    const res = await http.post(
+        "https://routes.googleapis.com/directions/v2:computeRoutes", {
+          origin: latLng(from), destination: latLng(to),
+          travelMode: "DRIVE",
+          routingPreference: traffic ? "TRAFFIC_AWARE" : "TRAFFIC_UNAWARE",
+          languageCode: "fr", regionCode: "cg", units: "METRIC",
+        }, {headers: {"Content-Type": "application/json",
+          "X-Goog-Api-Key": cfg.key,
+          "X-Goog-FieldMask":
+            "routes.distanceMeters,routes.duration,routes.polyline"},
+        timeout: 10000});
     const route = res.data && res.data.routes && res.data.routes[0];
-    const leg = route && route.legs && route.legs[0];
-    if (!leg || res.data.status !== "OK") return null;
-    const secs = (traffic && leg.duration_in_traffic) ?
-      leg.duration_in_traffic.value : leg.duration.value;
-    return {meters: leg.distance.value, seconds: secs,
-      polyline: decodePolyline(route.overview_polyline.points),
-      traffic: !!(traffic && leg.duration_in_traffic)};
+    if (!route || !(route.distanceMeters >= 0)) return null;
+    return {meters: route.distanceMeters,
+      seconds: parseInt(String(route.duration || "0s"), 10) || 0,
+      polyline: route.polyline && route.polyline.encodedPolyline ?
+        decodePolyline(route.polyline.encodedPolyline) : [],
+      traffic};
   }
   const res = await http.post(
       "https://api.openrouteservice.org/v2/directions/driving-car",

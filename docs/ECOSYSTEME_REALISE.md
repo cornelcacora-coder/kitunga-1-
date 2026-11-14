@@ -302,7 +302,7 @@ substitution d'un produit manquant avec accord du client.
 
 ## 14. Itinéraires réels par la route
 
-- **Service** : Google Directions (vraies routes + circulation en temps réel,
+- **Service** : Google Routes API (vraies routes + circulation en temps réel,
   recommandé) ou OpenRouteService (vraies routes, sans circulation). Clé
   `ROUTING_API_KEY` installée par `scripts/routing_cle.sh` (`google:CLÉ`,
   `ors:CLÉ` ou `absent`). **À lancer avant `deployer_tout.sh`.**
