@@ -28,3 +28,7 @@ redéployée : `firebase deploy --only functions:functions:corsProxy --force`
 - `bash scripts/deployer_regles_firestore.sh` : règles Firestore. **Seulement
   après la publication de la nouvelle version Android** (voir
   docs/ECOSYSTEME_REALISE.md).
+
+- `bash scripts/routing_cle.sh` : clé du service d'itinéraires réels
+  (`google:CLÉ` recommandé, `ors:CLÉ`, ou `absent`). **À lancer une première
+  fois avant `deployer_tout.sh`** : sans ce secret, le déploiement échoue.

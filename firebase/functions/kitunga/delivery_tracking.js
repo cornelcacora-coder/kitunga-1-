@@ -66,15 +66,51 @@ const inRange = (v, min, max) => typeof v === "number" &&
   Number.isFinite(v) && v >= min && v <= max;
 
 /** Position GPS du livreur pendant la course. */
-async function deliveryPosition({db, uid, data}) {
+/** Destination actuelle du livreur : le commerce, puis le client. */
+function targetOf(o) {
+  const {ZONE_POINTS} = require("./delivery_pricing");
+  const p = (v) => v && typeof v.lat === "number" ? [v.lat, v.lng] : null;
+  if (o.get("picked_up_at")) {
+    return {kind: "client", point: p(o.get("delivery_point")) ||
+      ZONE_POINTS[o.get("delivery_zone") || ""] || null};
+  }
+  return {kind: "shop", point: p(o.get("shop_point")) ||
+    ZONE_POINTS[o.get("shop_zone") || ""] || null};
+}
+
+const ROUTE_EVERY_MS = 60 * 1000;
+
+/**
+ * Position GPS du livreur pendant la course. Au plus une fois par minute
+ * (ou dès que la destination change), le serveur calcule l'itinéraire réel
+ * jusqu'à la destination : distance, heure d'arrivée (avec la circulation
+ * selon le service) et tracé.
+ */
+async function deliveryPosition({db, uid, data, http, now = new Date()}) {
   const o = await requireMyDelivery(db, uid, data);
   const {lat, lng} = data;
   if (!inRange(lat, -90, 90) || !inRange(lng, -180, 180)) {
     throw err("invalid-argument", "Position invalide.");
   }
   const acc = inRange(data.accuracy, 0, 100000) ? data.accuracy : null;
-  await db.doc(`DeliveryTracking/${o.id}`).set({lat, lng, accuracy: acc,
-    deliverer_uid: uid, at: ts()});
+  const ref = db.doc(`DeliveryTracking/${o.id}`);
+  const prev = await ref.get();
+  const update = {lat, lng, accuracy: acc, deliverer_uid: uid, at: ts()};
+  const target = targetOf(o);
+  const last = prev.exists ? toDate(prev.get("route_at")) : null;
+  const due = !last || now - last >= ROUTE_EVERY_MS ||
+    prev.get("route_target") !== target.kind;
+  if (due && target.point) {
+    const r = await require("./routing").route({db, from: [lat, lng],
+      to: target.point, traffic: true, ...(http ? {http} : {}), now});
+    if (r) {
+      Object.assign(update, {route_km: r.km, route_minutes: r.minutes,
+        route_polyline: r.polyline, route_source: r.source,
+        route_traffic: r.traffic, route_target: target.kind,
+        route_at: now});
+    }
+  }
+  await ref.set(update, {merge: true});
   return {ok: true};
 }
 
@@ -120,6 +156,15 @@ async function deliveryTracking({db, uid, data}) {
       photo: d.get("photo_url") || ""} : null,
     position: live ? {lat: track.get("lat"), lng: track.get("lng"),
       at: iso(track.get("at"))} : null,
+    // Itinéraire réel jusqu'à la destination actuelle (null sans service).
+    route: live && track.get("route_at") &&
+      track.get("route_target") === targetOf(o).kind ? {
+        target: track.get("route_target"), km: track.get("route_km"),
+        minutes: track.get("route_minutes"),
+        polyline: track.get("route_polyline") || [],
+        source: track.get("route_source"),
+        traffic: track.get("route_traffic") === true,
+        at: iso(track.get("route_at"))} : null,
   };
 }
 

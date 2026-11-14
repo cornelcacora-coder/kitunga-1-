@@ -34,7 +34,7 @@ test("calcul : même quartier, loin, plafond, sans quartier du commerce",
         clientZone: "Bacongo", settings: {maximum: 3000}}).fee, 3000);
       // Ancien tarif : commerce sans quartier, ou mode « zones ».
       assert.deepStrictEqual(dp.computeFee({shopZone: "",
-        clientZone: "Kintélé"}), {fee: 2000, km: null, mode: "zones", exact: false});
+        clientZone: "Kintélé"}), {fee: 2000, km: null, mode: "zones", exact: false, source: "zones"});
       assert.strictEqual(dp.computeFee({shopZone: "Kintélé",
         clientZone: "Bacongo", settings: {mode: "zones"}}).fee, 1000);
     });

@@ -78,6 +78,8 @@ const {reconcilePending} = require("./kitunga/reconcile");
 // Disbursement approvisionné.
 const COLLECTION_SECRETS = [
   "MOMO_COLLECTION_USER", "MOMO_COLLECTION_KEY", "MOMO_COLLECTION_SUBSCRIPTION",
+  // Itinéraires réels (frais à la distance par la route).
+  "ROUTING_API_KEY",
   // Airtel Money (valeur « absent » tant qu'Airtel n'est pas activé).
   "AIRTEL_CLIENT_ID", "AIRTEL_CLIENT_SECRET",
 ];
@@ -611,7 +613,7 @@ const tracking = require("./kitunga/delivery_tracking");
 exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>
   tracking.deliveryStep({db: admin.firestore(), uid, data}));
 exports.kitungaDeliveryPosition = acquisitionCallable((data, uid) =>
-  tracking.deliveryPosition({db: admin.firestore(), uid, data}));
+  tracking.deliveryPosition({db: admin.firestore(), uid, data}), ["ROUTING_API_KEY"]);
 exports.kitungaDeliveryTracking = acquisitionCallable((data, uid) =>
   tracking.deliveryTracking({db: admin.firestore(), uid, data}));
 
@@ -630,7 +632,7 @@ exports.kitungaPaymentOptions = callable(() => ({
 const deliveryPricing = require("./kitunga/delivery_pricing");
 /** Frais de livraison affichés dans le panier, avant le paiement. */
 exports.kitungaDeliveryQuote = acquisitionCallable((data, uid) =>
-  deliveryPricing.deliveryQuote({db: admin.firestore(), uid, data}));
+  deliveryPricing.deliveryQuote({db: admin.firestore(), uid, data}), ["ROUTING_API_KEY"]);
 /** L'admin lit ou règle le tarif de livraison. */
 exports.kitungaAdminDeliveryPricing = acquisitionCallable((data, uid) =>
   deliveryPricing.adminDeliveryPricing({db: admin.firestore(), uid, data}));

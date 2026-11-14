@@ -130,33 +130,53 @@ function haversineKm(a, b) {
  * connues (shopPoint, clientPoint), sinon d'un centre de quartier à l'autre.
  * Renvoie {fee, km, mode, exact}.
  */
-function computeFee({shopZone, clientZone, shopPoint, clientPoint,
-  settings = DEFAULTS}) {
-  const s = {...DEFAULTS, ...settings};
+/** Points de départ et d'arrivée [lat, lng] (exacts, sinon quartiers). */
+function endpoints({shopZone, clientZone, shopPoint, clientPoint}) {
   const from = pointOf(shopPoint);
   const to = pointOf(clientPoint);
-  const a = from ? [from.lat, from.lng] : ZONE_POINTS[shopZone];
-  const b = to ? [to.lat, to.lng] : ZONE_POINTS[clientZone];
+  return {a: from ? [from.lat, from.lng] : ZONE_POINTS[shopZone] || null,
+    b: to ? [to.lat, to.lng] : ZONE_POINTS[clientZone] || null,
+    exact: !!(from && to)};
+}
+
+/**
+ * roadKm : distance réelle par la route (service d'itinéraire). Sans elle,
+ * estimation à vol d'oiseau × coefficient route (source « estimate »).
+ */
+function computeFee({shopZone, clientZone, shopPoint, clientPoint,
+  settings = DEFAULTS, roadKm = null}) {
+  const s = {...DEFAULTS, ...settings};
+  const {a, b, exact} = endpoints({shopZone, clientZone, shopPoint,
+    clientPoint});
   const straight = s.mode === "distance" && a && b ? haversineKm(a, b) : null;
   if (straight == null) {
-    return {fee: zoneFee(clientZone), km: null, mode: "zones", exact: false};
+    return {fee: zoneFee(clientZone), km: null, mode: "zones", exact: false,
+      source: "zones"};
   }
-  const km = straight * Number(s.road_factor);
+  const road = Number.isFinite(roadKm) && roadKm >= 0;
+  const km = road ? roadKm : straight * Number(s.road_factor);
   const step = Math.max(1, Number(s.rounding) || 1);
   let fee = Math.ceil((Number(s.base) + Number(s.per_km) * km) / step) * step;
   fee = Math.max(Number(s.minimum) || 0, fee);
   if (Number(s.maximum) > 0) fee = Math.min(Number(s.maximum), fee);
-  return {fee, km: Math.round(km * 10) / 10, mode: "distance",
-    exact: !!(from && to)};
+  return {fee, km: Math.round(km * 10) / 10, mode: "distance", exact,
+    source: road ? "route" : "estimate"};
 }
 
 /** Frais pour un commerce (document User), le quartier et la position du
  * client. */
-async function feeFor(db, seller, clientZone, settings, clientPoint) {
+async function feeFor(db, seller, clientZone, settings, clientPoint,
+    http) {
   const ok = seller && seller.exists;
-  return computeFee({shopZone: ok ? seller.get("shop_zone") : null,
-    shopPoint: ok ? seller.get("shop_point") : null, clientZone, clientPoint,
-    settings: settings || await loadSettings(db)});
+  const args = {shopZone: ok ? seller.get("shop_zone") : null,
+    shopPoint: ok ? seller.get("shop_point") : null, clientZone,
+    clientPoint, settings: settings || await loadSettings(db)};
+  // Distance réelle par la route quand un service est configuré.
+  const {a, b} = endpoints(args);
+  const r = args.settings.mode !== "zones" && a && b ?
+    await require("./routing").route({db, from: a, to: b,
+      ...(http ? {http} : {})}) : null;
+  return computeFee({...args, roadKm: r ? r.km : null});
 }
 
 /** Devis affiché au client dans le panier, avant le paiement. */
