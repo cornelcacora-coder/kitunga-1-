@@ -166,6 +166,16 @@ class _CartLastWidgetState extends State<CartLastWidget> {
   /// Lignes affichées, et donc payées, sur cet écran.
   List<CartRecord> _cartLines = [];
 
+  /// Frais de livraison confirmés par le serveur pour ce commerce, ce
+  /// quartier et cette position.
+  bool get _feeQuoted {
+    final key = _quoteKey;
+    return key == null || _quotes.containsKey(key);
+  }
+
+  /// Panier vide : ni adresse, ni paiement, ni total à afficher.
+  bool _cartEmpty = false;
+
   /// Commerce de la commande : celui demandé à l'ouverture de l'écran, sinon
   /// celui des lignes affichées (panier ouvert depuis le menu, l'accueil…).
   DocumentReference? get _sellerRef =>
@@ -254,17 +264,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
               'Panier',
               style: FlutterFlowTheme.of(context).headlineMedium.override(
                     font: GoogleFonts.interTight(
-                      fontWeight: FlutterFlowTheme.of(context)
-                          .headlineMedium
-                          .fontWeight,
+                      fontWeight: FontWeight.w800,
                       fontStyle:
                           FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                     ),
-                    color: FlutterFlowTheme.of(context).secondaryText,
+                    color: FlutterFlowTheme.of(context).primaryText,
                     fontSize: 22.0,
+                    fontWeight: FontWeight.w800,
                     letterSpacing: 0.0,
-                    fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
@@ -341,6 +348,14 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                     _model.deliveryFees = currentFee;
                                     FFAppState().GrandTotalCart = expectedGrandTotal;
                                   });
+                                }
+                              });
+                            }
+                            if (cartCartRecordList.isEmpty != _cartEmpty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  safeSetState(() => _cartEmpty =
+                                      cartCartRecordList.isEmpty);
                                 }
                               });
                             }
@@ -815,6 +830,8 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                           },
                         ),
                       ),
+                      // Adresse, paiement et total : seulement avec des articles.
+                      if (!_cartEmpty)
                       Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -893,7 +910,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                       ),
                                                 ),
                                                 Text(
-                                                  'Indiquer l\'addresse de livraison de vote commande',
+                                                  'Où devons-nous livrer votre commande ?',
                                                   maxLines: 2,
                                                   style: FlutterFlowTheme.of(
                                                           context)
@@ -1679,7 +1696,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                             .center,
                                                     children: [
                                                       Text(
-                                                        'Cout total',
+                                                        'Sous-total',
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -1799,7 +1816,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                             .center,
                                                     children: [
                                                       Text(
-                                                        'Frais de Livraison',
+                                                        'Livraison',
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -1839,9 +1856,13 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           Text(
                                                             valueOrDefault<
                                                                 String>(
-                                                              FFAppState()
-                                                                  .fixedShippingFee
-                                                                  .toStringAsFixed(0),
+                                                              // Devis du serveur pas encore reçu :
+                                                              // pas de montant provisoire trompeur.
+                                                              _feeQuoted
+                                                                  ? FFAppState()
+                                                                      .fixedShippingFee
+                                                                      .toStringAsFixed(0)
+                                                                  : 'calcul…',
                                                               '1000',
                                                             ),
                                                             style: FlutterFlowTheme
@@ -1874,7 +1895,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                 ),
                                                           ),
                                                           Text(
-                                                            'F',
+                                                            _feeQuoted ? 'F' : '',
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyLarge
@@ -1925,7 +1946,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                             .center,
                                                     children: [
                                                       Text(
-                                                        'Montant total',
+                                                        'Total à payer',
                                                         style:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -2396,7 +2417,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                         safeSetState(() {});
                                                       },
                                                       text:
-                                                          'Confirmer l\'ordre',
+                                                          'Commander et payer',
                                                       options: FFButtonOptions(
                                                         width:
                                                             MediaQuery.sizeOf(
