@@ -7,6 +7,7 @@ import '/mobile/main_app/order_view/order_view_widget.dart'
     show kitungaPageBar;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui' show FontFeature;
 import 'package:google_fonts/google_fonts.dart';
 export 'my_profile_model.dart';
 
@@ -72,6 +73,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                   icon: Icons.badge_outlined,
                   label: 'Identifiant (pour le support)',
                   value: currentUserUid,
+                  exact: true,
                   trailing: IconButton(
                     tooltip: 'Copier',
                     icon: Icon(Icons.copy_rounded,
@@ -181,12 +183,17 @@ class _Row extends StatelessWidget {
       {required this.icon,
       required this.label,
       required this.value,
+      this.exact = false,
       this.trailing});
 
   final IconData icon;
   final String label;
   final String value;
   final Widget? trailing;
+
+  /// Texte à recopier tel quel (identifiant) : sans les substitutions
+  /// typographiques de la police (« 8x1 » affiché « 8×1 »).
+  final bool exact;
 
   @override
   Widget build(BuildContext context) {
@@ -210,6 +217,8 @@ class _Row extends StatelessWidget {
                       fontSize: 15,
                       fontWeight: empty ? FontWeight.w500 : FontWeight.w600,
                       fontStyle: empty ? FontStyle.italic : FontStyle.normal,
+                      fontFeatures:
+                          exact ? const [FontFeature.disable('calt')] : null,
                       color: empty ? theme.secondaryText : theme.primaryText)),
             ],
           ),

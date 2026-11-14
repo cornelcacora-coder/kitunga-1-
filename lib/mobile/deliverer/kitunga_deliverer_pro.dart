@@ -271,6 +271,25 @@ class _DelivererDocumentsState extends State<DelivererDocumentsPage> {
                     border: Border.all(color: theme.alternate),
                   ),
                   child: ListTile(
+                    contentPadding:
+                        const EdgeInsets.fromLTRB(14, 6, 10, 6),
+                    leading: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: (_docStatus[d['status']] ??
+                              _docStatus['missing']!)
+                          .$2
+                          .withValues(alpha: 0.12),
+                      child: Icon(
+                          d['status'] == 'approved'
+                              ? Icons.verified_rounded
+                              : d['status'] == 'missing'
+                                  ? Icons.upload_file_rounded
+                                  : Icons.description_rounded,
+                          size: 20,
+                          color: (_docStatus[d['status']] ??
+                                  _docStatus['missing']!)
+                              .$2),
+                    ),
                     title: Text(
                         '${d['label']}${d['required'] == true ? '' : ' (facultatif)'}',
                         style: GoogleFonts.inter(
@@ -282,7 +301,7 @@ class _DelivererDocumentsState extends State<DelivererDocumentsPage> {
                               .$1,
                           if (d['expiresAt'] != null)
                             'expire le ${DateFormat('d/M/yyyy').format(DateTime.parse('${d['expiresAt']}').toLocal())}',
-                          if ('${d['rejectReason']}'.isNotEmpty)
+                          if ((d['rejectReason'] ?? '').toString().isNotEmpty)
                             'motif : ${d['rejectReason']}',
                         ].join(' · '),
                         style: GoogleFonts.inter(
@@ -290,15 +309,34 @@ class _DelivererDocumentsState extends State<DelivererDocumentsPage> {
                             color: (_docStatus[d['status']] ??
                                     _docStatus['missing']!)
                                 .$2)),
-                    trailing: TextButton(
-                      key: ValueKey('doc-${d['type']}'),
-                      onPressed: () => _submit(d),
-                      child: Text(d['status'] == 'missing'
-                          ? 'Déposer'
-                          : d['status'] == 'approved'
-                              ? 'Renouveler'
-                              : 'Remplacer'),
-                    ),
+                    trailing: d['status'] == 'missing'
+                        ? FilledButton(
+                            key: ValueKey('doc-${d['type']}'),
+                            onPressed: () => _submit(d),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _red,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 14),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: const Text('Déposer'),
+                          )
+                        : OutlinedButton(
+                            key: ValueKey('doc-${d['type']}'),
+                            onPressed: () => _submit(d),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _red,
+                              side: const BorderSide(color: _red),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Text(d['status'] == 'approved'
+                                ? 'Renouveler'
+                                : 'Remplacer'),
+                          ),
                   ),
                 ),
             ],
@@ -361,15 +399,24 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(value,
-                              style: GoogleFonts.interTight(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: theme.primaryText)),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(value,
+                                style: GoogleFonts.interTight(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: theme.primaryText)),
+                          ),
                           Text(label,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
-                                  fontSize: 12, color: theme.secondaryText)),
+                                  fontSize: 11.5,
+                                  height: 1.2,
+                                  color: theme.secondaryText)),
                         ],
                       ),
                     ),
@@ -410,13 +457,15 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                 ),
               ),
               const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 2,
+              // Hauteur fixe : les libellés sur deux lignes ne débordent plus.
+              GridView(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    mainAxisExtent: 84),
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 2.3,
                 children: [
                   kpi('Livraisons réussies', '${d['delivered'] ?? 0}',
                       Icons.task_alt_rounded, _green),
@@ -452,7 +501,15 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: theme.alternate),
                 ),
-                child: Row(
+                child: weeks.every((w) => w == 0)
+                    ? Center(
+                        child: Text(
+                            'Pas encore de gains sur ces 8 semaines.\n'
+                            'Vos gains apparaîtront ici après vos courses.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                                fontSize: 13, color: theme.secondaryText)))
+                    : Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     for (var i = 0; i < weeks.length; i++)
@@ -481,10 +538,21 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(i == weeks.length - 1 ? 'Cette' : 'S-${weeks.length - 1 - i}',
+                              Text(
+                                  i == weeks.length - 1
+                                      ? 'Cette\nsem.'
+                                      : 'S-${weeks.length - 1 - i}',
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
                                   style: GoogleFonts.inter(
                                       fontSize: 10,
-                                      color: theme.secondaryText)),
+                                      height: 1.1,
+                                      fontWeight: i == weeks.length - 1
+                                          ? FontWeight.w700
+                                          : FontWeight.w400,
+                                      color: i == weeks.length - 1
+                                          ? _red
+                                          : theme.secondaryText)),
                             ],
                           ),
                         ),
@@ -496,8 +564,8 @@ class _PerformanceState extends State<DelivererPerformancePage> {
               Text(
                   'Le taux de réussite compte les courses livrées et celles '
                   'non reçues ou échouées. Les annulations du client, du '
-                  'commerce ou de l\'admin (${d['cancelledByOthers'] ?? 0}) '
-                  'ne vous sont pas imputées.',
+                  'commerce ou de l\'admin ne vous sont pas imputées'
+                  '${(d['cancelledByOthers'] ?? 0) is num && (d['cancelledByOthers'] as num) > 0 ? ' (${d['cancelledByOthers']} à ce jour)' : ''}.',
                   style: GoogleFonts.inter(
                       fontSize: 12.5, color: theme.secondaryText)),
             ],
