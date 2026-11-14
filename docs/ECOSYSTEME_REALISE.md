@@ -297,3 +297,24 @@ substitution d'un produit manquant avec accord du client.
 - **Client** : suivi vers sa porte, heure d'arrivée depuis la position du
   livreur.
 - Sans position exacte, tout continue de fonctionner avec le quartier.
+
+---
+
+## 14. Itinéraires réels par la route
+
+- **Service** : Google Directions (vraies routes + circulation en temps réel,
+  recommandé) ou OpenRouteService (vraies routes, sans circulation). Clé
+  `ROUTING_API_KEY` installée par `scripts/routing_cle.sh` (`google:CLÉ`,
+  `ors:CLÉ` ou `absent`). **À lancer avant `deployer_tout.sh`.**
+- **Frais de livraison** : distance réelle par la route entre le commerce et
+  le client (positions exactes, sinon quartiers). Trajets gardés 30 jours
+  (`RouteCache`) : le devis du panier et le paiement donnent le même prix.
+  La commande enregistre la source (`delivery_km_source` : `route` ou
+  `estimate`).
+- **Heure d'arrivée** : recalculée par le serveur depuis la position réelle
+  du livreur, au plus une fois par minute et à chaque changement de
+  destination (commerce, puis client), avec la circulation (Google).
+- **Carte** : tracé réel de la route pour le livreur et le client.
+- **Sans clé ou service injoignable** : l'application continue avec
+  l'estimation et l'affiche comme telle (« estimation », « Frais estimés »),
+  jamais comme une mesure.

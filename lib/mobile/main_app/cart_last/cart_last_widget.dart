@@ -68,6 +68,34 @@ class _CartLastWidgetState extends State<CartLastWidget> {
   /// Position exacte du client (facultative) : frais de porte à porte.
   Map<String, double>? _deliveryPoint;
 
+  /// Détail des devis (distance, source) par « commerce|quartier|position ».
+  final Map<String, Map<String, dynamic>> _quoteInfo = {};
+
+  String? get _quoteKey {
+    final seller = _sellerRef;
+    final zone = _model.zoneValue;
+    if (seller == null || zone == null || zone.isEmpty) return null;
+    return '${seller.path}|$zone|'
+        '${_deliveryPoint?['lat']},${_deliveryPoint?['lng']}';
+  }
+
+  /// « 9,6 km par la route » ou « environ 8 km (estimation) ».
+  String? get _quoteNote {
+    final key = _quoteKey;
+    final q = key == null ? null : _quoteInfo[key];
+    if (q == null) return null;
+    final km = (q['km'] as num?)?.toDouble();
+    final kmText = km == null ? '' : km.toStringAsFixed(1).replaceAll('.', ',');
+    switch (q['source']) {
+      case 'route':
+        return 'Frais calculés sur $kmText km par la route.';
+      case 'estimate':
+        return 'Frais estimés sur environ $kmText km.';
+      default:
+        return 'Tarif du quartier de livraison.';
+    }
+  }
+
   double getDeliveryFeeForZone(String? zone) {
     final seller = _sellerRef;
     if (seller != null && zone != null && zone.isNotEmpty) {
@@ -86,6 +114,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
           if (fee == null || !mounted) return;
           safeSetState(() {
             _quotes[key] = fee;
+            _quoteInfo[key] = Map<String, dynamic>.from(r);
             if (_model.zoneValue == zone) {
               _model.deliveryFees = fee;
               FFAppState().fixedShippingFee = fee;
@@ -1336,7 +1365,10 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                       // Position exacte : livraison à la porte.
                                       Padding(
                                         padding: const EdgeInsets.only(bottom: 10.0),
-                                        child: KitungaExactPointButton(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                        KitungaExactPointButton(
                                           point: _deliveryPoint,
                                           onChanged: (p) => safeSetState(() {
                                             _deliveryPoint = p;
@@ -1345,6 +1377,15 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                             FFAppState().fixedShippingFee = fee;
                                             FFAppState().GrandTotalCart = FFAppState().totalCart + fee;
                                           }),
+                                        ),
+                                        if (_quoteNote != null)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 6.0, left: 4.0),
+                                            child: Text(_quoteNote!,
+                                                key: const ValueKey('quote-note'),
+                                                style: FlutterFlowTheme.of(context).bodySmall),
+                                          ),
+                                          ],
                                         ),
                                       ),
                                       InkWell(

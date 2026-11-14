@@ -68,6 +68,26 @@ int etaMinutes(ll.LatLng a, ll.LatLng b) {
   return (km / 22 * 60).ceil() + 2;
 }
 
+/// Itinéraire réel calculé par le serveur vers cette destination
+/// ('shop' ou 'client'), ou null (pas de service : estimation).
+({int minutes, double km, bool traffic, List<ll.LatLng> points})? routeOf(
+    Map? t, String target) {
+  final r = t?['route'];
+  if (r is! Map || r['target'] != target || r['minutes'] is! num) {
+    return null;
+  }
+  return (
+    minutes: (r['minutes'] as num).toInt(),
+    km: ((r['km'] as num?) ?? 0).toDouble(),
+    traffic: r['traffic'] == true,
+    points: [
+      for (final p in (r['polyline'] as List? ?? const []))
+        if (p is Map && p['lat'] is num && p['lng'] is num)
+          ll.LatLng((p['lat'] as num).toDouble(), (p['lng'] as num).toDouble()),
+    ],
+  );
+}
+
 String _clockIn(int minutes) {
   final t = DateTime.now().add(Duration(minutes: minutes));
   return '${t.hour.toString().padLeft(2, '0')}:'
@@ -137,10 +157,14 @@ List<TrackingStep> trackingSteps(Map<String, dynamic> t,
 // ── Carte ────────────────────────────────────────────────────────────────
 
 class _TrackingMap extends StatelessWidget {
-  const _TrackingMap({this.rider, this.destination, this.height = 210});
+  const _TrackingMap(
+      {this.rider, this.destination, this.route = const [], this.height = 210});
 
   final ll.LatLng? rider;
   final ll.LatLng? destination;
+
+  /// Tracé réel de la route (service d'itinéraire) ; vide sans service.
+  final List<ll.LatLng> route;
   final double height;
 
   @override
@@ -174,7 +198,15 @@ class _TrackingMap extends StatelessWidget {
             userAgentPackageName: 'site.kitunga.app',
             maxZoom: 19,
           ),
-          if (rider != null && destination != null)
+          // Vraie route si connue ; sinon simple repère pointillé.
+          if (route.length >= 2)
+            PolylineLayer(polylines: [
+              Polyline(
+                  points: [if (rider != null) rider!, ...route],
+                  strokeWidth: 5,
+                  color: _red.withValues(alpha: 0.85)),
+            ])
+          else if (rider != null && destination != null)
             PolylineLayer(polylines: [
               Polyline(
                   points: [rider!, destination!],
@@ -409,7 +441,12 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
           ),
           if (onTheWay) ...[
             const SizedBox(height: 12),
-            _TrackingMap(rider: rider, destination: dest),
+            _TrackingMap(
+                rider: rider,
+                destination: dest,
+                route: routeOf(t, t['pickedUpAt'] != null ? 'client' : 'shop')
+                        ?.points ??
+                    const []),
             const SizedBox(height: 6),
             Text(
               rider == null
@@ -424,14 +461,20 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
             if (rider != null && dest != null && t['pickedUpAt'] != null)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                    'Arrivée estimée vers '
-                    '${_clockIn(etaMinutes(rider, dest))} '
-                    '(≈ ${etaMinutes(rider, dest)} min)',
-                    key: const ValueKey('client-eta'),
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w800,
-                        color: theme.primaryText)),
+                child: Builder(builder: (context) {
+                  // Route réelle (serveur) ; sinon estimation, dite comme telle.
+                  final r = routeOf(t, 'client');
+                  final m = r?.minutes ?? etaMinutes(rider, dest);
+                  return Text(
+                      r != null
+                          ? 'Arrivée vers ${_clockIn(m)} ($m min'
+                              '${r.traffic ? ', circulation comprise' : ' par la route'})'
+                          : 'Arrivée vers ${_clockIn(m)} (estimation : $m min)',
+                      key: const ValueKey('client-eta'),
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w800,
+                          color: theme.primaryText));
+                }),
               ),
             if (t['delay'] is Map)
               Text(
@@ -506,6 +549,7 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
   Map<String, dynamic>? _t;
   ll.LatLng? _me;
   StreamSubscription<Position>? _gps;
+  Timer? _refresh;
   DateTime _lastSent = DateTime.fromMillisecondsSinceEpoch(0);
   bool _busy = false;
   String? _gpsProblem;
@@ -515,11 +559,17 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
     super.initState();
     _load();
     _startGps();
+    // Itinéraire et heure d'arrivée recalculés par le serveur : relus
+    // toutes les 30 secondes pendant la course.
+    if (!trackingTestMode) {
+      _refresh = Timer.periodic(const Duration(seconds: 30), (_) => _load());
+    }
   }
 
   @override
   void dispose() {
     _gps?.cancel();
+    _refresh?.cancel();
     super.dispose();
   }
 
@@ -726,7 +776,11 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
             children: [
               // Avant la récupération : vers le commerce ; ensuite : le client.
               _TrackingMap(
-                  rider: _me, destination: _target(o, picked), height: 240),
+                  rider: _me,
+                  destination: _target(o, picked),
+                  route: routeOf(_t, picked ? 'client' : 'shop')?.points ??
+                      const [],
+                  height: 240),
               if (_gpsProblem != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -792,14 +846,21 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                     // Temps estimé depuis ma position (commerce, puis client).
                     Builder(builder: (context) {
                       final target = _target(o, picked);
-                      if (_me == null || target == null) {
+                      // Route réelle calculée par le serveur ; sinon
+                      // estimation affichée comme telle.
+                      final r = routeOf(_t, picked ? 'client' : 'shop');
+                      if (r == null && (_me == null || target == null)) {
                         return const SizedBox.shrink();
                       }
-                      final m = etaMinutes(_me!, target);
+                      final m = r?.minutes ?? etaMinutes(_me!, target!);
                       return Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                            '≈ $m min · arrivée vers ${_clockIn(m)}',
+                            r != null
+                                ? '${r.km.toStringAsFixed(1).replaceAll('.', ',')} km par la route · '
+                                    '$m min${r.traffic ? ' (circulation comprise)' : ''} · '
+                                    'arrivée vers ${_clockIn(m)}'
+                                : 'Estimation : $m min · arrivée vers ${_clockIn(m)}',
                             key: const ValueKey('mission-eta'),
                             style: GoogleFonts.inter(
                                 fontSize: 13,
