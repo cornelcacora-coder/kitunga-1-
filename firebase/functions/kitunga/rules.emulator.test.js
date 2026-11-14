@@ -278,6 +278,18 @@ test("admin : ne modifie rien d'autre sur un profil", async () => {
       {photo_url: "url"}));
 });
 
+test("profil : on ne lève pas soi-même sa suspension ; second numéro permis",
+    async () => {
+      await seed({}, {sus: {role: "Seller", account_status: "suspended",
+        account_status_reason: "Fraude"}});
+      await assertFails(updateDoc(doc(db("sus"), "User/sus"),
+          {account_status: "active"}));
+      await assertFails(updateDoc(doc(db("sus"), "User/sus"),
+          {account_status_reason: null}));
+      await assertSucceeds(updateDoc(doc(db("buyer"), "User/buyer"),
+          {phone_number: "+242060000001", phone_number_2: "+242050000002"}));
+    });
+
 test("abonnement : sans abonnement ou en visiteur, pas de commande", async () => {
   await seed({}, {guest: {role: "Guest"}});
   for (const uid of ["other", "guest"]) {
