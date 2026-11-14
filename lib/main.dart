@@ -186,6 +186,39 @@ class _NavBarPageState extends State<NavBarPage> {
     _currentPage = widget.page;
   }
 
+  /// Pastille du nombre d'articles (onglet Panier), mise à jour en direct.
+  Widget _withBadge(Widget icon, bool cartBadge) => !cartBadge
+      ? icon
+      : ListenableBuilder(
+          listenable: FFAppState(),
+          builder: (context, _) {
+            final count = FFAppState().cartitems.length;
+            if (count <= 0) return icon;
+            return Stack(clipBehavior: Clip.none, children: [
+              icon,
+              Positioned(
+                top: -6.0,
+                right: -10.0,
+                child: Container(
+                  constraints: BoxConstraints(minWidth: 17.0),
+                  height: 17.0,
+                  padding: EdgeInsets.symmetric(horizontal: 4.0),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF1E242B),
+                    borderRadius: BorderRadius.circular(9.0),
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: Text(count > 99 ? '99+' : '$count',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ]);
+          });
+
   Widget _buildNavItem({
     required BuildContext context,
     required int index,
@@ -194,6 +227,7 @@ class _NavBarPageState extends State<NavBarPage> {
     required IconData activeIcon,
     required IconData inactiveIcon,
     required VoidCallback onTap,
+    bool cartBadge = false,
   }) {
     final isSelected = index == currentIndex;
     return InkWell(
@@ -211,21 +245,25 @@ class _NavBarPageState extends State<NavBarPage> {
                 color: Color(0xFFE51A1A),
                 borderRadius: BorderRadius.circular(20.0),
               ),
-              child: Icon(
-                activeIcon,
-                color: Colors.white,
-                size: 20.0,
-              ),
+              child: _withBadge(
+                  Icon(
+                    activeIcon,
+                    color: Colors.white,
+                    size: 20.0,
+                  ),
+                  cartBadge),
             )
           else
             Container(
               height: 30.0,
               alignment: Alignment.center,
-              child: Icon(
-                inactiveIcon,
-                color: Color(0xFF1E242B),
-                size: 22.0,
-              ),
+              child: _withBadge(
+                  Icon(
+                    inactiveIcon,
+                    color: Color(0xFF1E242B),
+                    size: 22.0,
+                  ),
+                  cartBadge),
             ),
           SizedBox(height: 2.0),
           Text(
@@ -296,6 +334,8 @@ class _NavBarPageState extends State<NavBarPage> {
             ('Home', 'Accueil', Icons.home_rounded, Icons.home_outlined),
             ('Order', 'Commandes', Icons.shopping_bag_rounded,
                 Icons.shopping_bag_outlined),
+            ('Cart', 'Panier', Icons.shopping_cart_rounded,
+                Icons.shopping_cart_outlined),
             ('Profile', 'Profil', Icons.person_rounded,
                 Icons.person_outline_rounded),
           ];
@@ -305,6 +345,7 @@ class _NavBarPageState extends State<NavBarPage> {
       if (deliverer) 'Map': const KitungaDelivererMap(),
       if (deliverer || seller) 'Messages': const KitungaConversationsPage(),
       if (seller) 'Catalog': const KitungaSellerCatalogTab(),
+      if (!deliverer && !seller) 'Cart': const CartLastWidget(asTab: true),
       'Profile': ProfileWidget(),
     };
     final keys = items.map((i) => i.$1).toList();
@@ -335,17 +376,11 @@ class _NavBarPageState extends State<NavBarPage> {
             top: false,
             child: Padding(
               padding: EdgeInsets.symmetric(
-                  horizontal: deliverer || seller ? 6.0 : 20.0, vertical: 6.0),
+                  horizontal: deliverer || seller ? 6.0 : 12.0, vertical: 6.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   for (var i = 0; i < items.length; i++) ...[
-                    if (!deliverer && !seller && items[i].$1 == 'Profile')
-                      Container(
-                        width: 1.0,
-                        height: 26.0,
-                        color: Color(0xFFE5E7EB),
-                      ),
                     _buildNavItem(
                       context: context,
                       index: i,
@@ -353,6 +388,7 @@ class _NavBarPageState extends State<NavBarPage> {
                       label: items[i].$2,
                       activeIcon: items[i].$3,
                       inactiveIcon: items[i].$4,
+                      cartBadge: items[i].$1 == 'Cart',
                       onTap: () => safeSetState(() {
                         _currentPage = null;
                         _currentPageName = items[i].$1;

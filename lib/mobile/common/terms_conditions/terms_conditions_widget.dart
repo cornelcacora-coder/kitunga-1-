@@ -120,7 +120,7 @@ class _TermsConditionsWidgetState extends State<TermsConditionsWidget>
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(
-                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark, decorations: false),
                 ),
               ),
             ),

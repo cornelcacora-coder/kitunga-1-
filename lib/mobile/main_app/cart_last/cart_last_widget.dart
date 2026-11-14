@@ -39,7 +39,11 @@ class CartLastWidget extends StatefulWidget {
     this.airtelNumber,
     this.mtnNumber,
     this.orderitem,
+    this.asTab = false,
   });
+
+  /// Affiché comme onglet « Panier » de la barre du bas : pas de retour.
+  final bool asTab;
 
   final String? deliveryAddress;
   final DocumentReference? sellerRef;
@@ -215,7 +219,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
+          leading: widget.asTab ? null : FlutterFlowIconButton(
             borderColor: Colors.transparent,
             borderRadius: 30.0,
             borderWidth: 1.0,

@@ -171,13 +171,19 @@ class KitungaOrnamentDivider extends StatelessWidget {
 }
 
 /// Peintre d'arrière-plan signature Kitunga (vagues fluides rouges, cercles doux et filigrane chariot).
+///
+/// Réservé aux écrans qui ne défilent pas (connexion, inscription…). Sur
+/// une page qui défile, ce dessin reste fixe derrière le contenu et donne
+/// l'impression d'une image de fond collée : [decorations] = false.
 class KitungaAuthBackgroundPainter extends CustomPainter {
   final bool isDark;
-  const KitungaAuthBackgroundPainter({this.isDark = false});
+  final bool decorations;
+  const KitungaAuthBackgroundPainter(
+      {this.isDark = false, this.decorations = true});
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (isDark) return;
+    if (isDark || !decorations) return;
 
     // 1. Cercles doux décoratifs en haut à gauche
     final bubblePaint1 = Paint()
@@ -303,27 +309,13 @@ class KitungaAuthBackgroundPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Wrapper réutilisable qui applique l'arrière-plan signature Kitunga
+/// Fond des pages de contenu (accueil, commandes, panier, produit…) :
+/// uni, sans le dessin décoratif des écrans de connexion, qui restait fixe
+/// derrière le contenu pendant le défilement.
 class KitungaScaffoldBackground extends StatelessWidget {
   final Widget child;
   const KitungaScaffoldBackground({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Positioned.fill(
-          child: IgnorePointer(
-            child: CustomPaint(
-              painter: KitungaAuthBackgroundPainter(isDark: isDark),
-            ),
-          ),
-        ),
-        child,
-      ],
-    );
-  }
+  Widget build(BuildContext context) => child;
 }
-

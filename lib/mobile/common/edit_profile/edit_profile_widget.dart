@@ -130,7 +130,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget>
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(
-                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark, decorations: false),
                 ),
               ),
             ),

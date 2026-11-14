@@ -144,7 +144,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(
-                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark, decorations: false),
                 ),
               ),
             ),

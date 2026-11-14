@@ -118,7 +118,7 @@ class _MyProfileWidgetState extends State<MyProfileWidget>
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(
-                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark, decorations: false),
                 ),
               ),
             ),
