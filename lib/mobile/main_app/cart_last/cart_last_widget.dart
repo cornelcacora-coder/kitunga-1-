@@ -173,6 +173,10 @@ class _CartLastWidgetState extends State<CartLastWidget> {
     return key == null || _quotes.containsKey(key);
   }
 
+  /// Montant avec séparateur des milliers : 12 500.
+  static String _digits(num v) =>
+      kitungaPrice(v).replaceAll(' F', '');
+
   /// Panier vide : ni adresse, ni paiement, ni total à afficher.
   bool _cartEmpty = false;
 
@@ -752,7 +756,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                       children: [
                                                         Text(
                                                           // Prix unitaire de la ligne (suppléments compris).
-                                                          cartCartRecord.price.round().toString(),
+                                                          _digits(cartCartRecord.price),
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .titleMedium
@@ -783,7 +787,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                               ),
                                                         ),
                                                         Text(
-                                                          'F',
+                                                          ' F',
                                                           style: FlutterFlowTheme
                                                                   .of(context)
                                                               .titleMedium
@@ -1736,9 +1740,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           Text(
                                                             valueOrDefault<
                                                                 String>(
-                                                              FFAppState()
-                                                                  .totalCart
-                                                                  .toStringAsFixed(0),
+                                                              _digits(FFAppState().totalCart),
                                                               '0',
                                                             ),
                                                             style: FlutterFlowTheme
@@ -1771,7 +1773,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                 ),
                                                           ),
                                                           Text(
-                                                            'F',
+                                                            ' F',
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyLarge
@@ -1859,9 +1861,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                               // Devis du serveur pas encore reçu :
                                                               // pas de montant provisoire trompeur.
                                                               _feeQuoted
-                                                                  ? FFAppState()
-                                                                      .fixedShippingFee
-                                                                      .toStringAsFixed(0)
+                                                                  ? _digits(FFAppState().fixedShippingFee)
                                                                   : 'calcul…',
                                                               '1000',
                                                             ),
@@ -1895,7 +1895,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                 ),
                                                           ),
                                                           Text(
-                                                            _feeQuoted ? 'F' : '',
+                                                            _feeQuoted ? ' F' : '',
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyLarge
@@ -1985,9 +1985,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                           Text(
                                                             valueOrDefault<
                                                                 String>(
-                                                              FFAppState()
-                                                                  .GrandTotalCart
-                                                                  .toStringAsFixed(0),
+                                                              _digits(FFAppState().GrandTotalCart),
                                                               '0',
                                                             ),
                                                             style: FlutterFlowTheme
@@ -2019,7 +2017,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                                                                 ),
                                                           ),
                                                           Text(
-                                                            'F',
+                                                            ' F',
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .titleLarge
