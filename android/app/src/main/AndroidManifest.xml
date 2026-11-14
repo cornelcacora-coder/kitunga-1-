@@ -60,6 +60,13 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!-- Clé Google Maps (cartes client et livreur). Elle n'est pas dans
+             le code : android/local.properties → MAPS_API_KEY=…
+             Sans clé, l'application garde la carte OpenStreetMap. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${mapsApiKey}" />
+
 
 
 

@@ -130,6 +130,7 @@ dependencies:
   web: 1.1.1
   flutter_map: 7.0.2
   latlong2: 0.9.1
+  google_maps_flutter: ^2.19.0
 
 dependency_overrides:
   http: 1.4.0

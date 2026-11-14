@@ -32,3 +32,12 @@ redéployée : `firebase deploy --only functions:functions:corsProxy --force`
 - `bash scripts/routing_cle.sh` : clé du service d'itinéraires réels
   (`google:CLÉ` recommandé, `ors:CLÉ`, ou `absent`). **À lancer une première
   fois avant `deployer_tout.sh`** : sans ce secret, le déploiement échoue.
+  Il suffit de coller la clé Google (`AIza…`) : `google:` est ajouté tout seul.
+
+- `bash scripts/tester_itineraire.sh` : vérifie que la clé d'itinéraires
+  fonctionne (trajet réel Poto-Poto → Bacongo). La clé n'est pas affichée.
+
+- `bash scripts/cle_google_maps.sh` : clé Google Maps des cartes Android
+  (client et livreur), écrite dans `android/local.properties` (jamais envoyé
+  sur GitHub). À faire sur l'ordinateur qui compile l'application Android,
+  avant de la compiler. Sans clé : cartes OpenStreetMap comme avant.

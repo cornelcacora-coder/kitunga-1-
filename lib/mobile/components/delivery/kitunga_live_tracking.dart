@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart' as ll;
@@ -16,6 +15,7 @@ import '/mobile/components/delivery/kitunga_deliverer_panel.dart'
     show KitungaOrderContacts;
 import '/mobile/components/delivery/kitunga_delivery.dart'
     show kitungaCompleteDelivery, kitungaReportDeliveryIssue;
+import '/mobile/components/delivery/kitunga_map.dart';
 import '/mobile/deliverer/kitunga_deliverer_pro.dart'
     show proCall, sendSafetyAlert;
 import '/noc/admin/brazzaville_zones.dart'
@@ -156,10 +156,11 @@ List<TrackingStep> trackingSteps(Map<String, dynamic> t,
 
 // ── Carte ────────────────────────────────────────────────────────────────
 
-/// La carte suit le livreur et la destination à chaque mise à jour, sans
-/// être reconstruite. Dès que l'utilisateur la déplace ou zoome, elle
-/// garde sa vue ; le bouton « Recentrer » revient au suivi automatique.
-class _TrackingMap extends StatefulWidget {
+/// La carte suit le livreur et la destination à chaque mise à jour ; dès
+/// que l'utilisateur la déplace ou zoome, elle garde sa vue (bouton
+/// « Recentrer »). Google Maps si l'application a sa clé, sinon
+/// OpenStreetMap (voir KitungaMapView).
+class _TrackingMap extends StatelessWidget {
   const _TrackingMap(
       {this.rider, this.destination, this.route = const [], this.height = 210});
 
@@ -171,172 +172,51 @@ class _TrackingMap extends StatefulWidget {
   final double height;
 
   @override
-  State<_TrackingMap> createState() => _TrackingMapState();
-}
-
-class _TrackingMapState extends State<_TrackingMap> {
-  final _controller = MapController();
-  bool _ready = false;
-
-  /// L'utilisateur a déplacé ou zoomé la carte : on ne la recadre plus.
-  bool _userMoved = false;
-
-  List<ll.LatLng> get _points => [
-        if (widget.rider != null) widget.rider!,
-        if (widget.destination != null) widget.destination!,
-      ];
-
-  CameraFit? get _fit => _points.length == 2
-      ? CameraFit.coordinates(
-          coordinates: _points,
-          padding: const EdgeInsets.all(48),
-          maxZoom: 16)
-      : null;
-
-  void _follow() {
-    if (!_ready) return;
-    final fit = _fit;
-    if (fit != null) {
-      _controller.fitCamera(fit);
-    } else if (_points.isNotEmpty) {
-      _controller.move(_points.first, _controller.camera.zoom);
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _TrackingMap old) {
-    super.didUpdateWidget(old);
-    if (!_userMoved &&
-        (old.rider != widget.rider || old.destination != widget.destination)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_userMoved) _follow();
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final rider = widget.rider;
-    final destination = widget.destination;
-    final route = widget.route;
-    final points = _points;
-    Widget map;
-    if (trackingTestMode) {
-      map = Container(color: theme.alternate);
-    } else {
-      map = FlutterMap(
-        mapController: _controller,
-        options: MapOptions(
-          initialCenter:
-              points.isNotEmpty ? points.first : kBrazzavilleCenter,
-          initialZoom: points.isNotEmpty ? 14.5 : 12,
-          initialCameraFit: _fit,
-          interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
-          onMapReady: () => _ready = true,
-          onPositionChanged: (_, hasGesture) {
-            if (hasGesture && !_userMoved) setState(() => _userMoved = true);
-          },
-        ),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'site.kitunga.app',
-            maxZoom: 19,
-          ),
-          // Vraie route si connue ; sinon simple repère pointillé.
-          if (route.length >= 2)
-            PolylineLayer(polylines: [
-              Polyline(
-                  points: [if (rider != null) rider, ...route],
-                  strokeWidth: 5,
-                  color: _red.withValues(alpha: 0.85)),
-            ])
-          else if (rider != null && destination != null)
-            PolylineLayer(polylines: [
-              Polyline(
-                  points: [rider, destination],
-                  strokeWidth: 3,
-                  color: _red.withValues(alpha: 0.55),
-                  pattern: StrokePattern.dashed(segments: const [8, 6])),
-            ]),
-          MarkerLayer(markers: [
-            if (destination != null)
-              Marker(
-                point: destination,
-                width: 44,
-                height: 44,
-                child: const Icon(Icons.location_on_rounded,
-                    color: _red, size: 40),
-              ),
-            if (rider != null)
-              Marker(
-                point: rider,
-                width: 46,
-                height: 46,
-                child: Container(
-                  decoration: BoxDecoration(
+    final rider = this.rider;
+    final destination = this.destination;
+    final points = [if (rider != null) rider, if (destination != null)
+      destination];
+    final Widget map = trackingTestMode
+        ? Container(color: theme.alternate)
+        : KitungaMapView(
+            follow: true,
+            fitPoints: points,
+            initialCenter: kBrazzavilleCenter,
+            initialZoom: 12,
+            lines: [
+              // Vraie route si connue ; sinon simple repère pointillé.
+              if (route.length >= 2)
+                KitungaMapLine(
+                    points: [if (rider != null) rider, ...route],
+                    color: _red.withValues(alpha: 0.85))
+              else if (rider != null && destination != null)
+                KitungaMapLine(
+                    points: [rider, destination],
+                    color: _red.withValues(alpha: 0.55),
+                    width: 3,
+                    dashed: true),
+            ],
+            markers: [
+              if (destination != null)
+                KitungaMapMarker(
+                    id: 'destination',
+                    point: destination,
+                    icon: Icons.location_on_rounded,
+                    color: _red),
+              if (rider != null)
+                KitungaMapMarker(
+                    id: 'rider',
+                    point: rider,
+                    icon: Icons.delivery_dining_rounded,
                     color: _green,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: const [
-                      BoxShadow(color: Color(0x33000000), blurRadius: 6)
-                    ],
-                  ),
-                  child: const Icon(Icons.delivery_dining_rounded,
-                      color: Colors.white, size: 24),
-                ),
-              ),
-          ]),
-        ],
-      );
-    }
+                    round: true),
+            ],
+          );
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
-      child: SizedBox(
-        height: widget.height,
-        child: Stack(children: [
-          Positioned.fill(child: map),
-          if (_userMoved && points.isNotEmpty)
-            Positioned(
-              right: 10,
-              bottom: 10,
-              child: Material(
-                color: Colors.white,
-                elevation: 3,
-                borderRadius: BorderRadius.circular(20),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () {
-                    setState(() => _userMoved = false);
-                    _follow();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.my_location_rounded,
-                          size: 16, color: _red),
-                      const SizedBox(width: 6),
-                      Text('Recentrer',
-                          style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1A1A1A))),
-                    ]),
-                  ),
-                ),
-              ),
-            ),
-        ]),
-      ),
+      child: SizedBox(height: height, child: map),
     );
   }
 }

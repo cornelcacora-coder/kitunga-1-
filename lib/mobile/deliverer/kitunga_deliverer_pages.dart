@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart' as ll;
@@ -16,6 +15,7 @@ import '/mobile/components/delivery/kitunga_deliverer_panel.dart';
 import '/mobile/components/delivery/kitunga_delivery.dart'
     show kitungaTakeDelivery;
 import '/mobile/components/delivery/kitunga_live_tracking.dart';
+import '/mobile/components/delivery/kitunga_map.dart';
 import '/noc/admin/brazzaville_zones.dart'
     show kBrazzavilleCenter, kBrazzavilleZones;
 import 'kitunga_deliverer_home.dart';
@@ -339,6 +339,7 @@ class _KitungaDelivererMapState extends State<KitungaDelivererMap> {
   late final Stream<List<OrdersRecord>> _open = _openOrders();
   ll.LatLng? _me;
   String? _gps;
+  final _map = KitungaMapController();
 
   @override
   void initState() {
@@ -361,7 +362,14 @@ class _KitungaDelivererMapState extends State<KitungaDelivererMap> {
         return;
       }
       final pos = await Geolocator.getCurrentPosition();
-      if (mounted) setState(() => _me = ll.LatLng(pos.latitude, pos.longitude));
+      if (!mounted) return;
+      final me = ll.LatLng(pos.latitude, pos.longitude);
+      setState(() {
+        _me = me;
+        _gps = null;
+      });
+      // « Ma position » : la carte se centre sur le livreur.
+      _map.moveTo(me);
     } catch (_) {
       if (mounted) setState(() => _gps = 'Localisation indisponible.');
     }
@@ -430,39 +438,34 @@ class _KitungaDelivererMapState extends State<KitungaDelivererMap> {
                   kBrazzavilleZones[o.deliveryZone];
             }
 
-            final markers = <Marker>[
+            final markers = <KitungaMapMarker>[
               for (final o in ready)
                 if (pointOf(o, pickup: true) != null)
-                  Marker(
+                  KitungaMapMarker(
+                    id: 'ready_${o.reference.id}',
                     point: pointOf(o, pickup: true)!,
-                    width: 44,
-                    height: 44,
-                    child: GestureDetector(
-                      onTap: () => _showCourse(o, false),
-                      child: const _Pin(
-                          icon: Icons.storefront_rounded, color: _green),
-                    ),
+                    icon: Icons.storefront_rounded,
+                    color: _green,
+                    round: true,
+                    onTap: () => _showCourse(o, false),
                   ),
               for (final o in active)
                 if (pointOf(o) != null)
-                  Marker(
+                  KitungaMapMarker(
+                    id: 'active_${o.reference.id}',
                     point: pointOf(o)!,
-                    width: 44,
-                    height: 44,
-                    child: GestureDetector(
-                      onTap: () => _showCourse(o, true),
-                      child: const _Pin(
-                          icon: Icons.location_on_rounded, color: _red),
-                    ),
+                    icon: Icons.location_on_rounded,
+                    color: _red,
+                    round: true,
+                    onTap: () => _showCourse(o, true),
                   ),
               if (_me != null)
-                Marker(
+                KitungaMapMarker(
+                  id: 'me',
                   point: _me!,
-                  width: 44,
-                  height: 44,
-                  child: const _Pin(
-                      icon: Icons.delivery_dining_rounded,
-                      color: Color(0xFF1E242B)),
+                  icon: Icons.delivery_dining_rounded,
+                  color: const Color(0xFF1E242B),
+                  round: true,
                 ),
             ];
             return Stack(
@@ -470,23 +473,11 @@ class _KitungaDelivererMapState extends State<KitungaDelivererMap> {
                 Positioned.fill(
                   child: delivererSimulated
                       ? Container(color: theme.alternate)
-                      : FlutterMap(
-                          options: MapOptions(
-                            initialCenter: _me ?? kBrazzavilleCenter,
-                            initialZoom: 12.5,
-                            interactionOptions: const InteractionOptions(
-                                flags: InteractiveFlag.all &
-                                    ~InteractiveFlag.rotate),
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate:
-                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'site.kitunga.app',
-                              maxZoom: 19,
-                            ),
-                            MarkerLayer(markers: markers),
-                          ],
+                      : KitungaMapView(
+                          controller: _map,
+                          initialCenter: _me ?? kBrazzavilleCenter,
+                          initialZoom: 12.5,
+                          markers: markers,
                         ),
                 ),
                 Positioned(
