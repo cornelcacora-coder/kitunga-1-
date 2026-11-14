@@ -8,6 +8,8 @@ import '/backend/order_status.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart' show IntroWidget;
 import '/noc/ui/admin_kit.dart';
+import '/noc/admin/admin_shell.dart' show pickAdminImage;
+import '/mobile/common/security/change_password_page.dart';
 
 /// Cadre de l'administration : menu latéral à sections dépliables (réductible
 /// en icônes), barre du haut (recherche de page, notifications, compte) et
@@ -976,6 +978,25 @@ class _NotificationsState extends State<_Notifications> {
   }
 }
 
+/// Photo de l'admin connecté (mise à jour aussitôt après un changement).
+final adminPhoto = ValueNotifier<String?>(null);
+
+/// Nouvelle photo de profil de l'admin : choisie, envoyée, enregistrée.
+Future<void> _changeAdminPhoto(BuildContext context) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final url = await pickAdminImage(context);
+  if (url == null || currentUserReference == null) return;
+  try {
+    await currentUserReference!.update({'photo_url': url});
+    adminPhoto.value = url;
+    messenger.showSnackBar(
+        const SnackBar(content: Text('Photo de profil mise à jour.')));
+  } catch (_) {
+    messenger.showSnackBar(const SnackBar(
+        content: Text('La photo n\'a pas pu être enregistrée. Réessayez.')));
+  }
+}
+
 class _AccountMenu extends StatelessWidget {
   const _AccountMenu({required this.wide});
 
@@ -990,6 +1011,11 @@ class _AccountMenu extends StatelessWidget {
       onSelected: (v) {
         if (v == 'logout') adminSignOut(context);
         if (v == 'home') context.go(AdminPaths.dashboard);
+        if (v == 'photo') _changeAdminPhoto(context);
+        if (v == 'password') {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const ChangePasswordPage()));
+        }
       },
       itemBuilder: (_) => [
         PopupMenuItem(
@@ -1010,6 +1036,24 @@ class _AccountMenu extends StatelessWidget {
                 size: 18.0, color: AdminColors.muted),
             const SizedBox(width: 10.0),
             Text('Tableau de bord', style: AdminText.body()),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'photo',
+          child: Row(children: [
+            Icon(Icons.photo_camera_outlined,
+                size: 18.0, color: AdminColors.muted),
+            const SizedBox(width: 10.0),
+            Text('Changer ma photo', style: AdminText.body()),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'password',
+          child: Row(children: [
+            Icon(Icons.lock_outline_rounded,
+                size: 18.0, color: AdminColors.muted),
+            const SizedBox(width: 10.0),
+            Text('Changer mon mot de passe', style: AdminText.body()),
           ]),
         ),
         PopupMenuItem(
@@ -1035,7 +1079,20 @@ class _AccountMenu extends StatelessWidget {
             ),
             const SizedBox(width: 10.0),
           ],
-          AdminAvatar(name: name, size: 42.0),
+          ValueListenableBuilder<String?>(
+            valueListenable: adminPhoto,
+            builder: (context, photo, _) {
+              var p = photo;
+              if (p == null) {
+                try {
+                  p = currentUserPhoto;
+                } catch (_) {
+                  p = '';
+                }
+              }
+              return AdminAvatar(name: name, photo: p, size: 42.0);
+            },
+          ),
         ],
       ),
     );
