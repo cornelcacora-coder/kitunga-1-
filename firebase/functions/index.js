@@ -443,6 +443,15 @@ exports.kitungaStaleReadyOrders = functions.region("us-west1")
     .onRun(() => orderEvents.staleReadyOrders({
       db: admin.firestore(), messaging: admin.messaging()}));
 
+/**
+ * Nouvelles commandes sans réponse du commerce : rappel à 10 min, annulation
+ * automatique (remboursement demandé) à 30 min.
+ */
+exports.kitungaPendingOrders = functions.region("us-west1")
+    .pubsub.schedule("every 5 minutes")
+    .onRun(() => orderEvents.pendingOrders({
+      db: admin.firestore(), messaging: admin.messaging()}));
+
 /** Le livreur : en service / hors service, quartiers couverts. */
 exports.kitungaSetDelivererStatus = acquisitionCallable((data, uid) =>
   orderEvents.setDelivererStatus({db: admin.firestore(), uid, data}));

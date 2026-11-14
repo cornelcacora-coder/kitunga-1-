@@ -12,6 +12,9 @@
  * - Refusée / annulée : le client ou le commerce.
  * - Problème signalé par le livreur : les administrateurs.
  * - Prête depuis 20 minutes sans livreur : les administrateurs (une fois).
+ * - En attente depuis 10 minutes (le commerce n'a pas répondu) : rappel au
+ *   commerce et alerte aux administrateurs (une fois) ; après 30 minutes,
+ *   annulation automatique, remboursement demandé, client prévenu.
  *
  * Les livreurs indiquent s'ils sont en service et leurs quartiers
  * (User.delivery_available, User.delivery_zones).
@@ -24,6 +27,12 @@ const {ZONES} = require("./pricing");
 const ts = () => admin.firestore.FieldValue.serverTimestamp();
 const err = (code, message) => new AcquisitionError(code, message);
 const STALE_MINUTES = 20;
+// Le commerce doit accepter ou refuser une nouvelle commande.
+const PENDING_ALERT_MINUTES = 10;
+const PENDING_CANCEL_MINUTES = 30;
+// Plus ancienne : laissée à l'admin (clôture en lot des vieilles commandes),
+// pour ne pas annuler d'un coup l'historique déjà en base.
+const PENDING_MAX_HOURS = 24;
 
 async function userOf(db, ref) {
   if (!ref) return null;
@@ -189,6 +198,91 @@ async function staleReadyOrders({db, messaging, now = new Date()}) {
   return {count: stale.length};
 }
 
+/**
+ * Nouvelles commandes sans réponse du commerce :
+ * - 10 min : rappel au commerce, alerte aux administrateurs (une fois) ;
+ * - 30 min : annulée automatiquement (motif enregistré), remboursement
+ *   demandé si elle était payée, client et administrateurs prévenus (le
+ *   commerce l'est par le déclencheur des commandes).
+ */
+async function pendingOrders({db, messaging, now = new Date()}) {
+  const snap = await db.collection("Orders")
+      .where("status", "==", "En attente").get();
+  const age = (o) => {
+    const at = toDate(o.get("created_at"));
+    return at ? (now.getTime() - at.getTime()) / 60000 : null;
+  };
+  const recent = snap.docs.filter((o) => {
+    const m = age(o);
+    return m !== null && m < PENDING_MAX_HOURS * 60;
+  });
+  const toCancel = recent.filter((o) => age(o) >= PENDING_CANCEL_MINUTES);
+  const toRemind = recent.filter((o) => age(o) >= PENDING_ALERT_MINUTES &&
+    age(o) < PENDING_CANCEL_MINUTES && !o.get("pending_alert_at"));
+
+  let cancelled = 0;
+  const reason = "Le commerce n'a pas répondu dans les " +
+    `${PENDING_CANCEL_MINUTES} minutes.`;
+  for (const o of toCancel) {
+    // Transaction : le commerce a pu accepter entre-temps.
+    const done = await db.runTransaction(async (tx) => {
+      const cur = await tx.get(o.ref);
+      if (!cur.exists || cur.get("status") !== "En attente") return null;
+      const paid = cur.get("payment_status") === "Réussi";
+      tx.update(o.ref, {status: "Annulée", cancel_reason: reason,
+        cancelled_by: "system", status_updated_at: ts(),
+        ...(paid ? {refund_needed: true} : {})});
+      return {paid};
+    });
+    if (!done) continue;
+    cancelled++;
+    const shop = await userOf(db, o.get("seller_ref"));
+    const shopName = shop ? shop.get("display_name") || "Le commerce" :
+      "Le commerce";
+    const buyer = await userOf(db, o.get("user_ref"));
+    if (buyer) {
+      await notifyUsers({db, messaging, users: [buyer],
+        title: "Commande annulée",
+        body: `${shopName} n'a pas répondu à votre commande ${ref(o)} : ` +
+          "elle est annulée." + (done.paid ? " Vous serez remboursé." : "") +
+          " Vous pouvez commander dans un autre commerce.",
+        kind: "order", data: {orderId: o.id}});
+    }
+  }
+  if (cancelled > 0) {
+    const list = toCancel.map((o) => ref(o)).join(", ");
+    await notifyUsers({db, messaging, users: await admins(db),
+      title: "Commandes annulées sans réponse",
+      body: `${cancelled} commande(s) annulée(s) : le commerce n'a pas ` +
+        `répondu en ${PENDING_CANCEL_MINUTES} min (${list}). Vérifiez les ` +
+        "remboursements.", kind: "admin"});
+  }
+
+  if (toRemind.length > 0) {
+    for (const o of toRemind) {
+      const shop = await userOf(db, o.get("seller_ref"));
+      if (shop) {
+        await notifyUsers({db, messaging, users: [shop],
+          title: "Commande en attente",
+          body: `La commande ${ref(o)} attend votre réponse depuis ` +
+            `${PENDING_ALERT_MINUTES} min. Acceptez-la ou refusez-la : ` +
+            `sans réponse, elle sera annulée après ${PENDING_CANCEL_MINUTES}` +
+            " min.", kind: "order", data: {orderId: o.id}});
+      }
+    }
+    const list = toRemind.map((o) => ref(o)).join(", ");
+    await notifyUsers({db, messaging, users: await admins(db),
+      title: "Commandes sans réponse du commerce",
+      body: `${toRemind.length} commande(s) en attente depuis plus de ` +
+        `${PENDING_ALERT_MINUTES} min : ${list}. Contactez le commerce.`,
+      kind: "admin"});
+    const batch = db.batch();
+    toRemind.forEach((o) => batch.update(o.ref, {pending_alert_at: ts()}));
+    await batch.commit();
+  }
+  return {reminded: toRemind.length, cancelled};
+}
+
 /** Disponibilités du livreur : en service, en pause, hors service. */
 const STATES = ["on", "pause", "off"];
 
@@ -265,5 +359,6 @@ async function orderContacts({db, uid, data}) {
   return {contacts: people.filter((p) => p && p.phone)};
 }
 
-module.exports = {onOrderWrite, staleReadyOrders, setDelivererStatus,
-  orderContacts, STALE_MINUTES};
+module.exports = {onOrderWrite, staleReadyOrders, pendingOrders,
+  setDelivererStatus, orderContacts, STALE_MINUTES, PENDING_ALERT_MINUTES,
+  PENDING_CANCEL_MINUTES};

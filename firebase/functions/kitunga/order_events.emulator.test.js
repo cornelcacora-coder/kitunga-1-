@@ -110,6 +110,52 @@ test("commande prête depuis 20 minutes : alerte admin une seule fois",
           {count: 0});
     });
 
+test("commerce sans réponse : rappel à 10 min, annulation à 30 min",
+    async () => {
+      const t0 = new Date("2026-11-14T10:00:00Z");
+      const min = (m) => new Date(t0.getTime() + m * 60000);
+      await order.set({status: "En attente", order_unique_reference: "K-9",
+        user_ref: db.doc("User/client"), seller_ref: db.doc("User/shop"),
+        payment_status: "Réussi", created_at: t0});
+      // Ancienne commande oubliée : jamais annulée automatiquement.
+      await db.doc("Orders/old").set({status: "En attente",
+        seller_ref: db.doc("User/shop"), user_ref: db.doc("User/client"),
+        created_at: new Date(t0.getTime() - 3 * 86400000)});
+
+      assert.deepStrictEqual(await ev.pendingOrders({db, messaging,
+        now: min(5)}), {reminded: 0, cancelled: 0});
+      assert.deepStrictEqual(await ev.pendingOrders({db, messaging,
+        now: min(11)}), {reminded: 1, cancelled: 0});
+      assert.deepStrictEqual(await titles("shop"), ["Commande en attente"]);
+      assert.deepStrictEqual(await titles("admin"),
+          ["Commandes sans réponse du commerce"]);
+      // Une seule fois.
+      assert.deepStrictEqual(await ev.pendingOrders({db, messaging,
+        now: min(20)}), {reminded: 0, cancelled: 0});
+
+      assert.deepStrictEqual(await ev.pendingOrders({db, messaging,
+        now: min(31)}), {reminded: 0, cancelled: 1});
+      const o = await order.get();
+      assert.strictEqual(o.get("status"), "Annulée");
+      assert.strictEqual(o.get("cancelled_by"), "system");
+      assert.strictEqual(o.get("refund_needed"), true);
+      assert.match(o.get("cancel_reason"), /n'a pas répondu/);
+      assert.ok((await titles("client")).includes("Commande annulée"));
+      assert.ok((await titles("admin"))
+          .includes("Commandes annulées sans réponse"));
+      assert.strictEqual((await db.doc("Orders/old").get()).get("status"),
+          "En attente");
+    });
+
+test("commerce qui accepte à temps : rien n'est annulé", async () => {
+  const t0 = new Date("2026-11-14T10:00:00Z");
+  await order.set({status: "En préparation", created_at: t0,
+    user_ref: db.doc("User/client"), seller_ref: db.doc("User/shop")});
+  assert.deepStrictEqual(await ev.pendingOrders({db, messaging,
+    now: new Date(t0.getTime() + 45 * 60000)}), {reminded: 0, cancelled: 0});
+  assert.strictEqual((await order.get()).get("status"), "En préparation");
+});
+
 test("livreur : en service et quartiers", async () => {
   await ev.setDelivererStatus({db, uid: "l3",
     data: {available: true, zones: ["Bacongo", "Bacongo", "Ouenzé"]}});
