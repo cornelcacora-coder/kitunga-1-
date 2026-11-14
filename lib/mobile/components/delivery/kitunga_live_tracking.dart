@@ -156,7 +156,10 @@ List<TrackingStep> trackingSteps(Map<String, dynamic> t,
 
 // ── Carte ────────────────────────────────────────────────────────────────
 
-class _TrackingMap extends StatelessWidget {
+/// La carte suit le livreur et la destination à chaque mise à jour, sans
+/// être reconstruite. Dès que l'utilisateur la déplace ou zoome, elle
+/// garde sa vue ; le bouton « Recentrer » revient au suivi automatique.
+class _TrackingMap extends StatefulWidget {
   const _TrackingMap(
       {this.rider, this.destination, this.route = const [], this.height = 210});
 
@@ -168,29 +171,79 @@ class _TrackingMap extends StatelessWidget {
   final double height;
 
   @override
+  State<_TrackingMap> createState() => _TrackingMapState();
+}
+
+class _TrackingMapState extends State<_TrackingMap> {
+  final _controller = MapController();
+  bool _ready = false;
+
+  /// L'utilisateur a déplacé ou zoomé la carte : on ne la recadre plus.
+  bool _userMoved = false;
+
+  List<ll.LatLng> get _points => [
+        if (widget.rider != null) widget.rider!,
+        if (widget.destination != null) widget.destination!,
+      ];
+
+  CameraFit? get _fit => _points.length == 2
+      ? CameraFit.coordinates(
+          coordinates: _points,
+          padding: const EdgeInsets.all(48),
+          maxZoom: 16)
+      : null;
+
+  void _follow() {
+    if (!_ready) return;
+    final fit = _fit;
+    if (fit != null) {
+      _controller.fitCamera(fit);
+    } else if (_points.isNotEmpty) {
+      _controller.move(_points.first, _controller.camera.zoom);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrackingMap old) {
+    super.didUpdateWidget(old);
+    if (!_userMoved &&
+        (old.rider != widget.rider || old.destination != widget.destination)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_userMoved) _follow();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final points = [if (rider != null) rider!, if (destination != null)
-      destination!];
+    final rider = widget.rider;
+    final destination = widget.destination;
+    final route = widget.route;
+    final points = _points;
     Widget map;
     if (trackingTestMode) {
       map = Container(color: theme.alternate);
     } else {
-      final fit = points.length == 2
-          ? CameraFit.coordinates(
-              coordinates: points,
-              padding: const EdgeInsets.all(48),
-              maxZoom: 16)
-          : null;
       map = FlutterMap(
-        key: ValueKey('${rider?.latitude},${rider?.longitude}'),
+        mapController: _controller,
         options: MapOptions(
           initialCenter:
               points.isNotEmpty ? points.first : kBrazzavilleCenter,
           initialZoom: points.isNotEmpty ? 14.5 : 12,
-          initialCameraFit: fit,
+          initialCameraFit: _fit,
           interactionOptions: const InteractionOptions(
               flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
+          onMapReady: () => _ready = true,
+          onPositionChanged: (_, hasGesture) {
+            if (hasGesture && !_userMoved) setState(() => _userMoved = true);
+          },
         ),
         children: [
           TileLayer(
@@ -202,14 +255,14 @@ class _TrackingMap extends StatelessWidget {
           if (route.length >= 2)
             PolylineLayer(polylines: [
               Polyline(
-                  points: [if (rider != null) rider!, ...route],
+                  points: [if (rider != null) rider, ...route],
                   strokeWidth: 5,
                   color: _red.withValues(alpha: 0.85)),
             ])
           else if (rider != null && destination != null)
             PolylineLayer(polylines: [
               Polyline(
-                  points: [rider!, destination!],
+                  points: [rider, destination],
                   strokeWidth: 3,
                   color: _red.withValues(alpha: 0.55),
                   pattern: StrokePattern.dashed(segments: const [8, 6])),
@@ -217,7 +270,7 @@ class _TrackingMap extends StatelessWidget {
           MarkerLayer(markers: [
             if (destination != null)
               Marker(
-                point: destination!,
+                point: destination,
                 width: 44,
                 height: 44,
                 child: const Icon(Icons.location_on_rounded,
@@ -225,7 +278,7 @@ class _TrackingMap extends StatelessWidget {
               ),
             if (rider != null)
               Marker(
-                point: rider!,
+                point: rider,
                 width: 46,
                 height: 46,
                 child: Container(
@@ -247,7 +300,43 @@ class _TrackingMap extends StatelessWidget {
     }
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
-      child: SizedBox(height: height, child: map),
+      child: SizedBox(
+        height: widget.height,
+        child: Stack(children: [
+          Positioned.fill(child: map),
+          if (_userMoved && points.isNotEmpty)
+            Positioned(
+              right: 10,
+              bottom: 10,
+              child: Material(
+                color: Colors.white,
+                elevation: 3,
+                borderRadius: BorderRadius.circular(20),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    setState(() => _userMoved = false);
+                    _follow();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.my_location_rounded,
+                          size: 16, color: _red),
+                      const SizedBox(width: 6),
+                      Text('Recentrer',
+                          style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A1A))),
+                    ]),
+                  ),
+                ),
+              ),
+            ),
+        ]),
+      ),
     );
   }
 }
