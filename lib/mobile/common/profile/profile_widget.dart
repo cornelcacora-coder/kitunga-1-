@@ -101,10 +101,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
             padding: EdgeInsets.only(left: 4.0, bottom: 8.0),
             child: Text(
               title,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 13.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -146,7 +146,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       ),
       title: Text(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           color: theme.primaryText,
           fontSize: 15.0,
           fontWeight: FontWeight.w500,
@@ -192,10 +192,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
               children: [
                 Text(
                   'Profil',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 20.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Spacer(),
@@ -205,9 +205,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                         context.pushNamed(EditProfileWidget.routeName),
                     child: Text(
                       'Modifier',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -237,10 +237,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   _initial(),
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                     color: Colors.white,
                                     fontSize: 46.0,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               )
@@ -273,16 +273,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       : (currentUserDisplayName.isEmpty
                           ? 'Mon compte'
                           : currentUserDisplayName),
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 21.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 if (currentUserEmail.isNotEmpty)
                   Text(
                     currentUserEmail,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 14.0),
                   ),
                 SizedBox(height: 6.0),
@@ -318,10 +318,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         ),
         child: Text(
           text,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             color: theme.primary,
             fontSize: 12.0,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
           ),
         ),
       );
@@ -367,16 +367,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       children: [
                         Text(
                           'Créez votre compte Kitunga',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 17.0,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         SizedBox(height: 4.0),
                         Text(
                           'Pour commander, suivre vos livraisons et retrouver l\'historique de vos achats.',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: theme.secondaryText,
                               fontSize: 13.5,
                               height: 1.4),
@@ -473,10 +473,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   icon: Icon(Icons.logout_rounded, color: theme.error),
                   label: Text(
                     'Déconnexion',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.error,
                       fontSize: 15.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

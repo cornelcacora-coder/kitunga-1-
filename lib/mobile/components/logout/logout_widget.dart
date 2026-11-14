@@ -78,8 +78,8 @@ class _LogoutWidgetState extends State<LogoutWidget> {
                     'Déconnexion',
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).titleLarge.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleLarge
                                 .fontStyle,
@@ -87,7 +87,7 @@ class _LogoutWidgetState extends State<LogoutWidget> {
                           color: FlutterFlowTheme.of(context).primaryText,
                           fontSize: 24.0,
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleLarge.fontStyle,
                         ),
@@ -102,7 +102,7 @@ class _LogoutWidgetState extends State<LogoutWidget> {
                       'Êtes-vous sûr de vouloir vous déconnecter ?',
                       textAlign: TextAlign.center,
                       style: FlutterFlowTheme.of(context).titleSmall.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FontWeight.normal,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleSmall
@@ -143,7 +143,7 @@ class _LogoutWidgetState extends State<LogoutWidget> {
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .override(
-                                  font: GoogleFonts.interTight(
+                                  font: GoogleFonts.poppins(
                                     fontWeight: FlutterFlowTheme.of(context)
                                         .titleSmall
                                         .fontWeight,
@@ -196,8 +196,8 @@ class _LogoutWidgetState extends State<LogoutWidget> {
                           color: FlutterFlowTheme.of(context).primary,
                           textStyle:
                               FlutterFlowTheme.of(context).titleMedium.override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.bold,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,
@@ -205,7 +205,7 @@ class _LogoutWidgetState extends State<LogoutWidget> {
                                     color: Colors.white,
                                     fontSize: 16.0,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .fontStyle,

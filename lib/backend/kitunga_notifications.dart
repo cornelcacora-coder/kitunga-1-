@@ -156,10 +156,10 @@ class _KitungaNotificationBellState extends State<KitungaNotificationBell> {
                     ),
                     alignment: Alignment.center,
                     child: Text(unread > 9 ? '9+' : '$unread',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 10.5,
-                            fontWeight: FontWeight.w800)),
+                            fontWeight: FontWeight.w600)),
                   ),
                 ),
             ],
@@ -207,10 +207,10 @@ class _KitungaNotificationsPageState extends State<KitungaNotificationsPage> {
         elevation: 0.0,
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text('Notifications',
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 19.0,
-                fontWeight: FontWeight.w800)),
+                fontWeight: FontWeight.w600)),
       ),
       body: ListenableBuilder(
         listenable: _store,
@@ -222,7 +222,7 @@ class _KitungaNotificationsPageState extends State<KitungaNotificationsPage> {
           if (_store.items.isEmpty) {
             return Center(
               child: Text('Aucune notification pour le moment.',
-                  style: GoogleFonts.inter(color: theme.secondaryText)),
+                  style: GoogleFonts.poppins(color: theme.secondaryText)),
             );
           }
           return RefreshIndicator(
@@ -259,18 +259,18 @@ class _KitungaNotificationsPageState extends State<KitungaNotificationsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('${n['title']}',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                     color: theme.primaryText,
                                     fontSize: 15.0,
-                                    fontWeight: FontWeight.w700)),
+                                    fontWeight: FontWeight.w600)),
                             const SizedBox(height: 2.0),
                             Text('${n['body']}',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                     color: theme.secondaryText,
                                     fontSize: 13.5)),
                             if (at != null)
                               Text(dateTimeFormat('d MMM y, HH:mm', at),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       color: theme.secondaryText,
                                       fontSize: 11.5)),
                             if (subscription && widget.onSubscription != null)

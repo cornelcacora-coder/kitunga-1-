@@ -69,7 +69,7 @@ class _ModelWidgetState extends State<ModelWidget> {
           title: Text(
             'Produit',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight:
                         FlutterFlowTheme.of(context).headlineMedium.fontWeight,
                     fontStyle:

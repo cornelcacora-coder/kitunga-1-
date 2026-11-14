@@ -82,8 +82,8 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                     ),
                     icon: const Icon(Icons.location_on_rounded, size: 20),
                     label: Text('Suivre la livraison',
-                        style: GoogleFonts.inter(
-                            fontSize: 15, fontWeight: FontWeight.w800)),
+                        style: GoogleFonts.poppins(
+                            fontSize: 15, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -131,15 +131,15 @@ class _OrderViewWidgetState extends State<OrderViewWidget> {
                               o.deliveryZone.isNotEmpty
                                   ? o.deliveryZone
                                   : 'Quartier non précisé',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: theme.primaryText)),
                           if (o.deliveryLocation.trim().isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
                               child: Text(o.deliveryLocation.trim(),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       fontSize: 13.5,
                                       color: theme.secondaryText)),
                             ),
@@ -200,9 +200,9 @@ PreferredSizeWidget kitungaPageBar(BuildContext context, String title) {
           )
         : null,
     title: Text(title,
-        style: GoogleFonts.interTight(
+        style: GoogleFonts.poppins(
             fontSize: 20,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
             color: theme.primaryText)),
   );
 }
@@ -227,9 +227,9 @@ class _Section extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: theme.primaryText)),
           const SizedBox(height: 12),
           child,
@@ -253,7 +253,7 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(children: [
         Text(label,
-            style: GoogleFonts.inter(fontSize: 14, color: theme.secondaryText)),
+            style: GoogleFonts.poppins(fontSize: 14, color: theme.secondaryText)),
         const SizedBox(width: 12),
         Expanded(
           child: Align(
@@ -263,9 +263,9 @@ class _InfoRow extends StatelessWidget {
                     textAlign: TextAlign.right,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
           ),
         ),
@@ -305,8 +305,8 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(OrderStatus.label(status),
-          style: GoogleFonts.inter(
-              fontSize: 12.5, fontWeight: FontWeight.w700, color: color)),
+          style: GoogleFonts.poppins(
+              fontSize: 12.5, fontWeight: FontWeight.w600, color: color)),
     );
   }
 }
@@ -343,7 +343,7 @@ class _Items extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text('Le détail des articles n\'est pas disponible.',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 14, color: theme.secondaryText)),
               ),
             for (final i in items)
@@ -370,21 +370,21 @@ class _Items extends StatelessWidget {
                         Text(i.itemName,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 14.5,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: theme.primaryText)),
                         if (i.options.isNotEmpty)
                           Text(i.options,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 12.5,
                                   color: theme.secondaryText)),
                         Text(
                             '${i.quantity <= 0 ? 1 : i.quantity} × '
                             '${kitungaPrice(i.priceAtPurchase)}',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 12.5, color: theme.secondaryText)),
                       ],
                     ),
@@ -392,9 +392,9 @@ class _Items extends StatelessWidget {
                   Text(
                       kitungaPrice(i.priceAtPurchase *
                           (i.quantity <= 0 ? 1 : i.quantity)),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 14.5,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           color: theme.primaryText)),
                 ]),
               ),
@@ -421,9 +421,9 @@ class _Amount extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final style = GoogleFonts.inter(
+    final style = GoogleFonts.poppins(
         fontSize: strong ? 17 : 14,
-        fontWeight: strong ? FontWeight.w800 : FontWeight.w500,
+        fontWeight: strong ? FontWeight.w600 : FontWeight.w500,
         color: strong ? theme.primaryText : theme.secondaryText);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -433,7 +433,7 @@ class _Amount extends StatelessWidget {
         Text(kitungaPrice(value),
             style: style.copyWith(
                 color: theme.primaryText,
-                fontWeight: strong ? FontWeight.w800 : FontWeight.w700)),
+                fontWeight: strong ? FontWeight.w600 : FontWeight.w600)),
       ]),
     );
   }
@@ -466,7 +466,7 @@ class _Proof extends StatelessWidget {
         const SizedBox(height: 6),
         Text(label,
             style:
-                GoogleFonts.inter(fontSize: 12.5, color: theme.secondaryText)),
+                GoogleFonts.poppins(fontSize: 12.5, color: theme.secondaryText)),
       ],
     );
   }
@@ -513,12 +513,12 @@ class _HelpTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Un problème avec cette commande ?',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: theme.primaryText)),
                   Text('Écrivez au support Kitunga, réponse dans l\'app.',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 12.5, color: theme.secondaryText)),
                 ],
               ),

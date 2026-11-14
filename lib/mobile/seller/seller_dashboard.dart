@@ -157,11 +157,11 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
                   title: Text(p.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           color: theme.primaryText,
-                          fontWeight: FontWeight.w600)),
+                          fontWeight: FontWeight.w500)),
                   subtitle: Text('Plus que ${p.quantity} en stock',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           color: theme.primary, fontSize: 12.0)),
                   trailing: Icon(Icons.chevron_right_rounded,
                       color: theme.secondaryText),
@@ -200,7 +200,7 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
               children: [
                 Text(
                   'Espace vendeur',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 13.0),
                 ),
                 Row(
@@ -210,10 +210,10 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
                         shop.displayName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 22.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -229,7 +229,7 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
                   [shop.category, shop.horraire]
                       .where((e) => e.trim().isNotEmpty)
                       .join(' · '),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 13.0),
                 ),
               ],
@@ -255,7 +255,7 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
           SizedBox(width: 10.0),
           Expanded(
             child: Text(text,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.primaryText, fontSize: 13.0, height: 1.4)),
           ),
         ],
@@ -267,10 +267,10 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
         padding: EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 10.0),
         child: Text(
           text,
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
             color: theme.primaryText,
             fontSize: 18.0,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
           ),
         ),
       );
@@ -303,17 +303,17 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     s.value,
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                       color: theme.primaryText,
                       fontSize: 20.0,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
                 Text(
                   s.label,
                   maxLines: 2,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 11.5,
                     height: 1.2,
@@ -407,10 +407,10 @@ class _SellerDashboardViewState extends State<SellerDashboardView> {
               child: Icon(a.icon, color: theme.primary, size: 22.0),
             ),
             title: Text(a.label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 15.0,
-                    fontWeight: FontWeight.w600)),
+                    fontWeight: FontWeight.w500)),
             trailing:
                 Icon(Icons.chevron_right_rounded, color: theme.secondaryText),
             onTap: a.onTap,
@@ -451,7 +451,7 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
         onPressed: () => openNewProductForm(context, widget.shop),
         icon: Icon(Icons.add_rounded),
         label: Text('Ajouter',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       ),
       body: StreamBuilder<List<ProductRecord>>(
         stream: _products,
@@ -481,7 +481,7 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
                 padding: EdgeInsets.fromLTRB(20.0, 4.0, 20.0, 8.0),
                 child: TextField(
                   onChanged: (v) => setState(() => _query = v),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.primaryText, fontSize: 15.0),
                   decoration: kitungaInputDecoration(
                       context, 'Rechercher dans mon catalogue', Icons.search),
@@ -515,11 +515,11 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
                           selected: _filter == f.v,
                           showCheckmark: false,
                           onSelected: (_) => setState(() => _filter = f.v),
-                          labelStyle: GoogleFonts.inter(
+                          labelStyle: GoogleFonts.poppins(
                             color: _filter == f.v
                                 ? Colors.white
                                 : theme.primaryText,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             fontSize: 13.0,
                           ),
                           selectedColor: theme.primary,
@@ -538,7 +538,7 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
                   padding: EdgeInsets.all(32.0),
                   child: Text('Aucun produit dans cette sélection.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(color: theme.secondaryText)),
+                      style: GoogleFonts.poppins(color: theme.secondaryText)),
                 )
               else
                 for (final p in shown) _row(theme, p, all),
@@ -559,7 +559,7 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
             Text(
               'Votre catalogue est vide. Ajoutez votre premier ${sellerItemLabel(widget.shop.category)} pour qu\'il apparaisse dans votre vitrine.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: theme.secondaryText),
+              style: GoogleFonts.poppins(color: theme.secondaryText),
             ),
           ],
         ),
@@ -590,10 +590,10 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
                   Text(p.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.interTight(
+                      style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 15.0,
-                          fontWeight: FontWeight.w700)),
+                          fontWeight: FontWeight.w600)),
                   Text(
                     [
                       kitungaPrice(p.salePrice > 0 ? p.salePrice : p.price),
@@ -602,7 +602,7 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
                     ].join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: published ? theme.secondaryText : theme.primary,
                         fontSize: 12.5),
                   ),
@@ -622,12 +622,12 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
                           p.quantity <= 0
                               ? (hasCuisines(widget.shop.category) ? 'Épuisé' : 'Rupture')
                               : (hasCuisines(widget.shop.category) ? 'Portions : ${p.quantity}' : 'Stock : ${p.quantity}'),
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: p.quantity <= 0
                                 ? theme.error
                                 : theme.primaryText,
                             fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
@@ -647,7 +647,7 @@ class _SellerCatalogPageState extends State<SellerCatalogPage> {
                   onChanged: (v) => _setPublished(p, v),
                 ),
                 Text(published ? 'En vente' : 'Masqué',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 11.0)),
               ],
             ),
@@ -773,7 +773,7 @@ class SellerSectionsPage extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(20.0, 4.0, 20.0, 12.0),
                 child: Text(
                   'Une ${sellerSectionLabel(shop.category).toLowerCase()} apparaît dès qu\'un produit y est rangé (champ « ${sellerSectionLabel(shop.category)} » du formulaire produit). Les clients voient votre vitrine organisée selon ces rubriques.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 13.0, height: 1.45),
                 ),
               ),
@@ -783,23 +783,23 @@ class SellerSectionsPage extends StatelessWidget {
                   child: Text(
                     'Aucune rubrique pour le moment.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: theme.secondaryText),
+                    style: GoogleFonts.poppins(color: theme.secondaryText),
                   ),
                 ),
               for (final s in sections)
                 ListTile(
                   contentPadding: EdgeInsets.symmetric(horizontal: 20.0),
                   title: Text(s,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           color: theme.primaryText,
-                          fontWeight: FontWeight.w600)),
+                          fontWeight: FontWeight.w500)),
                   subtitle: Text(
                     () {
                       final n =
                           products.where((p) => p.section.trim() == s).length;
                       return '$n produit${n > 1 ? 's' : ''}';
                     }(),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 12.0),
                   ),
                   trailing: Row(
@@ -1034,7 +1034,7 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
           TextField(
             controller: _bio,
             maxLines: 3,
-            style: GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
+            style: GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0),
             decoration: kitungaInputDecoration(
                 context,
                 'Ex : Cuisine congolaise, grillades et poissons braisés',
@@ -1061,14 +1061,14 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
             initial: _hours.text,
             onChanged: (v) => setState(() => _hours.text = v),
             textStyle:
-                GoogleFonts.inter(color: theme.primaryText, fontSize: 14.0),
+                GoogleFonts.poppins(color: theme.primaryText, fontSize: 14.0),
           ),
           SizedBox(height: 8.0),
           Text(
             status == null
                 ? 'Choisissez vos horaires jour par jour pour que les clients voient si vous êtes ouvert.'
                 : 'Aperçu pour les clients : ${status.label}',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: status == null
                   ? theme.secondaryText
                   : (status.open ? Color(0xFF1E9E5A) : theme.secondaryText),
@@ -1095,14 +1095,14 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
               _prep == null
                   ? 'Choisissez une durée : elle sera affichée aux clients sur votre vitrine.'
                   : 'Affiché aux clients sur votre vitrine : « Prêt en ~$_prep min ».',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   color: theme.secondaryText, fontSize: 12.5),
             ),
             SizedBox(height: 20.0),
             KitungaFieldLabel('Vos cuisines (${_cuisines.length}/8)'),
             Text(
               'Les clients pourront trouver votre restaurant avec le filtre « Cuisine ».',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   color: theme.secondaryText, fontSize: 12.5),
             ),
             SizedBox(height: 10.0),
@@ -1116,12 +1116,12 @@ class _SellerProfilePageState extends State<SellerProfilePage> {
                     selected: _cuisines.contains(c),
                     showCheckmark: false,
                     selectedColor: theme.primary,
-                    labelStyle: GoogleFonts.inter(
+                    labelStyle: GoogleFonts.poppins(
                         color: _cuisines.contains(c)
                             ? Colors.white
                             : theme.primaryText,
                         fontSize: 12.5,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.w500),
                     onSelected: (v) => setState(() {
                       if (v && _cuisines.length < 8) _cuisines.add(c);
                       if (!v) _cuisines.remove(c);
@@ -1148,10 +1148,10 @@ PreferredSizeWidget _appBar(BuildContext context, String title) {
     iconTheme: IconThemeData(color: theme.primaryText),
     title: Text(
       title,
-      style: GoogleFonts.interTight(
+      style: GoogleFonts.poppins(
         color: theme.primaryText,
         fontSize: 19.0,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w600,
       ),
     ),
   );

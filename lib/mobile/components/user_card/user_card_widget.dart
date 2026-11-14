@@ -145,8 +145,8 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                             style: FlutterFlowTheme.of(context)
                                 .labelLarge
                                 .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600,
+                                  font: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w500,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .labelLarge
                                         .fontStyle,
@@ -154,7 +154,7 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                                   color:
                                       FlutterFlowTheme.of(context).primaryText,
                                   letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .labelLarge
                                       .fontStyle,
@@ -190,8 +190,8 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w600,
+                                        font: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w500,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
                                                   .bodyMedium
@@ -200,7 +200,7 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                                         color: Color(0xFFB8A600),
                                         fontSize: 10.0,
                                         letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w500,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
@@ -224,7 +224,7 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .bodySmall
                                   .override(
-                                    font: GoogleFonts.inter(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .bodySmall
                                           .fontWeight,
@@ -253,7 +253,7 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .bodySmall
                                   .override(
-                                    font: GoogleFonts.inter(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .bodySmall
                                           .fontWeight,
@@ -308,8 +308,8 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                                 style: FlutterFlowTheme.of(context)
                                     .labelSmall
                                     .override(
-                                      font: GoogleFonts.inter(
-                                        fontWeight: FontWeight.bold,
+                                      font: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .labelSmall
                                             .fontStyle,
@@ -317,7 +317,7 @@ class _UserCardWidgetState extends State<UserCardWidget> {
                                       color: FlutterFlowTheme.of(context)
                                           .primaryText,
                                       letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .labelSmall
                                           .fontStyle,

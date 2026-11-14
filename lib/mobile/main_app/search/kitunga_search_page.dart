@@ -125,7 +125,7 @@ class _KitungaSearchPageState extends State<KitungaSearchPage>
                     labelColor: theme.primary,
                     unselectedLabelColor: theme.secondaryText,
                     indicatorColor: theme.primary,
-                    labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                    labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                     tabs: [
                       Tab(text: 'Produits${ready ? ' (${foundProducts.length})' : ''}'),
                       Tab(text: 'Commerces${ready ? ' (${foundShops.length})' : ''}'),
@@ -205,11 +205,11 @@ class _KitungaSearchPageState extends State<KitungaSearchPage>
                       autofocus: widget.initialQuery.isEmpty,
                       textInputAction: TextInputAction.search,
                       onChanged: _setQuery,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           color: theme.primaryText, fontSize: 14.0),
                       decoration: InputDecoration(
                         hintText: 'Produit, plat, boutique…',
-                        hintStyle: GoogleFonts.inter(
+                        hintStyle: GoogleFonts.poppins(
                             color: theme.secondaryText, fontSize: 14.0),
                         border: InputBorder.none,
                         isDense: true,
@@ -240,9 +240,9 @@ class _KitungaSearchPageState extends State<KitungaSearchPage>
       padding: const EdgeInsets.only(right: 6.0),
       child: InputChip(
         label: Text(label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 fontSize: 12.5,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: theme.primary)),
         backgroundColor: theme.primary.withValues(alpha: 0.1),
         side: BorderSide.none,
@@ -358,16 +358,16 @@ class _KitungaSearchPageState extends State<KitungaSearchPage>
             Icon(Icons.search_off_rounded, size: 52.0, color: theme.secondaryText),
             const SizedBox(height: 12.0),
             Text(title,
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 17.0,
-                    fontWeight: FontWeight.w700)),
+                    fontWeight: FontWeight.w600)),
             const SizedBox(height: 4.0),
             Text(
                 filtered
                     ? 'Essayez d\'enlever un filtre.'
                     : 'Essayez un autre mot.',
-                style: GoogleFonts.inter(color: theme.secondaryText)),
+                style: GoogleFonts.poppins(color: theme.secondaryText)),
             if (filtered)
               TextButton(
                 onPressed: () => setState(() {
@@ -433,10 +433,10 @@ class _FilterSheetState extends State<_FilterSheet> {
   Widget _title(FlutterFlowTheme theme, String t) => Padding(
         padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
         child: Text(t,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 14.5,
-                fontWeight: FontWeight.w700)),
+                fontWeight: FontWeight.w600)),
       );
 
   Widget _choice(FlutterFlowTheme theme, String label, bool selected,
@@ -446,9 +446,9 @@ class _FilterSheetState extends State<_FilterSheet> {
         selected: selected,
         showCheckmark: false,
         onSelected: (_) => onTap(),
-        labelStyle: GoogleFonts.inter(
+        labelStyle: GoogleFonts.poppins(
             color: selected ? Colors.white : theme.primaryText,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
             fontSize: 13.0),
         selectedColor: theme.primary,
         backgroundColor: theme.primaryBackground,
@@ -463,10 +463,10 @@ class _FilterSheetState extends State<_FilterSheet> {
         activeThumbColor: Colors.white,
         activeTrackColor: theme.primary,
         title: Text(title,
-            style: GoogleFonts.inter(
-                color: theme.primaryText, fontWeight: FontWeight.w600)),
+            style: GoogleFonts.poppins(
+                color: theme.primaryText, fontWeight: FontWeight.w500)),
         subtitle: Text(subtitle,
-            style: GoogleFonts.inter(color: theme.secondaryText, fontSize: 12.5)),
+            style: GoogleFonts.poppins(color: theme.secondaryText, fontSize: 12.5)),
         value: value,
         onChanged: onChanged,
       );
@@ -508,10 +508,10 @@ class _FilterSheetState extends State<_FilterSheet> {
                   Expanded(
                     child: Text(
                         widget.shops ? 'Filtrer les commerces' : 'Filtrer les produits',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 19.0,
-                            fontWeight: FontWeight.w800)),
+                            fontWeight: FontWeight.w600)),
                   ),
                   TextButton(
                     onPressed: () => setState(() {
@@ -636,8 +636,8 @@ class _FilterSheetState extends State<_FilterSheet> {
                     count == 0
                         ? 'Aucun résultat'
                         : 'Voir $count résultat${count > 1 ? 's' : ''}',
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w700, fontSize: 15.0)),
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600, fontSize: 15.0)),
               ),
             ),
           ],

@@ -207,7 +207,7 @@ class _ReturnSheetState extends State<_ReturnSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final body = GoogleFonts.inter(color: theme.secondaryText, fontSize: 13.5);
+    final body = GoogleFonts.poppins(color: theme.secondaryText, fontSize: 13.5);
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20.0, 18.0, 20.0, 20.0),
@@ -216,10 +216,10 @@ class _ReturnSheetState extends State<_ReturnSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Retour ou échange',
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 19.0,
-                    fontWeight: FontWeight.w800)),
+                    fontWeight: FontWeight.w600)),
             const SizedBox(height: 4.0),
             Text(
                 'Possible pendant $kReturnDays jours après la livraison. '
@@ -244,7 +244,7 @@ class _ReturnSheetState extends State<_ReturnSheet> {
                       const SizedBox(width: 10.0),
                       Expanded(
                           child: Text(e.value,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   color: theme.primaryText, fontSize: 14.5))),
                     ],
                   ),
@@ -300,8 +300,8 @@ class _ReturnSheetState extends State<_ReturnSheet> {
               Padding(
                 padding: const EdgeInsets.only(top: 10.0),
                 child: Text(_error!,
-                    style: GoogleFonts.inter(
-                        color: theme.error, fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.poppins(
+                        color: theme.error, fontWeight: FontWeight.w500)),
               ),
             const SizedBox(height: 14.0),
             FilledButton.icon(
@@ -363,7 +363,7 @@ class _ReturnStatus extends StatelessWidget {
           const SizedBox(width: 10.0),
           Expanded(
               child: Text(text,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.primaryText, fontSize: 13.5))),
         ],
       ),
@@ -432,7 +432,7 @@ class KitungaSellerReturnCard extends StatelessWidget {
     final d = order.snapshotData;
     final status = '${d['return_status']}';
     final photos = [for (final p in (d['return_photos'] as List? ?? const [])) '$p'];
-    final small = GoogleFonts.inter(color: theme.primaryText, fontSize: 13.0);
+    final small = GoogleFonts.poppins(color: theme.primaryText, fontSize: 13.0);
     return Container(
       margin: const EdgeInsets.only(top: 8.0),
       padding: const EdgeInsets.all(12.0),
@@ -449,10 +449,10 @@ class KitungaSellerReturnCard extends StatelessWidget {
                   : status == 'accepted'
                       ? 'Retour accepté (${_wishLabel('${d['return_wish']}')})'
                       : 'Retour refusé',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   color: theme.primaryText,
                   fontSize: 14.0,
-                  fontWeight: FontWeight.w700)),
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 4.0),
           Text('Motif : ${kReturnReasons[d['return_reason']] ?? ''}',
               style: small),
@@ -510,7 +510,7 @@ class KitungaSellerReturnCard extends StatelessWidget {
                 child: Text(
                     'Accepté : le client rend l\'article, Kitunga le '
                     'rembourse (articles, sans la livraison).',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 12.0)),
               ),
           ],

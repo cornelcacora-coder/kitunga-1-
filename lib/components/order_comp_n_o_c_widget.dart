@@ -192,7 +192,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                       textAlign: TextAlign.start,
                       maxLines: 2,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .fontWeight,
@@ -220,7 +220,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                       textAlign: TextAlign.start,
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .fontWeight,
@@ -249,7 +249,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                       textAlign: TextAlign.start,
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .fontWeight,
@@ -299,8 +299,8 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                                     style: FlutterFlowTheme.of(context)
                                         .labelSmall
                                         .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
+                                          font: GoogleFonts.poppins(
+                                            fontWeight: FontWeight.w600,
                                             fontStyle:
                                                 FlutterFlowTheme.of(context)
                                                     .labelSmall
@@ -308,7 +308,7 @@ class _OrderCompNOCWidgetState extends State<OrderCompNOCWidget> {
                                           ),
                                           color: Colors.white,
                                           letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w600,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
                                                   .labelSmall

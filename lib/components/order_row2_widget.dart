@@ -130,14 +130,14 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w500,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .fontStyle,
                                     ),
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w500,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .fontStyle,
@@ -153,7 +153,7 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                               style: FlutterFlowTheme.of(context)
                                   .labelSmall
                                   .override(
-                                    font: GoogleFonts.inter(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .labelSmall
                                           .fontWeight,
@@ -187,7 +187,7 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                       ),
                       maxLines: 2,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .fontWeight,
@@ -216,7 +216,7 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                       ),
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .fontWeight,
@@ -272,7 +272,7 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
-                                    font: GoogleFonts.inter(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
@@ -299,7 +299,7 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                               style: FlutterFlowTheme.of(context)
                                   .labelSmall
                                   .override(
-                                    font: GoogleFonts.inter(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .labelSmall
                                           .fontWeight,
@@ -339,7 +339,7 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                           maxLines: 1,
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .fontWeight,
@@ -366,7 +366,7 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelSmall
                                       .fontWeight,
@@ -420,8 +420,8 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                                   style: FlutterFlowTheme.of(context)
                                       .labelSmall
                                       .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight: FontWeight.bold,
+                                        font: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
                                                   .labelSmall
@@ -432,7 +432,7 @@ class _OrderRow2WidgetState extends State<OrderRow2Widget> {
                                           Color(0xFF1976D2),
                                         ),
                                         letterSpacing: 0.0,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .labelSmall
                                             .fontStyle,

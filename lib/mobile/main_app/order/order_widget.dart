@@ -74,8 +74,8 @@ class _OrderWidgetState extends State<OrderWidget> {
             child: Text(
               'Commandes',
               style: FlutterFlowTheme.of(context).headlineMedium.override(
-                    font: GoogleFonts.interTight(
-                      fontWeight: FontWeight.w800,
+                    font: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
                       fontStyle:
                           FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                     ),
@@ -83,7 +83,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                     fontSize: 22.0,
                     letterSpacing: 0.0,
                     fontWeight:
-                        FontWeight.w800,
+                        FontWeight.w600,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
@@ -352,7 +352,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                           .labelMedium
                                                                           .override(
                                                                             font:
-                                                                                GoogleFonts.inter(
+                                                                                GoogleFonts.poppins(
                                                                               fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
                                                                               fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
                                                                             ),
@@ -388,7 +388,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                           .bodySmall
                                                                           .override(
                                                                             font:
-                                                                                GoogleFonts.inter(
+                                                                                GoogleFonts.poppins(
                                                                               fontWeight: FlutterFlowTheme.of(context).bodySmall.fontWeight,
                                                                               fontStyle: FlutterFlowTheme.of(context).bodySmall.fontStyle,
                                                                             ),
@@ -418,8 +418,8 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                           .titleMedium
                                                                           .override(
                                                                             font:
-                                                                                GoogleFonts.interTight(
-                                                                              fontWeight: FontWeight.bold,
+                                                                                GoogleFonts.poppins(
+                                                                              fontWeight: FontWeight.w600,
                                                                               fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
                                                                             ),
                                                                             color:
@@ -429,7 +429,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                             letterSpacing:
                                                                                 0.0,
                                                                             fontWeight:
-                                                                                FontWeight.bold,
+                                                                                FontWeight.w600,
                                                                             fontStyle:
                                                                                 FlutterFlowTheme.of(context).titleMedium.fontStyle,
                                                                           ),
@@ -447,8 +447,8 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                           .titleMedium
                                                                           .override(
                                                                             font:
-                                                                                GoogleFonts.interTight(
-                                                                              fontWeight: FontWeight.bold,
+                                                                                GoogleFonts.poppins(
+                                                                              fontWeight: FontWeight.w600,
                                                                               fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
                                                                             ),
                                                                             color:
@@ -458,7 +458,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                             letterSpacing:
                                                                                 0.0,
                                                                             fontWeight:
-                                                                                FontWeight.bold,
+                                                                                FontWeight.w600,
                                                                             fontStyle:
                                                                                 FlutterFlowTheme.of(context).titleMedium.fontStyle,
                                                                           ),
@@ -470,8 +470,8 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                           .titleMedium
                                                                           .override(
                                                                             font:
-                                                                                GoogleFonts.interTight(
-                                                                              fontWeight: FontWeight.bold,
+                                                                                GoogleFonts.poppins(
+                                                                              fontWeight: FontWeight.w600,
                                                                               fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
                                                                             ),
                                                                             color:
@@ -481,7 +481,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                             letterSpacing:
                                                                                 0.0,
                                                                             fontWeight:
-                                                                                FontWeight.bold,
+                                                                                FontWeight.w600,
                                                                             fontStyle:
                                                                                 FlutterFlowTheme.of(context).titleMedium.fontStyle,
                                                                           ),
@@ -516,8 +516,8 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                           .titleMedium
                                                                           .override(
                                                                             font:
-                                                                                GoogleFonts.interTight(
-                                                                              fontWeight: FontWeight.w800,
+                                                                                GoogleFonts.poppins(
+                                                                              fontWeight: FontWeight.w600,
                                                                               fontStyle: FlutterFlowTheme.of(context).titleMedium.fontStyle,
                                                                             ),
                                                                             color:
@@ -542,7 +542,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                             letterSpacing:
                                                                                 0.0,
                                                                             fontWeight:
-                                                                                FontWeight.w800,
+                                                                                FontWeight.w600,
                                                                             fontStyle:
                                                                                 FlutterFlowTheme.of(context).titleMedium.fontStyle,
                                                                           ),
@@ -619,9 +619,9 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                         .bodyMedium
                                                                         .override(
                                                                           font:
-                                                                              GoogleFonts.inter(
+                                                                              GoogleFonts.poppins(
                                                                             fontWeight:
-                                                                                FontWeight.w600,
+                                                                                FontWeight.w500,
                                                                             fontStyle:
                                                                                 FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                           ),
@@ -632,7 +632,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
-                                                                              FontWeight.w600,
+                                                                              FontWeight.w500,
                                                                           fontStyle: FlutterFlowTheme.of(context)
                                                                               .bodyMedium
                                                                               .fontStyle,
@@ -654,7 +654,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                         .bodyMedium
                                                                         .override(
                                                                           font:
-                                                                              GoogleFonts.inter(
+                                                                              GoogleFonts.poppins(
                                                                             fontWeight:
                                                                                 FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                                                                             fontStyle:
@@ -850,7 +850,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                         font: GoogleFonts
                                                                             .interTight(
                                                                           fontWeight:
-                                                                              FontWeight.w600,
+                                                                              FontWeight.w500,
                                                                           fontStyle: FlutterFlowTheme.of(context)
                                                                               .titleSmall
                                                                               .fontStyle,
@@ -862,7 +862,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
-                                                                            FontWeight.w600,
+                                                                            FontWeight.w500,
                                                                         fontStyle: FlutterFlowTheme.of(context)
                                                                             .titleSmall
                                                                             .fontStyle,
@@ -1048,7 +1048,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                         .bodyLarge
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -1192,9 +1192,9 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                         .bodyLarge
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
-                                                                FontWeight.w600,
+                                                                FontWeight.w500,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -1204,7 +1204,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                           color: OrderStatus.color(adminOrderOrdersRecord.status),
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.w600,
+                                                              FontWeight.w500,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)

@@ -147,8 +147,8 @@ class _KitungaExactPointButtonState extends State<KitungaExactPointButton> {
                     set
                         ? 'Position exacte enregistrée'
                         : widget.label,
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w700,
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
                         fontSize: 13.5,
                         color: theme.primaryText)),
                 Text(
@@ -158,7 +158,7 @@ class _KitungaExactPointButtonState extends State<KitungaExactPointButton> {
                                 ? 'Frais et itinéraire de porte à porte.'
                                 : 'Précision ± ${_accuracy!.round()} m.')
                             : widget.hint),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: _error != null
                             ? theme.error

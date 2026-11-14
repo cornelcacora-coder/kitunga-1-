@@ -92,7 +92,7 @@ class _AlertCardWidgetState extends State<AlertCardWidget> {
                         'DÉLAIS DÉPASSÉ',
                       ),
                       style: FlutterFlowTheme.of(context).labelSmall.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .labelSmall
                                   .fontWeight,
@@ -124,15 +124,15 @@ class _AlertCardWidgetState extends State<AlertCardWidget> {
                           style: FlutterFlowTheme.of(context)
                               .titleLarge
                               .override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.bold,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleLarge
                                       .fontStyle,
                                 ),
                                 color: FlutterFlowTheme.of(context).primaryText,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleLarge
                                     .fontStyle,
@@ -147,7 +147,7 @@ class _AlertCardWidgetState extends State<AlertCardWidget> {
                             ),
                             style:
                                 FlutterFlowTheme.of(context).bodySmall.override(
-                                      font: GoogleFonts.inter(
+                                      font: GoogleFonts.poppins(
                                         fontWeight: FlutterFlowTheme.of(context)
                                             .bodySmall
                                             .fontWeight,
@@ -184,8 +184,8 @@ class _AlertCardWidgetState extends State<AlertCardWidget> {
                       'Elevé',
                     ),
                     style: FlutterFlowTheme.of(context).labelSmall.override(
-                          font: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .labelSmall
                                 .fontStyle,
@@ -195,7 +195,7 @@ class _AlertCardWidgetState extends State<AlertCardWidget> {
                             FlutterFlowTheme.of(context).error,
                           ),
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).labelSmall.fontStyle,
                           lineHeight: 1.2,

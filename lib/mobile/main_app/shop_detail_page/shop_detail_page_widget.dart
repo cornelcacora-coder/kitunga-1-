@@ -97,10 +97,10 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
           SizedBox(width: 5.0),
           Text(
             text,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: color,
               fontSize: 12.0,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -193,10 +193,10 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                   Flexible(
                     child: Text(
                       shop.displayName,
-                      style: GoogleFonts.interTight(
+                      style: GoogleFonts.poppins(
                         color: theme.primaryText,
                         fontSize: 24.0,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -235,7 +235,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                 SizedBox(height: 12.0),
                 Text(
                   shop.bio.trim(),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 14.0,
                     height: 1.5,
@@ -302,12 +302,12 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                 onSelected: (_) => setState(() => _filter =
                     _filter.copyWith(
                         section: () => label.isEmpty ? null : label)),
-                labelStyle: GoogleFonts.inter(
+                labelStyle: GoogleFonts.poppins(
                   color: (_filter.section ?? '') == label
                       ? Colors.white
                       : theme.primaryText,
                   fontSize: 13.0,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
                 selectedColor: theme.primary,
                 backgroundColor: theme.primaryBackground,
@@ -330,19 +330,19 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 18.0,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
           Text(
             '$count',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: theme.secondaryText,
               fontSize: 13.0,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -385,7 +385,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 13.0,
                 height: 1.45,
@@ -409,7 +409,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
             text,
             textAlign: TextAlign.center,
             style:
-                GoogleFonts.inter(color: theme.secondaryText, fontSize: 14.0),
+                GoogleFonts.poppins(color: theme.secondaryText, fontSize: 14.0),
           ),
         ],
       ),
@@ -429,7 +429,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
               children: [
                 Text(
                   'Impossible de charger les produits.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 14.0),
                 ),
                 SizedBox(height: 12.0),
@@ -523,10 +523,10 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
             padding: EdgeInsetsDirectional.fromSTEB(20.0, 12.0, 20.0, 0.0),
             child: Text(
               '${filtered.length} $unit${filtered.length > 1 ? 's' : ''}',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 13.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ));

@@ -61,7 +61,7 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
         foregroundColor: theme.primaryText,
         elevation: 0,
         title: Text(title,
-            style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _data,
@@ -76,7 +76,7 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
                     const Icon(Icons.wifi_off_rounded, color: _red, size: 40),
                     const SizedBox(height: 10),
                     Text('Impossible de charger vos gains.',
-                        style: GoogleFonts.inter(color: theme.primaryText)),
+                        style: GoogleFonts.poppins(color: theme.primaryText)),
                     TextButton(
                         onPressed: _reload, child: const Text('Réessayer')),
                   ],
@@ -119,21 +119,21 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Solde à recevoir',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: Colors.white.withValues(alpha: 0.9),
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w500)),
                       const SizedBox(height: 6),
                       Text(fcfaOf(d['balance'] as num? ?? 0),
                           key: const ValueKey('earnings-balance'),
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 34,
-                              fontWeight: FontWeight.w900)),
+                              fontWeight: FontWeight.w700)),
                       const SizedBox(height: 4),
                       Text(
                           'Versé par Kitunga : '
                           '${fcfaOf(d['paidOut'] as num? ?? 0)}',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 13)),
                     ],
@@ -166,15 +166,15 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(label,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: theme.secondaryText)),
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(fcfaOf(d[key] as num? ?? 0),
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                       fontSize: 18,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       color: theme.primaryText)),
                             ),
                           ],
@@ -185,7 +185,7 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 12, 4, 0),
                   child: Text(rule,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 12.5, color: theme.secondaryText)),
                 ),
                 const SizedBox(height: 14),
@@ -194,9 +194,9 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
                     balance: d['balance'] as num? ?? 0, onDone: _reload),
                 const SizedBox(height: 18),
                 Text('Détail',
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
                 const SizedBox(height: 8),
                 if (entries.isEmpty)
@@ -209,7 +209,7 @@ class _KitungaEarningsPageState extends State<KitungaEarningsPage> {
                             : 'Vos gains apparaîtront ici dès votre '
                                 'première course livrée.',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(color: theme.secondaryText)),
+                        style: GoogleFonts.poppins(color: theme.secondaryText)),
                   ),
                 for (final e in entries) _EntryTile(e: e),
               ],
@@ -252,16 +252,16 @@ class _EntryTile extends StatelessWidget {
           child: Icon(icon, color: amount >= 0 ? _green : _red),
         ),
         title: Text('${e['label']}',
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.w600, color: theme.primaryText)),
+            style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500, color: theme.primaryText)),
         subtitle: at == null
             ? null
             : Text(DateFormat('d MMM yyyy, HH:mm', 'fr').format(at),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12, color: theme.secondaryText)),
         trailing: Text('${amount >= 0 ? '+' : '−'}${fcfaOf(amount.abs())}',
-            style: GoogleFonts.interTight(
-                fontWeight: FontWeight.w800,
+            style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
                 color: amount >= 0 ? _green : _red)),
       ),
     );
@@ -312,12 +312,12 @@ class _WithdrawalBoxState extends State<_WithdrawalBox> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('Demander un retrait',
-                  style: GoogleFonts.interTight(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               Text('Solde disponible : ${fcfaOf(widget.balance)}. '
                   'Kitunga verse puis confirme dans l\'application.',
-                  style: GoogleFonts.inter(fontSize: 13)),
+                  style: GoogleFonts.poppins(fontSize: 13)),
               const SizedBox(height: 12),
               TextField(
                 key: const ValueKey('withdraw-amount'),
@@ -422,16 +422,16 @@ class _WithdrawalBoxState extends State<_WithdrawalBox> {
                           'Retrait ${fcfaOf(w['amount'] as num? ?? 0)} · '
                           '${w['method']}'
                           '${'${w['reason'] ?? ''}'.isEmpty ? '' : ' · ${w['reason']}'}',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 13, color: theme.primaryText)),
                     ),
                     Text(
                         (_withdrawalStatus[w['status']] ??
                                 ('${w['status']}', theme.secondaryText))
                             .$1,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: (_withdrawalStatus[w['status']] ??
                                     ('', theme.secondaryText))
                                 .$2)),

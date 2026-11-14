@@ -128,8 +128,8 @@ class _AlertInfoWidgetState extends State<AlertInfoWidget> {
                           style: FlutterFlowTheme.of(context)
                               .titleLarge
                               .override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.bold,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleLarge
                                       .fontStyle,
@@ -137,7 +137,7 @@ class _AlertInfoWidgetState extends State<AlertInfoWidget> {
                                 color: FlutterFlowTheme.of(context).primaryText,
                                 fontSize: 20.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleLarge
                                     .fontStyle,
@@ -152,7 +152,7 @@ class _AlertInfoWidgetState extends State<AlertInfoWidget> {
                           style: FlutterFlowTheme.of(context)
                               .titleLarge
                               .override(
-                                font: GoogleFonts.interTight(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w500,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleLarge
@@ -189,8 +189,8 @@ class _AlertInfoWidgetState extends State<AlertInfoWidget> {
                                 textStyle: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.bold,
+                                      font: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .titleMedium
                                             .fontStyle,
@@ -198,7 +198,7 @@ class _AlertInfoWidgetState extends State<AlertInfoWidget> {
                                       color: Colors.white,
                                       fontSize: 18.0,
                                       letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,

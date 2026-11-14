@@ -97,7 +97,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           obscureText: !_show,
           enabled: !_busy,
           validator: validator,
-          style: GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
+          style: GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0),
           decoration: kitungaInputDecoration(
             context,
             hint,
@@ -127,10 +127,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         elevation: 0.0,
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text('Changer le mot de passe',
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 19.0,
-                fontWeight: FontWeight.w800)),
+                fontWeight: FontWeight.w600)),
       ),
       body: Form(
         key: _form,
@@ -158,8 +158,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: Text(_error!,
-                    style: GoogleFonts.inter(
-                        color: theme.error, fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.poppins(
+                        color: theme.error, fontWeight: FontWeight.w500)),
               ),
             FilledButton(
               style: FilledButton.styleFrom(

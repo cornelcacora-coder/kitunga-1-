@@ -213,7 +213,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
     final theme = FlutterFlowTheme.of(context);
     final item = sellerItemLabel(_category);
     final fieldStyle =
-        GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0);
+        GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0);
     final suggestions = {
       ...widget.existingSections,
       ...sellerSectionSuggestions(_category),
@@ -228,10 +228,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text(
           _editing ? 'Modifier le $item' : 'Nouveau $item',
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
             color: theme.primaryText,
             fontSize: 19.0,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
           ),
         ),
         actions: [
@@ -269,7 +269,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                                 SizedBox(height: 8.0),
                                 Text(
                                   'Ajouter une photo (obligatoire pour publier)',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       color: theme.secondaryText,
                                       fontSize: 13.0),
                                 ),
@@ -292,10 +292,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                                     ),
                                     child: Text(
                                       'Changer la photo',
-                                      style: GoogleFonts.inter(
+                                      style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontSize: 12.0,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ),
@@ -440,9 +440,9 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                       selected: _unit == u,
                       showCheckmark: false,
                       onSelected: (_) => setState(() => _unit = u),
-                      labelStyle: GoogleFonts.inter(
+                      labelStyle: GoogleFonts.poppins(
                         color: _unit == u ? Colors.white : theme.primaryText,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                       selectedColor: theme.primary,
                       backgroundColor: theme.primaryBackground,
@@ -480,12 +480,12 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                   ActionChip(
                     label: Text(s),
                     onPressed: () => setState(() => _section.text = s),
-                    labelStyle: GoogleFonts.inter(
+                    labelStyle: GoogleFonts.poppins(
                       color: _section.text.trim() == s
                           ? Colors.white
                           : theme.primaryText,
                       fontSize: 13.0,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                     backgroundColor: _section.text.trim() == s
                         ? theme.primary
@@ -512,9 +512,9 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                     selected: _tag == t.value,
                     showCheckmark: false,
                     onSelected: (_) => setState(() => _tag = t.value),
-                    labelStyle: GoogleFonts.inter(
+                    labelStyle: GoogleFonts.poppins(
                       color: _tag == t.value ? Colors.white : theme.primaryText,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                     selectedColor: theme.primary,
                     backgroundColor: theme.primaryBackground,
@@ -530,10 +530,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
               activeThumbColor: theme.primary,
               onChanged: (v) => setState(() => _express = v),
               title: Text('Livraison express',
-                  style: GoogleFonts.inter(
-                      color: theme.primaryText, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.poppins(
+                      color: theme.primaryText, fontWeight: FontWeight.w500)),
               subtitle: Text('Affiche le badge ⚡ Express sur le produit.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 12.0)),
             ),
             if (_category == 'Pharmacie')
@@ -543,11 +543,11 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                 activeThumbColor: theme.primary,
                 onChanged: (v) => setState(() => _prescription = v),
                 title: Text('Sur ordonnance',
-                    style: GoogleFonts.inter(
-                        color: theme.primaryText, fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.poppins(
+                        color: theme.primaryText, fontWeight: FontWeight.w500)),
                 subtitle: Text(
                     'Visible par les clients mais non commandable en ligne.',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 12.0)),
               ),
             SizedBox(height: 24.0),
@@ -568,10 +568,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                 ),
                 child: Text(
                   'Enregistrer en brouillon',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 15.0,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -648,7 +648,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
         KitungaFieldLabel(_optionsTitle),
         Text(
           'Le client fera ses choix avant d\'ajouter le produit au panier. Le prix final inclut les suppléments.',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
               color: theme.secondaryText, fontSize: 12.5, height: 1.4),
         ),
         SizedBox(height: 10.0),
@@ -668,15 +668,15 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                     children: [
                       Text(
                         _groups[i].name,
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 15.0,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         _groups[i].rule,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: theme.primary, fontSize: 12.0),
                       ),
                       SizedBox(height: 2.0),
@@ -691,7 +691,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                             .join(' · '),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: theme.secondaryText, fontSize: 12.5),
                       ),
                     ],
@@ -721,8 +721,8 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                     Icon(Icons.add_rounded, size: 16.0, color: theme.primary),
                 label: Text(preset.name),
                 onPressed: () => _editGroup(group: preset),
-                labelStyle: GoogleFonts.inter(
-                    color: theme.primaryText, fontWeight: FontWeight.w600),
+                labelStyle: GoogleFonts.poppins(
+                    color: theme.primaryText, fontWeight: FontWeight.w500),
                 backgroundColor: theme.primaryBackground,
                 side: BorderSide.none,
                 shape: StadiumBorder(),
@@ -731,8 +731,8 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
               avatar: Icon(Icons.add_rounded, size: 16.0, color: theme.primary),
               label: Text('Autre groupe'),
               onPressed: () => _editGroup(),
-              labelStyle: GoogleFonts.inter(
-                  color: theme.primaryText, fontWeight: FontWeight.w600),
+              labelStyle: GoogleFonts.poppins(
+                  color: theme.primaryText, fontWeight: FontWeight.w500),
               backgroundColor: theme.primaryBackground,
               side: BorderSide.none,
               shape: StadiumBorder(),
@@ -823,7 +823,7 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final style = GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0);
+    final style = GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0);
     return Scaffold(
       backgroundColor: theme.secondaryBackground,
       appBar: AppBar(
@@ -833,10 +833,10 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text(
           widget.group.name.isEmpty ? 'Nouveau groupe' : widget.group.name,
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
             color: theme.primaryText,
             fontSize: 19.0,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -858,7 +858,7 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
             onChanged: (v) => setState(() => _required = v),
             title: Text('Choix obligatoire', style: style),
             subtitle: Text('Le client doit choisir avant d\'ajouter au panier.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText, fontSize: 12.0)),
           ),
           SwitchListTile.adaptive(
@@ -868,7 +868,7 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
             onChanged: (v) => setState(() => _multiple = v),
             title: Text('Plusieurs choix possibles', style: style),
             subtitle: Text('Ex : plusieurs suppléments.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText, fontSize: 12.0)),
           ),
           if (_multiple)
@@ -944,8 +944,8 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
                   ))),
               icon: Icon(Icons.add_rounded, color: theme.primary),
               label: Text('Ajouter un choix',
-                  style: GoogleFonts.inter(
-                      color: theme.primary, fontWeight: FontWeight.w700)),
+                  style: GoogleFonts.poppins(
+                      color: theme.primary, fontWeight: FontWeight.w600)),
             ),
           ),
           SizedBox(height: 20.0),

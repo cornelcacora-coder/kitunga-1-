@@ -419,7 +419,7 @@ class _DelivererHomeBody extends StatelessWidget {
             child: Text(
               'Gains calculés par Kitunga à chaque course livrée ; le '
               'détail et vos versements sont dans « Mes gains ».',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   fontSize: 11.5, color: theme.secondaryText),
             ),
           ),
@@ -581,10 +581,10 @@ class _Header extends StatelessWidget {
                         Text('Bonjour, $name',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.interTight(
+                            style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 20,
-                                fontWeight: FontWeight.w800)),
+                                fontWeight: FontWeight.w600)),
                         const SizedBox(height: 3),
                         Row(
                           children: [
@@ -606,7 +606,7 @@ class _Header extends StatelessWidget {
                                   ].join('  ·  '),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       color: Colors.white
                                           .withValues(alpha: 0.92),
                                       fontSize: 12.5)),
@@ -702,9 +702,9 @@ class _StatePill extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(_labels[state.state]!,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: const Color(0xFF1E242B))),
             ],
           ),
@@ -739,7 +739,7 @@ Future<void> chooseDelivererState(
                   backgroundColor: color.withValues(alpha: 0.12),
                   child: Icon(icon, color: color)),
               title: Text(label,
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
               subtitle: Text(hint),
               trailing: state.state == key
                   ? const Icon(Icons.check_circle_rounded, color: _green)
@@ -825,10 +825,10 @@ class _MoneyCard extends StatelessWidget {
                       child: Text(title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: Colors.white.withValues(alpha: 0.95),
                               fontSize: 13,
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w500)),
                     ),
                   ],
                 ),
@@ -837,20 +837,20 @@ class _MoneyCard extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   fit: BoxFit.scaleDown,
                   child: Text(value,
-                      style: GoogleFonts.interTight(
+                      style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 28,
-                          fontWeight: FontWeight.w900)),
+                          fontWeight: FontWeight.w700)),
                 ),
                 const Spacer(),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Text(button,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 12.5,
-                            fontWeight: FontWeight.w700)),
+                            fontWeight: FontWeight.w600)),
                     const Icon(Icons.chevron_right_rounded,
                         color: Colors.white, size: 18),
                   ],
@@ -938,9 +938,9 @@ class _KitungaOfferCardState extends State<KitungaOfferCard> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text('Course proposée pour vous',
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                         fontSize: 17,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
               ),
               SizedBox(
@@ -956,8 +956,8 @@ class _KitungaOfferCardState extends State<KitungaOfferCard> {
                       backgroundColor: theme.alternate,
                     ),
                     Text('$left s',
-                        style: GoogleFonts.inter(
-                            fontSize: 12, fontWeight: FontWeight.w800)),
+                        style: GoogleFonts.poppins(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -973,22 +973,22 @@ class _KitungaOfferCardState extends State<KitungaOfferCard> {
                     Text(
                         '${shopZone.isEmpty ? 'Commerce' : shopZone} → '
                         '${o.deliveryZone.isEmpty ? 'Brazzaville' : o.deliveryZone}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: theme.primaryText)),
                     if (km is num)
                       Text('≈ ${km.toStringAsFixed(1).replaceAll('.', ',')} km',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 12.5,
                               color: theme.secondaryText)),
                   ],
                 ),
               ),
               Text(_fcfa(o.deliveryFees),
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 22,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: _green)),
             ],
           ),
@@ -1023,8 +1023,8 @@ class _KitungaOfferCardState extends State<KitungaOfferCard> {
                   ),
                   onPressed: _busy || left == 0 ? null : () => _answer(true),
                   child: Text('Accepter',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w800, fontSize: 15)),
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600, fontSize: 15)),
                 ),
               ),
             ],
@@ -1065,10 +1065,10 @@ class _AvailabilityStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     Widget label(String t) => Text(t.toUpperCase(),
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
             fontSize: 11,
             letterSpacing: 0.6,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: theme.secondaryText));
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -1102,9 +1102,9 @@ class _AvailabilityStrip extends StatelessWidget {
                                 : state.zones.join(', '),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 color: theme.primaryText),
                           ),
                         ),
@@ -1124,7 +1124,7 @@ class _AvailabilityStrip extends StatelessWidget {
                 },
                 child: const Text('Modifier',
                     style:
-                        TextStyle(color: _red, fontWeight: FontWeight.w700)),
+                        TextStyle(color: _red, fontWeight: FontWeight.w600)),
               ),
             ],
           ),
@@ -1152,8 +1152,8 @@ class _AvailabilityStrip extends StatelessWidget {
                   side: BorderSide(
                       color: state.vehicle == key ? _red : theme.alternate),
                   showCheckmark: false,
-                  labelStyle: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
+                  labelStyle: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w500,
                       color: state.vehicle == key
                           ? Colors.white
                           : theme.primaryText),
@@ -1187,9 +1187,9 @@ class _SectionTitle extends StatelessWidget {
       child: Row(
         children: [
           Text(title,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: theme.primaryText)),
           if (trailing != null) ...[
             const SizedBox(width: 8),
@@ -1198,10 +1198,10 @@ class _SectionTitle extends StatelessWidget {
               decoration: BoxDecoration(
                   color: _red, borderRadius: BorderRadius.circular(20)),
               child: Text(trailing!,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 12,
-                      fontWeight: FontWeight.w800)),
+                      fontWeight: FontWeight.w600)),
             ),
           ],
           const Spacer(),
@@ -1210,7 +1210,7 @@ class _SectionTitle extends StatelessWidget {
               onPressed: onAction,
               child: Text(action!,
                   style: const TextStyle(
-                      color: _red, fontWeight: FontWeight.w700)),
+                      color: _red, fontWeight: FontWeight.w600)),
             ),
         ],
       ),
@@ -1254,11 +1254,11 @@ class _StatTile extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(value,
-              style: GoogleFonts.interTight(
-                  fontSize: 26, fontWeight: FontWeight.w900, color: color)),
+              style: GoogleFonts.poppins(
+                  fontSize: 26, fontWeight: FontWeight.w700, color: color)),
           Text(label,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   fontSize: 12.5, color: theme.secondaryText)),
         ],
       ),
@@ -1295,15 +1295,15 @@ class _RecentCourse extends StatelessWidget {
         ),
         title: Text(
             order.deliveryZone.isEmpty ? 'Brazzaville' : order.deliveryZone,
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.w700, color: theme.primaryText)),
+            style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600, color: theme.primaryText)),
         subtitle: Text(
             [
               'N° ${order.orderUniqueReference}',
               if (at != null) dateTimeFormatFr(at),
             ].join(' · '),
             style:
-                GoogleFonts.inter(fontSize: 12, color: theme.secondaryText)),
+                GoogleFonts.poppins(fontSize: 12, color: theme.secondaryText)),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -1313,16 +1313,16 @@ class _RecentCourse extends StatelessWidget {
               decoration: BoxDecoration(
                   color: st.color, borderRadius: BorderRadius.circular(20)),
               child: Text(st.label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 11.5,
-                      fontWeight: FontWeight.w700)),
+                      fontWeight: FontWeight.w600)),
             ),
             const SizedBox(height: 4),
             Text(_fcfa(order.deliveryFees),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: theme.primaryText)),
           ],
         ),
@@ -1364,13 +1364,13 @@ class _EmptyCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w800,
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
                         fontSize: 15,
                         color: theme.primaryText)),
                 const SizedBox(height: 2),
                 Text(text,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 13, color: theme.secondaryText)),
               ],
             ),
@@ -1399,7 +1399,7 @@ class _Notice extends StatelessWidget {
         child: Row(children: [
           Icon(icon, color: color),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: GoogleFonts.inter(fontSize: 13))),
+          Expanded(child: Text(text, style: GoogleFonts.poppins(fontSize: 13))),
         ]),
       );
 }
@@ -1430,9 +1430,9 @@ class _HelpCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(label,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           color: theme.primaryText)),
                 ],
               ),
@@ -1459,11 +1459,11 @@ class _HelpCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Besoin d\'aide ?',
-                        style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w800,
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             color: theme.primaryText)),
                     Text('L\'équipe Kitunga vous répond.',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12.5, color: theme.secondaryText)),
                   ],
                 ),
@@ -1538,11 +1538,11 @@ class _AccountBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title,
-                        style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w800,
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             color: theme.primaryText)),
                     Text(text,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12.5, color: theme.secondaryText)),
                   ],
                 ),

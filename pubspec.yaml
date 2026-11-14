@@ -159,6 +159,8 @@ flutter:
 
   assets:
     - assets/fonts/
+    # Poppins intégrée (police de toute l'application, sans réseau).
+    - assets/google_fonts/
     - assets/images/
     - assets/images/categories/
     - assets/images/partners/

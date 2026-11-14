@@ -135,16 +135,30 @@ class _MyAppState extends State<MyApp> {
       ],
       locale: const Locale('fr'),
       supportedLocales: const [Locale('fr', ''), Locale('en', '')],
+      // Poppins partout (boîtes de dialogue, messages, champs, boutons…).
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: false,
+        fontFamily: GoogleFonts.poppins().fontFamily,
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: false,
+        fontFamily: GoogleFonts.poppins().fontFamily,
       ),
       themeMode: _themeMode,
       routerConfig: _router,
+      // Poppins est plus large qu'Inter : textes un peu réduits partout,
+      // en gardant le réglage de taille choisi sur le téléphone (plafonné
+      // pour que les écrans restent lisibles).
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        final user = (mq.textScaler.scale(100) / 100).clamp(0.8, 1.3);
+        return MediaQuery(
+          data: mq.copyWith(textScaler: TextScaler.linear(user * 0.92)),
+          child: child!,
+        );
+      },
     );
   }
 }
@@ -210,10 +224,10 @@ class _NavBarPageState extends State<NavBarPage> {
                     border: Border.all(color: Colors.white, width: 1.5),
                   ),
                   child: Text(count > 99 ? '99+' : '$count',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 9.5,
-                          fontWeight: FontWeight.w800)),
+                          fontWeight: FontWeight.w600)),
                 ),
               ),
             ]);
@@ -268,10 +282,10 @@ class _NavBarPageState extends State<NavBarPage> {
           SizedBox(height: 2.0),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: isSelected ? Color(0xFFE51A1A) : Color(0xFF1E242B),
               fontSize: 11.0,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
           SizedBox(height: 2.0),

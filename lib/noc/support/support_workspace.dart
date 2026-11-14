@@ -278,8 +278,8 @@ class _Kpi extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value,
-                style: GoogleFonts.interTight(
-                    fontSize: 24, fontWeight: FontWeight.w800, color: color)),
+                style: GoogleFonts.poppins(
+                    fontSize: 24, fontWeight: FontWeight.w600, color: color)),
             Text(label, style: AdminText.label(size: 12)),
           ],
         ),
@@ -299,8 +299,8 @@ class _Pill extends StatelessWidget {
             color: color.withValues(alpha: 0.13),
             borderRadius: BorderRadius.circular(20)),
         child: Text(label,
-            style: GoogleFonts.inter(
-                fontSize: 11.5, fontWeight: FontWeight.w700, color: color)),
+            style: GoogleFonts.poppins(
+                fontSize: 11.5, fontWeight: FontWeight.w600, color: color)),
       );
 }
 

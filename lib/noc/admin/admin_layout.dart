@@ -765,7 +765,7 @@ class _SubTileState extends State<_SubTile> {
                             size: 13.5)
                         .copyWith(
                             fontWeight:
-                                sel ? FontWeight.w700 : FontWeight.w500)),
+                                sel ? FontWeight.w600 : FontWeight.w500)),
               ),
               if (widget.count > 0) _countBadge(widget.count),
             ],
@@ -1391,7 +1391,7 @@ class AdminTabbedBody extends StatelessWidget {
                 unselectedLabelColor: AdminColors.text,
                 labelStyle: AdminText.strong(size: 13.5),
                 unselectedLabelStyle: AdminText.label(size: 13.5)
-                    .copyWith(fontWeight: FontWeight.w600),
+                    .copyWith(fontWeight: FontWeight.w500),
                 splashBorderRadius: BorderRadius.circular(AdminRadius.md),
                 labelPadding: const EdgeInsets.symmetric(horizontal: 16.0),
                 tabs: [

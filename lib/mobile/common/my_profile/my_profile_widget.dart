@@ -43,14 +43,14 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
               const SizedBox(height: 14),
               Text(name.isEmpty ? 'Mon compte' : name,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 22,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
               if (currentUserEmail.isNotEmpty)
                 Text(currentUserEmail,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 14, color: theme.secondaryText)),
               const SizedBox(height: 22),
               _Card(children: [
@@ -109,8 +109,8 @@ class _MyProfileWidgetState extends State<MyProfileWidget> {
                   ),
                   icon: const Icon(Icons.edit_rounded, size: 20),
                   label: Text('Modifier mon profil',
-                      style: GoogleFonts.inter(
-                          fontSize: 15.5, fontWeight: FontWeight.w800)),
+                      style: GoogleFonts.poppins(
+                          fontSize: 15.5, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -140,10 +140,10 @@ class KitungaAvatar extends StatelessWidget {
       alignment: Alignment.center,
       color: _red,
       child: Text(initials.isEmpty ? 'K' : initials,
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: size * 0.36,
-              fontWeight: FontWeight.w800)),
+              fontWeight: FontWeight.w600)),
     );
     return Container(
       padding: const EdgeInsets.all(3),
@@ -217,13 +217,13 @@ class _Row extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 12.5, color: theme.secondaryText)),
               const SizedBox(height: 2),
               Text(empty ? 'Non renseigné' : value,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 15,
-                      fontWeight: empty ? FontWeight.w500 : FontWeight.w600,
+                      fontWeight: empty ? FontWeight.w500 : FontWeight.w500,
                       fontStyle: empty ? FontStyle.italic : FontStyle.normal,
                       fontFeatures:
                           exact ? const [FontFeature.disable('calt')] : null,

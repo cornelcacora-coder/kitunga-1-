@@ -339,7 +339,7 @@ class KitungaBannerView extends StatelessWidget {
                                 style: TextStyle(
                                     color: b.color,
                                     fontSize: 10.0,
-                                    fontWeight: FontWeight.w800)),
+                                    fontWeight: FontWeight.w600)),
                           ),
                         if (b.title1.isNotEmpty)
                           Text(b.title1,
@@ -348,7 +348,7 @@ class KitungaBannerView extends StatelessWidget {
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 19.0,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   fontStyle: FontStyle.italic,
                                   shadows: kBannerTextShadow,
                                   height: 1.1)),
@@ -359,7 +359,7 @@ class KitungaBannerView extends StatelessWidget {
                               style: TextStyle(
                                   color: b.accent,
                                   fontSize: 26.0,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   fontStyle: FontStyle.italic,
                                   shadows: kBannerTextShadow,
                                   height: 1.0)),
@@ -388,7 +388,7 @@ class KitungaBannerView extends StatelessWidget {
                               style: TextStyle(
                                   color: b.color,
                                   fontSize: 12.0,
-                                  fontWeight: FontWeight.bold)),
+                                  fontWeight: FontWeight.w600)),
                           Icon(Icons.chevron_right_rounded,
                               color: b.color, size: 16.0),
                         ],

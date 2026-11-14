@@ -59,7 +59,7 @@ PreferredSizeWidget _bar(BuildContext context, String title) {
     foregroundColor: theme.primaryText,
     elevation: 0,
     title: Text(title,
-        style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
   );
 }
 
@@ -120,8 +120,8 @@ class _DelivererDocumentsState extends State<DelivererDocumentsPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('${d['label']}',
-                  style: GoogleFonts.interTight(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 key: const ValueKey('doc-photo'),
@@ -249,11 +249,11 @@ class _DelivererDocumentsState extends State<DelivererDocumentsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(v.$1,
-                              style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w800,
+                              style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   color: theme.primaryText)),
                           Text(v.$3,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 13, color: theme.secondaryText)),
                         ],
                       ),
@@ -292,8 +292,8 @@ class _DelivererDocumentsState extends State<DelivererDocumentsPage> {
                     ),
                     title: Text(
                         '${d['label']}${d['required'] == true ? '' : ' (facultatif)'}',
-                        style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w700,
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             color: theme.primaryText)),
                     subtitle: Text(
                         [
@@ -304,7 +304,7 @@ class _DelivererDocumentsState extends State<DelivererDocumentsPage> {
                           if ((d['rejectReason'] ?? '').toString().isNotEmpty)
                             'motif : ${d['rejectReason']}',
                         ].join(' · '),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12.5,
                             color: (_docStatus[d['status']] ??
                                     _docStatus['missing']!)
@@ -405,15 +405,15 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(value,
-                                style: GoogleFonts.interTight(
+                                style: GoogleFonts.poppins(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: theme.primaryText)),
                           ),
                           Text(label,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 11.5,
                                   height: 1.2,
                                   color: theme.secondaryText)),
@@ -443,12 +443,12 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(rating == null ? 'Pas encore de note' : '$rating / 5',
-                              style: GoogleFonts.interTight(
+                              style: GoogleFonts.poppins(
                                   color: Colors.white,
                                   fontSize: 24,
-                                  fontWeight: FontWeight.w900)),
+                                  fontWeight: FontWeight.w700)),
                           Text('${d['ratingCount'] ?? 0} avis de clients',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   color: Colors.white.withValues(alpha: 0.9))),
                         ],
                       ),
@@ -488,9 +488,9 @@ class _PerformanceState extends State<DelivererPerformancePage> {
               ),
               const SizedBox(height: 18),
               Text('Gains des 8 dernières semaines',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
               const SizedBox(height: 10),
               Container(
@@ -507,7 +507,7 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                             'Pas encore de gains sur ces 8 semaines.\n'
                             'Vos gains apparaîtront ici après vos courses.',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 13, color: theme.secondaryText)))
                     : Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -524,7 +524,7 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                                       ? ''
                                       : NumberFormat.compact(locale: 'fr')
                                           .format(weeks[i]),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       fontSize: 10,
                                       color: theme.secondaryText)),
                               const SizedBox(height: 2),
@@ -544,11 +544,11 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                                       : 'S-${weeks.length - 1 - i}',
                                   textAlign: TextAlign.center,
                                   maxLines: 2,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       fontSize: 10,
                                       height: 1.1,
                                       fontWeight: i == weeks.length - 1
-                                          ? FontWeight.w700
+                                          ? FontWeight.w600
                                           : FontWeight.w400,
                                       color: i == weeks.length - 1
                                           ? _red
@@ -566,7 +566,7 @@ class _PerformanceState extends State<DelivererPerformancePage> {
                   'non reçues ou échouées. Les annulations du client, du '
                   'commerce ou de l\'admin ne vous sont pas imputées'
                   '${(d['cancelledByOthers'] ?? 0) is num && (d['cancelledByOthers'] as num) > 0 ? ' (${d['cancelledByOthers']} à ce jour)' : ''}.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 12.5, color: theme.secondaryText)),
             ],
           );
@@ -686,16 +686,16 @@ class _SafetyState extends State<DelivererSafetyPage> {
         padding: const EdgeInsets.all(16),
         children: [
           Text('Alerte d\'urgence',
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: theme.primaryText)),
           const SizedBox(height: 4),
           Text(
               'Prévient immédiatement les admins et le support, avec votre '
               'position et votre contact d\'urgence. Un ticket urgent est '
               'ouvert.',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   fontSize: 13, color: theme.secondaryText)),
           const SizedBox(height: 12),
           GridView.count(
@@ -721,8 +721,8 @@ class _SafetyState extends State<DelivererSafetyPage> {
                         const SizedBox(height: 6),
                         Text(e.value.$1,
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w700,
+                            style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
                                 color: theme.primaryText)),
                       ],
                     ),
@@ -732,9 +732,9 @@ class _SafetyState extends State<DelivererSafetyPage> {
           ),
           const SizedBox(height: 22),
           Text('Contact d\'urgence',
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: theme.primaryText)),
           const SizedBox(height: 8),
           TextField(
@@ -795,10 +795,10 @@ class DelivererActivitySection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text('Mon activité de livreur',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 13,
-                    fontWeight: FontWeight.w600)),
+                    fontWeight: FontWeight.w500)),
           ),
           Container(
             decoration: BoxDecoration(
@@ -822,8 +822,8 @@ class DelivererActivitySection extends StatelessWidget {
                       child: Icon(items[i].$1, color: _red, size: 21),
                     ),
                     title: Text(items[i].$2,
-                        style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w600,
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w500,
                             color: theme.primaryText)),
                     trailing: Icon(Icons.chevron_right_rounded,
                         color: theme.secondaryText),

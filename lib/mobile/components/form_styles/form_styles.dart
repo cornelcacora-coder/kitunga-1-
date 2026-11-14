@@ -22,7 +22,7 @@ InputDecoration kitungaInputDecoration(
 
   return InputDecoration(
     hintText: hint,
-    hintStyle: GoogleFonts.inter(
+    hintStyle: GoogleFonts.poppins(
       color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
       fontSize: 14.5,
     ),
@@ -57,10 +57,10 @@ class KitungaFieldLabel extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
         child: Text(
           text,
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
             color: FlutterFlowTheme.of(context).primaryText,
             fontSize: 14.5,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       );
@@ -116,10 +116,10 @@ class KitungaPrimaryButton extends StatelessWidget {
                   )
                 : Text(
                     text,
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 16.0,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 0.2,
                     ),
                   ),

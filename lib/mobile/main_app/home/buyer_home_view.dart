@@ -211,18 +211,18 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   RichText(
                     text: TextSpan(
                       text: 'Bonjour, ',
-                      style: GoogleFonts.interTight(
+                      style: GoogleFonts.poppins(
                         color: theme.primaryText,
                         fontSize: 24.0,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                       children: [
                         TextSpan(
                           text: displayName.toUpperCase(),
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: const Color(0xFFE51A1A),
                             fontSize: 24.0,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const TextSpan(
@@ -235,7 +235,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   const SizedBox(height: 4.0),
                   Text(
                     'Que souhaitez-vous commander aujourd\'hui ?',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.secondaryText,
                       fontSize: 14.0,
                       fontWeight: FontWeight.normal,
@@ -280,7 +280,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                         onChanged: (v) => setState(() => _query = v),
                         decoration: InputDecoration(
                           hintText: 'Rechercher une boutique, un restaurant...',
-                          hintStyle: GoogleFonts.inter(
+                          hintStyle: GoogleFonts.poppins(
                             color: isDark ? const Color(0xFF64748B) : const Color(0xFF9CA3AF),
                             fontSize: 13.5,
                             fontWeight: FontWeight.normal,
@@ -289,7 +289,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           isDense: true,
                           contentPadding: EdgeInsets.zero,
                         ),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 14.0,
                         ),
@@ -431,19 +431,19 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     children: [
                       Text(
                         'KITUNGA',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: const Color(0xFFE51A1A),
                           fontSize: 16.5,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
                         ),
                       ),
                       Text(
                         'Achetez. Vivez mieux !',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 9.0,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 2.0),
@@ -562,10 +562,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                               alignment: Alignment.center,
                               child: Text(
                                 '$cartCount',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   color: Colors.white,
                                   fontSize: 9.5,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -675,10 +675,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                     ),
                                     child: Text(
                                       slide.badge,
-                                      style: GoogleFonts.inter(
+                                      style: GoogleFonts.poppins(
                                         color: slide.color,
                                         fontSize: 10.5,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
@@ -686,10 +686,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                 Text(
                                   slide.title1,
                                   maxLines: 1,
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                     color: Colors.white,
                                     fontSize: 21.0,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                     fontStyle: FontStyle.italic,
                                     shadows: kBannerTextShadow,
                                     height: 1.1,
@@ -699,10 +699,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                 Text(
                                   slide.title2,
                                   maxLines: 1,
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                     color: slide.accent,
                                     fontSize: 29.0,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                     fontStyle: FontStyle.italic,
                                     shadows: kBannerTextShadow,
                                     height: 1.0,
@@ -712,7 +712,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                 Text(
                                   slide.subtitle,
                                   maxLines: 2,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     color: Colors.white,
                                     fontSize: 12.0,
                                     fontWeight: FontWeight.w500,
@@ -744,10 +744,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                   children: [
                                     Text(
                                       slide.button,
-                                      style: GoogleFonts.inter(
+                                      style: GoogleFonts.poppins(
                                         color: slide.color,
                                         fontSize: 12.5,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     const SizedBox(width: 4.0),
@@ -828,10 +828,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   const SizedBox(width: 8.0),
                   Text(
                     'Explorer par catégorie',
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                       color: theme.primaryText,
                       fontSize: 17.0,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -842,10 +842,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   children: [
                     Text(
                       'Voir plus',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFFE51A1A),
                         fontSize: 13.0,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 2.0),
@@ -893,10 +893,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     const SizedBox(height: 6.0),
                     Text(
                       c.name,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.primaryText,
                         fontSize: 12.0,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -940,15 +940,15 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     children: [
                       Text(
                         'Commerces certifiés',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 17.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         'Vérifiés par l\'équipe Kitunga',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 12.0,
                           fontWeight: FontWeight.normal,
@@ -973,10 +973,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     children: [
                       Text(
                         'Voir plus',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 12.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 3.0),
@@ -1071,10 +1071,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 18.0,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1083,10 +1083,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               onPressed: onSeeAll,
               child: Text(
                 'Voir tout',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   color: theme.primary,
                   fontSize: 14.0,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -1183,10 +1183,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     s.displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                       color: theme.primaryText,
                       fontSize: 15.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1198,7 +1198,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               _subtitle(s),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 12.0,
               ),
@@ -1235,10 +1235,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           s.displayName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 15.0,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -1250,7 +1250,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     _subtitle(s),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.secondaryText,
                       fontSize: 13.0,
                     ),
@@ -1297,7 +1297,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               Text(
                 'Aucun commerce ne correspond à « ${_query.trim()} ».',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText, fontSize: 14.0),
               ),
             ],

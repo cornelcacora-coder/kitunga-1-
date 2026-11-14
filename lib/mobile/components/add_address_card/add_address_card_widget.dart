@@ -128,8 +128,8 @@ class _AddAddressCardWidgetState extends State<AddAddressCardWidget> {
                           style: FlutterFlowTheme.of(context)
                               .titleLarge
                               .override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.bold,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleLarge
                                       .fontStyle,
@@ -137,7 +137,7 @@ class _AddAddressCardWidgetState extends State<AddAddressCardWidget> {
                                 color: FlutterFlowTheme.of(context).primaryText,
                                 fontSize: 20.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleLarge
                                     .fontStyle,
@@ -154,7 +154,7 @@ class _AddAddressCardWidgetState extends State<AddAddressCardWidget> {
                             labelStyle: FlutterFlowTheme.of(context)
                                 .labelMedium
                                 .override(
-                                  font: GoogleFonts.inter(
+                                  font: GoogleFonts.poppins(
                                     fontWeight: FlutterFlowTheme.of(context)
                                         .labelMedium
                                         .fontWeight,
@@ -177,7 +177,7 @@ class _AddAddressCardWidgetState extends State<AddAddressCardWidget> {
                             hintStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
-                                  font: GoogleFonts.inter(
+                                  font: GoogleFonts.poppins(
                                     fontWeight: FontWeight.normal,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .bodyMedium
@@ -194,7 +194,7 @@ class _AddAddressCardWidgetState extends State<AddAddressCardWidget> {
                             errorStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
-                                  font: GoogleFonts.inter(
+                                  font: GoogleFonts.poppins(
                                     fontWeight: FontWeight.normal,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .bodyMedium
@@ -243,7 +243,7 @@ class _AddAddressCardWidgetState extends State<AddAddressCardWidget> {
                           style: FlutterFlowTheme.of(context)
                               .bodyMedium
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FontWeight.normal,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -284,8 +284,8 @@ class _AddAddressCardWidgetState extends State<AddAddressCardWidget> {
                                 textStyle: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.bold,
+                                      font: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .titleMedium
                                             .fontStyle,
@@ -293,7 +293,7 @@ class _AddAddressCardWidgetState extends State<AddAddressCardWidget> {
                                       color: Colors.white,
                                       fontSize: 18.0,
                                       letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,

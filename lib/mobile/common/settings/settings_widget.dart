@@ -119,9 +119,9 @@ class _SettingsWidgetState extends State<SettingsWidget>
           title: Text(
             'Paramètres',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight:
-                        FontWeight.w800,
+                        FontWeight.w600,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
@@ -129,7 +129,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FontWeight.w800,
+                      FontWeight.w600,
                   fontStyle:
                       FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                 ),
@@ -215,7 +215,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
                               style: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
-                                    font: GoogleFonts.interTight(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FontWeight.normal,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
@@ -288,7 +288,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
                               style: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
-                                    font: GoogleFonts.interTight(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FontWeight.normal,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
@@ -412,7 +412,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
                               style: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
-                                    font: GoogleFonts.interTight(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FontWeight.normal,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleSmall

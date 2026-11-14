@@ -26,7 +26,7 @@ PreferredSizeWidget _bar(BuildContext context, String title) {
     foregroundColor: theme.primaryText,
     elevation: 0,
     title: Text(title,
-        style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
   );
 }
 
@@ -96,15 +96,15 @@ class _SellerPerformanceState extends State<SellerPerformancePage> {
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(value,
-                                style: GoogleFonts.interTight(
+                                style: GoogleFonts.poppins(
                                     fontSize: 17,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: theme.primaryText)),
                           ),
                           Text(label,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 11.5,
                                   color: theme.secondaryText)),
                         ],
@@ -153,9 +153,9 @@ class _SellerPerformanceState extends State<SellerPerformancePage> {
               ),
               const SizedBox(height: 20),
               Text('Ventes des 7 derniers jours',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
               const SizedBox(height: 10),
               Container(
@@ -181,7 +181,7 @@ class _SellerPerformanceState extends State<SellerPerformancePage> {
                                       ? ''
                                       : NumberFormat.compact(locale: 'fr')
                                           .format(days[i]['amount']),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       fontSize: 10,
                                       color: theme.secondaryText)),
                               const SizedBox(height: 2),
@@ -203,7 +203,7 @@ class _SellerPerformanceState extends State<SellerPerformancePage> {
                                           .format(DateTime.parse(
                                               '${days[i]['day']}'))
                                           .substring(0, 3),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       fontSize: 10,
                                       color: theme.secondaryText)),
                             ],
@@ -215,35 +215,35 @@ class _SellerPerformanceState extends State<SellerPerformancePage> {
               ),
               const SizedBox(height: 20),
               Text('Produits les plus vendus',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
               const SizedBox(height: 8),
               if (top.isEmpty)
                 Text('Ils apparaîtront après vos premières ventes livrées.',
-                    style: GoogleFonts.inter(color: theme.secondaryText)),
+                    style: GoogleFonts.poppins(color: theme.secondaryText)),
               for (var i = 0; i < top.length; i++)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: CircleAvatar(
                     backgroundColor: _red.withValues(alpha: 0.1),
                     child: Text('${i + 1}',
-                        style: GoogleFonts.inter(
-                            color: _red, fontWeight: FontWeight.w800)),
+                        style: GoogleFonts.poppins(
+                            color: _red, fontWeight: FontWeight.w600)),
                   ),
                   title: Text('${top[i]['name']}',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
                           color: theme.primaryText)),
                   trailing: Text('${top[i]['quantity']} vendus',
-                      style: GoogleFonts.inter(color: theme.secondaryText)),
+                      style: GoogleFonts.poppins(color: theme.secondaryText)),
                 ),
               const SizedBox(height: 10),
               Text(
                   'Ventes livrées = montant des articles (sans les frais de '
                   'livraison). Revenus = montant net crédité après commission.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 12, color: theme.secondaryText)),
             ],
           );
@@ -338,17 +338,17 @@ class _SellerReviewsState extends State<SellerReviewsPage> {
                         d['rating'] == null
                             ? 'Pas encore d\'avis'
                             : '${d['rating']} / 5 · ${d['count']} avis',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 20,
-                            fontWeight: FontWeight.w900)),
+                            fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
               if (list.isEmpty)
                 Text('Les avis apparaissent après les livraisons.',
-                    style: GoogleFonts.inter(color: theme.secondaryText)),
+                    style: GoogleFonts.poppins(color: theme.secondaryText)),
               for (final r in list)
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
@@ -372,7 +372,7 @@ class _SellerReviewsState extends State<SellerReviewsPage> {
                                 size: 18),
                           const Spacer(),
                           Text('N° ${r['reference']}',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 12, color: theme.secondaryText)),
                         ],
                       ),
@@ -381,13 +381,13 @@ class _SellerReviewsState extends State<SellerReviewsPage> {
                           padding: const EdgeInsets.only(top: 6),
                           child: Text('${r['comment']}',
                               style:
-                                  GoogleFonts.inter(color: theme.primaryText)),
+                                  GoogleFonts.poppins(color: theme.primaryText)),
                         ),
                       Align(
                         alignment: Alignment.centerRight,
                         child: r['reported'] == true
                             ? Text('Signalé au support',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                     fontSize: 12, color: _orange))
                             : TextButton(
                                 onPressed: () => _report(r),
@@ -446,8 +446,8 @@ class _SellerStockState extends State<SellerStockPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('${p['name']} · stock ${p['quantity']}',
-                  style: GoogleFonts.interTight(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
               SegmentedButton<String>(
                 segments: const [
@@ -532,14 +532,14 @@ class _SellerStockState extends State<SellerStockPage> {
             padding: const EdgeInsets.all(16),
             children: [
               Text('Stocks bas et ruptures',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
               const SizedBox(height: 8),
               if (low.isEmpty)
                 Text('Aucun produit en stock bas. Bravo !',
-                    style: GoogleFonts.inter(color: theme.secondaryText)),
+                    style: GoogleFonts.poppins(color: theme.secondaryText)),
               for (final p in low)
                 Card(
                   elevation: 0,
@@ -554,7 +554,7 @@ class _SellerStockState extends State<SellerStockPage> {
                             : Icons.inventory_2_outlined,
                         color: (p['quantity'] as num) <= 0 ? _red : _orange),
                     title: Text('${p['name']}',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
                     subtitle: Text((p['quantity'] as num) <= 0
                         ? 'En rupture'
                         : 'Reste ${p['quantity']}'),
@@ -567,14 +567,14 @@ class _SellerStockState extends State<SellerStockPage> {
                 ),
               const SizedBox(height: 20),
               Text('Historique des mouvements',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
               const SizedBox(height: 8),
               if (moves.isEmpty)
                 Text('Aucun mouvement pour l\'instant.',
-                    style: GoogleFonts.inter(color: theme.secondaryText)),
+                    style: GoogleFonts.poppins(color: theme.secondaryText)),
               for (final m in moves.take(50))
                 ListTile(
                   dense: true,
@@ -584,7 +584,7 @@ class _SellerStockState extends State<SellerStockPage> {
                   title: Text(
                       '${m['product']} · ${kinds[m['kind']]?.$1 ?? m['kind']} '
                       '${m['quantity']}',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
                   subtitle: Text(
                       '${m['before']} → ${m['after']}'
                       '${(m['reason'] ?? '').toString().isEmpty ? '' : ' · ${m['reason']}'}'),
@@ -593,7 +593,7 @@ class _SellerStockState extends State<SellerStockPage> {
                           ? ''
                           : DateFormat('d/M HH:mm')
                               .format(DateTime.parse('${m['at']}').toLocal()),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 11.5, color: theme.secondaryText)),
                 ),
             ],

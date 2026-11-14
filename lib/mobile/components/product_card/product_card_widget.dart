@@ -132,10 +132,10 @@ class KitungaProductCard extends StatelessWidget {
                                 color: Colors.white, size: 14.0),
                             Text(
                               'Express',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 11.0,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -151,10 +151,10 @@ class KitungaProductCard extends StatelessWidget {
                   label.isNotEmpty ? label : ' ',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: highlight ? theme.primary : theme.secondaryText,
                     fontSize: 11.0,
-                    fontWeight: highlight ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: highlight ? FontWeight.w500 : FontWeight.w500,
                   ),
                 ),
               ),
@@ -165,10 +165,10 @@ class KitungaProductCard extends StatelessWidget {
                   p.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 14.0,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     height: 1.25,
                   ),
                 ),
@@ -184,10 +184,10 @@ class KitungaProductCard extends StatelessWidget {
                             (p.unit.isNotEmpty && p.unit != 'pièce'
                                 ? ' / ${p.unit}'
                                 : ''),
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 16.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -263,10 +263,10 @@ class KitungaProductRow extends StatelessWidget {
                     p.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                       color: blocked ? theme.secondaryText : theme.primaryText,
                       fontSize: 15.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   if (p.description.trim().isNotEmpty) ...[
@@ -275,7 +275,7 @@ class KitungaProductRow extends StatelessWidget {
                       p.description.trim(),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.secondaryText,
                         fontSize: 13.0,
                         height: 1.35,
@@ -290,20 +290,20 @@ class KitungaProductRow extends StatelessWidget {
                             (p.unit.isNotEmpty && p.unit != 'pièce'
                                 ? ' / ${p.unit}'
                                 : ''),
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 15.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       if (status.isNotEmpty) ...[
                         SizedBox(width: 10.0),
                         Text(
                           status,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: theme.primary,
                             fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ] else if (p.instantDisponibilty) ...[
@@ -312,10 +312,10 @@ class KitungaProductRow extends StatelessWidget {
                             size: 15.0, color: theme.primary),
                         Text(
                           'Express',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: theme.primary,
                             fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -420,10 +420,10 @@ Widget kitungaNoPhoto(FlutterFlowTheme theme, ProductRecord p, double size,
               maxLines: 2,
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   color: const Color(0xFF8A4A12),
                   fontSize: 13.0,
-                  fontWeight: FontWeight.w700)),
+                  fontWeight: FontWeight.w600)),
         ],
       ],
     ),

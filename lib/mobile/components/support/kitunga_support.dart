@@ -133,7 +133,7 @@ class _KitungaSupportPageState extends State<KitungaSupportPage> {
         foregroundColor: theme.primaryText,
         elevation: 0,
         title: Text('Aide & support',
-            style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const ValueKey('support-new'),
@@ -168,7 +168,7 @@ class _KitungaSupportPageState extends State<KitungaSupportPage> {
                         'Un problème avec une commande, un paiement ou votre '
                         'compte ? Écrivez-nous : l\'équipe Kitunga vous '
                         'répond ici.',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 13, color: theme.primaryText)),
                   ),
                 ],
@@ -176,7 +176,7 @@ class _KitungaSupportPageState extends State<KitungaSupportPage> {
             ),
             const SizedBox(height: 14),
             if (_error != null)
-              Text(_error!, style: GoogleFonts.inter(color: _red)),
+              Text(_error!, style: GoogleFonts.poppins(color: _red)),
             if (tickets == null && _error == null)
               const Padding(
                 padding: EdgeInsets.all(32),
@@ -187,7 +187,7 @@ class _KitungaSupportPageState extends State<KitungaSupportPage> {
                 padding: const EdgeInsets.only(top: 32),
                 child: Text('Aucune demande pour le moment.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: theme.secondaryText)),
+                    style: GoogleFonts.poppins(color: theme.secondaryText)),
               )
             else
               for (final t in tickets ?? const <Map<String, dynamic>>[])
@@ -213,15 +213,15 @@ class _KitungaSupportPageState extends State<KitungaSupportPage> {
                       title: Text('${t['number']} · ${t['subject']}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontWeight: t['unread'] == true
-                                  ? FontWeight.w800
-                                  : FontWeight.w600,
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
                               color: theme.primaryText)),
                       subtitle: Text('${t['lastMessage'] ?? ''}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 12.5, color: theme.secondaryText)),
                       trailing: _StatusChip(status: '${t['status']}'),
                     ),
@@ -248,8 +248,8 @@ class _StatusChip extends StatelessWidget {
           color: s.$2.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(20)),
       child: Text(s.$1,
-          style: GoogleFonts.inter(
-              fontSize: 11.5, fontWeight: FontWeight.w700, color: s.$2)),
+          style: GoogleFonts.poppins(
+              fontSize: 11.5, fontWeight: FontWeight.w600, color: s.$2)),
     );
   }
 }
@@ -318,7 +318,7 @@ class _KitungaNewTicketPageState extends State<KitungaNewTicketPage> {
         foregroundColor: theme.primaryText,
         elevation: 0,
         title: Text('Nouvelle demande',
-            style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -477,7 +477,7 @@ class _KitungaTicketPageState extends State<KitungaTicketPage> {
         foregroundColor: theme.primaryText,
         elevation: 0,
         title: Text(t == null ? 'Demande' : 'Demande ${t['number']}',
-            style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
         actions: [
           if (t != null)
             Padding(
@@ -495,9 +495,9 @@ class _KitungaTicketPageState extends State<KitungaTicketPage> {
                     padding: const EdgeInsets.all(14),
                     children: [
                       Text('${t['subject']}',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                               fontSize: 18,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: theme.primaryText)),
                       Text(
                           [
@@ -505,7 +505,7 @@ class _KitungaTicketPageState extends State<KitungaTicketPage> {
                             if ('${t['orderRef'] ?? ''}'.isNotEmpty)
                               'Commande ${t['orderRef']}',
                           ].join(' · '),
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 13, color: theme.secondaryText)),
                       const SizedBox(height: 14),
                       for (final m in _messages) _TicketBubble(m: m),
@@ -516,7 +516,7 @@ class _KitungaTicketPageState extends State<KitungaTicketPage> {
                               'Demande résolue. Répondez si le problème '
                               'persiste : elle sera rouverte.',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 12.5,
                                   color: theme.secondaryText)),
                         ),
@@ -595,12 +595,12 @@ class _TicketBubble extends StatelessWidget {
                   m['fromRole'] == 'system'
                       ? 'Kitunga'
                       : '${m['fromName'] ?? 'Support Kitunga'}',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: _red)),
             Text('${m['text'] ?? ''}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 14.5,
                     color: mine ? Colors.white : theme.primaryText)),
             for (final p in photos)
@@ -618,7 +618,7 @@ class _TicketBubble extends StatelessWidget {
                 ),
               ),
             Text(_date(m['at'] as String?),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 10.5,
                     color: mine
                         ? Colors.white.withValues(alpha: 0.8)

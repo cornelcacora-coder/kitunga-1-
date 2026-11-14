@@ -107,15 +107,15 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                       ),
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).titleMedium.override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.bold,
+                            font: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .fontStyle,
                             ),
                             color: FlutterFlowTheme.of(context).primaryText,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .fontStyle,
@@ -128,7 +128,7 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                         'Volt Athletics',
                       ),
                       style: FlutterFlowTheme.of(context).labelSmall.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .labelSmall
                                   .fontWeight,
@@ -162,15 +162,15 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w800,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,
                                     ),
                                     color: FlutterFlowTheme.of(context).accent1,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
@@ -181,15 +181,15 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w800,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,
                                     ),
                                     color: FlutterFlowTheme.of(context).accent1,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
@@ -238,7 +238,7 @@ class _CartItemWidgetState extends State<CartItemWidget> {
                                   style: FlutterFlowTheme.of(context)
                                       .titleLarge
                                       .override(
-                                        font: GoogleFonts.interTight(
+                                        font: GoogleFonts.poppins(
                                           fontWeight:
                                               FlutterFlowTheme.of(context)
                                                   .titleLarge

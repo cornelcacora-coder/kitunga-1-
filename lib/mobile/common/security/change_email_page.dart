@@ -132,9 +132,9 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
         elevation: 0,
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text('Changer l\'e-mail',
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 fontSize: 20,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: theme.primaryText)),
       ),
       body: _sentTo != null
@@ -144,9 +144,9 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
               const SizedBox(height: 16),
               Text('Vérifiez votre nouvelle adresse',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 20,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
               const SizedBox(height: 8),
               Text(
@@ -154,7 +154,7 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
                   'votre e-mail de connexion changera ensuite, et il faudra '
                   'vous reconnecter avec la nouvelle adresse.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 14.5, height: 1.45, color: theme.secondaryText)),
               const SizedBox(height: 24),
               FilledButton(
@@ -173,7 +173,7 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   Text('Adresse actuelle : ${currentUserEmail.isEmpty ? '—' : currentUserEmail}',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 14, color: theme.secondaryText)),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -214,8 +214,8 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
                   if (_error != null) ...[
                     const SizedBox(height: 12),
                     Text(_error!,
-                        style: GoogleFonts.inter(
-                            color: _red, fontWeight: FontWeight.w600)),
+                        style: GoogleFonts.poppins(
+                            color: _red, fontWeight: FontWeight.w500)),
                   ],
                   const SizedBox(height: 20),
                   FilledButton(
@@ -232,8 +232,8 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
                             child: CircularProgressIndicator(
                                 strokeWidth: 2.5, color: Colors.white))
                         : Text('Envoyer le lien de confirmation',
-                            style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w800)),
+                            style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),

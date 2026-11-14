@@ -100,8 +100,8 @@ class _TimelineNodeWidgetState extends State<TimelineNodeWidget> {
                   'Order Picked Up',
                 ),
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
-                      font: GoogleFonts.inter(
-                        fontWeight: FontWeight.bold,
+                      font: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
                         fontStyle:
                             FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                       ),
@@ -109,7 +109,7 @@ class _TimelineNodeWidgetState extends State<TimelineNodeWidget> {
                           ? FlutterFlowTheme.of(context).primaryText
                           : FlutterFlowTheme.of(context).secondaryText,
                       letterSpacing: 0.0,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontStyle:
                           FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                     ),
@@ -120,7 +120,7 @@ class _TimelineNodeWidgetState extends State<TimelineNodeWidget> {
                   '12:15 PM',
                 ),
                 style: FlutterFlowTheme.of(context).labelSmall.override(
-                      font: GoogleFonts.inter(
+                      font: GoogleFonts.poppins(
                         fontWeight:
                             FlutterFlowTheme.of(context).labelSmall.fontWeight,
                         fontStyle:

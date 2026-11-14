@@ -257,7 +257,7 @@ class _KitungaHoursPickerState extends State<KitungaHoursPicker> {
                 SizedBox(
                     width: compact ? 40.0 : 82.0,
                     child: Text(compact ? kDayShort[i] : kDayLong[i],
-                        style: style?.copyWith(fontWeight: FontWeight.w600))),
+                        style: style?.copyWith(fontWeight: FontWeight.w500))),
                 Transform.scale(
                   scale: compact ? 0.8 : 1.0,
                   child: Switch(

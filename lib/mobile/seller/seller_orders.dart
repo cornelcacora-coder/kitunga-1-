@@ -57,7 +57,7 @@ class _SellerOrdersViewState extends State<SellerOrdersView> {
         if (snapshot.hasError) {
           return Center(
             child: Text('Impossible de charger les commandes.',
-                style: GoogleFonts.inter(color: theme.secondaryText)),
+                style: GoogleFonts.poppins(color: theme.secondaryText)),
           );
         }
         if (!snapshot.hasData) {
@@ -75,10 +75,10 @@ class _SellerOrdersViewState extends State<SellerOrdersView> {
               padding: EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 4.0),
               child: Text(
                 'Commandes reçues',
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                   color: theme.primaryText,
                   fontSize: 22.0,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -97,11 +97,11 @@ class _SellerOrdersViewState extends State<SellerOrdersView> {
                         selected: _tab == t.key,
                         showCheckmark: false,
                         onSelected: (_) => setState(() => _tab = t.key),
-                        labelStyle: GoogleFonts.inter(
+                        labelStyle: GoogleFonts.poppins(
                           color:
                               _tab == t.key ? Colors.white : theme.primaryText,
                           fontSize: 13.0,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                         selectedColor: theme.primary,
                         backgroundColor: theme.primaryBackground,
@@ -125,7 +125,7 @@ class _SellerOrdersViewState extends State<SellerOrdersView> {
                           ? 'Aucune nouvelle commande pour le moment.'
                           : 'Aucune commande dans cette catégorie.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(color: theme.secondaryText),
+                      style: GoogleFonts.poppins(color: theme.secondaryText),
                     ),
                   ],
                 ),
@@ -184,10 +184,10 @@ class _SellerOrderCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Commande $_ref',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 16.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -199,10 +199,10 @@ class _SellerOrderCard extends StatelessWidget {
                 ),
                 child: Text(
                   OrderStatus.label(status),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: color,
                     fontSize: 12.0,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -217,7 +217,7 @@ class _SellerOrderCard extends StatelessWidget {
               kitungaPrice(order.totalAmount),
             ].join(' · '),
             style:
-                GoogleFonts.inter(color: theme.secondaryText, fontSize: 13.0),
+                GoogleFonts.poppins(color: theme.secondaryText, fontSize: 13.0),
           ),
           SizedBox(height: 10.0),
           // Articles commandés, avec les options choisies.
@@ -239,7 +239,7 @@ class _SellerOrderCard extends StatelessWidget {
                           '${it.quantity > 0 ? it.quantity : 1} × ${it.itemName.isNotEmpty ? it.itemName : 'Article'}',
                           if (it.options.isNotEmpty) it.options,
                         ].join(' · '),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: theme.primaryText, fontSize: 13.5),
                       ),
                     ),
@@ -251,7 +251,7 @@ class _SellerOrderCard extends StatelessWidget {
               '${order.snapshotData['refusal_reason'] ?? ''}'.isNotEmpty)
             Text(
               'Motif : ${order.snapshotData['refusal_reason']}',
-              style: GoogleFonts.inter(color: theme.error, fontSize: 13.0),
+              style: GoogleFonts.poppins(color: theme.error, fontSize: 13.0),
             ),
           // Retour ou échange demandé par le client.
           if (KitungaSellerReturnCard.showsFor(order))
@@ -278,9 +278,9 @@ class _SellerOrderCard extends StatelessWidget {
               TextButton(
                 onPressed: () => _openDetail(context),
                 child: Text('Voir le détail',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText,
-                        fontWeight: FontWeight.w600)),
+                        fontWeight: FontWeight.w500)),
               ),
               Spacer(),
               // Commande livrée : reçu (même numéro que celui du client).
@@ -292,8 +292,8 @@ class _SellerOrderCard extends StatelessWidget {
                   icon: Icon(Icons.receipt_long_rounded,
                       size: 18.0, color: theme.primary),
                   label: Text('Reçu',
-                      style: GoogleFonts.inter(
-                          color: theme.primary, fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(
+                          color: theme.primary, fontWeight: FontWeight.w600)),
                 ),
               if (status == OrderStatus.pending) ...[
                 OutlinedButton(
@@ -304,8 +304,8 @@ class _SellerOrderCard extends StatelessWidget {
                     shape: StadiumBorder(),
                   ),
                   child: Text('Refuser',
-                      style: GoogleFonts.inter(
-                          color: theme.error, fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(
+                          color: theme.error, fontWeight: FontWeight.w600)),
                 ),
                 SizedBox(width: 8.0),
                 FilledButton(
@@ -314,7 +314,7 @@ class _SellerOrderCard extends StatelessWidget {
                       foregroundColor: Colors.white,
                       backgroundColor: theme.primary, shape: StadiumBorder()),
                   child: Text('Accepter',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 ),
               ],
               if (status == OrderStatus.preparing)
@@ -325,11 +325,11 @@ class _SellerOrderCard extends StatelessWidget {
                       backgroundColor: theme.primary, shape: StadiumBorder()),
                   icon: Icon(Icons.check_rounded),
                   label: Text('Marquer comme prête',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 ),
               if (status == OrderStatus.ready)
                 Text('En attente d\'un livreur',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 12.5)),
               // Livreur venu chercher la commande : remise confirmée.
               if (status == OrderStatus.delivering &&
@@ -342,7 +342,7 @@ class _SellerOrderCard extends StatelessWidget {
                       shape: StadiumBorder()),
                   icon: Icon(Icons.handshake_rounded),
                   label: Text('Remis au livreur',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 ),
             ],
           ),

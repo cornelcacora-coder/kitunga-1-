@@ -52,8 +52,8 @@ Future<bool> sellerAccept(BuildContext context, OrdersRecord order,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Accepter la commande',
-                style: GoogleFonts.interTight(
-                    fontSize: 18, fontWeight: FontWeight.w800)),
+                style: GoogleFonts.poppins(
+                    fontSize: 18, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             const Text('Temps de préparation : le client en est informé.'),
             const SizedBox(height: 14),

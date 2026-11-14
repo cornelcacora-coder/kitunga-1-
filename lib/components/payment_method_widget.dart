@@ -198,8 +198,8 @@ class _PaymentMethodWidgetState extends State<PaymentMethodWidget> {
             const SizedBox(width: 14.0),
             Expanded(
               child: Text(label,
-                  style: GoogleFonts.interTight(
-                      fontWeight: FontWeight.bold,
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
                       fontSize: 15.0,
                       color: theme.primaryText)),
             ),
@@ -212,9 +212,9 @@ class _PaymentMethodWidgetState extends State<PaymentMethodWidget> {
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 child: Text('Bientôt disponible',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: theme.secondaryText)),
               )
             else

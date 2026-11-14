@@ -91,14 +91,14 @@ class _KitungaDelivererCoursesState extends State<KitungaDelivererCourses> {
           automaticallyImplyLeading: false,
           elevation: 0,
           title: Text('Mes courses',
-              style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             labelColor: _red,
             indicatorColor: _red,
             unselectedLabelColor: theme.secondaryText,
-            labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w700),
+            labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             tabs: const [
               Tab(text: 'En cours'),
               Tab(text: 'Proposées'),
@@ -227,8 +227,8 @@ class _CourseList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 10, left: 4),
             child: Text(header!,
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700, color: theme.primaryText)),
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600, color: theme.primaryText)),
           ),
         for (final o in orders)
           Padding(
@@ -254,8 +254,8 @@ class _CourseList extends StatelessWidget {
                 ),
                 title: Text(
                     o.deliveryZone.isEmpty ? 'Brazzaville' : o.deliveryZone,
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w700,
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
                 subtitle: Text(
                     [
@@ -264,22 +264,22 @@ class _CourseList extends StatelessWidget {
                       if (o.snapshotData['delivery_issue'] is Map)
                         '${(o.snapshotData['delivery_issue'] as Map)['label'] ?? 'Problème signalé'}',
                     ].join(' · '),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 12, color: theme.secondaryText)),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(courseStatusOf(o).label,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                             color: courseStatusOf(o).color)),
                     Text(
                         '${NumberFormat.decimalPattern('fr').format(o.deliveryFees)} F',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: theme.primaryText)),
                   ],
                 ),
@@ -314,7 +314,7 @@ class _Message extends StatelessWidget {
             const SizedBox(height: 14),
             Text(text,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 14, color: theme.secondaryText)),
           ],
         ),
@@ -507,8 +507,8 @@ class _KitungaDelivererMapState extends State<KitungaDelivererMap> {
                                       'prêtes.'
                                   : '${ready.length} course(s) prête(s) · '
                                       '${active.length} en cours',
-                              style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w700,
+                              style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   fontSize: 13.5,
                                   color: theme.primaryText)),
                         ),
@@ -534,7 +534,7 @@ class _KitungaDelivererMapState extends State<KitungaDelivererMap> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(_gps!,
-                          style: GoogleFonts.inter(fontSize: 13)),
+                          style: GoogleFonts.poppins(fontSize: 13)),
                     ),
                   ),
               ],
@@ -613,13 +613,13 @@ class _DeclinedList extends StatelessWidget {
                           : Icons.timer_off_rounded,
                       color: theme.secondaryText),
                   title: Text('N° ${m['reference'] ?? ''} · ${m['zone'] ?? ''}',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
                   subtitle: Text(
                       m['status'] == 'declined' ? 'Refusée' : 'Sans réponse',
-                      style: GoogleFonts.inter(fontSize: 12.5)),
+                      style: GoogleFonts.poppins(fontSize: 12.5)),
                   trailing: Text(
                       '${NumberFormat.decimalPattern('fr').format(m['fees'] ?? 0)} F',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 ),
               ),
           ],

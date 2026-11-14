@@ -379,7 +379,7 @@ class BannerPreview extends StatelessWidget {
                                 style: TextStyle(
                                     color: color,
                                     fontSize: 10.0,
-                                    fontWeight: FontWeight.w800)),
+                                    fontWeight: FontWeight.w600)),
                           ),
                         if (title1.isNotEmpty)
                           Text(title1,
@@ -388,7 +388,7 @@ class BannerPreview extends StatelessWidget {
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 19.0,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   fontStyle: FontStyle.italic,
                                   shadows: kBannerTextShadow,
                                   height: 1.1)),
@@ -399,7 +399,7 @@ class BannerPreview extends StatelessWidget {
                               style: TextStyle(
                                   color: accent,
                                   fontSize: 26.0,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   fontStyle: FontStyle.italic,
                                   shadows: kBannerTextShadow,
                                   height: 1.0)),
@@ -428,7 +428,7 @@ class BannerPreview extends StatelessWidget {
                               style: TextStyle(
                                   color: color,
                                   fontSize: 12.0,
-                                  fontWeight: FontWeight.bold)),
+                                  fontWeight: FontWeight.w600)),
                           Icon(Icons.chevron_right_rounded,
                               color: color, size: 16.0),
                         ],

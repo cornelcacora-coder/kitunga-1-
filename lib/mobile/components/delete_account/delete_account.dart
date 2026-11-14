@@ -108,10 +108,10 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       title: Text(
         'Supprimer mon compte',
-        style: GoogleFonts.interTight(
+        style: GoogleFonts.poppins(
           color: theme.primaryText,
           fontSize: 20.0,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
         ),
       ),
       content: SingleChildScrollView(
@@ -121,7 +121,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
           children: [
             Text(
               'Cette action est définitive. Votre profil, vos coordonnées, votre photo et vos paniers seront effacés, et vous ne pourrez plus vous connecter avec ce compte.',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 14.0,
                 height: 1.5,
@@ -134,7 +134,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
                 obscureText: true,
                 enabled: !_loading,
                 style:
-                    GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
+                    GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0),
                 decoration: kitungaInputDecoration(
                     context, 'Votre mot de passe', Icons.lock_outline_rounded),
               ),
@@ -143,7 +143,7 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
               SizedBox(height: 12.0),
               Text(
                 _error!,
-                style: GoogleFonts.inter(color: theme.error, fontSize: 13.0),
+                style: GoogleFonts.poppins(color: theme.error, fontSize: 13.0),
               ),
             ],
           ],
@@ -154,9 +154,9 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
           onPressed: _loading ? null : () => Navigator.of(context).pop(),
           child: Text(
             'Annuler',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: theme.secondaryText,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -172,9 +172,9 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
                 )
               : Text(
                   'Supprimer',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
         ),

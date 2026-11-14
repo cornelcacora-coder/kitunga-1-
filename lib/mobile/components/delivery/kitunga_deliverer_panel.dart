@@ -217,12 +217,12 @@ class _KitungaDelivererPanelState extends State<KitungaDelivererPanel> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(labels[s.state]!,
-                        style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w700,
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontSize: 15,
                             color: theme.primaryText)),
                     Text(hints[s.state]!,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12.5, color: theme.secondaryText)),
                   ],
                 ),
@@ -276,14 +276,14 @@ class _KitungaDelivererPanelState extends State<KitungaDelivererPanel> {
                           : 'Mes quartiers : ${s.zones.join(', ')}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 13, color: theme.primaryText),
                     ),
                   ),
                   Text('Modifier',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           color: theme.primary)),
                   const SizedBox(width: 8),
                 ],
@@ -322,9 +322,9 @@ class _ZonesSheetState extends State<_ZonesSheet> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
               child: Text('Mes quartiers de livraison',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
             ),
             Padding(
@@ -332,7 +332,7 @@ class _ZonesSheetState extends State<_ZonesSheet> {
               child: Text(
                   'Vous serez prévenu des courses vers ces quartiers. '
                   'Aucun choix = toute la ville.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 13, color: theme.secondaryText)),
             ),
             Flexible(
@@ -456,8 +456,8 @@ class _KitungaOrderContactsState extends State<KitungaOrderContacts> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('Contacts',
-                  style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700,
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
                       fontSize: 14,
                       color: theme.primaryText)),
               for (final c in list) _row(context, c),
@@ -482,13 +482,13 @@ class _KitungaOrderContactsState extends State<KitungaOrderContacts> {
               TextSpan(children: [
                 TextSpan(
                     text: '$role  ',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 12, color: theme.secondaryText)),
                 TextSpan(
                     text: name.isEmpty ? '+$digits' : name,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: theme.primaryText)),
               ]),
               maxLines: 1,

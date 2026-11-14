@@ -89,14 +89,14 @@ class _PasswordChangeWidgetState extends State<PasswordChangeWidget> {
                   'Mot de passe changé !',
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).titleLarge.override(
-                        font: GoogleFonts.interTight(
-                          fontWeight: FontWeight.bold,
+                        font: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleLarge.fontStyle,
                         ),
                         color: FlutterFlowTheme.of(context).primaryText,
                         letterSpacing: 0.0,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         fontStyle:
                             FlutterFlowTheme.of(context).titleLarge.fontStyle,
                       ),
@@ -105,7 +105,7 @@ class _PasswordChangeWidgetState extends State<PasswordChangeWidget> {
                   'Votre mot de passe a été modifié avec succès, utilisez votre nouveau mot de passe pour vous connecter',
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.inter(
+                        font: GoogleFonts.poppins(
                           fontWeight: FontWeight.normal,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleSmall.fontStyle,
@@ -133,8 +133,8 @@ class _PasswordChangeWidgetState extends State<PasswordChangeWidget> {
                     textStyle: FlutterFlowTheme.of(context)
                         .titleMedium
                         .override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .fontStyle,
@@ -143,7 +143,7 @@ class _PasswordChangeWidgetState extends State<PasswordChangeWidget> {
                               FlutterFlowTheme.of(context).secondaryBackground,
                           fontSize: 16.0,
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle: FlutterFlowTheme.of(context)
                               .titleMedium
                               .fontStyle,

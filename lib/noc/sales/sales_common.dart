@@ -234,8 +234,8 @@ class StatusChip extends StatelessWidget {
               s.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                  color: s.color, fontSize: 12.0, fontWeight: FontWeight.w700),
+              style: GoogleFonts.poppins(
+                  color: s.color, fontSize: 12.0, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -244,11 +244,11 @@ class StatusChip extends StatelessWidget {
   }
 }
 
-TextStyle salesTitle([double size = 16.0]) => GoogleFonts.interTight(
-    color: kSalesInk, fontSize: size, fontWeight: FontWeight.w700);
+TextStyle salesTitle([double size = 16.0]) => GoogleFonts.poppins(
+    color: kSalesInk, fontSize: size, fontWeight: FontWeight.w600);
 
 TextStyle salesBody({Color? color, double size = 13.0}) =>
-    GoogleFonts.inter(color: color ?? kSalesMuted, fontSize: size, height: 1.4);
+    GoogleFonts.poppins(color: color ?? kSalesMuted, fontSize: size, height: 1.4);
 
 /// Chargement, erreur et liste vide pour une lecture du serveur.
 class SalesLoader extends StatelessWidget {

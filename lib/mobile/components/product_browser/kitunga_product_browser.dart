@@ -100,11 +100,11 @@ class _KitungaProductToolbarState extends State<KitungaProductToolbar> {
                   controller: _search,
                   onChanged: (v) => widget.onChanged(f.copyWith(query: v)),
                   textInputAction: TextInputAction.search,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.primaryText, fontSize: 15.0),
                   decoration: InputDecoration(
                     hintText: widget.hint,
-                    hintStyle: GoogleFonts.inter(
+                    hintStyle: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 14.5),
                     prefixIcon: Icon(Icons.search_rounded,
                         color: theme.secondaryText),
@@ -171,10 +171,10 @@ class _KitungaProductToolbarState extends State<KitungaProductToolbar> {
                     child: InputChip(
                       label: Text(a.$1),
                       onDeleted: () => widget.onChanged(a.$2),
-                      labelStyle: GoogleFonts.inter(
+                      labelStyle: GoogleFonts.poppins(
                           color: theme.primary,
                           fontSize: 12.5,
-                          fontWeight: FontWeight.w700),
+                          fontWeight: FontWeight.w600),
                       backgroundColor: theme.primary.withValues(alpha: 0.08),
                       deleteIconColor: theme.primary,
                       side: BorderSide.none,
@@ -255,10 +255,10 @@ class _KitungaProductFilterSheetState extends State<KitungaProductFilterSheet> {
   Widget _title(FlutterFlowTheme theme, String t) => Padding(
         padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
         child: Text(t,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 14.5,
-                fontWeight: FontWeight.w700)),
+                fontWeight: FontWeight.w600)),
       );
 
   Widget _choice(FlutterFlowTheme theme, String label, bool selected,
@@ -268,9 +268,9 @@ class _KitungaProductFilterSheetState extends State<KitungaProductFilterSheet> {
         selected: selected,
         showCheckmark: false,
         onSelected: (_) => setState(onTap),
-        labelStyle: GoogleFonts.inter(
+        labelStyle: GoogleFonts.poppins(
             color: selected ? Colors.white : theme.primaryText,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
             fontSize: 13.0),
         selectedColor: theme.primary,
         backgroundColor: theme.primaryBackground,
@@ -299,11 +299,11 @@ class _KitungaProductFilterSheetState extends State<KitungaProductFilterSheet> {
         activeThumbColor: Colors.white,
         activeTrackColor: theme.primary,
         title: Text(title,
-            style: GoogleFonts.inter(
-                color: theme.primaryText, fontWeight: FontWeight.w600)),
+            style: GoogleFonts.poppins(
+                color: theme.primaryText, fontWeight: FontWeight.w500)),
         subtitle: Text(subtitle,
             style:
-                GoogleFonts.inter(color: theme.secondaryText, fontSize: 12.5)),
+                GoogleFonts.poppins(color: theme.secondaryText, fontSize: 12.5)),
         value: value,
         onChanged: (v) => setState(() => onChanged(v)),
       );
@@ -344,10 +344,10 @@ class _KitungaProductFilterSheetState extends State<KitungaProductFilterSheet> {
                   children: [
                     Expanded(
                       child: Text('Filtrer et trier',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                               color: theme.primaryText,
                               fontSize: 19.0,
-                              fontWeight: FontWeight.w800)),
+                              fontWeight: FontWeight.w600)),
                     ),
                     TextButton(
                       onPressed: () => setState(() =>
@@ -447,8 +447,8 @@ class _KitungaProductFilterSheetState extends State<KitungaProductFilterSheet> {
                       count == 0
                           ? 'Aucun résultat'
                           : 'Voir $count résultat${count > 1 ? 's' : ''}',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700, fontSize: 15.0)),
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600, fontSize: 15.0)),
                 ),
               ),
             ],

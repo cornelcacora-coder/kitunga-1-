@@ -220,7 +220,7 @@ class _HomeWidgetState extends State<HomeWidget> with TickerProviderStateMixin {
                                                   context)
                                               .titleSmall
                                               .override(
-                                                font: GoogleFonts.interTight(
+                                                font: GoogleFonts.poppins(
                                                   fontWeight:
                                                       FlutterFlowTheme.of(
                                                               context)

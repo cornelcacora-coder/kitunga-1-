@@ -299,9 +299,9 @@ class _Kpi extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(value,
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                     fontSize: 24.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: highlight ? Colors.white : kSalesInk)),
           ),
           Text(label,

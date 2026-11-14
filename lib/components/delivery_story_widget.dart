@@ -77,14 +77,14 @@ class _DeliveryStoryWidgetState extends State<DeliveryStoryWidget> {
                       '#ZNDK-2024-00098',
                     ),
                     style: FlutterFlowTheme.of(context).labelSmall.override(
-                          font: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .labelSmall
                                 .fontStyle,
                           ),
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).labelSmall.fontStyle,
                           lineHeight: 1.2,
@@ -99,7 +99,7 @@ class _DeliveryStoryWidgetState extends State<DeliveryStoryWidget> {
                 'En attente',
               ),
               style: FlutterFlowTheme.of(context).labelSmall.override(
-                    font: GoogleFonts.inter(
+                    font: GoogleFonts.poppins(
                       fontWeight:
                           FlutterFlowTheme.of(context).labelSmall.fontWeight,
                       fontStyle:
@@ -120,7 +120,7 @@ class _DeliveryStoryWidgetState extends State<DeliveryStoryWidget> {
                 '-',
               ),
               style: FlutterFlowTheme.of(context).labelSmall.override(
-                    font: GoogleFonts.inter(
+                    font: GoogleFonts.poppins(
                       fontWeight:
                           FlutterFlowTheme.of(context).labelSmall.fontWeight,
                       fontStyle:

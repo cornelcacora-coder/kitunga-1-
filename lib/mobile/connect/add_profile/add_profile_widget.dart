@@ -94,9 +94,9 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
               'Photo de profile',
             ),
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight:
-                        FontWeight.w800,
+                        FontWeight.w600,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
@@ -104,7 +104,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FontWeight.w800,
+                      FontWeight.w600,
                   fontStyle:
                       FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                 ),
@@ -310,8 +310,8 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                 style: FlutterFlowTheme.of(context)
                                     .titleLarge
                                     .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.bold,
+                                      font: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .titleLarge
                                             .fontStyle,
@@ -320,7 +320,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                           .primaryText,
                                       fontSize: 24.0,
                                       letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleLarge
                                           .fontStyle,
@@ -337,7 +337,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                   style: FlutterFlowTheme.of(context)
                                       .titleSmall
                                       .override(
-                                        font: GoogleFonts.inter(
+                                        font: GoogleFonts.poppins(
                                           fontWeight: FontWeight.normal,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
@@ -410,8 +410,8 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                         textStyle: FlutterFlowTheme.of(context)
                                             .titleMedium
                                             .override(
-                                              font: GoogleFonts.interTight(
-                                                fontWeight: FontWeight.bold,
+                                              font: GoogleFonts.poppins(
+                                                fontWeight: FontWeight.w600,
                                                 fontStyle:
                                                     FlutterFlowTheme.of(context)
                                                         .titleMedium
@@ -420,7 +420,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                               color: Colors.white,
                                               fontSize: 16.0,
                                               letterSpacing: 0.0,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.w600,
                                               fontStyle:
                                                   FlutterFlowTheme.of(context)
                                                       .titleMedium
@@ -766,7 +766,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                         .titleSmall
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FontWeight
                                                                     .normal,
@@ -904,7 +904,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                         .titleSmall
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FontWeight
                                                                     .normal,
@@ -947,7 +947,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                             style: FlutterFlowTheme.of(context)
                                                 .titleSmall
                                                 .override(
-                                                  font: GoogleFonts.inter(
+                                                  font: GoogleFonts.poppins(
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
@@ -1055,7 +1055,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                         font: GoogleFonts
                                                             .interTight(
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1066,7 +1066,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                         fontSize: 16.0,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FontWeight.bold,
+                                                            FontWeight.w600,
                                                         fontStyle:
                                                             FlutterFlowTheme.of(
                                                                     context)

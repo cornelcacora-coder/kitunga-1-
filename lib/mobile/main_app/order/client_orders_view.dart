@@ -51,13 +51,13 @@ class _ClientOrdersViewState extends State<ClientOrdersView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Mes commandes',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 26,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
               const SizedBox(height: 2),
               Text('Suivez vos commandes en temps réel.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 13.5, color: theme.secondaryText)),
             ],
           ),
@@ -129,9 +129,9 @@ class _Tab extends StatelessWidget {
           border: Border.all(color: selected ? _red : theme.alternate),
         ),
         child: Text(count > 0 ? '$label ($count)' : label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 fontSize: 13.5,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: selected ? Colors.white : theme.primaryText)),
       ),
     );
@@ -176,14 +176,14 @@ class _Empty extends StatelessWidget {
         const SizedBox(height: 18),
         Text(title,
             textAlign: TextAlign.center,
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 fontSize: 19,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: theme.primaryText)),
         const SizedBox(height: 8),
         Text(text,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 fontSize: 14, height: 1.4, color: theme.secondaryText)),
         const SizedBox(height: 22),
         Center(
@@ -197,8 +197,8 @@ class _Empty extends StatelessWidget {
                     borderRadius: BorderRadius.circular(26))),
             icon: const Icon(Icons.storefront_rounded, size: 20),
             label: Text('Découvrir les boutiques',
-                style: GoogleFonts.inter(
-                    fontSize: 14.5, fontWeight: FontWeight.w700)),
+                style: GoogleFonts.poppins(
+                    fontSize: 14.5, fontWeight: FontWeight.w600)),
           ),
         ),
       ],
@@ -274,9 +274,9 @@ class _OrderCard extends StatelessWidget {
                           (s.data ?? '').isNotEmpty ? s.data! : 'Commande',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 15.5,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               color: theme.primaryText),
                         ),
                       ),
@@ -290,7 +290,7 @@ class _OrderCard extends StatelessWidget {
                         ].join(' · '),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12.5, color: theme.secondaryText),
                       ),
                     ],
@@ -315,21 +315,21 @@ class _OrderCard extends StatelessWidget {
                             color: color, shape: BoxShape.circle)),
                     const SizedBox(width: 6),
                     Text(OrderStatus.label(order.status),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: color)),
                   ]),
                 ),
                 const Spacer(),
                 if (count > 0)
                   Text('$count article${count > 1 ? 's' : ''} · ',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 13, color: theme.secondaryText)),
                 Text('$amount F',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 15.5,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
               ]),
               if (live) ...[
@@ -353,8 +353,8 @@ class _OrderCard extends StatelessWidget {
                     ),
                     icon: const Icon(Icons.location_on_rounded, size: 18),
                     label: Text('Suivre la commande',
-                        style: GoogleFonts.inter(
-                            fontSize: 14, fontWeight: FontWeight.w700)),
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],

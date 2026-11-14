@@ -109,8 +109,8 @@ class _MySellerCardWidgetState extends State<MySellerCardWidget> {
                       ),
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).titleMedium.override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.w600,
+                            font: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .fontStyle,
@@ -118,7 +118,7 @@ class _MySellerCardWidgetState extends State<MySellerCardWidget> {
                             color: FlutterFlowTheme.of(context).secondaryText,
                             fontSize: 14.0,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .fontStyle,
@@ -138,7 +138,7 @@ class _MySellerCardWidgetState extends State<MySellerCardWidget> {
                           style: FlutterFlowTheme.of(context)
                               .bodyLarge
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w500,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .bodyLarge

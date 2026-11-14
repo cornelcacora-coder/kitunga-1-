@@ -121,13 +121,13 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text('Votre commande a été livrée',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                               fontSize: 17,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: theme.primaryText)),
                       const SizedBox(height: 4),
                       Text('Confirmez la réception, ou signalez un problème.',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 13.5, color: theme.secondaryText)),
                       const SizedBox(height: 14),
                       SizedBox(
@@ -141,8 +141,8 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget> {
                           ),
                           icon: const Icon(Icons.check_circle_rounded),
                           label: Text('J\'ai reçu ma commande',
-                              style: GoogleFonts.inter(
-                                  fontSize: 15, fontWeight: FontWeight.w800)),
+                              style: GoogleFonts.poppins(
+                                  fontSize: 15, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -157,9 +157,9 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget> {
                                 borderRadius: BorderRadius.circular(14)),
                           ),
                           child: Text('Je ne l\'ai pas reçue',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 14.5,
-                                  fontWeight: FontWeight.w700)),
+                                  fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ],
@@ -189,11 +189,11 @@ class _OrderTrackWidgetState extends State<OrderTrackWidget> {
                   leading: const Icon(Icons.support_agent_rounded,
                       color: Color(0xFF2F6FDE)),
                   title: Text('Besoin d\'aide ?',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           color: theme.primaryText)),
                   subtitle: Text('Écrire au support à propos de cette commande',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 12.5, color: theme.secondaryText)),
                   trailing: Icon(Icons.chevron_right_rounded,
                       color: theme.secondaryText),
@@ -230,9 +230,9 @@ class _Banner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(text,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 13.5,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     color: FlutterFlowTheme.of(context).primaryText)),
           ),
         ]),

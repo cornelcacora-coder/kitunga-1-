@@ -81,10 +81,10 @@ Widget kitungaShopPlaceholder(
             color: Color(0x40FFFFFF), size: 64.0)
         : Text(
             kitungaInitials(shop.displayName),
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: (height ?? 40.0) * 0.38,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
             ),
           ),
   );
@@ -187,10 +187,10 @@ class KitungaShopCard extends StatelessWidget {
                               s.displayName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.interTight(
+                              style: GoogleFonts.poppins(
                                 color: theme.primaryText,
                                 fontSize: 15.0,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -207,7 +207,7 @@ class KitungaShopCard extends StatelessWidget {
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 12.0,
                         ),
@@ -312,10 +312,10 @@ class KitungaShopListTile extends StatelessWidget {
                           s.displayName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 15.0,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -336,16 +336,16 @@ class KitungaShopListTile extends StatelessWidget {
                       if (s.category.isNotEmpty)
                         Text(
                           s.category,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: catColor,
                             fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       if (status != null)
                         Text(
                           status.label,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: status.open
                                 ? Color(0xFF1E9E5A)
                                 : theme.secondaryText,
@@ -423,7 +423,7 @@ class KitungaClosedBanner extends StatelessWidget {
               '${name.isEmpty ? 'Ce commerce' : name} est fermé en ce moment '
               '(${label.replaceFirst('Fermé · ', '')}). Votre panier est gardé : '
               'vous pourrez commander dès son ouverture.',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   color: theme.primaryText, fontSize: 13.0, height: 1.3),
             ),
           ),

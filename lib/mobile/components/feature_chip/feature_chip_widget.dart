@@ -75,14 +75,14 @@ class _FeatureChipWidgetState extends State<FeatureChipWidget> {
                 'Bluetooth 5.3',
               ),
               style: FlutterFlowTheme.of(context).labelMedium.override(
-                    font: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
+                    font: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w500,
                       fontStyle:
                           FlutterFlowTheme.of(context).labelMedium.fontStyle,
                     ),
                     color: FlutterFlowTheme.of(context).primaryText,
                     letterSpacing: 0.0,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     fontStyle:
                         FlutterFlowTheme.of(context).labelMedium.fontStyle,
                   ),

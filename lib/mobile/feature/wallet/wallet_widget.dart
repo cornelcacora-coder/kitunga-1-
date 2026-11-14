@@ -111,7 +111,7 @@ class _WalletWidgetState extends State<WalletWidget> {
                                             style: FlutterFlowTheme.of(context)
                                                 .labelLarge
                                                 .override(
-                                                  font: GoogleFonts.inter(
+                                                  font: GoogleFonts.poppins(
                                                     fontWeight:
                                                         FlutterFlowTheme.of(
                                                                 context)
@@ -179,7 +179,7 @@ class _WalletWidgetState extends State<WalletWidget> {
                                             style: FlutterFlowTheme.of(context)
                                                 .labelLarge
                                                 .override(
-                                                  font: GoogleFonts.inter(
+                                                  font: GoogleFonts.poppins(
                                                     fontWeight:
                                                         FlutterFlowTheme.of(
                                                                 context)
@@ -247,7 +247,7 @@ class _WalletWidgetState extends State<WalletWidget> {
                                             style: FlutterFlowTheme.of(context)
                                                 .labelLarge
                                                 .override(
-                                                  font: GoogleFonts.inter(
+                                                  font: GoogleFonts.poppins(
                                                     fontWeight:
                                                         FlutterFlowTheme.of(
                                                                 context)
@@ -309,7 +309,7 @@ class _WalletWidgetState extends State<WalletWidget> {
                                   style: FlutterFlowTheme.of(context)
                                       .headlineLarge
                                       .override(
-                                        font: GoogleFonts.interTight(
+                                        font: GoogleFonts.poppins(
                                           fontWeight:
                                               FlutterFlowTheme.of(context)
                                                   .headlineLarge
@@ -525,7 +525,7 @@ class _WalletWidgetState extends State<WalletWidget> {
                                                         .labelLarge
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -728,7 +728,7 @@ class _WalletWidgetState extends State<WalletWidget> {
                                           style: FlutterFlowTheme.of(context)
                                               .headlineMedium
                                               .override(
-                                                font: GoogleFonts.interTight(
+                                                font: GoogleFonts.poppins(
                                                   fontWeight:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -824,7 +824,7 @@ class _WalletWidgetState extends State<WalletWidget> {
                                                   FlutterFlowTheme.of(context)
                                                       .bodyLarge
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -926,7 +926,7 @@ class _WalletWidgetState extends State<WalletWidget> {
                                                   FlutterFlowTheme.of(context)
                                                       .bodyLarge
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)

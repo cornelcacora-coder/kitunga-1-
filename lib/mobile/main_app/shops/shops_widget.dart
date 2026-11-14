@@ -212,10 +212,10 @@ class _ShopsWidgetState extends State<ShopsWidget> {
               children: [
                 Text(
                   _plural,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 21.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
@@ -224,7 +224,7 @@ class _ShopsWidgetState extends State<ShopsWidget> {
                       : count == 0
                           ? 'Bientôt disponible'
                           : '$count commerce${count > 1 ? 's' : ''} sur Kitunga',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 13.0,
                   ),
@@ -252,10 +252,10 @@ class _ShopsWidgetState extends State<ShopsWidget> {
           selected: selected,
           showCheckmark: false,
           onSelected: (_) => setState(() => _filter = value),
-          labelStyle: GoogleFonts.inter(
+          labelStyle: GoogleFonts.poppins(
             color: selected ? Colors.white : theme.primaryText,
             fontSize: 13.0,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
           ),
           selectedColor: theme.primary,
           backgroundColor: theme.primaryBackground,
@@ -273,11 +273,11 @@ class _ShopsWidgetState extends State<ShopsWidget> {
           child: TextField(
             onChanged: (v) => setState(() => _query = v),
             textInputAction: TextInputAction.search,
-            style: GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
+            style: GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0),
             decoration: InputDecoration(
               hintText: 'Rechercher un commerce ou une spécialité…',
               hintStyle:
-                  GoogleFonts.inter(color: theme.secondaryText, fontSize: 15.0),
+                  GoogleFonts.poppins(color: theme.secondaryText, fontSize: 15.0),
               prefixIcon:
                   Icon(Icons.search_rounded, color: theme.secondaryText),
               filled: true,
@@ -320,10 +320,10 @@ class _ShopsWidgetState extends State<ShopsWidget> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 17.0,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
             SizedBox(height: 6.0),
@@ -331,7 +331,7 @@ class _ShopsWidgetState extends State<ShopsWidget> {
               text,
               textAlign: TextAlign.center,
               style:
-                  GoogleFonts.inter(color: theme.secondaryText, fontSize: 14.0),
+                  GoogleFonts.poppins(color: theme.secondaryText, fontSize: 14.0),
             ),
             if (action != null) ...[SizedBox(height: 16.0), action],
           ],
@@ -398,10 +398,10 @@ class _ShopCategoryCard extends StatelessWidget {
                         ),
                         child: Text(
                           status.open ? 'Ouvert' : 'Fermé',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 12.0,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -438,10 +438,10 @@ class _ShopCategoryCard extends StatelessWidget {
                             s.displayName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.interTight(
+                            style: GoogleFonts.poppins(
                               color: theme.primaryText,
                               fontSize: 17.0,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -459,7 +459,7 @@ class _ShopCategoryCard extends StatelessWidget {
                         specialty,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 13.0,
                         ),
@@ -477,7 +477,7 @@ class _ShopCategoryCard extends StatelessWidget {
                               status?.label ?? s.horraire.trim(),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 color: status?.open == true
                                     ? Color(0xFF1E9E5A)
                                     : theme.secondaryText,

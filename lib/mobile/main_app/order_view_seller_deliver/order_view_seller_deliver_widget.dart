@@ -123,7 +123,7 @@ class _OrderViewSellerDeliverWidgetState
                       'Commande',
                       style:
                           FlutterFlowTheme.of(context).headlineMedium.override(
-                                font: GoogleFonts.interTight(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .headlineMedium
                                       .fontWeight,
@@ -297,7 +297,7 @@ class _OrderViewSellerDeliverWidgetState
                                                           font: GoogleFonts
                                                               .interTight(
                                                             fontWeight:
-                                                                FontWeight.bold,
+                                                                FontWeight.w600,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -310,7 +310,7 @@ class _OrderViewSellerDeliverWidgetState
                                                           fontSize: 16.0,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -325,7 +325,7 @@ class _OrderViewSellerDeliverWidgetState
                                                   listViewOrderItemsRecord.options,
                                                   maxLines: 2,
                                                   overflow: TextOverflow.ellipsis,
-                                                  style: GoogleFonts.inter(
+                                                  style: GoogleFonts.poppins(
                                                     color: FlutterFlowTheme.of(context).secondaryText,
                                                     fontSize: 12.5,
                                                   ),
@@ -349,7 +349,7 @@ class _OrderViewSellerDeliverWidgetState
                                                         .labelSmall
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -396,7 +396,7 @@ class _OrderViewSellerDeliverWidgetState
                                                           font: GoogleFonts
                                                               .interTight(
                                                             fontWeight:
-                                                                FontWeight.w800,
+                                                                FontWeight.w600,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -408,7 +408,7 @@ class _OrderViewSellerDeliverWidgetState
                                                               .secondaryText,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.w800,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -425,7 +425,7 @@ class _OrderViewSellerDeliverWidgetState
                                                           font: GoogleFonts
                                                               .interTight(
                                                             fontWeight:
-                                                                FontWeight.w800,
+                                                                FontWeight.w600,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -437,7 +437,7 @@ class _OrderViewSellerDeliverWidgetState
                                                               .secondaryText,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.w800,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -468,7 +468,7 @@ class _OrderViewSellerDeliverWidgetState
                       'Résumer',
                       style:
                           FlutterFlowTheme.of(context).headlineMedium.override(
-                                font: GoogleFonts.interTight(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .headlineMedium
                                       .fontWeight,
@@ -549,7 +549,7 @@ class _OrderViewSellerDeliverWidgetState
                                     style: FlutterFlowTheme.of(context)
                                         .headlineMedium
                                         .override(
-                                          font: GoogleFonts.interTight(
+                                          font: GoogleFonts.poppins(
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
                                                     .headlineMedium
@@ -606,7 +606,7 @@ class _OrderViewSellerDeliverWidgetState
                                     style: FlutterFlowTheme.of(context)
                                         .headlineMedium
                                         .override(
-                                          font: GoogleFonts.interTight(
+                                          font: GoogleFonts.poppins(
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
                                                     .headlineMedium
@@ -668,7 +668,7 @@ class _OrderViewSellerDeliverWidgetState
                                     style: FlutterFlowTheme.of(context)
                                         .headlineMedium
                                         .override(
-                                          font: GoogleFonts.interTight(
+                                          font: GoogleFonts.poppins(
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
                                                     .headlineMedium
@@ -697,7 +697,7 @@ class _OrderViewSellerDeliverWidgetState
                                     style: FlutterFlowTheme.of(context)
                                         .headlineMedium
                                         .override(
-                                          font: GoogleFonts.interTight(
+                                          font: GoogleFonts.poppins(
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
                                                     .headlineMedium

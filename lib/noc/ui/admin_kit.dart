@@ -73,30 +73,30 @@ class AdminText {
   AdminText._();
 
   static TextStyle display({Color? color}) =>
-      GoogleFonts.interTight(
-          color: color ?? AdminColors.ink, fontSize: 28.0, fontWeight: FontWeight.w800, height: 1.1);
+      GoogleFonts.poppins(
+          color: color ?? AdminColors.ink, fontSize: 28.0, fontWeight: FontWeight.w600, height: 1.1);
 
-  static TextStyle h1({Color? color}) => GoogleFonts.interTight(
-      color: color ?? AdminColors.ink, fontSize: 22.0, fontWeight: FontWeight.w800);
+  static TextStyle h1({Color? color}) => GoogleFonts.poppins(
+      color: color ?? AdminColors.ink, fontSize: 22.0, fontWeight: FontWeight.w600);
 
-  static TextStyle h2({Color? color}) => GoogleFonts.interTight(
-      color: color ?? AdminColors.ink, fontSize: 16.0, fontWeight: FontWeight.w700);
+  static TextStyle h2({Color? color}) => GoogleFonts.poppins(
+      color: color ?? AdminColors.ink, fontSize: 16.0, fontWeight: FontWeight.w600);
 
   static TextStyle body({Color? color, double size = 14.0}) =>
-      GoogleFonts.inter(color: color ?? AdminColors.text, fontSize: size, height: 1.4);
+      GoogleFonts.poppins(color: color ?? AdminColors.text, fontSize: size, height: 1.4);
 
   static TextStyle label({Color? color, double size = 13.0}) =>
-      GoogleFonts.inter(
+      GoogleFonts.poppins(
           color: color ?? AdminColors.muted, fontSize: size, fontWeight: FontWeight.w500, height: 1.3);
 
   static TextStyle strong({Color? color, double size = 14.0}) =>
-      GoogleFonts.inter(
-          color: color ?? AdminColors.ink, fontSize: size, fontWeight: FontWeight.w700, height: 1.3);
+      GoogleFonts.poppins(
+          color: color ?? AdminColors.ink, fontSize: size, fontWeight: FontWeight.w600, height: 1.3);
 
-  static TextStyle caps({Color? color}) => GoogleFonts.inter(
+  static TextStyle caps({Color? color}) => GoogleFonts.poppins(
       color: color ?? AdminColors.faint,
       fontSize: 11.5,
-      fontWeight: FontWeight.w700,
+      fontWeight: FontWeight.w600,
       letterSpacing: 0.8);
 }
 
@@ -132,7 +132,7 @@ ThemeData adminTheme(ThemeData base) {
     brightness: brightness,
     colorScheme: scheme,
     scaffoldBackgroundColor: AdminColors.page,
-    textTheme: GoogleFonts.interTextTheme(base.textTheme)
+    textTheme: GoogleFonts.poppinsTextTheme(base.textTheme)
         .apply(bodyColor: AdminColors.text, displayColor: AdminColors.ink),
     iconTheme: IconThemeData(color: AdminColors.muted),
     canvasColor: AdminColors.surface,

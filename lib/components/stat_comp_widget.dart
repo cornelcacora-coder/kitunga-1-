@@ -104,7 +104,7 @@ class _StatCompWidgetState extends State<StatCompWidget> {
                           'UTILISATEURS ACTIF',
                         ),
                         style: FlutterFlowTheme.of(context).labelSmall.override(
-                              font: GoogleFonts.inter(
+                              font: GoogleFonts.poppins(
                                 fontWeight: FlutterFlowTheme.of(context)
                                     .labelSmall
                                     .fontWeight,
@@ -131,15 +131,15 @@ class _StatCompWidgetState extends State<StatCompWidget> {
                         style: FlutterFlowTheme.of(context)
                             .headlineMedium
                             .override(
-                              font: GoogleFonts.interTight(
-                                fontWeight: FontWeight.bold,
+                              font: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .headlineMedium
                                     .fontStyle,
                               ),
                               color: FlutterFlowTheme.of(context).primaryText,
                               letterSpacing: 0.0,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .headlineMedium
                                   .fontStyle,
@@ -160,7 +160,7 @@ class _StatCompWidgetState extends State<StatCompWidget> {
                     ),
                     maxLines: 2,
                     style: FlutterFlowTheme.of(context).labelSmall.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FlutterFlowTheme.of(context)
                                 .labelSmall
                                 .fontWeight,

@@ -190,7 +190,7 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                     onPressed: uploading ? null : _pickPhoto,
                     style: TextButton.styleFrom(foregroundColor: _red),
                     child: Text('Changer la photo',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -261,8 +261,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                             child: CircularProgressIndicator(
                                 strokeWidth: 2.5, color: Colors.white))
                         : Text('Enregistrer',
-                            style: GoogleFonts.inter(
-                                fontSize: 15.5, fontWeight: FontWeight.w800)),
+                            style: GoogleFonts.poppins(
+                                fontSize: 15.5, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],

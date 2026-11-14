@@ -278,16 +278,16 @@ class _Timeline extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(steps[i].title,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 14.5,
                                 fontWeight: steps[i].done || steps[i].current
-                                    ? FontWeight.w700
+                                    ? FontWeight.w600
                                     : FontWeight.w500,
                                 color: steps[i].done || steps[i].current
                                     ? theme.primaryText
                                     : theme.secondaryText)),
                         Text(steps[i].subtitle,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 12.5, color: theme.secondaryText)),
                       ],
                     ),
@@ -381,9 +381,9 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
             children: [
               Expanded(
                 child: Text('Suivi de la livraison',
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                         fontSize: 17,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
               ),
               if (onTheWay)
@@ -399,9 +399,9 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
                       const Icon(Icons.circle, size: 8, color: _green),
                       const SizedBox(width: 5),
                       Text('En direct',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               color: _green)),
                     ],
                   ),
@@ -424,7 +424,7 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
                   : 'Position du livreur mise à jour '
                       '${_ago(_date(pos!['at']))}.',
               style:
-                  GoogleFonts.inter(fontSize: 12, color: theme.secondaryText),
+                  GoogleFonts.poppins(fontSize: 12, color: theme.secondaryText),
             ),
             // Heure d'arrivée estimée (commande récupérée, position connue).
             if (rider != null && dest != null && t['pickedUpAt'] != null)
@@ -440,8 +440,8 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
                               '${r.traffic ? ', circulation comprise' : ' par la route'})'
                           : 'Arrivée vers ${_clockIn(m)} (estimation : $m min)',
                       key: const ValueKey('client-eta'),
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w800,
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           color: theme.primaryText));
                 }),
               ),
@@ -449,8 +449,8 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
               Text(
                   'Retard annoncé : ${(t['delay'] as Map)['minutes']} min'
                   '${'${(t['delay'] as Map)['reason'] ?? ''}'.isEmpty ? '' : ' (${(t['delay'] as Map)['reason']})'}',
-                  style: GoogleFonts.inter(
-                      fontSize: 12.5, color: _red, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 12.5, color: _red, fontWeight: FontWeight.w500)),
           ],
           if (d != null) ...[
             const SizedBox(height: 12),
@@ -473,12 +473,12 @@ class _KitungaLiveTrackingCardState extends State<KitungaLiveTrackingCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('${d['name'] ?? ''}',
-                          style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w700,
+                          style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
                               fontSize: 15,
                               color: theme.primaryText)),
                       Text('Votre livreur',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 12.5, color: theme.secondaryText)),
                     ],
                   ),
@@ -629,8 +629,8 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Retard estimé',
-                  style: GoogleFonts.interTight(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               const Text('Le client et le commerce seront prévenus.'),
               const SizedBox(height: 12),
@@ -714,7 +714,7 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
         foregroundColor: theme.primaryText,
         elevation: 0,
         title: Text('Course en cours',
-            style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
         actions: [
           // Urgence : prévient l'équipe avec la position.
           IconButton(
@@ -759,7 +759,7 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(_gpsProblem!,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 12.5, color: _red)),
                     ),
                   ]),
@@ -779,9 +779,9 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                         picked
                             ? 'Étape 2 · Livrer le client'
                             : 'Étape 1 · Récupérer la commande',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: _red)),
                     const SizedBox(height: 2),
                     Row(children: [
@@ -792,15 +792,15 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                                     ? 'Chez le client'
                                     : o.deliveryZone)
                                 : '$shop',
-                            style: GoogleFonts.interTight(
+                            style: GoogleFonts.poppins(
                                 fontSize: 18,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                                 color: theme.primaryText)),
                       ),
                       Text('${o.deliveryFees.round()} F',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                               fontSize: 18,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: _green)),
                     ]),
                     const SizedBox(height: 4),
@@ -810,7 +810,7 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                           if (o.deliveryLocation.isNotEmpty)
                             o.deliveryLocation,
                         ].join(' · '),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 13, color: theme.secondaryText)),
                     // Temps estimé depuis ma position (commerce, puis client).
                     Builder(builder: (context) {
@@ -831,9 +831,9 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                                     'arrivée vers ${_clockIn(m)}'
                                 : 'Estimation : $m min · arrivée vers ${_clockIn(m)}',
                             key: const ValueKey('mission-eta'),
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: _green)),
                       );
                     }),
@@ -889,8 +889,8 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                   onPressed: _busy ? null : _pickedUp,
                   icon: const Icon(Icons.shopping_bag_rounded),
                   label: Text('J\'ai récupéré la commande',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w800, fontSize: 16)),
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600, fontSize: 16)),
                 ),
               if (onTheWay && picked && _t?['arrivedAt'] == null)
                 Padding(
@@ -921,8 +921,8 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                   },
                   icon: const Icon(Icons.verified_rounded),
                   label: Text('Remettre au client (code + photo)',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w800, fontSize: 16)),
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600, fontSize: 16)),
                 ),
               if (onTheWay)
                 TextButton.icon(
@@ -948,8 +948,8 @@ class _DelivererMissionPageState extends State<DelivererMissionPage> {
                           ? 'Course terminée. Merci !'
                           : 'Cette course n\'est plus en cours.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           color: theme.secondaryText)),
                 ),
             ],
@@ -1002,14 +1002,14 @@ class KitungaActiveDeliveryBanner extends StatelessWidget {
                           orders.length > 1
                               ? '${orders.length} courses en cours'
                               : 'Course en cours',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                               color: Colors.white,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               fontSize: 16)),
                       Text(
                           'Vers ${o.deliveryZone.isEmpty ? 'le client' : o.deliveryZone}'
                           ' · ${o.deliveryFees.round()} F',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 13)),
                     ],
@@ -1078,15 +1078,15 @@ class KitungaCourseCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(ready ? 'Prête à récupérer' : 'En livraison',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: ready ? _green : _red)),
                   ),
                   const Spacer(),
                   if (o.createdAt != null)
                     Text(dateTimeFormatFr(o.createdAt!),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12, color: theme.secondaryText)),
                 ],
               ),
@@ -1115,15 +1115,15 @@ class KitungaCourseCard extends StatelessWidget {
                             o.deliveryZone.isEmpty
                                 ? 'Brazzaville'
                                 : o.deliveryZone,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 15,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: theme.primaryText)),
                         if (o.deliveryLocation.isNotEmpty)
                           Text(o.deliveryLocation,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   fontSize: 12.5,
                                   color: theme.secondaryText)),
                       ],
@@ -1133,12 +1133,12 @@ class KitungaCourseCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text('${o.deliveryFees.round()} F',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                               fontSize: 20,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: _green)),
                       Text('livraison',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 11.5, color: theme.secondaryText)),
                     ],
                   ),
@@ -1158,8 +1158,8 @@ class KitungaCourseCard extends StatelessWidget {
                     ? Icons.navigation_rounded
                     : Icons.check_circle_rounded),
                 label: Text(mine ? 'Continuer la course' : 'Accepter la course',
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w800, fontSize: 15)),
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600, fontSize: 15)),
               ),
             ],
           ),
@@ -1188,8 +1188,8 @@ class _ShopName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final style = GoogleFonts.inter(
-        fontSize: 15, fontWeight: FontWeight.w700, color: theme.primaryText);
+    final style = GoogleFonts.poppins(
+        fontSize: 15, fontWeight: FontWeight.w600, color: theme.primaryText);
     final ref = order.sellerRef;
     if (ref == null || trackingTestMode) {
       return Text('Commerce', style: style);

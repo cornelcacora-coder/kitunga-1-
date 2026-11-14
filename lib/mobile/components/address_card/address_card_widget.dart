@@ -94,15 +94,15 @@ class _AddressCardWidgetState extends State<AddressCardWidget> {
                           style: FlutterFlowTheme.of(context)
                               .titleSmall
                               .override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.bold,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleSmall
                                       .fontStyle,
                                 ),
                                 color: FlutterFlowTheme.of(context).primaryText,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleSmall
                                     .fontStyle,
@@ -117,7 +117,7 @@ class _AddressCardWidgetState extends State<AddressCardWidget> {
                           style: FlutterFlowTheme.of(context)
                               .bodySmall
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .bodySmall
                                       .fontWeight,

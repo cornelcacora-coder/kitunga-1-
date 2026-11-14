@@ -182,9 +182,9 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
             Padding(
               padding: const EdgeInsets.only(left: 4, bottom: 12),
               child: Text('Messages',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 26,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: theme.primaryText)),
             ),
           if ((_items ?? const []).length > 3)
@@ -210,7 +210,7 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Text(_error!,
-                  style: GoogleFonts.inter(color: _red, fontSize: 13)),
+                  style: GoogleFonts.poppins(color: _red, fontSize: 13)),
             ),
           if (items == null && _error == null)
             const Padding(
@@ -230,8 +230,8 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
                   ),
                   const SizedBox(height: 14),
                   Text('Aucune conversation',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w800,
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: theme.primaryText)),
                   const SizedBox(height: 4),
@@ -239,7 +239,7 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
                       'Écrivez au client, au commerce ou au livreur depuis '
                       'une commande (bouton « Message »).',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 13, color: theme.secondaryText)),
                 ],
               ),
@@ -272,7 +272,7 @@ class _KitungaConversationsPageState extends State<KitungaConversationsPage> {
         foregroundColor: theme.primaryText,
         elevation: 0,
         title: Text('Messages',
-            style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       ),
       body: body,
     );
@@ -325,20 +325,20 @@ class _ConversationTile extends StatelessWidget {
                       : '${kChatRoleLabels[role] ?? ''} · ${c['title']}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                  fontWeight: unread > 0 ? FontWeight.w800 : FontWeight.w600,
+              style: GoogleFonts.poppins(
+                  fontWeight: unread > 0 ? FontWeight.w600 : FontWeight.w500,
                   color: theme.primaryText)),
           subtitle: Text('${c['lastMessage'] ?? ''}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style:
-                  GoogleFonts.inter(fontSize: 13, color: theme.secondaryText)),
+                  GoogleFonts.poppins(fontSize: 13, color: theme.secondaryText)),
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(_time(c['lastAt'] as String?),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 11.5, color: theme.secondaryText)),
               if (unread > 0) ...[
                 const SizedBox(height: 4),
@@ -348,10 +348,10 @@ class _ConversationTile extends StatelessWidget {
                   decoration: BoxDecoration(
                       color: _red, borderRadius: BorderRadius.circular(20)),
                   child: Text('$unread',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 11.5,
-                          fontWeight: FontWeight.w800)),
+                          fontWeight: FontWeight.w600)),
                 ),
               ],
             ],
@@ -460,7 +460,7 @@ class _KitungaChatPageState extends State<KitungaChatPage> {
         title: Text(widget.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.interTight(fontWeight: FontWeight.w800)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       ),
       body: Column(
         children: [
@@ -471,7 +471,7 @@ class _KitungaChatPageState extends State<KitungaChatPage> {
               padding: const EdgeInsets.all(8),
               child: Text('Connexion perdue : nouvel essai en cours…',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(fontSize: 12.5)),
+                  style: GoogleFonts.poppins(fontSize: 12.5)),
             ),
           Expanded(
             child: messages == null
@@ -484,7 +484,7 @@ class _KitungaChatPageState extends State<KitungaChatPage> {
                               'Aucun message. Écrivez le premier : il sera '
                               'notifié aussitôt.',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   color: theme.secondaryText)),
                         ),
                       )
@@ -544,7 +544,7 @@ class _KitungaChatPageState extends State<KitungaChatPage> {
                       child: Text(
                           'Conversation fermée : lecture seule.',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: theme.secondaryText, fontSize: 13)),
                     ),
             ),
@@ -596,12 +596,12 @@ class _Bubble extends StatelessWidget {
                         m['fromRole'] != 'admin')
                       '${m['fromName']}',
                   ].where((s) => s.isNotEmpty).join(' · '),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: _red)),
             Text('${m['text'] ?? ''}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 14.5,
                     color: mine ? Colors.white : theme.primaryText)),
             const SizedBox(height: 2),
@@ -609,7 +609,7 @@ class _Bubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(_time(m['at'] as String?),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 10.5,
                         color: mine
                             ? Colors.white.withValues(alpha: 0.8)

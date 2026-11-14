@@ -83,7 +83,7 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
                 ),
                 textAlign: TextAlign.center,
                 style: FlutterFlowTheme.of(context).headlineMedium.override(
-                      font: GoogleFonts.interTight(
+                      font: GoogleFonts.poppins(
                         fontWeight: FlutterFlowTheme.of(context)
                             .headlineMedium
                             .fontWeight,
@@ -116,7 +116,7 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
                     ),
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FlutterFlowTheme.of(context)
                                 .bodyLarge
                                 .fontWeight,
@@ -156,7 +156,7 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
                       EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: FlutterFlowTheme.of(context).primary,
                   textStyle: FlutterFlowTheme.of(context).labelLarge.override(
-                        font: GoogleFonts.inter(
+                        font: GoogleFonts.poppins(
                           fontWeight: FlutterFlowTheme.of(context)
                               .labelLarge
                               .fontWeight,

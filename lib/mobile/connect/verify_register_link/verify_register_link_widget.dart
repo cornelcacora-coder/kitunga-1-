@@ -61,7 +61,7 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
           title: Text(
             'Vérification d\'identité',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight: FontWeight.w500,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
@@ -118,7 +118,7 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
                   Text(
                     'Vous avez déjà un  compte ?',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FontWeight.normal,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
@@ -145,9 +145,9 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
                       iconPadding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       color: Colors.transparent,
-                      textStyle: GoogleFonts.interTight(
+                      textStyle: GoogleFonts.poppins(
                         color: FlutterFlowTheme.of(context).primary,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         fontSize: 14.0,
                       ),
                       elevation: 0.0,

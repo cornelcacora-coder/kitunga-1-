@@ -90,7 +90,7 @@ class _KitungaDeliveryCodeCardState extends State<KitungaDeliveryCodeCard> {
                 const SizedBox(width: 10.0),
                 Expanded(
                   child: Text('Code de remise indisponible pour le moment.',
-                      style: GoogleFonts.inter(color: theme.secondaryText)),
+                      style: GoogleFonts.poppins(color: theme.secondaryText)),
                 ),
                 TextButton(
                   onPressed: () => setState(() => _code = _call(
@@ -113,10 +113,10 @@ class _KitungaDeliveryCodeCardState extends State<KitungaDeliveryCodeCard> {
                   const SizedBox(width: 8.0),
                   Expanded(
                     child: Text('Code de remise',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 16.0,
-                            fontWeight: FontWeight.w800)),
+                            fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -138,10 +138,10 @@ class _KitungaDeliveryCodeCardState extends State<KitungaDeliveryCodeCard> {
                           border: Border.all(color: _red, width: 1.6),
                         ),
                         child: Text(c,
-                            style: GoogleFonts.interTight(
+                            style: GoogleFonts.poppins(
                                 color: theme.primaryText,
                                 fontSize: 30.0,
-                                fontWeight: FontWeight.w900)),
+                                fontWeight: FontWeight.w700)),
                       ),
                   ],
                 ),
@@ -154,7 +154,7 @@ class _KitungaDeliveryCodeCardState extends State<KitungaDeliveryCodeCard> {
                       : 'Donnez ce code au livreur seulement quand vous avez '
                           'votre commande en main. Ne le communiquez jamais '
                           'par téléphone.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: locked ? _red : theme.secondaryText,
                       fontSize: 13.0,
                       height: 1.4)),
@@ -195,7 +195,7 @@ class KitungaReceiptButton extends StatelessWidget {
             builder: (_) => KitungaReceiptPage(orderId: order.reference.id))),
         icon: const Icon(Icons.receipt_long_rounded, size: 20.0),
         label: Text('Voir le reçu',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       ),
     );
   }
@@ -283,7 +283,7 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
     final theme = FlutterFlowTheme.of(context);
     TextStyle s(double size,
             {FontWeight w = FontWeight.w500, Color? c}) =>
-        GoogleFonts.inter(
+        GoogleFonts.poppins(
             color: c ?? theme.primaryText, fontSize: size, fontWeight: w);
     return Scaffold(
       backgroundColor: theme.primaryBackground,
@@ -291,7 +291,7 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
         backgroundColor: theme.secondaryBackground,
         foregroundColor: theme.primaryText,
         elevation: 0.0,
-        title: Text('Reçu', style: s(18.0, w: FontWeight.w800)),
+        title: Text('Reçu', style: s(18.0, w: FontWeight.w600)),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _receipt,
@@ -339,13 +339,13 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
                         child: Text(a,
                             style: s(13.5,
                                 c: bold ? null : theme.secondaryText,
-                                w: bold ? FontWeight.w800 : FontWeight.w500))),
+                                w: bold ? FontWeight.w600 : FontWeight.w500))),
                     const SizedBox(width: 12.0),
                     Flexible(
                       child: Text(b,
                           textAlign: TextAlign.right,
                           style: s(bold ? 16.0 : 13.5,
-                              w: bold ? FontWeight.w900 : FontWeight.w600)),
+                              w: bold ? FontWeight.w700 : FontWeight.w500)),
                     ),
                   ],
                 ),
@@ -373,7 +373,7 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
                     const SizedBox(height: 10.0),
                     Text('Reçu de commande',
                         textAlign: TextAlign.center,
-                        style: s(18.0, w: FontWeight.w800)),
+                        style: s(18.0, w: FontWeight.w600)),
                     const SizedBox(height: 4.0),
                     GestureDetector(
                       onLongPress: () {
@@ -384,7 +384,7 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
                       },
                       child: Text('N° ${r['number']}',
                           textAlign: TextAlign.center,
-                          style: s(14.0, w: FontWeight.w700, c: _red)),
+                          style: s(14.0, w: FontWeight.w600, c: _red)),
                     ),
                     if (r['codeVerified'] == true) ...[
                       const SizedBox(height: 10.0),
@@ -406,7 +406,7 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
                                 child: Text('Remise confirmée par code',
                                     textAlign: TextAlign.center,
                                     style: s(12.5,
-                                        w: FontWeight.w700, c: _green)),
+                                        w: FontWeight.w600, c: _green)),
                               ),
                             ],
                           ),
@@ -435,7 +435,7 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text('${l['quantity']} × ${l['name']}',
-                                      style: s(14.0, w: FontWeight.w600)),
+                                      style: s(14.0, w: FontWeight.w500)),
                                   if ('${l['options'] ?? ''}'.isNotEmpty)
                                     Text('${l['options']}',
                                         style:
@@ -447,7 +447,7 @@ class _KitungaReceiptPageState extends State<KitungaReceiptPage> {
                               ),
                             ),
                             Text(_fcfa(l['total'] as num? ?? 0),
-                                style: s(14.0, w: FontWeight.w700)),
+                                style: s(14.0, w: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -616,15 +616,15 @@ class _CompleteDeliverySheetState extends State<_CompleteDeliverySheet> {
               ),
               const SizedBox(height: 14.0),
               Text('Remettre la commande',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       color: theme.primaryText,
                       fontSize: 20.0,
-                      fontWeight: FontWeight.w800)),
+                      fontWeight: FontWeight.w600)),
               const SizedBox(height: 4.0),
               Text(
                   'Demandez au client le code à 4 chiffres affiché dans son '
                   'application, puis photographiez la commande remise.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 13.5, height: 1.4)),
               const SizedBox(height: 16.0),
               TextField(
@@ -634,11 +634,11 @@ class _CompleteDeliverySheetState extends State<_CompleteDeliverySheet> {
                 maxLength: 4,
                 textAlign: TextAlign.center,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 30.0,
                     letterSpacing: 18.0,
-                    fontWeight: FontWeight.w900),
+                    fontWeight: FontWeight.w700),
                 decoration: InputDecoration(
                   counterText: '',
                   hintText: '••••',
@@ -675,8 +675,8 @@ class _CompleteDeliverySheetState extends State<_CompleteDeliverySheet> {
               if (_error != null) ...[
                 const SizedBox(height: 10.0),
                 Text(_error!,
-                    style: GoogleFonts.inter(
-                        color: _red, fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.poppins(
+                        color: _red, fontWeight: FontWeight.w500)),
               ],
               const SizedBox(height: 14.0),
               FilledButton(
@@ -695,8 +695,8 @@ class _CompleteDeliverySheetState extends State<_CompleteDeliverySheet> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2.0, color: Colors.white))
                     : Text('Confirmer la remise',
-                        style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w800, fontSize: 15.0)),
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600, fontSize: 15.0)),
               ),
               TextButton.icon(
                 onPressed: _busy
@@ -899,14 +899,14 @@ class _KitungaRateDelivererState extends State<KitungaRateDeliverer> {
       ),
       child: _done
           ? Text('Merci pour votre avis !',
-              style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w700, color: _green))
+              style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600, color: _green))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Notez votre livraison',
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w800,
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
                 Row(
                   children: [
@@ -926,8 +926,8 @@ class _KitungaRateDelivererState extends State<KitungaRateDeliverer> {
                 if (_stars > 0) ...[
                   // Note du commerce (facultative).
                   Text('Et le commerce ?',
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           color: theme.primaryText)),
                   Row(
                     children: [

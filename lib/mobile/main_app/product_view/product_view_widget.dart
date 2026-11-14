@@ -209,15 +209,15 @@ class _Details extends StatelessWidget {
           if (p.sellerRef != null) _ShopLine(shopRef: p.sellerRef!),
           const SizedBox(height: 12),
           Text(p.name,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   fontSize: 25,
                   height: 1.15,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: theme.primaryText)),
           const SizedBox(height: 8),
           Text(kitungaPrice(unit),
-              style: GoogleFonts.interTight(
-                  fontSize: 24, fontWeight: FontWeight.w800, color: _red)),
+              style: GoogleFonts.poppins(
+                  fontSize: 24, fontWeight: FontWeight.w600, color: _red)),
           const SizedBox(height: 14),
           Wrap(spacing: 8, runSpacing: 8, children: [
             if (outOfStock)
@@ -253,9 +253,9 @@ class _Details extends StatelessWidget {
           ]),
           const SizedBox(height: 24),
           Text('Description',
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   fontSize: 17,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: theme.primaryText)),
           const SizedBox(height: 8),
           Text(
@@ -263,7 +263,7 @@ class _Details extends StatelessWidget {
                 ? p.description.trim()
                 : 'Le commerce n\'a pas encore ajouté de description pour ce '
                     'produit.',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 fontSize: 14.5,
                 height: 1.5,
                 fontStyle: p.description.trim().isEmpty
@@ -279,7 +279,7 @@ class _Details extends StatelessWidget {
               Expanded(
                 child: Text(
                     'Options et suppléments au choix lors de l\'ajout.',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 13.5, color: theme.secondaryText)),
               ),
             ]),
@@ -330,15 +330,15 @@ class _ShopLine extends StatelessWidget {
                 child: Text(shop.displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
               ),
               Text('Voir le commerce',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: _red)),
               const Icon(Icons.chevron_right_rounded, color: _red, size: 20),
             ]),
@@ -370,9 +370,9 @@ class _Chip extends StatelessWidget {
             child: Text(label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: color)),
           ),
         ]),
@@ -436,9 +436,9 @@ class _AddBar extends StatelessWidget {
                     icon: const Icon(Icons.remove_rounded),
                   ),
                   Text('$quantity',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 17,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           color: theme.primaryText)),
                   IconButton(
                     tooltip: 'Plus',
@@ -471,8 +471,8 @@ class _AddBar extends StatelessWidget {
                       : Text(label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                              fontSize: 16, fontWeight: FontWeight.w800)),
+                          style: GoogleFonts.poppins(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ),

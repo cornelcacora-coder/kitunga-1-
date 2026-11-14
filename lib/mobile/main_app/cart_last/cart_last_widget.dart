@@ -333,7 +333,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                 'Validez le paiement sur votre téléphone\n'
                 '(saisissez votre code PIN $label)…',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 14.5,
                     color: theme.primaryText,
                     decoration: TextDecoration.none),
@@ -442,9 +442,9 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                       Icon(Icons.arrow_back_rounded, color: theme.primaryText),
                 ),
           title: Text('Mon panier',
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   fontSize: widget.asTab ? 26 : 20,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: theme.primaryText)),
         ),
         body: StreamBuilder<List<CartRecord>>(
@@ -544,7 +544,7 @@ class _CartLastWidgetState extends State<CartLastWidget> {
                               child: Padding(
                                 padding: const EdgeInsets.only(top: 2),
                                 child: Text(_quoteNote!,
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.poppins(
                                         fontSize: 12,
                                         color: theme.secondaryText)),
                               ),
@@ -668,14 +668,14 @@ class _ShopHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Commande chez',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 12.5, color: theme.secondaryText)),
                   Text(shop.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           color: theme.primaryText)),
                 ],
               ),
@@ -685,7 +685,7 @@ class _ShopHeader extends StatelessWidget {
               style: TextButton.styleFrom(foregroundColor: _red),
               icon: const Icon(Icons.add_rounded, size: 18),
               label: Text('Ajouter',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
             ),
           ]),
         );
@@ -740,21 +740,21 @@ class _CartLine extends StatelessWidget {
                   Text(name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: theme.primaryText)),
                   if (line.options.isNotEmpty)
                     Text(line.options,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12, color: theme.secondaryText)),
                   const SizedBox(height: 4),
                   Text(kitungaPrice(line.price * line.quantity),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           color: _red)),
                 ],
               ),
@@ -828,9 +828,9 @@ class _Stepper extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Text('$quantity',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   fontSize: 15,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: theme.primaryText)),
         ),
         btn(
@@ -868,9 +868,9 @@ class _Section extends StatelessWidget {
             Icon(icon, size: 20, color: _red),
             const SizedBox(width: 8),
             Text(title,
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                     fontSize: 16.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: theme.primaryText)),
           ]),
           const SizedBox(height: 14),
@@ -897,15 +897,15 @@ class _AmountRow extends StatelessWidget {
       child: Row(children: [
         Expanded(
           child: Text(label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   fontSize: strong ? 16.5 : 14,
-                  fontWeight: strong ? FontWeight.w800 : FontWeight.w500,
+                  fontWeight: strong ? FontWeight.w600 : FontWeight.w500,
                   color: strong ? theme.primaryText : theme.secondaryText)),
         ),
         Text(value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 fontSize: strong ? 18 : 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: strong ? _red : theme.primaryText)),
       ]),
     );
@@ -947,12 +947,12 @@ class _PayBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Total',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 12.5, color: theme.secondaryText)),
                 Text(kitungaPrice(total),
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                         fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
               ],
             ),
@@ -976,8 +976,8 @@ class _PayBar extends StatelessWidget {
                           child: CircularProgressIndicator(
                               strokeWidth: 2.5, color: Colors.white))
                       : Text('Commander et payer',
-                          style: GoogleFonts.inter(
-                              fontSize: 15.5, fontWeight: FontWeight.w800)),
+                          style: GoogleFonts.poppins(
+                              fontSize: 15.5, fontWeight: FontWeight.w600)),
                 ),
               ),
             ),

@@ -131,7 +131,7 @@ class _SellerPromotionsPageState extends State<SellerPromotionsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final body = GoogleFonts.inter(color: theme.secondaryText, fontSize: 13.5);
+    final body = GoogleFonts.poppins(color: theme.secondaryText, fontSize: 13.5);
     return Scaffold(
       backgroundColor: theme.secondaryBackground,
       appBar: AppBar(
@@ -140,10 +140,10 @@ class _SellerPromotionsPageState extends State<SellerPromotionsPage> {
         elevation: 0.0,
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text('Mes publicités',
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 19.0,
-                fontWeight: FontWeight.w800)),
+                fontWeight: FontWeight.w600)),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _future,
@@ -236,7 +236,7 @@ class _SellerPromotionsPageState extends State<SellerPromotionsPage> {
       if (b['startsAt'] != null) 'du ${_day(b['startsAt'])}',
       if (b['endsAt'] != null) 'au ${_day(b['endsAt'])}',
     ].join(' ');
-    final small = GoogleFonts.inter(color: theme.secondaryText, fontSize: 13.0);
+    final small = GoogleFonts.poppins(color: theme.secondaryText, fontSize: 13.0);
     return Container(
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
@@ -257,10 +257,10 @@ class _SellerPromotionsPageState extends State<SellerPromotionsPage> {
               borderRadius: BorderRadius.circular(20.0),
             ),
             child: Text(st.label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: st.color,
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w700)),
+                    fontWeight: FontWeight.w600)),
           ),
           if (b['status'] == 'rejected' && (b['reviewNote'] ?? '').toString().isNotEmpty)
             Padding(
@@ -465,7 +465,7 @@ class _SellerPromotionFormState extends State<SellerPromotionForm> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final field = GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0);
+    final field = GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0);
     return Scaffold(
       backgroundColor: theme.secondaryBackground,
       appBar: AppBar(
@@ -475,10 +475,10 @@ class _SellerPromotionFormState extends State<SellerPromotionForm> {
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text(
             _b['id'] == null ? 'Nouvelle publicité' : 'Modifier la publicité',
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 19.0,
-                fontWeight: FontWeight.w800)),
+                fontWeight: FontWeight.w600)),
       ),
       body: StreamBuilder<List<ProductRecord>>(
         stream: _products,
@@ -505,7 +505,7 @@ class _SellerPromotionFormState extends State<SellerPromotionForm> {
             padding: const EdgeInsets.fromLTRB(20.0, 4.0, 20.0, 40.0),
             children: [
               Text('Aperçu sur l\'accueil des clients',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 13.0)),
               const SizedBox(height: 8.0),
               KitungaBannerView(preview),
@@ -557,7 +557,7 @@ class _SellerPromotionFormState extends State<SellerPromotionForm> {
               Text(
                   'Sans photo choisie : celle du produit, sinon la couverture '
                   'de votre boutique.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 12.0)),
               const SizedBox(height: 14.0),
               const KitungaFieldLabel('Titre'),
@@ -666,8 +666,8 @@ class _SellerPromotionFormState extends State<SellerPromotionForm> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10.0),
                   child: Text(_error!,
-                      style: GoogleFonts.inter(
-                          color: theme.error, fontWeight: FontWeight.w600)),
+                      style: GoogleFonts.poppins(
+                          color: theme.error, fontWeight: FontWeight.w500)),
                 ),
               FilledButton.icon(
                 style: FilledButton.styleFrom(
@@ -691,7 +691,7 @@ class _SellerPromotionFormState extends State<SellerPromotionForm> {
                   'Kitunga vérifie chaque publicité (photo, texte, prix) avant '
                   'de la diffuser. Vous serez fixé dans « Mes publicités ».',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 12.0)),
             ],
           );

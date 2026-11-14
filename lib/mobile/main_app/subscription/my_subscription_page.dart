@@ -160,7 +160,7 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final small = GoogleFonts.inter(color: theme.secondaryText, fontSize: 13.5);
+    final small = GoogleFonts.poppins(color: theme.secondaryText, fontSize: 13.5);
     return Scaffold(
       backgroundColor: theme.secondaryBackground,
       appBar: AppBar(
@@ -170,10 +170,10 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
         iconTheme: IconThemeData(color: theme.primaryText),
         automaticallyImplyLeading: !widget.fromSignup,
         title: Text(widget.fromSignup ? 'Votre abonnement' : 'Mon abonnement',
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 19.0,
-                fontWeight: FontWeight.w800)),
+                fontWeight: FontWeight.w600)),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _future,
@@ -237,10 +237,10 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(active ? 'Abonnement actif' : 'Pas d\'abonnement actif',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 20.0,
-                            fontWeight: FontWeight.w800)),
+                            fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4.0),
                     Text(
                         active
@@ -250,17 +250,17 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                                 ? 'Terminé le ${_day(d['until'])}. Abonnez-vous '
                                     'pour commander de nouveau.'
                                 : 'Abonnez-vous pour commander sur Kitunga.',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: Colors.white, fontSize: 14.0)),
                   ],
                 ),
               ),
               const SizedBox(height: 20.0),
               Text(active ? 'Prolonger mon abonnement' : 'Choisir une formule',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       color: theme.primaryText,
                       fontSize: 17.0,
-                      fontWeight: FontWeight.w800)),
+                      fontWeight: FontWeight.w600)),
               if (active)
                 Text('La durée s\'ajoute à la fin de votre abonnement actuel.',
                     style: small),
@@ -295,16 +295,16 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                           Expanded(
                             child: Text(
                                 planDisplayName('${p['key']}'),
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                     color: theme.primaryText,
                                     fontSize: 15.0,
-                                    fontWeight: FontWeight.w700)),
+                                    fontWeight: FontWeight.w600)),
                           ),
                           Text('${p['price']} F',
-                              style: GoogleFonts.interTight(
+                              style: GoogleFonts.poppins(
                                   color: theme.primary,
                                   fontSize: 17.0,
-                                  fontWeight: FontWeight.w800)),
+                                  fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
@@ -381,17 +381,17 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                         ],
                       )
                     : Text('Payer ${chosen['price'] ?? ''} F avec $_opLabel',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w800)),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
               ),
               if (_message != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 12.0),
                   child: Text(_message!,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           color: _messageOk
                               ? const Color(0xFF1E9E5A)
                               : theme.error,
-                          fontWeight: FontWeight.w600)),
+                          fontWeight: FontWeight.w500)),
                 ),
               if (widget.fromSignup) ...[
                 const SizedBox(height: 12.0),
@@ -413,10 +413,10 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
               if (history.isNotEmpty) ...[
                 const SizedBox(height: 24.0),
                 Text('Mes paiements',
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                         color: theme.primaryText,
                         fontSize: 17.0,
-                        fontWeight: FontWeight.w800)),
+                        fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6.0),
                 for (final h in history)
                   ListTile(
@@ -433,9 +433,9 @@ class _MySubscriptionPageState extends State<MySubscriptionPage> {
                                 ? theme.error
                                 : theme.secondaryText),
                     title: Text('${h['plan']} · ${h['amount']} F',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: theme.primaryText,
-                            fontWeight: FontWeight.w600)),
+                            fontWeight: FontWeight.w500)),
                     subtitle: Text(
                         '${_day(h['date'])} · ${h['status'] == 'Echec' ? 'Échec' : h['status']}',
                         style: small),

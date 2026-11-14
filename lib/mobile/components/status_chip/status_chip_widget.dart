@@ -66,8 +66,8 @@ class _StatusChipWidgetState extends State<StatusChipWidget> {
             'HOT',
           ),
           style: FlutterFlowTheme.of(context).labelSmall.override(
-                font: GoogleFonts.inter(
-                  fontWeight: FontWeight.bold,
+                font: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
                   fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
                 ),
                 color: valueOrDefault<Color>(
@@ -75,7 +75,7 @@ class _StatusChipWidgetState extends State<StatusChipWidget> {
                   Color(0x00000000),
                 ),
                 letterSpacing: 0.0,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
               ),
         ),

@@ -60,7 +60,7 @@ class _ForgotPasswordLinkWidgetState extends State<ForgotPasswordLinkWidget> {
           title: Text(
             'Mot de passe oublié ?',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight: FontWeight.w500,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,

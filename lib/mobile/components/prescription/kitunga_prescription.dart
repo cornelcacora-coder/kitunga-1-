@@ -159,7 +159,7 @@ class _PrescriptionSheetState extends State<_PrescriptionSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final body = GoogleFonts.inter(color: theme.secondaryText, fontSize: 13.5);
+    final body = GoogleFonts.poppins(color: theme.secondaryText, fontSize: 13.5);
     final pending =
         widget.mine.where((p) => p['status'] == 'pending').toList();
     final last = widget.mine.isEmpty ? null : widget.mine.first;
@@ -176,10 +176,10 @@ class _PrescriptionSheetState extends State<_PrescriptionSheet> {
                 const SizedBox(width: 10.0),
                 Expanded(
                   child: Text('Médicament sur ordonnance',
-                      style: GoogleFonts.interTight(
+                      style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 19.0,
-                          fontWeight: FontWeight.w800)),
+                          fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -243,8 +243,8 @@ class _PrescriptionSheetState extends State<_PrescriptionSheet> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Text(_error!,
-                      style: GoogleFonts.inter(
-                          color: theme.error, fontWeight: FontWeight.w600)),
+                      style: GoogleFonts.poppins(
+                          color: theme.error, fontWeight: FontWeight.w500)),
                 ),
               FilledButton.icon(
                 style: FilledButton.styleFrom(
@@ -288,7 +288,7 @@ class _PrescriptionSheetState extends State<_PrescriptionSheet> {
             const SizedBox(width: 10.0),
             Expanded(
                 child: Text(text,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.primaryText, fontSize: 13.5))),
           ],
         ),
@@ -413,7 +413,7 @@ class _SellerPrescriptionsPageState extends State<SellerPrescriptionsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final small = GoogleFonts.inter(color: theme.secondaryText, fontSize: 13.0);
+    final small = GoogleFonts.poppins(color: theme.secondaryText, fontSize: 13.0);
     return Scaffold(
       backgroundColor: theme.secondaryBackground,
       appBar: AppBar(
@@ -422,10 +422,10 @@ class _SellerPrescriptionsPageState extends State<SellerPrescriptionsPage> {
         elevation: 0.0,
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text('Ordonnances',
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 19.0,
-                fontWeight: FontWeight.w800)),
+                fontWeight: FontWeight.w600)),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,
@@ -490,10 +490,10 @@ class _SellerPrescriptionsPageState extends State<SellerPrescriptionsPage> {
                     '${p['clientName'] ?? ''}'.isEmpty
                         ? 'Client'
                         : '${p['clientName']}',
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                         color: theme.primaryText,
                         fontSize: 16.0,
-                        fontWeight: FontWeight.w800)),
+                        fontWeight: FontWeight.w600)),
               ),
               const SizedBox(width: 8.0),
               Flexible(
@@ -506,10 +506,10 @@ class _SellerPrescriptionsPageState extends State<SellerPrescriptionsPage> {
                 child: Text(st.$1,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: st.$2,
                         fontSize: 12.0,
-                        fontWeight: FontWeight.w700)),
+                        fontWeight: FontWeight.w600)),
               ),
               ),
             ],

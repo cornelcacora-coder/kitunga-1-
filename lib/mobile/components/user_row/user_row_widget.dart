@@ -89,7 +89,7 @@ class _UserRowWidgetState extends State<UserRowWidget> {
                   'GT',
                   style: TextStyle(
                     color: FlutterFlowTheme.of(context).primaryText,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     fontSize: 19.2,
                   ),
                 ),
@@ -108,7 +108,7 @@ class _UserRowWidgetState extends State<UserRowWidget> {
                       ),
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).labelLarge.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .labelLarge
                                   .fontWeight,
@@ -148,7 +148,7 @@ class _UserRowWidgetState extends State<UserRowWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .labelSmall
                                   .override(
-                                    font: GoogleFonts.inter(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .labelSmall
                                           .fontWeight,
@@ -183,7 +183,7 @@ class _UserRowWidgetState extends State<UserRowWidget> {
                           style: FlutterFlowTheme.of(context)
                               .bodySmall
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .bodySmall
                                       .fontWeight,

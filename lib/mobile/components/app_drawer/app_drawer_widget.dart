@@ -91,10 +91,10 @@ class AppDrawerWidget extends StatelessWidget {
                               name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.interTight(
+                              style: GoogleFonts.poppins(
                                 color: theme.primaryText,
                                 fontSize: 17.0,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             SizedBox(height: 4.0),
@@ -107,10 +107,10 @@ class AppDrawerWidget extends StatelessWidget {
                               ),
                               child: Text(
                                 _roleLabel(role),
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   color: theme.primary,
                                   fontSize: 12.0,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -321,7 +321,7 @@ class _DrawerItem extends StatelessWidget {
       leading: Icon(icon, color: c),
       title: Text(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           color: c,
           fontSize: 15.0,
           fontWeight: FontWeight.w500,

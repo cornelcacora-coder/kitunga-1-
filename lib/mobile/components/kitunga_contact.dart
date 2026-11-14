@@ -31,7 +31,7 @@ class KitungaContactCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final text = GoogleFonts.inter(color: theme.primaryText, fontSize: 14.5);
+    final text = GoogleFonts.poppins(color: theme.primaryText, fontSize: 14.5);
     Widget action(IconData icon, String label, String url, Color color) =>
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
@@ -45,7 +45,7 @@ class KitungaContactCard extends StatelessWidget {
           onPressed: () => launchURL(url),
           icon: Icon(icon, size: 18.0),
           label: Text(label,
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
         );
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -58,18 +58,18 @@ class KitungaContactCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(kCompanyName,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                   color: theme.primaryText,
                   fontSize: 16.0,
-                  fontWeight: FontWeight.w800)),
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 2.0),
           Text('$kCompanyAddress\n$kCompanyHours',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   color: theme.secondaryText, fontSize: 13.0)),
           for (final n in kCompanyPhones) ...[
             const SizedBox(height: 12.0),
             Text(companyPhoneLabel(n),
-                style: text.copyWith(fontWeight: FontWeight.w700)),
+                style: text.copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6.0),
             Wrap(
               spacing: 8.0,
@@ -123,15 +123,15 @@ Future<void> showKitungaContact(BuildContext context) {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Nous contacter',
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 20.0,
-                    fontWeight: FontWeight.w800)),
+                    fontWeight: FontWeight.w600)),
             const SizedBox(height: 4.0),
             Text(
                 'Une question sur une commande, un paiement ou votre compte ? '
                 'Appelez-nous ou écrivez-nous sur WhatsApp.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText, fontSize: 13.5)),
             const SizedBox(height: 14.0),
             const KitungaContactCard(),

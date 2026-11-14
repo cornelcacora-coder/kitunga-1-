@@ -69,10 +69,10 @@ class KitungaSectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 18.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 if (subtitle != null) ...[
@@ -81,7 +81,7 @@ class KitungaSectionHeader extends StatelessWidget {
                     subtitle!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.secondaryText,
                       fontSize: 13.0,
                     ),
@@ -101,10 +101,10 @@ class KitungaSectionHeader extends StatelessWidget {
                 children: [
                   Text(
                     'Voir plus',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.primary,
                       fontSize: 14.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Icon(Icons.chevron_right_rounded,
@@ -158,10 +158,10 @@ class KitungaCategoryTile extends StatelessWidget {
               name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 12.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -202,15 +202,15 @@ class _SeeMoreScaffold extends StatelessWidget {
           children: [
             Text(
               title,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 18.0,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               subtitle,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 12.0,
               ),
@@ -314,11 +314,11 @@ class _KitungaPagedGridState<T> extends State<KitungaPagedGrid<T>> {
                           ),
                           child: Text(
                             '${p + 1}',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color:
                                   p == page ? Colors.white : theme.primaryText,
                               fontSize: 14.0,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -392,12 +392,12 @@ class _KitungaShopListPageState extends State<KitungaShopListPage> {
                           selected: _category == c,
                           showCheckmark: false,
                           onSelected: (_) => setState(() => _category = c),
-                          labelStyle: GoogleFonts.inter(
+                          labelStyle: GoogleFonts.poppins(
                             color: _category == c
                                 ? Colors.white
                                 : theme.primaryText,
                             fontSize: 13.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                           selectedColor: theme.primary,
                           backgroundColor: theme.primaryBackground,
@@ -500,10 +500,10 @@ class _KitungaProductListPageState extends State<KitungaProductListPage> {
                         filtered.isEmpty
                             ? 'Aucun produit ne correspond à votre recherche.'
                             : '${filtered.length} produit${filtered.length > 1 ? 's' : ''}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: theme.secondaryText,
                             fontSize: 13.0,
-                            fontWeight: FontWeight.w600),
+                            fontWeight: FontWeight.w500),
                       ),
                     ),
                   ],

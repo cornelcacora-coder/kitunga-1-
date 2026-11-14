@@ -213,7 +213,7 @@ class _SignWidgetState extends State<SignWidget> {
   Widget _buildUserSignUp(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fieldStyle = GoogleFonts.inter(
+    final fieldStyle = GoogleFonts.poppins(
       color: theme.primaryText,
       fontSize: 15.0,
       fontWeight: FontWeight.w500,
@@ -266,10 +266,10 @@ class _SignWidgetState extends State<SignWidget> {
                 Text(
                   'Créer un compte',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 28.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -283,7 +283,7 @@ class _SignWidgetState extends State<SignWidget> {
                 Text(
                   'Rejoignez Kitunga et commandez auprès des commerces près de chez vous.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 14.5,
                     height: 1.45,
@@ -421,7 +421,7 @@ class _SignWidgetState extends State<SignWidget> {
                             ),
                             Text('${p.price} F',
                                 style: fieldStyle.copyWith(
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color:
                                         FlutterFlowTheme.of(context).primary)),
                           ],
@@ -501,7 +501,7 @@ class _SignWidgetState extends State<SignWidget> {
                   children: [
                     Text(
                       'Vous avez déjà un compte ?',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.secondaryText,
                         fontSize: 14.0,
                       ),
@@ -511,10 +511,10 @@ class _SignWidgetState extends State<SignWidget> {
                       onTap: () => context.pushNamed(LoginWidget.routeName),
                       child: Text(
                         'Se connecter',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: const Color(0xFFE51A1A),
                           fontSize: 14.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -528,7 +528,7 @@ class _SignWidgetState extends State<SignWidget> {
                   children: [
                     Text(
                       'En continuant, vous acceptez nos ',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.hint,
                         fontSize: 12.0,
                       ),
@@ -538,17 +538,17 @@ class _SignWidgetState extends State<SignWidget> {
                           context.pushNamed(TermsConditionsWidget.routeName),
                       child: Text(
                         'conditions d\'utilisation',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 12.0,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
                     Text(
                       '.',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.hint,
                         fontSize: 12.0,
                       ),
@@ -673,8 +673,8 @@ class _SignWidgetState extends State<SignWidget> {
                                           style: FlutterFlowTheme.of(context)
                                               .headlineLarge
                                               .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight: FontWeight.bold,
+                                                font: GoogleFonts.poppins(
+                                                  fontWeight: FontWeight.w600,
                                                   fontStyle:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -683,7 +683,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                 ),
                                                 fontSize: 20.0,
                                                 letterSpacing: 0.0,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w600,
                                                 fontStyle:
                                                     FlutterFlowTheme.of(context)
                                                         .headlineLarge
@@ -736,7 +736,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -807,7 +807,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -842,7 +842,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -875,7 +875,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -960,7 +960,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1010,7 +1010,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1044,7 +1044,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1071,7 +1071,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1156,7 +1156,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1208,7 +1208,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1242,7 +1242,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1275,7 +1275,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1360,7 +1360,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1423,7 +1423,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -1496,7 +1496,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1530,7 +1530,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1563,7 +1563,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1648,7 +1648,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1746,7 +1746,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1780,7 +1780,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1813,7 +1813,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1917,7 +1917,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1968,7 +1968,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -2003,7 +2003,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -2036,7 +2036,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -2140,7 +2140,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -2394,7 +2394,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           font: GoogleFonts
                                                               .interTight(
                                                             fontWeight:
-                                                                FontWeight.bold,
+                                                                FontWeight.w600,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -2407,7 +2407,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           fontSize: 16.0,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)

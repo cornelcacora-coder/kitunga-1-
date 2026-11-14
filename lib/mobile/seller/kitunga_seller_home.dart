@@ -392,10 +392,10 @@ class _Header extends StatelessWidget {
                                 : shop.displayName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.interTight(
+                            style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 20,
-                                fontWeight: FontWeight.w800)),
+                                fontWeight: FontWeight.w600)),
                         const SizedBox(height: 3),
                         Row(
                           children: [
@@ -417,7 +417,7 @@ class _Header extends StatelessWidget {
                                   ].join('  ·  '),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       color: Colors.white
                                           .withValues(alpha: 0.92),
                                       fontSize: 12.5)),
@@ -501,7 +501,7 @@ class _ShopStatePill extends StatelessWidget {
                     backgroundColor: e.value.$2.withValues(alpha: 0.12),
                     child: Icon(e.value.$3, color: e.value.$2)),
                 title: Text(e.value.$1,
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 subtitle: Text(e.value.$4),
                 trailing: current == e.key
                     ? const Icon(Icons.check_circle_rounded, color: _green)
@@ -546,9 +546,9 @@ class _ShopStatePill extends StatelessWidget {
               Icon(Icons.circle, size: 10, color: s.$2),
               const SizedBox(width: 6),
               Text(s.$1,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: const Color(0xFF1E242B))),
               const Icon(Icons.expand_more_rounded,
                   size: 16, color: Color(0xFF1E242B)),
@@ -614,10 +614,10 @@ class _Card extends StatelessWidget {
                       child: Text(title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: Colors.white.withValues(alpha: 0.95),
                               fontSize: 13,
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w500)),
                     ),
                   ]),
                   const SizedBox(height: 14),
@@ -625,19 +625,19 @@ class _Card extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
                     child: Text(value,
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 28,
-                            fontWeight: FontWeight.w900)),
+                            fontWeight: FontWeight.w700)),
                   ),
                   const Spacer(),
                   const SizedBox(height: 10),
                   Row(children: [
                     Text(link,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 12.5,
-                            fontWeight: FontWeight.w700)),
+                            fontWeight: FontWeight.w600)),
                     const Icon(Icons.chevron_right_rounded,
                         color: Colors.white, size: 18),
                   ]),
@@ -711,15 +711,15 @@ class _OrderCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text('N° $ref',
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: theme.primaryText)),
               ),
               Text(_fcfa(_items(o)),
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: _green)),
             ],
           ),
@@ -729,7 +729,7 @@ class _OrderCard extends StatelessWidget {
                 sub,
                 if (o.deliveryZone.isNotEmpty) 'vers ${o.deliveryZone}',
               ].join(' · '),
-              style: GoogleFonts.inter(fontSize: 13, color: subColor)),
+              style: GoogleFonts.poppins(fontSize: 13, color: subColor)),
           const SizedBox(height: 12),
           if (kind == 'pending')
             Row(
@@ -763,7 +763,7 @@ class _OrderCard extends StatelessWidget {
                                 as num?)
                             ?.toInt()),
                     child: Text('Accepter',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w800)),
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -879,9 +879,9 @@ class _Shortcuts extends StatelessWidget {
                           textAlign: TextAlign.center,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                               color: theme.primaryText)),
                     ),
                   ],
@@ -907,9 +907,9 @@ class _Title extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 4),
       child: Row(children: [
         Text(title,
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: theme.primaryText)),
         if (count != null) ...[
           const SizedBox(width: 8),
@@ -918,10 +918,10 @@ class _Title extends StatelessWidget {
             decoration: BoxDecoration(
                 color: _red, borderRadius: BorderRadius.circular(20)),
             child: Text('$count',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 12,
-                    fontWeight: FontWeight.w800)),
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ]),
@@ -941,8 +941,8 @@ class _Alert extends StatelessWidget {
   Widget build(BuildContext context) => ActionChip(
         avatar: Icon(icon, size: 18, color: color),
         label: Text(label),
-        labelStyle: GoogleFonts.inter(
-            fontWeight: FontWeight.w700, color: color, fontSize: 13),
+        labelStyle: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600, color: color, fontSize: 13),
         backgroundColor: color.withValues(alpha: 0.08),
         side: BorderSide(color: color.withValues(alpha: 0.3)),
         onPressed: onTap,
@@ -979,7 +979,7 @@ class _Banner extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: Text(text,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   fontSize: 13, color: theme.primaryText)),
         ),
         if (action != null)
@@ -1019,13 +1019,13 @@ class _Empty extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title,
-                  style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w800,
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
                       fontSize: 15,
                       color: theme.primaryText)),
               const SizedBox(height: 2),
               Text(text,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 13, color: theme.secondaryText)),
             ],
           ),
@@ -1057,9 +1057,9 @@ class _Help extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(label,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: theme.primaryText)),
               ]),
             ),
@@ -1080,8 +1080,8 @@ class _Help extends StatelessWidget {
             const Icon(Icons.support_agent_rounded, color: _red, size: 26),
             const SizedBox(width: 10),
             Text('Besoin d\'aide ?',
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w800, color: theme.primaryText)),
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600, color: theme.primaryText)),
           ]),
           const SizedBox(height: 8),
           Row(children: [
@@ -1146,10 +1146,10 @@ class SellerShopSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text('Mon commerce',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 13,
-                    fontWeight: FontWeight.w600)),
+                    fontWeight: FontWeight.w500)),
           ),
           Container(
             decoration: BoxDecoration(
@@ -1172,8 +1172,8 @@ class SellerShopSection extends StatelessWidget {
                     child: Icon(items[i].$1, color: _red, size: 21),
                   ),
                   title: Text(items[i].$2,
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
                           color: theme.primaryText)),
                   trailing: Icon(Icons.chevron_right_rounded,
                       color: theme.secondaryText),

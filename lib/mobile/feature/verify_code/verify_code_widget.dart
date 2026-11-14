@@ -77,7 +77,7 @@ class _VerifyCodeWidgetState extends State<VerifyCodeWidget> {
           title: Text(
             'Vérifier le code',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight: FontWeight.w500,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
@@ -122,7 +122,7 @@ class _VerifyCodeWidgetState extends State<VerifyCodeWidget> {
                           style: FlutterFlowTheme.of(context)
                               .titleSmall
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FontWeight.normal,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleSmall
@@ -146,7 +146,7 @@ class _VerifyCodeWidgetState extends State<VerifyCodeWidget> {
                           'johnabram@gmail.com',
                           style:
                               FlutterFlowTheme.of(context).titleSmall.override(
-                                    font: GoogleFonts.interTight(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FontWeight.normal,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
@@ -176,7 +176,7 @@ class _VerifyCodeWidgetState extends State<VerifyCodeWidget> {
                       length: 4,
                       textStyle:
                           FlutterFlowTheme.of(context).bodyLarge.override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .bodyLarge
                                       .fontWeight,
@@ -236,7 +236,7 @@ class _VerifyCodeWidgetState extends State<VerifyCodeWidget> {
                       Text(
                         'Vous n\'avez pas reçu le code?',
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              font: GoogleFonts.inter(
+                              font: GoogleFonts.poppins(
                                 fontWeight: FontWeight.normal,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -264,9 +264,9 @@ class _VerifyCodeWidgetState extends State<VerifyCodeWidget> {
                           iconPadding: EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: Colors.transparent,
-                          textStyle: GoogleFonts.interTight(
+                          textStyle: GoogleFonts.poppins(
                             color: FlutterFlowTheme.of(context).primary,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             fontSize: 14.0,
                           ),
                           elevation: 0.0,
@@ -298,8 +298,8 @@ class _VerifyCodeWidgetState extends State<VerifyCodeWidget> {
                       color: FlutterFlowTheme.of(context).primary,
                       textStyle:
                           FlutterFlowTheme.of(context).titleMedium.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.bold,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleMedium
                                       .fontStyle,
@@ -308,7 +308,7 @@ class _VerifyCodeWidgetState extends State<VerifyCodeWidget> {
                                     .secondaryBackground,
                                 fontSize: 16.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .fontStyle,

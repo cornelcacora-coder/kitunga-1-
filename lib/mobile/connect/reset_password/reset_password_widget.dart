@@ -81,7 +81,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
           title: Text(
             'Réinitialisation',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight: FontWeight.w500,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
@@ -132,7 +132,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                       textAlign: TextAlign.start,
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).titleSmall.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FontWeight.normal,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleSmall
@@ -163,7 +163,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                       isDense: false,
                       labelStyle:
                           FlutterFlowTheme.of(context).labelMedium.override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelMedium
                                       .fontWeight,
@@ -184,7 +184,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                       hintText: 'Nouveau mot de passe',
                       hintStyle:
                           FlutterFlowTheme.of(context).labelMedium.override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelMedium
                                       .fontWeight,
@@ -204,7 +204,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                               ),
                       errorStyle:
                           FlutterFlowTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FontWeight.normal,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -265,7 +265,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                       ),
                     ),
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FontWeight.normal,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
@@ -300,7 +300,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                       isDense: false,
                       labelStyle:
                           FlutterFlowTheme.of(context).labelMedium.override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelMedium
                                       .fontWeight,
@@ -321,7 +321,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                       hintText: 'Confirmez le mot de passe',
                       hintStyle:
                           FlutterFlowTheme.of(context).labelMedium.override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelMedium
                                       .fontWeight,
@@ -341,7 +341,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                               ),
                       errorStyle:
                           FlutterFlowTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FontWeight.normal,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -402,7 +402,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                       ),
                     ),
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FontWeight.normal,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
@@ -485,8 +485,8 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                         color: FlutterFlowTheme.of(context).primary,
                         textStyle:
                             FlutterFlowTheme.of(context).titleMedium.override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FontWeight.bold,
+                                  font: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
@@ -495,7 +495,7 @@ class _ResetPasswordWidgetState extends State<ResetPasswordWidget> {
                                       .secondaryBackground,
                                   fontSize: 16.0,
                                   letterSpacing: 0.0,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleMedium
                                       .fontStyle,

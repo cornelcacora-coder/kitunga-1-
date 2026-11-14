@@ -125,15 +125,15 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                           children: [
                             Text(
                               p.name,
-                              style: GoogleFonts.interTight(
+                              style: GoogleFonts.poppins(
                                 color: theme.primaryText,
                                 fontSize: 18.0,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             Text(
                               'À partir de ${kitungaPrice(_basePrice)}',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   color: theme.secondaryText, fontSize: 13.0),
                             ),
                           ],
@@ -148,10 +148,10 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                       Expanded(
                         child: Text(
                           'Quantité',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 16.0,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -162,10 +162,10 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                         child: Text(
                           '$_quantity',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 17.0,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -192,7 +192,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                         padding: EdgeInsets.only(bottom: 8.0),
                         child: Text(
                           'À choisir : ${missing.join(', ')}',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: theme.primary, fontSize: 13.0),
                         ),
                       ),
@@ -218,9 +218,9 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                         ),
                         child: Text(
                           'Ajouter au panier · ${kitungaPrice(unit * _quantity)}',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             fontSize: 16.0,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -248,10 +248,10 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
               Expanded(
                 child: Text(
                   group.name,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 16.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -265,11 +265,11 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                 ),
                 child: Text(
                   group.rule,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color:
                         group.required ? theme.primary : theme.secondaryText,
                     fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -310,7 +310,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
             Expanded(
               child: Text(
                 choice.label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   color: disabled ? theme.secondaryText : theme.primaryText,
                   fontSize: 15.0,
                   decoration: disabled ? TextDecoration.lineThrough : null,
@@ -327,10 +327,10 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                           ? '+${kitungaPrice(choice.price)}'
                           : 'Inclus',
                     ].join(' · '),
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: disabled ? theme.primary : theme.secondaryText,
                 fontSize: 13.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

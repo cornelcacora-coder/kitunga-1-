@@ -111,10 +111,10 @@ class _Title extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
         child: Text(text.toUpperCase(),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 fontSize: 12,
                 letterSpacing: 0.6,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: FlutterFlowTheme.of(context).secondaryText)),
       );
 }
@@ -185,20 +185,20 @@ class _Item extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: color)),
                 Text(subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 13, color: theme.secondaryText)),
                 if (note != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(note!,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontStyle: FontStyle.italic,
                             color: theme.secondaryText)),
