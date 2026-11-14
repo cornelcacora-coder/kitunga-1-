@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/mobile/components/cart_add/kitunga_add_to_cart.dart';
 import '/mobile/components/kitunga_image/kitunga_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -190,19 +191,28 @@ class KitungaProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Container(
-                      width: 34.0,
-                      height: 34.0,
-                      decoration: BoxDecoration(
-                        color: blocked ? theme.divider : theme.primary,
-                        borderRadius: BorderRadius.circular(12.0),
+                    // Bouton + : ajoute directement au panier.
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: blocked ? null : () => kitungaQuickAdd(context, p),
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 6.0),
+                        child: Container(
+                          width: 34.0,
+                          height: 34.0,
+                          decoration: BoxDecoration(
+                            color: blocked ? theme.divider : theme.primary,
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Icon(
+                              prescription
+                                  ? Icons.lock_outline_rounded
+                                  : Icons.add_rounded,
+                              color:
+                                  blocked ? theme.secondaryText : Colors.white,
+                              size: 22.0),
+                        ),
                       ),
-                      child: Icon(
-                          prescription
-                              ? Icons.lock_outline_rounded
-                              : Icons.add_rounded,
-                          color: blocked ? theme.secondaryText : Colors.white,
-                          size: 22.0),
                     ),
                   ],
                 ),
@@ -335,7 +345,11 @@ class KitungaProductRow extends StatelessWidget {
                 Positioned(
                   right: -6.0,
                   bottom: -6.0,
-                  child: Container(
+                  // Bouton + : ajoute directement au panier.
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: blocked ? null : () => kitungaQuickAdd(context, p),
+                    child: Container(
                     width: 32.0,
                     height: 32.0,
                     decoration: BoxDecoration(
@@ -351,6 +365,7 @@ class KitungaProductRow extends StatelessWidget {
                       size: 18.0,
                       color: blocked ? theme.secondaryText : Colors.white,
                     ),
+                  ),
                   ),
                 ),
               ],

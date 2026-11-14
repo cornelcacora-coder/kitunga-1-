@@ -1,27 +1,22 @@
-import '/mobile/main_app/subscription/my_subscription_page.dart';
-import '/mobile/components/prescription/kitunga_prescription.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/backend/subscription.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/mobile/components/empty_card/empty_card_widget.dart';
-import '/mobile/components/kitunga_image/kitunga_image.dart';
-import 'dart:ui';
-import '/flutter_flow/random_data_util.dart' as random_data;
 import '/index.dart';
-import '/mobile/components/product_options/customize_sheet.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '/mobile/components/cart_add/kitunga_add_to_cart.dart';
+import '/mobile/components/kitunga_image/kitunga_image.dart';
+import '/mobile/components/product_card/product_card_widget.dart';
+import '/mobile/components/shop_card_kitunga/kitunga_shop_card.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'product_view_model.dart';
-import '/mobile/components/form_styles/form_styles.dart';
 export 'product_view_model.dart';
 
-/// Page d'inscription utilisateur
+const _red = Color(0xFFE51A1A);
+
+/// Fiche d'un produit : grande photo, commerce, prix, disponibilité,
+/// description, et barre d'ajout au panier (quantité + bouton) toujours
+/// visible en bas.
 class ProductViewWidget extends StatefulWidget {
   const ProductViewWidget({
     super.key,
@@ -42,1089 +37,446 @@ class ProductViewWidget extends StatefulWidget {
 }
 
 class _ProductViewWidgetState extends State<ProductViewWidget> {
-  late ProductViewModel _model;
+  int _quantity = 1;
+  bool _busy = false;
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  void initState() {
-    super.initState();
-    _model = createModel(context, () => ProductViewModel());
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _model.dispose();
-
-    super.dispose();
+  Future<void> _add(ProductRecord p) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final r = await kitungaAddToCart(context, p,
+          quantity: _quantity, sellerRef: widget.sellerRef);
+      if (r == null || !mounted) return;
+      if (r.updated) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Quantité mise à jour dans votre panier.')));
+      }
+      // Comme avant : le panier s'ouvre après l'ajout.
+      context.pushNamed(
+        CartLastWidget.routeName,
+        queryParameters: {
+          'sellerRef': serializeParam(
+              p.sellerRef ?? widget.sellerRef, ParamType.DocumentReference),
+          if (!r.updated)
+            'cartRef': serializeParam(r.cart, ParamType.Document),
+          if (r.orderItem != null)
+            'orderitem':
+                serializeParam(r.orderItem, ParamType.DocumentReference),
+        }.withoutNulls,
+        extra: <String, dynamic>{if (!r.updated) 'cartRef': r.cart},
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    context.watch<FFAppState>();
+    final theme = FlutterFlowTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
-            borderColor: Colors.transparent,
-            borderRadius: 30.0,
-            borderWidth: 1.0,
-            buttonSize: 60.0,
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              size: 30.0,
-            ),
-            onPressed: () async {
-              context.pop();
-            },
-          ),
-          title: Text(
-            'Produit',
-            style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
-                    fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                    fontStyle:
-                        FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                  ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
-                  fontSize: 22.0,
-                  letterSpacing: 0.0,
-                  fontWeight:
-                      FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                  fontStyle:
-                      FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+    final bg = isDark ? const Color(0xFF101418) : Colors.white;
+    return Scaffold(
+      backgroundColor: bg,
+      body: StreamBuilder<ProductRecord>(
+        stream: ProductRecord.getDocument(widget.productRef!),
+        builder: (context, snap) {
+          if (!snap.hasData) {
+            return const Center(
+                child: CircularProgressIndicator(color: _red));
+          }
+          final p = snap.data!;
+          final top = MediaQuery.paddingOf(context).top;
+          return Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(child: _Hero(product: p, top: top)),
+                    SliverToBoxAdapter(child: _Details(product: p)),
+                  ],
                 ),
+              ),
+              AuthUserStreamWidget(
+                builder: (context) =>
+                    valueOrDefault(currentUserDocument?.role, '') == 'Seller'
+                        ? const SizedBox.shrink()
+                        : _AddBar(
+                            product: p,
+                            quantity: _quantity,
+                            busy: _busy,
+                            onQuantity: (q) => setState(() => _quantity = q),
+                            onAdd: () => _add(p),
+                          ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Grande photo, bouton retour par-dessus.
+class _Hero extends StatelessWidget {
+  const _Hero({required this.product, required this.top});
+
+  final ProductRecord product;
+  final double top;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final height = 300.0 + top;
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius:
+              const BorderRadius.vertical(bottom: Radius.circular(28)),
+          child: Container(
+            width: double.infinity,
+            height: height,
+            color: theme.primaryBackground,
+            child: KitungaImage(
+              product.prodImg,
+              width: double.infinity,
+              height: height,
+              fallbackIcon: Icons.image_outlined,
+              placeholder: kitungaNoPhoto(theme, product, height),
+            ),
           ),
-          actions: [],
-          centerTitle: true,
-          elevation: 0.0,
         ),
-        body: KitungaScaffoldBackground(
-          child: SafeArea(
-          top: true,
-          child: Align(
-            alignment: AlignmentDirectional(0.0, 0.0),
-            child: Padding(
-              padding: EdgeInsets.all(valueOrDefault<double>(
-                MediaQuery.sizeOf(context).width > 760.0 ? 0.0 : 0.0,
-                0.0,
-              )),
-              child: StreamBuilder<ProductRecord>(
-                stream: ProductRecord.getDocument(widget!.productRef!),
-                builder: (context, snapshot) {
-                  // Customize what your widget looks like when it's loading.
-                  if (!snapshot.hasData) {
-                    return Center(
-                      child: SizedBox(
-                        width: 50.0,
-                        height: 50.0,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            FlutterFlowTheme.of(context).primary,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
+        Positioned(
+          left: 14,
+          top: top + 10,
+          child: _RoundButton(
+            icon: Icons.arrow_back_rounded,
+            tooltip: 'Retour',
+            onTap: () => context.safePop(),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-                  final middleBodyProductRecord = snapshot.data!;
+class _RoundButton extends StatelessWidget {
+  const _RoundButton(
+      {required this.icon, required this.onTap, required this.tooltip});
 
-                  return Container(
-                    width: MediaQuery.sizeOf(context).width < kBreakpointSmall
-                        ? 400.0
-                        : 500.0,
-                    height: double.infinity,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Expanded(
-                          child: ListView(
-                            padding: EdgeInsets.zero,
-                            scrollDirection: Axis.vertical,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.all(10.0),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  child: KitungaImage(
-                                    middleBodyProductRecord.prodImg,
-                                    width: double.infinity,
-                                    height: 302.0,
-                                    fallbackIcon: Icons.image_outlined,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(14.0),
-                                child: Container(
-                                  width: 100.0,
-                                  decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Container(
-                                            width: 40.0,
-                                            height: 40.0,
-                                            decoration: BoxDecoration(
-                                              color: Color(0x22FFE500),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            alignment:
-                                                AlignmentDirectional(0.0, 0.0),
-                                            child: Icon(
-                                              Icons.sell_outlined,
-                                              color: Color(0xFFB8A600),
-                                              size: 24.0,
-                                            ),
-                                          ),
-                                          Text(
-                                            valueOrDefault<String>(
-                                              middleBodyProductRecord.name,
-                                              'Non disponible',
-                                            ),
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            style: FlutterFlowTheme.of(context)
-                                                .titleLarge
-                                                .override(
-                                                  font: GoogleFonts.interTight(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontStyle,
-                                                  ),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
-                                                  fontSize: 18.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                          ),
-                                        ].divide(SizedBox(width: 14.0)),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            10.0, 10.0, 0.0, 0.0),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      0.0, 0.0, 14.0, 0.0),
-                                              child: Icon(
-                                                Icons.diamond_outlined,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                size: 28.0,
-                                              ),
-                                            ),
-                                            Text(
-                                              valueOrDefault<String>(
-                                                middleBodyProductRecord
-                                                    .salePrice
-                                                    .toString(),
-                                                '0',
-                                              ),
-                                              maxLines: 1,
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.montserrat(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    fontSize: 24.0,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                            ),
-                                            Text(
-                                              'F',
-                                              maxLines: 1,
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.montserrat(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    fontSize: 24.0,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                            ),
-                                            Flexible(
-                                              child: Align(
-                                                alignment: AlignmentDirectional(
-                                                    1.0, 0.0),
-                                                child: Container(
-                                                  width: 40.0,
-                                                  height: 40.0,
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0x22FF00E9),
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  alignment:
-                                                      AlignmentDirectional(
-                                                          1.0, 0.0),
-                                                  child: Align(
-                                                    alignment:
-                                                        AlignmentDirectional(
-                                                            0.0, 0.0),
-                                                    child: Icon(
-                                                      Icons
-                                                          .delivery_dining_rounded,
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                      size: 24.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Align(
-                                              alignment: AlignmentDirectional(
-                                                  1.0, 0.0),
-                                              child: Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        10.0, 0.0, 0.0, 0.0),
-                                                child: Container(
-                                                  width: 40.0,
-                                                  height: 40.0,
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0x2200FFFD),
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  alignment:
-                                                      AlignmentDirectional(
-                                                          1.0, 0.0),
-                                                  child: Align(
-                                                    alignment:
-                                                        AlignmentDirectional(
-                                                            0.0, 0.0),
-                                                    child: Icon(
-                                                      Icons.fastfood_sharp,
-                                                      color: Color(0xFF00B5B8),
-                                                      size: 24.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ].divide(SizedBox(height: 10.0)),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    20.0, 10.0, 20.0, 0.0),
-                                child: Container(
-                                  width: 100.0,
-                                  decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 14.0),
-                                    child: Text(
-                                      valueOrDefault<String>(
-                                        middleBodyProductRecord.description,
-                                        'Le produit sélectionné n\'est pas disponible, veuillez sélectionné un autre  produit',
-                                      ),
-                                      textAlign: TextAlign.justify,
-                                      maxLines: 4,
-                                      style: FlutterFlowTheme.of(context)
-                                          .titleLarge
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleLarge
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                            fontSize: 16.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleLarge
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              if (responsiveVisibility(
-                                context: context,
-                                phone: false,
-                                tablet: false,
-                                tabletLandscape: false,
-                                desktop: false,
-                              ))
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      20.0, 24.0, 0.0, 16.0),
-                                  child: Text(
-                                    'Colour',
-                                    maxLines: 1,
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                          fontSize: 20.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ),
-                              if (responsiveVisibility(
-                                context: context,
-                                tablet: false,
-                                tabletLandscape: false,
-                                desktop: false,
-                              ))
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      20.0, 0.0, 0.0, 0.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width: 48.0,
-                                        height: 48.0,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          borderRadius:
-                                              BorderRadius.circular(16.0),
-                                        ),
-                                        child: Align(
-                                          alignment:
-                                              AlignmentDirectional(0.0, 0.0),
-                                          child: Icon(
-                                            Icons.loyalty_outlined,
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondary,
-                                            size: 24.0,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              Container(
-                                width: 100.0,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(20.0),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Quantité disponible',
-                                      style: FlutterFlowTheme.of(context)
-                                          .titleMedium
-                                          .override(
-                                            font: GoogleFonts.interTight(
-                                              fontWeight: FontWeight.w800,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w800,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Align(
-                                          alignment:
-                                              AlignmentDirectional(1.0, 0.0),
-                                          child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 10.0, 0.0),
-                                            child: Container(
-                                              width: 40.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryBackground,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              alignment: AlignmentDirectional(
-                                                  1.0, 0.0),
-                                              child: Align(
-                                                alignment: AlignmentDirectional(
-                                                    0.0, 0.0),
-                                                child: Icon(
-                                                  Icons
-                                                      .production_quantity_limits_rounded,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                  size: 24.0,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          valueOrDefault<String>(
-                                            middleBodyProductRecord.quantity
-                                                .toString(),
-                                            '0',
-                                          ),
-                                          maxLines: 1,
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.montserrat(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                fontSize: 24.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.bold,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                        Flexible(
-                                          child: Align(
-                                            alignment:
-                                                AlignmentDirectional(1.0, 0.0),
-                                            child: Container(
-                                              width: 48.0,
-                                              height: 48.0,
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFF806681),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                                child: Image.asset(
-                                                  'assets/images/Vector_(11).png',
-                                                  width: 16.0,
-                                                  height: 12.0,
-                                                  fit: BoxFit.none,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      'Préparation du produit',
-                                      style: FlutterFlowTheme.of(context)
-                                          .titleMedium
-                                          .override(
-                                            font: GoogleFonts.interTight(
-                                              fontWeight: FontWeight.w800,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w800,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryBackground,
-                                        borderRadius:
-                                            BorderRadius.circular(12.0),
-                                        border: Border.all(
-                                          color: FlutterFlowTheme.of(context)
-                                              .divider,
-                                          width: 1.0,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Container(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            16.0),
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsets.all(8.0),
-                                                    child: Icon(
-                                                      Icons.speed_rounded,
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .success,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  flex: 1,
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        'Expédition express',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                      Text(
-                                                        'Instantannée',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodySmall
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodySmall
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodySmall
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryText,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodySmall
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodySmall
-                                                                      .fontStyle,
-                                                                ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Icon(
-                                                    Icons.check_circle,
-                                                    color:
-                                                        valueOrDefault<Color>(
-                                                      middleBodyProductRecord
-                                                              .instantDisponibilty
-                                                          ? FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary
-                                                          : FlutterFlowTheme.of(
-                                                                  context)
-                                                              .hint,
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .hint,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ].divide(SizedBox(width: 16.0)),
-                                            ),
-                                          ].divide(SizedBox(height: 8.0)),
-                                        ),
-                                      ),
-                                    ),
-                                  ].divide(SizedBox(height: 16.0)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              20.0, 10.0, 20.0, 10.0),
-                          child: Container(
-                            width: double.infinity,
-                            height: 60.0,
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                            ),
-                            child: Visibility(
-                              visible: valueOrDefault(
-                                      currentUserDocument?.role, '') !=
-                                  'Seller',
-                              child: AuthUserStreamWidget(
-                                builder: (context) => FFButtonWidget(
-                                  onPressed: () async {
-                                    // Médicament sur ordonnance : il faut une ordonnance validée
-                                    // par la pharmacie (sinon, envoi de la photo).
-                                    if (middleBodyProductRecord.requiresPrescription) {
-                                      final pharmacyRef = middleBodyProductRecord.sellerRef;
-                                      if (pharmacyRef == null) return;
-                                      final pharmacy =
-                                          await UserRecord.getDocumentOnce(pharmacyRef);
-                                      if (!context.mounted) return;
-                                      final ok = await kitungaPrescriptionGate(context,
-                                          sellerUid: pharmacyRef.id,
-                                          sellerName: pharmacy.displayName.isEmpty
-                                              ? 'la pharmacie'
-                                              : pharmacy.displayName);
-                                      if (!ok || !context.mounted) return;
-                                    }
-                                    // Client abonné (ou commerçant, livreur…) : il peut commander.
-                                    if (kitungaCanOrder()) {
-                                      // Produit épuisé : pas d'ajout au panier.
-                                      if (middleBodyProductRecord.quantity <= 0) {
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                            content: Text('Ce produit est actuellement en rupture de stock.')));
-                                        return;
-                                      }
-                                      // Options, suppléments, variantes : choix du client et prix final.
-                                      var unitPrice = middleBodyProductRecord.salePrice > 0
-                                          ? middleBodyProductRecord.salePrice
-                                          : middleBodyProductRecord.price.round();
-                                      var chosenQuantity = 1;
-                                      var chosenOptions = '';
-                                      if (middleBodyProductRecord.options.isNotEmpty) {
-                                        final custom = await showKitungaCustomizeSheet(
-                                            context, middleBodyProductRecord);
-                                        if (custom == null) return;
-                                        unitPrice = custom.unitPrice;
-                                        chosenQuantity = custom.quantity;
-                                        chosenOptions = custom.summary;
-                                      }
-                                      // ── Vérification doublon panier ────────────────────────────────
-                                      // Si le même produit (même options) est déjà dans un panier
-                                      // actif et non commandé, on incrémente la quantité.
-                                      final existingCarts = await queryCartRecordOnce(
-                                        queryBuilder: (q) => q
-                                            .where('user_ref', isEqualTo: currentUserReference)
-                                            .where('product_ref', isEqualTo: widget.productRef)
-                                            .where('is_ordered', isEqualTo: false)
-                                            .where('is_active', isEqualTo: true),
-                                      );
-                                      final duplicate = existingCarts.where((c) =>
-                                          c.options == chosenOptions).firstOrNull;
-                                      if (duplicate != null) {
-                                        // Incrémenter la quantité existante.
-                                        await duplicate.reference.update({
-                                          'quantity': duplicate.quantity + chosenQuantity,
-                                          // Prix unitaire : le sous-total du panier
-                                          // le multiplie déjà par la quantité.
-                                          'price': unitPrice.toDouble(),
-                                        });
-                                        if (!mounted) return;
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                          content: const Text(
-                                              'Quantité mise à jour dans votre panier.'),
-                                        ));
-                                        context.pushNamed(
-                                          CartLastWidget.routeName,
-                                          queryParameters: {
-                                            'sellerRef': serializeParam(
-                                              middleBodyProductRecord.sellerRef,
-                                              ParamType.DocumentReference,
-                                            ),
-                                          }.withoutNulls,
-                                        );
-                                        return;
-                                      }
-                                      // ── Nouveau article dans le panier ─────────────────────────────
-                                      var cartRecordReference =
-                                          CartRecord.collection.doc();
-                                      await cartRecordReference
-                                          .set(createCartRecordData(
+  final IconData icon;
+  final VoidCallback onTap;
+  final String tooltip;
 
-                                        productRef: widget!.productRef,
-                                        userRef: currentUserReference,
-                                        quantity: chosenQuantity,
-                                        createdAt: getCurrentTimestamp,
-                                        price: unitPrice.toDouble(),
-                                        options: chosenOptions,
-                                        productName:
-                                            middleBodyProductRecord.name,
-                                        isActive: true,
-                                        isOrdered: false,
-                                        clearCartValue: 'Not Empty',
-                                        sellerRef: widget!.sellerRef,
-                                      ));
-                                      _model.nouveauPanierRef =
-                                          CartRecord.getDocumentFromData(
-                                              createCartRecordData(
-                                                productRef: widget!.productRef,
-                                                userRef: currentUserReference,
-                                                quantity: chosenQuantity,
-                                                createdAt: getCurrentTimestamp,
-                                                price: unitPrice.toDouble(),
-                                                options: chosenOptions,
-                                                productName:
-                                                    middleBodyProductRecord
-                                                        .name,
-                                                isActive: true,
-                                                isOrdered: false,
-                                                clearCartValue: 'Not Empty',
-                                                sellerRef: widget!.sellerRef,
-                                              ),
-                                              cartRecordReference);
-                                      if (FFAppState().isSameOrder != true) {
-                                        // Identifiant de commande unique et robuste :
-                                        // timestamp ms + suffixe alphanumérique aléatoire.
-                                        final ts = DateTime.now().millisecondsSinceEpoch;
-                                        final suffix = random_data.randomString(6, 6, true, true, false);
-                                        FFAppState().orderReferenceUnique =
-                                            'ORD-$ts-$suffix';
-                                        safeSetState(() {});
-                                      }
+  @override
+  Widget build(BuildContext context) => Tooltip(
+        message: tooltip,
+        child: Material(
+          color: Colors.white,
+          shape: const CircleBorder(),
+          elevation: 3,
+          shadowColor: const Color(0x33000000),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: SizedBox(
+              width: 42,
+              height: 42,
+              child: Icon(icon, color: const Color(0xFF1A1A1A), size: 22),
+            ),
+          ),
+        ),
+      );
+}
 
-                                      var orderItemsRecordReference =
-                                          OrderItemsRecord.collection.doc();
-                                      await orderItemsRecordReference
-                                          .set(createOrderItemsRecordData(
-                                        itemName: middleBodyProductRecord.name,
-                                        priceAtPurchase: unitPrice.toDouble(),
-                                        quantity: chosenQuantity,
-                                        image: middleBodyProductRecord.prodImg,
-                                        options: chosenOptions,
-                                        cartRef:
-                                            _model.nouveauPanierRef?.reference,
-                                        userRef: currentUserReference,
-                                        productRef:
-                                            middleBodyProductRecord.reference,
-                                        orderRef:
-                                            FFAppState().orderReferenceUnique,
-                                      ));
-                                      _model.nouveauOrderitems =
-                                          OrderItemsRecord.getDocumentFromData(
-                                              createOrderItemsRecordData(
-                                        itemName: middleBodyProductRecord.name,
-                                        priceAtPurchase: unitPrice.toDouble(),
-                                        quantity: chosenQuantity,
-                                        image: middleBodyProductRecord.prodImg,
-                                        options: chosenOptions,
-                                        cartRef: _model.nouveauPanierRef
-                                                    ?.reference,
-                                                userRef: currentUserReference,
-                                                productRef:
-                                                    middleBodyProductRecord
-                                                        .reference,
-                                                orderRef: FFAppState()
-                                                    .orderReferenceUnique,
-                                              ),
-                                              orderItemsRecordReference);
-                                      FFAppState().valueToClear = 'Not Empty';
-                                      FFAppState().addToCartitems(
-                                          _model.nouveauPanierRef!.reference);
-                                      safeSetState(() {});
+/// Commerce, nom, prix, disponibilité, description.
+class _Details extends StatelessWidget {
+  const _Details({required this.product});
 
-                                      context.pushNamed(
-                                        CartLastWidget.routeName,
-                                        queryParameters: {
-                                          'sellerRef': serializeParam(
-                                            middleBodyProductRecord.sellerRef,
-                                            ParamType.DocumentReference,
-                                          ),
-                                          'cartRef': serializeParam(
-                                            _model.nouveauPanierRef,
-                                            ParamType.Document,
-                                          ),
-                                          'orderitem': serializeParam(
-                                            _model.nouveauOrderitems?.reference,
-                                            ParamType.DocumentReference,
-                                          ),
-                                        }.withoutNulls,
-                                        extra: <String, dynamic>{
-                                          'cartRef': _model.nouveauPanierRef,
-                                        },
-                                      );
-                                    } else if (currentUserReference != null &&
-                                        valueOrDefault(
-                                                currentUserDocument?.role, '') !=
-                                            'Guest') {
-                                      // Client connecté sans abonnement actif.
-                                      await showDialog(
-                                        context: context,
-                                        builder: (c) => AlertDialog(
-                                          title: Text('Abonnement requis'),
-                                          content: Text(kitungaSubscriptionRequired),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(c),
-                                              child: Text('Compris'),
-                                            ),
-                                            FilledButton(
-                                              onPressed: () {
-                                                Navigator.pop(c);
-                                                openMySubscription(context);
-                                              },
-                                              child: Text('S\'abonner'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    } else {
-                                      await showModalBottomSheet(
-                                        isScrollControlled: true,
-                                        backgroundColor: Colors.transparent,
-                                        enableDrag: false,
-                                        context: context,
-                                        builder: (context) {
-                                          return GestureDetector(
-                                            onTap: () {
-                                              FocusScope.of(context).unfocus();
-                                              FocusManager.instance.primaryFocus
-                                                  ?.unfocus();
-                                            },
-                                            child: Padding(
-                                              padding: MediaQuery.viewInsetsOf(
-                                                  context),
-                                              child: EmptyCardWidget(
-                                                photo:
-                                                    'assets/images/app/illustration_ou1qzr.png',
-                                                title:
-                                                    'Créez votre compte',
-                                                description:
-                                                    'Créez votre compte Kitunga pour commander et suivre vos livraisons.',
-                                                buttonText: 'Créer un compte',
-                                                action: () async {
-                                                  Navigator.pop(context);
-                                                  context.pushNamed(
-                                                    SignWidget.routeName,
-                                                    queryParameters: {
-                                                      'accessibility':
-                                                          serializeParam(
-                                                              'User',
-                                                              ParamType.String),
-                                                    }.withoutNulls,
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ).then((value) => safeSetState(() {}));
-                                    }
+  final ProductRecord product;
 
-                                    safeSetState(() {});
-                                  },
-                                  text: 'Ajouter au panier',
-                                  options: FFButtonOptions(
-                                    width: double.infinity,
-                                    height: 56.0,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .titleMedium
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleMedium
-                                                    .fontStyle,
-                                          ),
-                                          color: Colors.white,
-                                          fontSize: 16.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleMedium
-                                                  .fontStyle,
-                                        ),
-                                    elevation: 1.0,
-                                    borderSide: BorderSide(
-                                      color: Colors.transparent,
-                                      width: 1.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  showLoadingIndicator: false,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final p = product;
+    final unit = p.salePrice > 0 ? p.salePrice : p.price.round();
+    final outOfStock = p.quantity <= 0;
+    final lowStock = p.quantity > 0 && p.quantity <= 5;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (p.sellerRef != null) _ShopLine(shopRef: p.sellerRef!),
+          const SizedBox(height: 12),
+          Text(p.name,
+              style: GoogleFonts.interTight(
+                  fontSize: 25,
+                  height: 1.15,
+                  fontWeight: FontWeight.w800,
+                  color: theme.primaryText)),
+          const SizedBox(height: 8),
+          Text(kitungaPrice(unit),
+              style: GoogleFonts.interTight(
+                  fontSize: 24, fontWeight: FontWeight.w800, color: _red)),
+          const SizedBox(height: 14),
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            if (outOfStock)
+              const _Chip(
+                  icon: Icons.block_rounded,
+                  label: 'Rupture de stock',
+                  color: Color(0xFFE30613))
+            else if (lowStock)
+              _Chip(
+                  icon: Icons.hourglass_bottom_rounded,
+                  label: 'Plus que ${p.quantity} en stock',
+                  color: const Color(0xFFE8710A))
+            else
+              const _Chip(
+                  icon: Icons.check_circle_rounded,
+                  label: 'Disponible',
+                  color: Color(0xFF1E9E5A)),
+            if (p.instantDisponibilty)
+              const _Chip(
+                  icon: Icons.bolt_rounded,
+                  label: 'Livraison express',
+                  color: _red),
+            if (p.requiresPrescription)
+              const _Chip(
+                  icon: Icons.medical_information_rounded,
+                  label: 'Sur ordonnance',
+                  color: Color(0xFF2F6FDE)),
+            if (p.specifications.trim().isNotEmpty)
+              _Chip(
+                  icon: Icons.sell_rounded,
+                  label: p.specifications.trim(),
+                  color: theme.secondaryText),
+          ]),
+          const SizedBox(height: 24),
+          Text('Description',
+              style: GoogleFonts.interTight(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: theme.primaryText)),
+          const SizedBox(height: 8),
+          Text(
+            p.description.trim().isNotEmpty
+                ? p.description.trim()
+                : 'Le commerce n\'a pas encore ajouté de description pour ce '
+                    'produit.',
+            style: GoogleFonts.inter(
+                fontSize: 14.5,
+                height: 1.5,
+                fontStyle: p.description.trim().isEmpty
+                    ? FontStyle.italic
+                    : FontStyle.normal,
+                color: theme.secondaryText),
+          ),
+          if (p.options.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Row(children: [
+              Icon(Icons.tune_rounded, size: 18, color: theme.secondaryText),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                    'Options et suppléments au choix lors de l\'ajout.',
+                    style: GoogleFonts.inter(
+                        fontSize: 13.5, color: theme.secondaryText)),
+              ),
+            ]),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// « Chez Mama Loboko » : logo et nom du commerce, ouvre sa page.
+class _ShopLine extends StatelessWidget {
+  const _ShopLine({required this.shopRef});
+
+  final DocumentReference shopRef;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return StreamBuilder<UserRecord>(
+      stream: UserRecord.getDocument(shopRef),
+      builder: (context, snap) {
+        final shop = snap.data;
+        if (shop == null) return const SizedBox(height: 36);
+        return InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => openKitungaShop(context, shop),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(children: [
+              ClipOval(
+                child: SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: shop.photoUrl.isNotEmpty
+                      ? KitungaImage(shop.photoUrl,
+                          width: 34,
+                          height: 34,
+                          fallbackIcon: Icons.storefront_rounded,
+                          placeholder: kitungaShopPlaceholder(context, shop,
+                              width: 34, height: 34))
+                      : kitungaShopPlaceholder(context, shop,
+                          width: 34, height: 34),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(shop.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: theme.primaryText)),
+              ),
+              Text('Voir le commerce',
+                  style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _red)),
+              const Icon(Icons.chevron_right_rounded, color: _red, size: 20),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({required this.icon, required this.label, required this.color});
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: color)),
+          ),
+        ]),
+      );
+}
+
+/// Barre du bas : quantité et « Ajouter · 4 000 F ».
+class _AddBar extends StatelessWidget {
+  const _AddBar({
+    required this.product,
+    required this.quantity,
+    required this.busy,
+    required this.onQuantity,
+    required this.onAdd,
+  });
+
+  final ProductRecord product;
+  final int quantity;
+  final bool busy;
+  final ValueChanged<int> onQuantity;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final p = product;
+    final outOfStock = p.quantity <= 0;
+    final unit = p.salePrice > 0 ? p.salePrice : p.price.round();
+    // Avec options : quantité et prix choisis dans la feuille d'options.
+    final stepper = !outOfStock && p.options.isEmpty;
+    final label = outOfStock
+        ? 'Rupture de stock'
+        : stepper
+            ? 'Ajouter · ${kitungaPrice(unit * quantity)}'
+            : 'Choisir et ajouter';
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x14000000), blurRadius: 16, offset: Offset(0, -4))
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          child: Row(children: [
+            if (stepper) ...[
+              Container(
+                height: 54,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: theme.alternate),
+                ),
+                child: Row(children: [
+                  IconButton(
+                    tooltip: 'Moins',
+                    onPressed:
+                        quantity > 1 ? () => onQuantity(quantity - 1) : null,
+                    icon: const Icon(Icons.remove_rounded),
+                  ),
+                  Text('$quantity',
+                      style: GoogleFonts.inter(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: theme.primaryText)),
+                  IconButton(
+                    tooltip: 'Plus',
+                    onPressed: quantity < p.quantity
+                        ? () => onQuantity(quantity + 1)
+                        : null,
+                    icon: const Icon(Icons.add_rounded),
+                  ),
+                ]),
+              ),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: SizedBox(
+                height: 54,
+                child: FilledButton(
+                  onPressed: outOfStock || busy ? null : onAdd,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _red,
+                    disabledBackgroundColor: theme.alternate,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: busy
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2.5, color: Colors.white))
+                      : Text(label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                              fontSize: 16, fontWeight: FontWeight.w800)),
+                ),
               ),
             ),
-          ),
-        ),
+          ]),
         ),
       ),
     );
