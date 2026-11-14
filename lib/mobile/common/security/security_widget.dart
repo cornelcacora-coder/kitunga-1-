@@ -123,8 +123,8 @@ class _SecurityWidgetState extends State<SecurityWidget>
             buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              size: 30.0,
+              color: FlutterFlowTheme.of(context).primaryText,
+              size: 24.0,
             ),
             onPressed: () async {
               context.pop();
@@ -135,15 +135,15 @@ class _SecurityWidgetState extends State<SecurityWidget>
             style: FlutterFlowTheme.of(context).headlineMedium.override(
                   font: GoogleFonts.interTight(
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                        FontWeight.w800,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme.of(context).primaryText,
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                      FontWeight.w800,
                   fontStyle:
                       FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                 ),

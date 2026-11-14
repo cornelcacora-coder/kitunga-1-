@@ -66,7 +66,7 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme.of(context).primaryText,
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,

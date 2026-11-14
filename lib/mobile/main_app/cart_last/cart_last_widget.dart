@@ -236,8 +236,8 @@ class _CartLastWidgetState extends State<CartLastWidget> {
             buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              size: 30.0,
+              color: FlutterFlowTheme.of(context).primaryText,
+              size: 24.0,
             ),
             onPressed: () async {
               if (widget!.sellerRef != null) {
