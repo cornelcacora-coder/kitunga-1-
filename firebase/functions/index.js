@@ -590,6 +590,8 @@ exports.kitungaMyMissions = acquisitionCallable((data, uid) =>
 const sellerPro = require("./kitunga/seller_pro");
 exports.kitungaSellerOrderAction = acquisitionCallable((data, uid) =>
   sellerPro.sellerOrderAction({db: admin.firestore(), uid, data}));
+exports.kitungaSellerSetLocation = acquisitionCallable((data, uid) =>
+  sellerPro.sellerSetLocation({db: admin.firestore(), uid, data}));
 exports.kitungaSellerSetOpen = acquisitionCallable((data, uid) =>
   sellerPro.sellerSetOpen({db: admin.firestore(), uid, data}));
 exports.kitungaSellerReviews = acquisitionCallable((data, uid) =>
@@ -638,6 +640,7 @@ exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,
   sellerPath: String(data.sellerPath || ""),
   zone: data.zone, deliveryLocation: data.deliveryLocation, phone: data.phone,
+  deliveryPoint: data.deliveryPoint,
   operator: data.operator,
 }));
 

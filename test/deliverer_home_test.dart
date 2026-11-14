@@ -84,7 +84,7 @@ void main() {
       'delivery_zones': ['Bacongo']
     });
     await tester.pumpAndSettle();
-    expect(find.text('Bonjour, OKOMBI 👋'), findsOneWidget);
+    expect(find.text('Bonjour, OKOMBI'), findsOneWidget);
     expect(find.text('Livreur vérifié'), findsOneWidget);
     expect(find.text('En service'), findsOneWidget);
     // Aujourd'hui : 2 courses livrées, 2000 F de frais.

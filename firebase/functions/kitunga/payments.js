@@ -12,7 +12,7 @@ const {priceCart} = require("./pricing");
 const {subscriptionActive} = require("./subscriptions");
 const {PaymentError} = require("./errors");
 const {checkPhone, operatorOf} = require("./wallet");
-const {feeFor} = require("./delivery_pricing");
+const {feeFor, pointOf} = require("./delivery_pricing");
 const {openingStatus} = require("./hours");
 const {usablePrescription, statusOf: prescriptionStatus} =
   require("./prescriptions");
@@ -43,6 +43,7 @@ async function loadCart(db, userRef, sellerRef) {
 
 /** Démarre un paiement. Renvoie {referenceId, amount, subtotal, fee}. */
 async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
+  deliveryPoint,
   phone, operator: rawOperator, now = new Date()}) {
   if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
   if (!zone) throw new PaymentError("invalid-argument", "Quartier requis.");
@@ -97,7 +98,9 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
   const prescription = needs ?
     await usablePrescription(db, uid, sellerRef.id, now) : null;
   // Frais selon la distance commerce → client (tarif réglé par l'admin).
-  const delivery = await feeFor(db, seller, zone);
+  // Position exacte du client (facultative) : frais de porte à porte.
+  const point = pointOf(deliveryPoint);
+  const delivery = await feeFor(db, seller, zone, null, point);
   const priced = priceCart(lines, zone, {prescriptionOk: !!prescription,
     fee: delivery.fee});
   if (priced.errors.length > 0) {
@@ -116,6 +119,8 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
     delivery_fees: priced.fee,
     delivery_km: delivery.km,
     shop_zone: seller.exists ? seller.get("shop_zone") || "" : "",
+    delivery_point: point,
+    shop_point: seller.exists ? pointOf(seller.get("shop_point")) : null,
     ...(prescription ? {prescription_id: prescription.id} : {}),
     user_ref: userRef,
     seller_ref: sellerRef,
@@ -240,6 +245,9 @@ async function confirmPayment({db, momo, uid, referenceId}) {
       delivery_location: fresh.get("delivery_location"),
       // Quartier du commerce et distance : le livreur sait où récupérer.
       shop_zone: fresh.get("shop_zone") || "",
+      // Positions exactes (livreur : itinéraire de porte à porte).
+      delivery_point: fresh.get("delivery_point") || null,
+      shop_point: fresh.get("shop_point") || null,
       delivery_km: fresh.get("delivery_km") ?? null,
       order_id: reference,
       order_unique_reference: reference,

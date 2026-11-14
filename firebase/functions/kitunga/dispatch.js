@@ -72,8 +72,10 @@ const delivererOf = (o) => {
 async function rankDeliverers({db, order, exclude = [], settings,
   now = new Date()}) {
   const zone = order.get("delivery_zone") || "";
-  const pickup = ZONE_POINTS[order.get("shop_zone") || ""] ||
-    ZONE_POINTS[zone] || null;
+  // Point de collecte : position exacte du commerce, sinon son quartier.
+  const sp = order.get("shop_point");
+  const pickup = sp && typeof sp.lat === "number" ? [sp.lat, sp.lng] :
+    ZONE_POINTS[order.get("shop_zone") || ""] || ZONE_POINTS[zone] || null;
   const [users, running] = await Promise.all([
     db.collection("User").where("role", "==", "Deliver")
         .where("delivery_available", "==", true).get(),

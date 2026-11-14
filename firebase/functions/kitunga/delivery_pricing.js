@@ -105,26 +105,58 @@ async function loadSettings(db) {
  * Frais d'une livraison. Renvoie {fee, km, mode}.
  * km : distance retenue (route estimée), null en mode « zones ».
  */
-function computeFee({shopZone, clientZone, settings = DEFAULTS}) {
+/**
+ * Point GPS valide dans l'agglomération de Brazzaville ({lat, lng}), ou
+ * null. Sert pour la position exacte du client et du commerce.
+ */
+function pointOf(v) {
+  if (!v || typeof v !== "object") return null;
+  const lat = Number(v.lat);
+  const lng = Number(v.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -4.6 || lat > -3.9 || lng < 14.9 || lng > 15.6) return null;
+  return {lat: Math.round(lat * 1e6) / 1e6, lng: Math.round(lng * 1e6) / 1e6};
+}
+
+function haversineKm(a, b) {
+  const rad = (d) => d * Math.PI / 180;
+  const h = Math.sin(rad(b[0] - a[0]) / 2) ** 2 + Math.cos(rad(a[0])) *
+    Math.cos(rad(b[0])) * Math.sin(rad(b[1] - a[1]) / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * Frais d'une livraison, de porte à porte quand les positions exactes sont
+ * connues (shopPoint, clientPoint), sinon d'un centre de quartier à l'autre.
+ * Renvoie {fee, km, mode, exact}.
+ */
+function computeFee({shopZone, clientZone, shopPoint, clientPoint,
+  settings = DEFAULTS}) {
   const s = {...DEFAULTS, ...settings};
-  const straight = s.mode === "distance" ?
-    zoneDistanceKm(shopZone, clientZone) : null;
+  const from = pointOf(shopPoint);
+  const to = pointOf(clientPoint);
+  const a = from ? [from.lat, from.lng] : ZONE_POINTS[shopZone];
+  const b = to ? [to.lat, to.lng] : ZONE_POINTS[clientZone];
+  const straight = s.mode === "distance" && a && b ? haversineKm(a, b) : null;
   if (straight == null) {
-    return {fee: zoneFee(clientZone), km: null, mode: "zones"};
+    return {fee: zoneFee(clientZone), km: null, mode: "zones", exact: false};
   }
   const km = straight * Number(s.road_factor);
   const step = Math.max(1, Number(s.rounding) || 1);
   let fee = Math.ceil((Number(s.base) + Number(s.per_km) * km) / step) * step;
   fee = Math.max(Number(s.minimum) || 0, fee);
   if (Number(s.maximum) > 0) fee = Math.min(Number(s.maximum), fee);
-  return {fee, km: Math.round(km * 10) / 10, mode: "distance"};
+  return {fee, km: Math.round(km * 10) / 10, mode: "distance",
+    exact: !!(from && to)};
 }
 
-/** Frais pour un commerce (document User) et le quartier du client. */
-async function feeFor(db, seller, clientZone, settings) {
-  return computeFee({shopZone: seller && seller.exists ?
-    seller.get("shop_zone") : null, clientZone,
-  settings: settings || await loadSettings(db)});
+/** Frais pour un commerce (document User), le quartier et la position du
+ * client. */
+async function feeFor(db, seller, clientZone, settings, clientPoint) {
+  const ok = seller && seller.exists;
+  return computeFee({shopZone: ok ? seller.get("shop_zone") : null,
+    shopPoint: ok ? seller.get("shop_point") : null, clientZone, clientPoint,
+    settings: settings || await loadSettings(db)});
 }
 
 /** Devis affiché au client dans le panier, avant le paiement. */
@@ -136,7 +168,7 @@ async function deliveryQuote({db, uid, data}) {
     throw err("invalid-argument", "Commerce invalide.");
   }
   const seller = await db.doc(path).get();
-  const r = await feeFor(db, seller, zone);
+  const r = await feeFor(db, seller, zone, null, data.point);
   return {...r, shopZone: seller.exists ? seller.get("shop_zone") || "" : ""};
 }
 
@@ -175,5 +207,5 @@ async function adminDeliveryPricing({db, uid, data}) {
   return {settings: out, zones: ZONES};
 }
 
-module.exports = {ZONE_POINTS, DEFAULTS, zoneDistanceKm, computeFee, feeFor,
+module.exports = {pointOf, haversineKm, ZONE_POINTS, DEFAULTS, zoneDistanceKm, computeFee, feeFor,
   loadSettings, deliveryQuote, adminDeliveryPricing};

@@ -73,7 +73,7 @@ service cloud.firestore {
         && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['rating_sum', 'rating_count', 'verification',
               'last_position', 'emergency_contact', 'shop_rating_sum',
-              'shop_rating_count']);
+              'shop_rating_count', 'shop_point']);
       // À la création d'un partenaire, l'administrateur ajoute son logo et sa
       // couverture. Il ne peut rien modifier d'autre sur ce profil.
       allow update: if isAdmin()
@@ -179,6 +179,7 @@ service cloud.firestore {
           'offer_expires_at', 'dispatch_reason', 'settled_at', 'settlement',
           'settlement_reversed_at', 'rating', 'delay', 'at_shop_at',
           'handover_confirmed_at', 'accepted_at', 'shop_rating',
+          'delivery_point', 'shop_point',
           'ready_at', 'stale_alert_at',
           'prescription_ref', 'prescription_photos',
           'return_status', 'return_reason', 'return_wish', 'return_note',

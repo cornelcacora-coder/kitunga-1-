@@ -151,6 +151,20 @@ async function sellerStockMovements({db, uid, data}) {
   }).sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 200)};
 }
 
+/** Position exacte du commerce (point de collecte, calcul des frais). */
+async function sellerSetLocation({db, uid, data}) {
+  const u = await seller(db, uid);
+  const {pointOf} = require("./delivery_pricing");
+  const p = pointOf(data);
+  if (!p) {
+    throw err("invalid-argument",
+        "Position hors de Brazzaville ou invalide. Réessayez depuis votre " +
+        "commerce.");
+  }
+  await u.ref.update({shop_point: {...p, at: ts()}});
+  return {point: p};
+}
+
 /** Avis des clients sur le commerce (le vendeur ne peut pas les supprimer). */
 async function sellerReviews({db, uid}) {
   const u = await seller(db, uid);
@@ -270,4 +284,5 @@ async function sellerPerformance({db, uid, now = new Date()}) {
 
 module.exports = {sellerOrderAction, sellerSetOpen, sellerPerformance,
   sellerReviews, sellerReportReview, sellerAdjustStock, sellerStockMovements,
+  sellerSetLocation,
   LOW_STOCK};
