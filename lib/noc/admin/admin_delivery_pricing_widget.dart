@@ -29,7 +29,9 @@ const _fields = [
       'Distance réelle ≈ vol d\'oiseau × coefficient (détours des rues).'),
   ('minimum', 'Minimum (F)', 'Aucune course en dessous.'),
   ('maximum', 'Maximum (F)', 'Plafond ; 0 = sans plafond.'),
-  ('rounding', 'Arrondi (F)', 'Arrondi au-dessus, par ex. 100 F.'),
+  ('rounding', 'Palier (F)',
+      '500 ou 1 000 : les frais sont toujours des montants ronds '
+          '(1 000, 1 500, 2 000…).'),
 ];
 
 /// Même calcul que le serveur (pour la simulation seulement).
@@ -44,11 +46,13 @@ const _fields = [
           math.cos(rad(q.latitude)) *
           math.pow(math.sin(rad(q.longitude - p.longitude) / 2), 2);
   final km = 2 * 6371 * math.asin(math.sqrt(h)) * (s['road_factor'] ?? 1.3);
-  final step = math.max(1, (s['rounding'] ?? 100).toInt());
-  var fee = (((s['base'] ?? 0) + (s['per_km'] ?? 0) * km) / step).ceil() * step;
-  fee = math.max((s['minimum'] ?? 0).toInt(), fee);
+  // Paliers de 500 F (ou 1 000 F), comme le serveur.
+  final step = (s['rounding'] ?? 500) >= 1000 ? 1000 : 500;
+  final raw = math.max(
+      (s['minimum'] ?? 0).toDouble(), (s['base'] ?? 0) + (s['per_km'] ?? 0) * km);
+  var fee = (raw / step).ceil() * step;
   final max = (s['maximum'] ?? 0).toInt();
-  if (max > 0) fee = math.min(max, fee);
+  if (max > 0) fee = math.min(math.max(step, (max ~/ step) * step), fee);
   return (fee: fee, km: (km * 10).round() / 10);
 }
 

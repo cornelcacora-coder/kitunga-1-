@@ -18,9 +18,9 @@ void main() {
 
   test('mêmes résultats que le serveur', () {
     expect(simulateDeliveryFee(s, 'Bacongo', 'Bacongo')!.fee, 1000);
-    expect(simulateDeliveryFee(s, 'Bacongo', 'Makélékélé')!.fee, 1100);
+    expect(simulateDeliveryFee(s, 'Bacongo', 'Makélékélé')!.fee, 1500);
     final far = simulateDeliveryFee(s, 'Kintélé', 'Bacongo')!;
-    expect(far.fee, 4200);
+    expect(far.fee, 4500);
     expect(far.km, 24.3);
     expect(simulateDeliveryFee({...s, 'maximum': 3000}, 'Kintélé', 'Bacongo')!
         .fee, 3000);

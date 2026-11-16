@@ -4,7 +4,8 @@
  * et le serveur fait seul le calcul.
  *
  *   frais = base + prix_par_km × distance × coefficient_route
- *   arrondi à « arrondi » F au-dessus, entre « minimum » et « maximum ».
+ *   arrondi au palier de 500 F au-dessus (1 000, 1 500, 2 000…), entre
+ *   « minimum » et « maximum » (eux aussi ramenés à des paliers de 500 F).
  *
  * La distance est mesurée entre les centres des deux quartiers (vol
  * d'oiseau) ; le coefficient route (1,3 par défaut) tient compte des
@@ -81,8 +82,17 @@ const DEFAULTS = {
   road_factor: 1.3,
   minimum: 1000,
   maximum: 5000,
-  rounding: 100,
+  rounding: 500,
 };
+
+/**
+ * Palier des frais : toujours un multiple de 500 F (500 ou 1 000), pour des
+ * montants ronds (1 000, 1 500, 2 000…), quel que soit le réglage enregistré.
+ */
+function roundingStep(v) {
+  const n = Number(v) || 500;
+  return n >= 1000 ? 1000 : 500;
+}
 
 /** Distance à vol d'oiseau en km entre deux quartiers, ou null. */
 function zoneDistanceKm(a, b) {
@@ -155,10 +165,14 @@ function computeFee({shopZone, clientZone, shopPoint, clientPoint,
   }
   const road = Number.isFinite(roadKm) && roadKm >= 0;
   const km = road ? roadKm : straight * Number(s.road_factor);
-  const step = Math.max(1, Number(s.rounding) || 1);
-  let fee = Math.ceil((Number(s.base) + Number(s.per_km) * km) / step) * step;
-  fee = Math.max(Number(s.minimum) || 0, fee);
-  if (Number(s.maximum) > 0) fee = Math.min(Number(s.maximum), fee);
+  const step = roundingStep(s.rounding);
+  let fee = Math.max(Number(s.minimum) || 0,
+      Number(s.base) + Number(s.per_km) * km);
+  fee = Math.ceil(fee / step) * step;
+  if (Number(s.maximum) > 0) {
+    fee = Math.min(Math.max(step, Math.floor(Number(s.maximum) / step) * step),
+        fee);
+  }
   return {fee, km: Math.round(km * 10) / 10, mode: "distance", exact,
     source: road ? "route" : "estimate"};
 }
@@ -212,7 +226,7 @@ async function adminDeliveryPricing({db, uid, data}) {
       road_factor: num(s.road_factor, 1, 3),
       minimum: num(s.minimum, 0, 100000),
       maximum: num(s.maximum, 0, 1000000),
-      rounding: num(s.rounding, 1, 1000),
+      rounding: roundingStep(num(s.rounding, 1, 1000)),
     };
     await db.doc(SETTINGS).set({...next, updated_by: adminUid,
       updated_at: admin.firestore.FieldValue.serverTimestamp()});
@@ -227,5 +241,5 @@ async function adminDeliveryPricing({db, uid, data}) {
   return {settings: out, zones: ZONES};
 }
 
-module.exports = {pointOf, haversineKm, ZONE_POINTS, DEFAULTS, zoneDistanceKm, computeFee, feeFor,
+module.exports = {roundingStep, pointOf, haversineKm, ZONE_POINTS, DEFAULTS, zoneDistanceKm, computeFee, feeFor,
   loadSettings, deliveryQuote, adminDeliveryPricing};

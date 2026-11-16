@@ -28,7 +28,7 @@ test("calcul : même quartier, loin, plafond, sans quartier du commerce",
       assert.strictEqual(dp.computeFee({shopZone: "Bacongo",
         clientZone: "Bacongo"}).fee, 1000);
       const far = dp.computeFee({shopZone: "Kintélé", clientZone: "Bacongo"});
-      assert.strictEqual(far.fee, 4200);
+      assert.strictEqual(far.fee, 4500); // palier de 500 F au-dessus
       assert.strictEqual(far.mode, "distance");
       assert.strictEqual(dp.computeFee({shopZone: "Kintélé",
         clientZone: "Bacongo", settings: {maximum: 3000}}).fee, 3000);
@@ -37,6 +37,28 @@ test("calcul : même quartier, loin, plafond, sans quartier du commerce",
         clientZone: "Kintélé"}), {fee: 2000, km: null, mode: "zones", exact: false, source: "zones"});
       assert.strictEqual(dp.computeFee({shopZone: "Kintélé",
         clientZone: "Bacongo", settings: {mode: "zones"}}).fee, 1000);
+    });
+
+test("frais toujours ronds : paliers de 500 F, même avec un ancien réglage",
+    () => {
+      // 500 + 150 × km pour 2 à 25 km : jamais 1 300, 2 300 ou 2 900.
+      for (let km = 2; km <= 25; km += 0.7) {
+        for (const rounding of [undefined, 1, 100, 250, 500]) {
+          const {fee} = dp.computeFee({shopZone: "Bacongo",
+            clientZone: "Talangaï", roadKm: km,
+            settings: rounding ? {rounding} : {}});
+          assert.strictEqual(fee % 500, 0, `${km} km → ${fee} F`);
+        }
+      }
+      // Minimum ou maximum non ronds : ramenés aux paliers.
+      assert.strictEqual(dp.computeFee({shopZone: "Bacongo",
+        clientZone: "Bacongo", settings: {minimum: 1200}}).fee, 1500);
+      assert.strictEqual(dp.computeFee({shopZone: "Kintélé",
+        clientZone: "Bacongo", settings: {maximum: 3200}}).fee, 3000);
+      assert.strictEqual(dp.computeFee({shopZone: "Kintélé",
+        clientZone: "Bacongo", settings: {rounding: 1000}}).fee, 5000);
+      assert.strictEqual(dp.roundingStep(100), 500);
+      assert.strictEqual(dp.roundingStep(1000), 1000);
     });
 
 test("l'admin règle le tarif ; le devis le suit", async () => {
@@ -64,15 +86,15 @@ test("paiement : frais selon la distance, gardés à la confirmation",
         quantity: 1, options: "", is_ordered: false});
       const s = await startPayment({db, momo: wallet, uid: "buyer",
         sellerPath: "User/shop", zone: "Bacongo", phone: "061234567"});
-      assert.strictEqual(s.fee, 4200);
-      assert.strictEqual(s.amount, 4700);
+      assert.strictEqual(s.fee, 4500);
+      assert.strictEqual(s.amount, 5000);
       // L'admin change le tarif avant la confirmation : rien ne bouge.
       await db.doc("Settings/delivery_pricing").set({per_km: 1});
       const r = await confirmPayment({db, momo: wallet, uid: "buyer",
         referenceId: s.referenceId});
       assert.strictEqual(r.status, "paid");
       const o = await db.doc(r.orderPath).get();
-      assert.strictEqual(o.get("delivery_fees"), 4200);
+      assert.strictEqual(o.get("delivery_fees"), 4500);
       assert.strictEqual(o.get("shop_zone"), "Kintélé");
       assert.strictEqual(o.get("delivery_km"), 24.3);
     });
