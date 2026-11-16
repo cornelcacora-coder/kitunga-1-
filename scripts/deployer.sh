@@ -11,5 +11,8 @@ if [ $# -gt 0 ]; then
   ONLY=$(for f in "$@"; do printf "functions:functions:%s," "$f"; done | sed 's/,$//')
   (cd firebase && firebase deploy --only "$ONLY" -P kitunga-xtvpe4 $ACC --non-interactive)
 fi
+# Le site est toujours recompilé : il correspond exactement au code actuel.
+echo "=== Compilation du site admin (2 à 3 minutes)…"
+flutter build web --release --no-tree-shake-icons
 firebase deploy --only hosting -P kitunga-xtvpe4 $ACC --non-interactive
 echo "OK — purgez le cache Cloudflare puis Ctrl+Maj+R."
