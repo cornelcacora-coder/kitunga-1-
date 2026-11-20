@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/mobile/components/cart_add/kitunga_add_to_cart.dart';
 import '/mobile/components/kitunga_image/kitunga_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -67,9 +68,10 @@ class KitungaProductCard extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
     final p = product;
     final outOfStock = p.quantity <= 0;
-    // Médicament sur ordonnance : visible mais non commandable en ligne.
+    // Médicament sur ordonnance : commandable avec une ordonnance validée
+    // (étiquette mise en évidence, carte non grisée).
     final prescription = p.requiresPrescription;
-    final blocked = outOfStock || prescription;
+    final blocked = outOfStock;
     final lowStock = p.quantity > 0 && p.quantity <= 5;
     final label = prescription
         ? 'Sur ordonnance'
@@ -78,7 +80,7 @@ class KitungaProductCard extends StatelessWidget {
             : lowStock
                 ? 'Plus que ${p.quantity} en stock'
                 : p.specifications;
-    final highlight = blocked || lowStock;
+    final highlight = blocked || lowStock || prescription;
 
     return Material(
       color: theme.secondaryBackground,
@@ -108,6 +110,7 @@ class KitungaProductCard extends StatelessWidget {
                         width: double.infinity,
                         height: 130.0,
                         fallbackIcon: Icons.image_outlined,
+                        placeholder: kitungaNoPhoto(theme, p, 130.0),
                       ),
                     ),
                   ),
@@ -129,10 +132,10 @@ class KitungaProductCard extends StatelessWidget {
                                 color: Colors.white, size: 14.0),
                             Text(
                               'Express',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontSize: 11.0,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -148,10 +151,10 @@ class KitungaProductCard extends StatelessWidget {
                   label.isNotEmpty ? label : ' ',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: highlight ? theme.primary : theme.secondaryText,
                     fontSize: 11.0,
-                    fontWeight: highlight ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: highlight ? FontWeight.w500 : FontWeight.w500,
                   ),
                 ),
               ),
@@ -162,10 +165,10 @@ class KitungaProductCard extends StatelessWidget {
                   p.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 14.0,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     height: 1.25,
                   ),
                 ),
@@ -181,26 +184,35 @@ class KitungaProductCard extends StatelessWidget {
                             (p.unit.isNotEmpty && p.unit != 'pièce'
                                 ? ' / ${p.unit}'
                                 : ''),
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 16.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    Container(
-                      width: 34.0,
-                      height: 34.0,
-                      decoration: BoxDecoration(
-                        color: blocked ? theme.divider : theme.primary,
-                        borderRadius: BorderRadius.circular(12.0),
+                    // Bouton + : ajoute directement au panier.
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: blocked ? null : () => kitungaQuickAdd(context, p),
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 6.0),
+                        child: Container(
+                          width: 34.0,
+                          height: 34.0,
+                          decoration: BoxDecoration(
+                            color: blocked ? theme.divider : theme.primary,
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Icon(
+                              prescription
+                                  ? Icons.lock_outline_rounded
+                                  : Icons.add_rounded,
+                              color:
+                                  blocked ? theme.secondaryText : Colors.white,
+                              size: 22.0),
+                        ),
                       ),
-                      child: Icon(
-                          prescription
-                              ? Icons.lock_outline_rounded
-                              : Icons.add_rounded,
-                          color: blocked ? theme.secondaryText : Colors.white,
-                          size: 22.0),
                     ),
                   ],
                 ),
@@ -230,7 +242,7 @@ class KitungaProductRow extends StatelessWidget {
     final theme = FlutterFlowTheme.of(context);
     final p = product;
     final outOfStock = p.quantity <= 0;
-    final blocked = outOfStock || p.requiresPrescription;
+    final blocked = outOfStock;
     final status = p.requiresPrescription
         ? 'Sur ordonnance'
         : outOfStock
@@ -251,10 +263,10 @@ class KitungaProductRow extends StatelessWidget {
                     p.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                       color: blocked ? theme.secondaryText : theme.primaryText,
                       fontSize: 15.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   if (p.description.trim().isNotEmpty) ...[
@@ -263,7 +275,7 @@ class KitungaProductRow extends StatelessWidget {
                       p.description.trim(),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.secondaryText,
                         fontSize: 13.0,
                         height: 1.35,
@@ -278,20 +290,20 @@ class KitungaProductRow extends StatelessWidget {
                             (p.unit.isNotEmpty && p.unit != 'pièce'
                                 ? ' / ${p.unit}'
                                 : ''),
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 15.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       if (status.isNotEmpty) ...[
                         SizedBox(width: 10.0),
                         Text(
                           status,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: theme.primary,
                             fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ] else if (p.instantDisponibilty) ...[
@@ -300,10 +312,10 @@ class KitungaProductRow extends StatelessWidget {
                             size: 15.0, color: theme.primary),
                         Text(
                           'Express',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: theme.primary,
                             fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -325,13 +337,19 @@ class KitungaProductRow extends StatelessWidget {
                       width: 96.0,
                       height: 96.0,
                       fallbackIcon: Icons.image_outlined,
+                      // Ligne : largeur fixe (sinon largeur infinie).
+                      placeholder: kitungaNoPhoto(theme, p, 96.0, width: 96.0),
                     ),
                   ),
                 ),
                 Positioned(
                   right: -6.0,
                   bottom: -6.0,
-                  child: Container(
+                  // Bouton + : ajoute directement au panier.
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: blocked ? null : () => kitungaQuickAdd(context, p),
+                    child: Container(
                     width: 32.0,
                     height: 32.0,
                     decoration: BoxDecoration(
@@ -348,6 +366,7 @@ class KitungaProductRow extends StatelessWidget {
                       color: blocked ? theme.secondaryText : Colors.white,
                     ),
                   ),
+                  ),
                 ),
               ],
             ),
@@ -361,3 +380,52 @@ class KitungaProductRow extends StatelessWidget {
 /// Visible par les clients : publié par le vendeur. Les anciens produits
 /// sans le champ « on_sale » restent visibles.
 bool kitungaIsPublished(ProductRecord p) => !p.hasOnSale() || p.onSale;
+
+/// Vignette d'un produit sans photo (plats de restaurant notamment) :
+/// fond chaud, icône de la rubrique et nom du produit.
+/// [width] : largeur de la vignette ; null = toute la largeur disponible
+/// (cartes de la grille). Dans une ligne, passer une largeur fixe.
+Widget kitungaNoPhoto(FlutterFlowTheme theme, ProductRecord p, double size,
+    {double? width}) {
+  final section = p.section.toLowerCase();
+  final icon = section.contains('boisson')
+      ? Icons.local_drink_rounded
+      : section.contains('dessert')
+          ? Icons.icecream_rounded
+          : section.contains('grill')
+              ? Icons.outdoor_grill_rounded
+              : section.contains('accompagnement')
+                  ? Icons.rice_bowl_rounded
+                  : section.contains('petit')
+                      ? Icons.free_breakfast_rounded
+                      : Icons.restaurant_menu_rounded;
+  return Container(
+    width: width ?? double.infinity,
+    height: size,
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFFFF1E6), Color(0xFFFFE0D2)],
+      ),
+    ),
+    padding: EdgeInsets.all(size > 100 ? 12.0 : 6.0),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: const Color(0xFFE8710A), size: size * 0.32),
+        if (size > 100) ...[
+          const SizedBox(height: 6.0),
+          Text(p.name,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.poppins(
+                  color: const Color(0xFF8A4A12),
+                  fontSize: 13.0,
+                  fontWeight: FontWeight.w600)),
+        ],
+      ],
+    ),
+  );
+}

@@ -84,7 +84,7 @@ class _OrderRowWidgetState extends State<OrderRowWidget> {
                   'AJ',
                   style: TextStyle(
                     color: FlutterFlowTheme.of(context).primaryText,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     fontSize: 16.0,
                   ),
                 ),
@@ -102,15 +102,15 @@ class _OrderRowWidgetState extends State<OrderRowWidget> {
                         'Client',
                       ),
                       style: FlutterFlowTheme.of(context).bodyLarge.override(
-                            font: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
+                            font: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .bodyLarge
                                   .fontStyle,
                             ),
                             color: FlutterFlowTheme.of(context).primaryText,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyLarge
                                 .fontStyle,
@@ -122,7 +122,7 @@ class _OrderRowWidgetState extends State<OrderRowWidget> {
                         '2 mins ago',
                       ),
                       style: FlutterFlowTheme.of(context).labelSmall.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .labelSmall
                                   .fontWeight,
@@ -154,15 +154,15 @@ class _OrderRowWidgetState extends State<OrderRowWidget> {
                       '\$312.00',
                     ),
                     style: FlutterFlowTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyLarge
                                 .fontStyle,
                           ),
                           color: FlutterFlowTheme.of(context).primaryText,
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).bodyLarge.fontStyle,
                         ),
@@ -173,7 +173,7 @@ class _OrderRowWidgetState extends State<OrderRowWidget> {
                       '#ORD-7721',
                     ),
                     style: FlutterFlowTheme.of(context).labelSmall.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FlutterFlowTheme.of(context)
                                 .labelSmall
                                 .fontWeight,

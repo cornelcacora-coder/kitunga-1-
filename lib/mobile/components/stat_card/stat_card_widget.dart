@@ -101,14 +101,14 @@ class _StatCardWidgetState extends State<StatCardWidget> {
                     '↑ 12%',
                   ),
                   style: FlutterFlowTheme.of(context).labelSmall.override(
-                        font: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
+                        font: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).labelSmall.fontStyle,
                         ),
                         color: FlutterFlowTheme.of(context).success,
                         letterSpacing: 0.0,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         fontStyle:
                             FlutterFlowTheme.of(context).labelSmall.fontStyle,
                       ),
@@ -121,14 +121,14 @@ class _StatCardWidgetState extends State<StatCardWidget> {
                 '128.0',
               ),
               style: FlutterFlowTheme.of(context).headlineMedium.override(
-                    font: GoogleFonts.interTight(
-                      fontWeight: FontWeight.w800,
+                    font: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
                       fontStyle:
                           FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                     ),
                     color: FlutterFlowTheme.of(context).primaryText,
                     letterSpacing: 0.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
@@ -139,7 +139,7 @@ class _StatCardWidgetState extends State<StatCardWidget> {
                 'Sales',
               ),
               style: FlutterFlowTheme.of(context).labelMedium.override(
-                    font: GoogleFonts.inter(
+                    font: GoogleFonts.poppins(
                       fontWeight:
                           FlutterFlowTheme.of(context).labelMedium.fontWeight,
                       fontStyle:

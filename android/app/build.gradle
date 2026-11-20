@@ -61,6 +61,11 @@ android {
         targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        // Clé Google Maps : android/local.properties (MAPS_API_KEY=…) ou
+        // variable d'environnement MAPS_API_KEY. Jamais dans le code.
+        manifestPlaceholders = [mapsApiKey:
+            (localProperties.getProperty('MAPS_API_KEY') ?:
+                System.getenv('MAPS_API_KEY') ?: '').trim()]
     }
 
    signingConfigs {

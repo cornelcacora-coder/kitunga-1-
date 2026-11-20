@@ -171,8 +171,8 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                                           style: FlutterFlowTheme.of(context)
                                               .titleLarge
                                               .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight: FontWeight.w800,
+                                                font: GoogleFonts.poppins(
+                                                  fontWeight: FontWeight.w600,
                                                   fontStyle:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -181,7 +181,7 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                                                 ),
                                                 color: Colors.white,
                                                 letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w800,
+                                                fontWeight: FontWeight.w600,
                                                 fontStyle:
                                                     FlutterFlowTheme.of(context)
                                                         .titleLarge
@@ -354,9 +354,9 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                                                   .titleMedium
                                                   .override(
                                                     font:
-                                                        GoogleFonts.interTight(
+                                                        GoogleFonts.poppins(
                                                       fontWeight:
-                                                          FontWeight.bold,
+                                                          FontWeight.w600,
                                                       fontStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -365,7 +365,7 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                                                     ),
                                                     color: Colors.white,
                                                     letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.bold,
+                                                    fontWeight: FontWeight.w600,
                                                     fontStyle:
                                                         FlutterFlowTheme.of(
                                                                 context)
@@ -382,7 +382,7 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                                                         context)
                                                     .bodySmall
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -430,7 +430,7 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                   'Termiener votre livraiosn en envoyant la photo du coli livré en bonne et due forme ',
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.inter(
+                        font: GoogleFonts.poppins(
                           fontWeight: FontWeight.normal,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleSmall.fontStyle,
@@ -454,8 +454,8 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                     Text(
                       'Signature Bénéficiaire',
                       style: FlutterFlowTheme.of(context).titleLarge.override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.w600,
+                            font: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleLarge
                                   .fontStyle,
@@ -463,7 +463,7 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                             color: FlutterFlowTheme.of(context).secondaryText,
                             fontSize: 16.0,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleLarge
                                 .fontStyle,
@@ -542,8 +542,8 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                         'Effacer la signature',
                         textAlign: TextAlign.center,
                         style: FlutterFlowTheme.of(context).titleSmall.override(
-                              font: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
+                              font: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleSmall
                                     .fontStyle,
@@ -551,7 +551,7 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                               color: FlutterFlowTheme.of(context).secondaryText,
                               fontSize: 16.0,
                               letterSpacing: 0.0,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .fontStyle,
@@ -617,8 +617,8 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                       color: FlutterFlowTheme.of(context).primary,
                       textStyle:
                           FlutterFlowTheme.of(context).titleMedium.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.bold,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleMedium
                                       .fontStyle,
@@ -626,7 +626,7 @@ class _AddDeliveryProofWidgetState extends State<AddDeliveryProofWidget> {
                                 color: Colors.white,
                                 fontSize: 18.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .fontStyle,

@@ -89,10 +89,10 @@ class _KitungaCategoriesPageState extends State<KitungaCategoriesPage> {
               children: [
                 Text(
                   'Toutes les catégories',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 21.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: 2.0),
@@ -100,7 +100,7 @@ class _KitungaCategoriesPageState extends State<KitungaCategoriesPage> {
                   'Découvrez les commerces et services disponibles',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 13.0,
                   ),
@@ -120,11 +120,11 @@ class _KitungaCategoriesPageState extends State<KitungaCategoriesPage> {
         controller: _searchController,
         onChanged: (v) => setState(() => _query = v),
         textInputAction: TextInputAction.search,
-        style: GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
+        style: GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0),
         decoration: InputDecoration(
           hintText: 'Rechercher un commerce ou une catégorie…',
           hintStyle:
-              GoogleFonts.inter(color: theme.secondaryText, fontSize: 15.0),
+              GoogleFonts.poppins(color: theme.secondaryText, fontSize: 15.0),
           prefixIcon: Icon(Icons.search_rounded, color: theme.secondaryText),
           suffixIcon: _query.isEmpty
               ? null
@@ -225,7 +225,7 @@ class _KitungaCategoriesPageState extends State<KitungaCategoriesPage> {
               padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 24.0),
               child: Text(
                 'Aucun commerce disponible pour le moment.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText, fontSize: 14.0),
               ),
             ),
@@ -296,10 +296,10 @@ class _KitungaCategoriesPageState extends State<KitungaCategoriesPage> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 17.0,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
             SizedBox(height: 6.0),
@@ -307,7 +307,7 @@ class _KitungaCategoriesPageState extends State<KitungaCategoriesPage> {
               text,
               textAlign: TextAlign.center,
               style:
-                  GoogleFonts.inter(color: theme.secondaryText, fontSize: 14.0),
+                  GoogleFonts.poppins(color: theme.secondaryText, fontSize: 14.0),
             ),
             if (action != null) ...[SizedBox(height: 16.0), action],
           ],
@@ -346,7 +346,11 @@ class _CategoryCard extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(4.0),
-                  child: KitungaCategoryImage(image),
+                  // Photo : coins arrondis comme la carte.
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14.0),
+                    child: KitungaCategoryImage(image),
+                  ),
                 ),
               ),
               SizedBox(height: 8.0),
@@ -354,10 +358,10 @@ class _CategoryCard extends StatelessWidget {
                 name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                   color: theme.primaryText,
                   fontSize: 14.0,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               SizedBox(height: 2.0),
@@ -365,7 +369,7 @@ class _CategoryCard extends StatelessWidget {
                 count == 0
                     ? 'Aucun commerce'
                     : '$count commerce${count > 1 ? 's' : ''}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   color: theme.secondaryText,
                   fontSize: 12.0,
                 ),

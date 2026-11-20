@@ -103,8 +103,8 @@ class _ItemWidgetState extends State<ItemWidget> {
                           'Je suis un Acheteur',
                         ),
                         style: FlutterFlowTheme.of(context).titleLarge.override(
-                              font: GoogleFonts.interTight(
-                                fontWeight: FontWeight.w800,
+                              font: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleLarge
                                     .fontStyle,
@@ -112,7 +112,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                               color: FlutterFlowTheme.of(context).primaryText,
                               fontSize: 18.0,
                               letterSpacing: 0.0,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleLarge
                                   .fontStyle,
@@ -123,7 +123,7 @@ class _ItemWidgetState extends State<ItemWidget> {
                         widget!.subtitle,
                         maxLines: 2,
                         style: FlutterFlowTheme.of(context).bodySmall.override(
-                              font: GoogleFonts.inter(
+                              font: GoogleFonts.poppins(
                                 fontWeight: FontWeight.normal,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .bodySmall

@@ -1,10 +1,15 @@
+import '/mobile/components/returns/kitunga_returns.dart'
+    show KitungaSellerReturnCard;
+import '/mobile/components/prescription/kitunga_prescription.dart'
+    show showPrescriptionPhotos;
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/order_status.dart';
+import 'kitunga_seller_actions.dart';
+import '/mobile/components/delivery/kitunga_delivery.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
-import '/mobile/components/order_progress/order_progress_widget.dart';
 import '/mobile/components/product_card/product_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -52,7 +57,7 @@ class _SellerOrdersViewState extends State<SellerOrdersView> {
         if (snapshot.hasError) {
           return Center(
             child: Text('Impossible de charger les commandes.',
-                style: GoogleFonts.inter(color: theme.secondaryText)),
+                style: GoogleFonts.poppins(color: theme.secondaryText)),
           );
         }
         if (!snapshot.hasData) {
@@ -70,10 +75,10 @@ class _SellerOrdersViewState extends State<SellerOrdersView> {
               padding: EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 4.0),
               child: Text(
                 'Commandes reçues',
-                style: GoogleFonts.interTight(
+                style: GoogleFonts.poppins(
                   color: theme.primaryText,
                   fontSize: 22.0,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -92,11 +97,11 @@ class _SellerOrdersViewState extends State<SellerOrdersView> {
                         selected: _tab == t.key,
                         showCheckmark: false,
                         onSelected: (_) => setState(() => _tab = t.key),
-                        labelStyle: GoogleFonts.inter(
+                        labelStyle: GoogleFonts.poppins(
                           color:
                               _tab == t.key ? Colors.white : theme.primaryText,
                           fontSize: 13.0,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                         selectedColor: theme.primary,
                         backgroundColor: theme.primaryBackground,
@@ -120,7 +125,7 @@ class _SellerOrdersViewState extends State<SellerOrdersView> {
                           ? 'Aucune nouvelle commande pour le moment.'
                           : 'Aucune commande dans cette catégorie.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(color: theme.secondaryText),
+                      style: GoogleFonts.poppins(color: theme.secondaryText),
                     ),
                   ],
                 ),
@@ -146,56 +151,6 @@ class _SellerOrderCard extends StatelessWidget {
   String get _ref => order.orderUniqueReference.isNotEmpty
       ? order.orderUniqueReference
       : order.orderId;
-
-  Future<void> _setStatus(String status, [Map<String, dynamic>? extra]) =>
-      order.reference.update({
-        'status': status,
-        'status_updated_at': getCurrentTimestamp,
-        ...?extra,
-      });
-
-  Future<void> _refuse(BuildContext context) async {
-    final controller = TextEditingController();
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text('Refuser la commande'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Le client verra ce motif.'),
-            SizedBox(height: 10.0),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              maxLines: 2,
-              decoration: InputDecoration(
-                hintText: 'Ex : produit en rupture, commerce fermé…',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: Text('Annuler')),
-          TextButton(
-            onPressed: () {
-              if (controller.text.trim().isEmpty) return;
-              Navigator.pop(c, controller.text.trim());
-            },
-            child: Text('Refuser',
-                style: TextStyle(color: FlutterFlowTheme.of(context).error)),
-          ),
-        ],
-      ),
-    );
-    if (reason == null) return;
-    await _setStatus(OrderStatus.refused, {
-      'refusal_reason': reason,
-      ...kitungaRefundFields(order),
-    });
-  }
 
   void _openDetail(BuildContext context) => context.pushNamed(
         OrderViewSellerDeliverWidget.routeName,
@@ -229,10 +184,10 @@ class _SellerOrderCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Commande $_ref',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 16.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -244,10 +199,10 @@ class _SellerOrderCard extends StatelessWidget {
                 ),
                 child: Text(
                   OrderStatus.label(status),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: color,
                     fontSize: 12.0,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -262,7 +217,7 @@ class _SellerOrderCard extends StatelessWidget {
               kitungaPrice(order.totalAmount),
             ].join(' · '),
             style:
-                GoogleFonts.inter(color: theme.secondaryText, fontSize: 13.0),
+                GoogleFonts.poppins(color: theme.secondaryText, fontSize: 13.0),
           ),
           SizedBox(height: 10.0),
           // Articles commandés, avec les options choisies.
@@ -284,7 +239,7 @@ class _SellerOrderCard extends StatelessWidget {
                           '${it.quantity > 0 ? it.quantity : 1} × ${it.itemName.isNotEmpty ? it.itemName : 'Article'}',
                           if (it.options.isNotEmpty) it.options,
                         ].join(' · '),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: theme.primaryText, fontSize: 13.5),
                       ),
                     ),
@@ -296,7 +251,26 @@ class _SellerOrderCard extends StatelessWidget {
               '${order.snapshotData['refusal_reason'] ?? ''}'.isNotEmpty)
             Text(
               'Motif : ${order.snapshotData['refusal_reason']}',
-              style: GoogleFonts.inter(color: theme.error, fontSize: 13.0),
+              style: GoogleFonts.poppins(color: theme.error, fontSize: 13.0),
+            ),
+          // Retour ou échange demandé par le client.
+          if (KitungaSellerReturnCard.showsFor(order))
+            KitungaSellerReturnCard(order: order),
+          // Commande sur ordonnance : la pharmacie revoit l'ordonnance.
+          if ((order.snapshotData['prescription_photos'] as List?)
+                  ?.isNotEmpty ==
+              true)
+            Padding(
+              padding: EdgeInsets.only(top: 8.0),
+              child: OutlinedButton.icon(
+                onPressed: () => showPrescriptionPhotos(context, [
+                  for (final x
+                      in order.snapshotData['prescription_photos'] as List)
+                    '$x',
+                ]),
+                icon: Icon(Icons.medical_information_outlined, size: 18.0),
+                label: Text('Commande sur ordonnance · voir l\'ordonnance'),
+              ),
             ),
           SizedBox(height: 10.0),
           Row(
@@ -304,44 +278,72 @@ class _SellerOrderCard extends StatelessWidget {
               TextButton(
                 onPressed: () => _openDetail(context),
                 child: Text('Voir le détail',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText,
-                        fontWeight: FontWeight.w600)),
+                        fontWeight: FontWeight.w500)),
               ),
               Spacer(),
+              // Commande livrée : reçu (même numéro que celui du client).
+              if (KitungaReceiptButton.showsFor(order))
+                TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) =>
+                          KitungaReceiptPage(orderId: order.reference.id))),
+                  icon: Icon(Icons.receipt_long_rounded,
+                      size: 18.0, color: theme.primary),
+                  label: Text('Reçu',
+                      style: GoogleFonts.poppins(
+                          color: theme.primary, fontWeight: FontWeight.w600)),
+                ),
               if (status == OrderStatus.pending) ...[
                 OutlinedButton(
-                  onPressed: () => _refuse(context),
+                  // Refus vérifié par le serveur (motif, remboursement).
+                  onPressed: () => sellerRefuse(context, order),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: theme.error),
                     shape: StadiumBorder(),
                   ),
                   child: Text('Refuser',
-                      style: GoogleFonts.inter(
-                          color: theme.error, fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(
+                          color: theme.error, fontWeight: FontWeight.w600)),
                 ),
                 SizedBox(width: 8.0),
                 FilledButton(
-                  onPressed: () => _setStatus(OrderStatus.preparing),
+                  onPressed: () => sellerAccept(context, order),
                   style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
                       backgroundColor: theme.primary, shape: StadiumBorder()),
                   child: Text('Accepter',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 ),
               ],
               if (status == OrderStatus.preparing)
                 FilledButton.icon(
-                  onPressed: () => _setStatus(OrderStatus.ready),
+                  onPressed: () => sellerReady(context, order),
                   style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
                       backgroundColor: theme.primary, shape: StadiumBorder()),
                   icon: Icon(Icons.check_rounded),
                   label: Text('Marquer comme prête',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 ),
               if (status == OrderStatus.ready)
                 Text('En attente d\'un livreur',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 12.5)),
+              // Livreur venu chercher la commande : remise confirmée.
+              if (status == OrderStatus.delivering &&
+                  order.snapshotData['handover_confirmed_at'] == null)
+                FilledButton.icon(
+                  onPressed: () => sellerHandover(context, order),
+                  style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFF17A35B),
+                      shape: StadiumBorder()),
+                  icon: Icon(Icons.handshake_rounded),
+                  label: Text('Remis au livreur',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                ),
             ],
           ),
         ],

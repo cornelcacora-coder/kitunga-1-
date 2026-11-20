@@ -150,11 +150,16 @@ const commissionFlag = <String, String>{
   'assignment_cancelled': 'Affectation annulée',
 };
 
+/// Formules (historique compris). Seule « monthly » est encore vendue.
 const planLabel = <String, String>{
-  'monthly': 'Mensuel (250 F)',
-  'quarterly': 'Trimestriel (500 F)',
+  'quarterly': 'Trimestriel (300 F, 3 mois)',
+  'semester': 'Semestriel (500 F, 6 mois)',
+  'monthly': 'Mensuel (300 F, ancienne formule)',
   'annual': 'Annuel (1000 F)',
 };
+
+/// Formules vendues aujourd'hui (abonnement client unique à 300 F).
+const kOfferedPlans = ['quarterly', 'semester', 'annual'];
 
 String payoutMethodLabel(Map? m) {
   if (m == null) return 'Aucun moyen de paiement';
@@ -229,8 +234,8 @@ class StatusChip extends StatelessWidget {
               s.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                  color: s.color, fontSize: 12.0, fontWeight: FontWeight.w700),
+              style: GoogleFonts.poppins(
+                  color: s.color, fontSize: 12.0, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -239,11 +244,11 @@ class StatusChip extends StatelessWidget {
   }
 }
 
-TextStyle salesTitle([double size = 16.0]) => GoogleFonts.interTight(
-    color: kSalesInk, fontSize: size, fontWeight: FontWeight.w700);
+TextStyle salesTitle([double size = 16.0]) => GoogleFonts.poppins(
+    color: kSalesInk, fontSize: size, fontWeight: FontWeight.w600);
 
 TextStyle salesBody({Color? color, double size = 13.0}) =>
-    GoogleFonts.inter(color: color ?? kSalesMuted, fontSize: size, height: 1.4);
+    GoogleFonts.poppins(color: color ?? kSalesMuted, fontSize: size, height: 1.4);
 
 /// Chargement, erreur et liste vide pour une lecture du serveur.
 class SalesLoader extends StatelessWidget {

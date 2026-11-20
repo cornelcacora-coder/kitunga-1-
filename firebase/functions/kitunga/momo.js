@@ -21,9 +21,11 @@ const PLATFORM = "Kitunga";
 
 function credentials(product) {
   const p = product === "disbursement" ? "DISBURSEMENT" : "COLLECTION";
-  const user = process.env[`MOMO_${p}_USER`];
-  const key = process.env[`MOMO_${p}_KEY`];
-  const sub = process.env[`MOMO_${p}_SUBSCRIPTION`];
+  // Espaces ou retours à la ligne collés par erreur avec la valeur : retirés.
+  const clean = (v) => String(v || "").replace(/\s+/g, "");
+  const user = clean(process.env[`MOMO_${p}_USER`]);
+  const key = clean(process.env[`MOMO_${p}_KEY`]);
+  const sub = clean(process.env[`MOMO_${p}_SUBSCRIPTION`]);
   if (!user || !key || !sub) {
     throw new Error(`Secrets MTN « ${product} » manquants.`);
   }

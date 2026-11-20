@@ -2,9 +2,15 @@ import 'dart:async';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_categories.dart';
+import '/backend/kitunga_banners.dart';
+import '/backend/kitunga_notifications.dart';
+import '/mobile/main_app/subscription/my_subscription_page.dart'
+    show openMySubscription;
+import '/mobile/main_app/search/kitunga_search_page.dart' show openKitungaSearch;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import '/mobile/main_app/home/home_sections.dart' show KitungaHomeProducts;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +36,10 @@ class BuyerHomeView extends StatefulWidget {
 
 class _BuyerHomeViewState extends State<BuyerHomeView> {
   final _searchController = TextEditingController();
+
+  /// Défilement de l'accueil : le fond rouge suit le contenu, la barre du
+  /// haut reste fixe (fond uni dès que le contenu passe dessous).
+  final _scroll = ScrollController();
   String _query = '';
 
   // Carrousel bannière
@@ -40,11 +50,13 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
   @override
   void initState() {
     super.initState();
+    KitungaBannerStore.instance.addListener(_onBanners);
     // Auto-scroll toutes les 4 secondes
     _bannerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted) return;
-      if (_bannerController.hasClients) {
-        final next = (_bannerPage + 1) % _bannerSlides.length;
+      final count = _bannerSlides.length;
+      if (count > 1 && _bannerController.hasClients) {
+        final next = (_bannerPage + 1) % count;
         _bannerController.animateToPage(
           next,
           duration: const Duration(milliseconds: 600),
@@ -54,27 +66,18 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     });
   }
 
-  // Données des slides du carrousel d'accueil (photos adaptées à la maquette)
-  static const _bannerSlides = [
-    (
-      image: 'assets/images/Girl_Bag2.jpg',
-      title1: 'Tout au même',
-      title2: 'endroit',
-      subtitle: 'Boutiques, restaurants\net pharmacies',
-    ),
-    (
-      image: 'assets/images/youngAfrican.jpg',
-      title1: 'Livraison',
-      title2: 'rapide',
-      subtitle: 'Recevez vos commandes\nà domicile',
-    ),
-    (
-      image: 'assets/images/Gemini_Generated_Image_xb96ubxb96ubxb96.png',
-      title1: 'Produits',
-      title2: 'frais',
-      subtitle: 'Alimentation, marché\net épicerie',
-    ),
-  ];
+  // Publicités et promotions du carrousel, gérées par l'admin (page
+  // « Publicités ») ; les 3 bannières d'origine tant qu'elles ne sont pas
+  // chargées.
+  List<KitungaBanner> get _bannerSlides => KitungaBannerStore.instance.list;
+
+  void _onBanners() {
+    if (!mounted) return;
+    setState(() {
+      final count = _bannerSlides.length;
+      if (_bannerPage >= count) _bannerPage = 0;
+    });
+  }
 
   /// Catégories gérées par l'admin (les 5 d'origine en secours).
   static List<KitungaCategory> get _categories =>
@@ -89,7 +92,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
   @override
   void dispose() {
     _bannerTimer?.cancel();
+    KitungaBannerStore.instance.removeListener(_onBanners);
     _searchController.dispose();
+    _scroll.dispose();
     _bannerController.dispose();
     super.dispose();
   }
@@ -137,8 +142,11 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
     final firstName = nameParts.first.trim();
     final displayName = firstName.isNotEmpty ? firstName : 'OKOMBI';
 
+    double offset() => _scroll.hasClients ? _scroll.offset : 0.0;
     return Stack(
       children: [
+        // Fond rouge de l'en-tête : défile avec le contenu (ce n'est pas
+        // une image de fond fixe).
         if (!isDark)
           Positioned(
             top: 0,
@@ -146,20 +154,54 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
             right: 0,
             height: 290.0,
             child: IgnorePointer(
-              child: CustomPaint(
-                painter: HeaderBackgroundWavesPainter(),
+              child: AnimatedBuilder(
+                animation: _scroll,
+                builder: (context, child) => Transform.translate(
+                  offset: Offset(0, -offset().clamp(0.0, 400.0)),
+                  child: child,
+                ),
+                child: CustomPaint(
+                  painter: HeaderBackgroundWavesPainter(),
+                ),
               ),
             ),
           ),
-        ListView(
-          padding: EdgeInsets.only(
-            top: topInset + 4.0,
-            bottom: 32.0,
-          ),
+        Column(
           children: [
-            // 1. Barre d'en-tête (Menu, Logo Kitunga, Mode Nuit, Panier)
-            _buildHeader(context, theme),
-
+            // 1. Barre d'en-tête fixe (Menu, Logo Kitunga, Mode Nuit,
+            // Notifications, Panier).
+            AnimatedBuilder(
+              animation: _scroll,
+              builder: (context, child) {
+                final scrolled = offset() > 4.0;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: EdgeInsets.only(top: topInset + 4.0),
+                  decoration: BoxDecoration(
+                    color: scrolled
+                        ? (isDark
+                            ? const Color(0xFF101418)
+                            : theme.secondaryBackground)
+                        : Colors.transparent,
+                    boxShadow: scrolled
+                        ? const [
+                            BoxShadow(
+                                color: Color(0x14000000),
+                                blurRadius: 8.0,
+                                offset: Offset(0, 2)),
+                          ]
+                        : const [],
+                  ),
+                  child: child,
+                );
+              },
+              child: _buildHeader(context, theme),
+            ),
+            Expanded(
+              child: ListView(
+          controller: _scroll,
+          padding: const EdgeInsets.only(bottom: 32.0),
+          children: [
             // 2. Salutation ("Bonjour, OKOMBI 👋")
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(20.0, 16.0, 20.0, 0.0),
@@ -169,18 +211,18 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   RichText(
                     text: TextSpan(
                       text: 'Bonjour, ',
-                      style: GoogleFonts.interTight(
+                      style: GoogleFonts.poppins(
                         color: theme.primaryText,
                         fontSize: 24.0,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                       children: [
                         TextSpan(
                           text: displayName.toUpperCase(),
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: const Color(0xFFE51A1A),
                             fontSize: 24.0,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const TextSpan(
@@ -193,7 +235,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   const SizedBox(height: 4.0),
                   Text(
                     'Que souhaitez-vous commander aujourd\'hui ?',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.secondaryText,
                       fontSize: 14.0,
                       fontWeight: FontWeight.normal,
@@ -238,7 +280,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                         onChanged: (v) => setState(() => _query = v),
                         decoration: InputDecoration(
                           hintText: 'Rechercher une boutique, un restaurant...',
-                          hintStyle: GoogleFonts.inter(
+                          hintStyle: GoogleFonts.poppins(
                             color: isDark ? const Color(0xFF64748B) : const Color(0xFF9CA3AF),
                             fontSize: 13.5,
                             fontWeight: FontWeight.normal,
@@ -247,7 +289,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           isDense: true,
                           contentPadding: EdgeInsets.zero,
                         ),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 14.0,
                         ),
@@ -262,16 +304,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           setState(() => _query = '');
                         },
                       ),
+                    // Recherche avancée : produits et commerces, filtres, tri.
                     InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text('Recherche vocale bientôt disponible'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      onTap: () =>
+                          openKitungaSearch(context, query: _query.trim()),
                       borderRadius: BorderRadius.circular(20.0),
                       child: Container(
                         width: 40.0,
@@ -281,7 +317,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.mic_rounded,
+                          Icons.tune_rounded,
                           color: Colors.white,
                           size: 20.0,
                         ),
@@ -310,10 +346,16 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               // 6. Section "Commerces certifiés"
               _buildCertifiedSection(context, theme),
 
+              // 7. Produits : Tendances, Nouveautés, Nos produits.
+              const KitungaHomeProducts(),
+
               // Reste des sections si l'utilisateur défile
               for (final row in _rows)
                 ..._buildCategoryRow(theme, row.category, row.title),
             ],
+          ],
+        ),
+            ),
           ],
         ),
       ],
@@ -389,19 +431,19 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     children: [
                       Text(
                         'KITUNGA',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: const Color(0xFFE51A1A),
                           fontSize: 16.5,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
                         ),
                       ),
                       Text(
                         'Achetez. Vivez mieux !',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 9.0,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 2.0),
@@ -460,6 +502,13 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               ),
               const SizedBox(width: 6.0),
 
+              // Notifications (rappels d'abonnement, messages de Kitunga).
+              if (currentUserReference != null) ...[
+                KitungaNotificationBell(
+                    onSubscription: (c) => openMySubscription(c)),
+                const SizedBox(width: 6.0),
+              ],
+
               // Bouton Panier avec badge dynamique lié au panier réel
               ListenableBuilder(
                 listenable: FFAppState(),
@@ -513,10 +562,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                               alignment: Alignment.center,
                               child: Text(
                                 '$cartCount',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   color: Colors.white,
                                   fontSize: 9.5,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -535,6 +584,24 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
 
   /// Bannière Hero carrousel avec PageView et points de pagination
   Widget _buildHeroBanner(BuildContext context) {
+    // Aucune bannière diffusée (toutes désactivées par l'admin).
+    if (_bannerSlides.isEmpty) {
+      // Première ouverture : zone d'attente à la place des publicités
+      // (jamais d'anciennes images) ; rien si l'admin les a toutes retirées.
+      if (!KitungaBannerStore.instance.waiting) return const SizedBox.shrink();
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Container(
+          key: const ValueKey('banner-placeholder'),
+          height: 200.0,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E242B) : const Color(0xFFF1F4F8),
+            borderRadius: BorderRadius.circular(26.0),
+          ),
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
@@ -562,11 +629,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     fit: StackFit.expand,
                     children: [
                       // Photo de fond
-                      Image.asset(
-                        slide.image,
-                        fit: BoxFit.cover,
-                        alignment: Alignment.centerRight,
-                      ),
+                      KitungaBannerImage(slide.image, color: slide.color),
 
                       // Dégradé rouge sur la gauche
                       DecoratedBox(
@@ -574,14 +637,15 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           gradient: LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
+                            // Dégradé allégé : la photo reste visible, le texte lisible.
                             colors: [
-                              const Color(0xFFD60808),
-                              const Color(0xFFE51A1A),
-                              const Color(0xFFE51A1A).withOpacity(0.92),
-                              const Color(0xFFE51A1A).withOpacity(0.35),
+                              slide.color.withOpacity(0.82),
+                              slide.color.withOpacity(0.62),
+                              slide.color.withOpacity(0.32),
+                              slide.color.withOpacity(0.08),
                               Colors.transparent,
                             ],
-                            stops: const [0.0, 0.35, 0.52, 0.70, 0.88],
+                            stops: const [0.0, 0.30, 0.50, 0.68, 0.82],
                           ),
                         ),
                       ),
@@ -600,25 +664,47 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                if (slide.badge.isNotEmpty)
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 4.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0, vertical: 2.0),
+                                    decoration: BoxDecoration(
+                                      color: slide.accent,
+                                      borderRadius: BorderRadius.circular(6.0),
+                                    ),
+                                    child: Text(
+                                      slide.badge,
+                                      style: GoogleFonts.poppins(
+                                        color: slide.color,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                if (slide.title1.isNotEmpty)
                                 Text(
                                   slide.title1,
                                   maxLines: 1,
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                     color: Colors.white,
                                     fontSize: 21.0,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                     fontStyle: FontStyle.italic,
+                                    shadows: kBannerTextShadow,
                                     height: 1.1,
                                   ),
                                 ),
+                                if (slide.title2.isNotEmpty)
                                 Text(
                                   slide.title2,
                                   maxLines: 1,
-                                  style: GoogleFonts.interTight(
-                                    color: const Color(0xFFFFD200),
+                                  style: GoogleFonts.poppins(
+                                    color: slide.accent,
                                     fontSize: 29.0,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                     fontStyle: FontStyle.italic,
+                                    shadows: kBannerTextShadow,
                                     height: 1.0,
                                   ),
                                 ),
@@ -626,19 +712,18 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                 Text(
                                   slide.subtitle,
                                   maxLines: 2,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     color: Colors.white,
                                     fontSize: 12.0,
                                     fontWeight: FontWeight.w500,
                                     height: 1.2,
+                                    shadows: kBannerTextShadow,
                                   ),
                                 ),
                               ],
                             ),
                             InkWell(
-                              onTap: () {
-                                context.pushNamed(ShopsWidget.routeName);
-                              },
+                              onTap: () => openKitungaBanner(context, slide),
                               borderRadius: BorderRadius.circular(20.0),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
@@ -658,17 +743,17 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'Découvrir',
-                                      style: GoogleFonts.inter(
-                                        color: const Color(0xFFE51A1A),
+                                      slide.button,
+                                      style: GoogleFonts.poppins(
+                                        color: slide.color,
                                         fontSize: 12.5,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     const SizedBox(width: 4.0),
-                                    const Icon(
+                                    Icon(
                                       Icons.chevron_right_rounded,
-                                      color: Color(0xFFE51A1A),
+                                      color: slide.color,
                                       size: 16.0,
                                     ),
                                   ],
@@ -743,10 +828,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   const SizedBox(width: 8.0),
                   Text(
                     'Explorer par catégorie',
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                       color: theme.primaryText,
                       fontSize: 17.0,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -757,10 +842,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                   children: [
                     Text(
                       'Voir plus',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFFE51A1A),
                         fontSize: 13.0,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 2.0),
@@ -796,7 +881,9 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     Container(
                       width: 66.0,
                       height: 66.0,
-                      padding: const EdgeInsets.all(11.0),
+                      padding: kitungaCategoryPadding(
+                          c.image, const EdgeInsets.all(11.0)),
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         color: c.pastel,
                         borderRadius: BorderRadius.circular(18.0),
@@ -806,10 +893,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     const SizedBox(height: 6.0),
                     Text(
                       c.name,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.primaryText,
                         fontSize: 12.0,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -853,15 +940,15 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     children: [
                       Text(
                         'Commerces certifiés',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 17.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         'Vérifiés par l\'équipe Kitunga',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 12.0,
                           fontWeight: FontWeight.normal,
@@ -886,10 +973,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     children: [
                       Text(
                         'Voir plus',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 12.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 3.0),
@@ -984,10 +1071,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 18.0,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -996,10 +1083,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               onPressed: onSeeAll,
               child: Text(
                 'Voir tout',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   color: theme.primary,
                   fontSize: 14.0,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -1096,10 +1183,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     s.displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.interTight(
+                    style: GoogleFonts.poppins(
                       color: theme.primaryText,
                       fontSize: 15.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1111,7 +1198,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               _subtitle(s),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 12.0,
               ),
@@ -1148,10 +1235,10 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                           s.displayName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 15.0,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -1163,7 +1250,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
                     _subtitle(s),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.secondaryText,
                       fontSize: 13.0,
                     ),
@@ -1180,8 +1267,26 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
 
   List<Widget> _buildSearchResults(FlutterFlowTheme theme) {
     final results = _searchResults;
+    // Lien vers la recherche dans les produits de tous les commerces.
+    final products = Padding(
+      padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 0.0),
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFFE51A1A),
+          side: const BorderSide(color: Color(0x55E51A1A)),
+          padding: const EdgeInsets.symmetric(vertical: 14.0),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14.0)),
+        ),
+        onPressed: () => openKitungaSearch(context, query: _query.trim()),
+        icon: const Icon(Icons.shopping_bag_outlined, size: 18.0),
+        label: Text('Chercher « ${_query.trim()} » dans les produits',
+            overflow: TextOverflow.ellipsis),
+      ),
+    );
     if (results.isEmpty) {
       return [
+        products,
         Padding(
           padding: const EdgeInsets.fromLTRB(32.0, 48.0, 32.0, 0.0),
           child: Column(
@@ -1192,7 +1297,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
               Text(
                 'Aucun commerce ne correspond à « ${_query.trim()} ».',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText, fontSize: 14.0),
               ),
             ],
@@ -1201,6 +1306,7 @@ class _BuyerHomeViewState extends State<BuyerHomeView> {
       ];
     }
     return [
+      products,
       _sectionHeader(
           '${results.length} résultat${results.length > 1 ? 's' : ''}'),
       for (final s in results) _shopTile(theme, s),

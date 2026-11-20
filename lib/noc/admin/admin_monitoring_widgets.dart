@@ -11,6 +11,7 @@ import '/noc/ui/admin_charts.dart';
 import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 import 'admin_dashboard_data.dart';
+import 'admin_delivery_map.dart';
 import 'admin_order_detail.dart';
 import 'admin_shell.dart';
 
@@ -75,6 +76,8 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
     List<Map<String, dynamic>> failed,
   })? _last;
 
+  List<DashOrder> _issues = const [];
+
   AdminExportData? _export() {
     final l = _last;
     if (l == null) return null;
@@ -93,7 +96,8 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
           orderStatusShort(o.status),
           o.total,
         ];
-    final total = l.late.length +
+    final total = _issues.length +
+        l.late.length +
         l.silent.length +
         l.notReceived.length +
         l.failed.length;
@@ -110,6 +114,8 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
       rows: total == 0
           ? const []
           : [
+              for (final o in _issues)
+                order('Problème de livraison : ${o.issue}', o),
               for (final o in l.late) order('En retard (+2 h)', o),
               for (final o in l.silent) order('Sans réponse (+15 min)', o),
               for (final o in l.notReceived) order('Non reçue', o),
@@ -177,6 +183,8 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
     Duration age(DashOrder o) =>
         o.createdAt == null ? Duration.zero : now.difference(o.createdAt!);
     final late = live.where((o) => age(o) > OpsThresholds.lateAfter).toList();
+    // Signalés par le livreur (client injoignable, refus, codes faux…).
+    final issues = live.where((o) => o.issue.isNotEmpty).toList();
     final silent = live
         .where((o) =>
             ['', OrderStatus.pending].contains(o.status) &&
@@ -187,8 +195,9 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
     final failed = pays.where((p) => p['status'] == 'Echec').toList();
     final rate = paymentFailureRate(pays.map((p) => p['status'] as String?));
     _last = (late: late, silent: silent, notReceived: notReceived, failed: failed);
+    _issues = issues;
     ensureNames(_src, [
-      for (final o in [...late, ...silent, ...notReceived]) ...[
+      for (final o in [...issues, ...late, ...silent, ...notReceived]) ...[
         o.userPath,
         o.sellerPath,
         o.delivererPath,
@@ -214,6 +223,14 @@ class _AdminAlertsWidgetState extends State<AdminAlertsWidget>
                 rateLevel(rate)),
           ],
         ),
+        if (issues.isNotEmpty) ...[
+          const SizedBox(height: 20.0),
+          _orderSection(
+              'Problèmes de livraison',
+              'Signalés par le livreur : à traiter (fiche de la commande)',
+              issues,
+              Icons.report_rounded),
+        ],
         const SizedBox(height: 20.0),
         _orderSection(
             'Commandes en retard',
@@ -533,6 +550,27 @@ class _AdminZonesWidgetState extends State<AdminZonesWidget> {
             final maxMonth = rows.fold(0, (m, r) => r.month > m ? r.month : m);
             return AdminScroll(
               children: [
+                AdminCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const AdminCardHeader(
+                        title: 'Carte des livraisons en cours',
+                        subtitle: 'Cliquez sur une bulle pour voir les commandes '
+                            'du quartier',
+                      ),
+                      AdminDeliveryMap(
+                        orders: live.data!,
+                        now: _now,
+                        height: MediaQuery.sizeOf(context).width >=
+                                AdminShell.wideBreakpoint
+                            ? 480.0
+                            : 340.0,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20.0),
                 AdminCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

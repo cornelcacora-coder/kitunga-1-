@@ -12,9 +12,13 @@ import '/noc/ui/admin_kit.dart' show AdminThemeScope;
 /// Cet écran protège l'interface : la protection des données reste assurée
 /// par les règles Firestore.
 class KitungaAdminGuard extends StatefulWidget {
-  const KitungaAdminGuard({super.key, required this.child});
+  const KitungaAdminGuard(
+      {super.key, required this.child, this.roles = const ['Admin']});
 
   final Widget child;
+
+  /// Rôles autorisés (l'espace support accepte aussi « Support »).
+  final List<String> roles;
 
   @override
   State<KitungaAdminGuard> createState() => _KitungaAdminGuardState();
@@ -33,7 +37,7 @@ class _KitungaAdminGuardState extends State<KitungaAdminGuard> {
     return StreamBuilder<UserRecord?>(
       stream: _account,
       builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data?.role == 'Admin') {
+        if (snapshot.hasData && widget.roles.contains(snapshot.data?.role)) {
           // Charte admin pour la page et les fenêtres qu'elle ouvre.
           return AdminThemeScope(child: widget.child);
         }

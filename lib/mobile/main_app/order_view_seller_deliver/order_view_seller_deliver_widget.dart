@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'order_view_seller_deliver_model.dart';
+import '/mobile/components/delivery/kitunga_deliverer_panel.dart' show KitungaOrderContacts;
 import '/mobile/components/form_styles/form_styles.dart';
 export 'order_view_seller_deliver_model.dart';
 
@@ -121,7 +123,7 @@ class _OrderViewSellerDeliverWidgetState
                       'Commande',
                       style:
                           FlutterFlowTheme.of(context).headlineMedium.override(
-                                font: GoogleFonts.interTight(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .headlineMedium
                                       .fontWeight,
@@ -187,15 +189,13 @@ class _OrderViewSellerDeliverWidgetState
                           snapshot.data!;
                       if (listViewOrderItemsRecordList.isEmpty) {
                         return EmptyCardWidget(
-                          title: 'Panier vide !',
+                          title: 'Articles non disponibles',
                           description:
-                              'Vous n\'avez aucun produit dans votre pannier. Accedez à une boutique afin de choisir un produit dans le catalogue disponible.',
-                          buttonText: 'Explorer',
+                              'Le détail des articles de cette commande n\'est pas disponible.',
+                          buttonText: 'Retour',
                           photo:
-                              'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/vnqklpswxo1p/EmptyCart.png',
-                          action: () async {
-                            context.pushNamed(HomeWidget.routeName);
-                          },
+                              'assets/images/app/emptycart.png',
+                          action: () async => context.safePop(),
                         );
                       }
 
@@ -263,20 +263,15 @@ class _OrderViewSellerDeliverWidgetState
                                               borderRadius:
                                                   BorderRadius.circular(16.0),
                                             ),
-                                            child: CachedNetworkImage(
-                                              fadeInDuration:
-                                                  Duration(milliseconds: 0),
-                                              fadeOutDuration:
-                                                  Duration(milliseconds: 0),
-                                              imageUrl: getCORSProxyUrl(
+                                            child: KitungaImage(
+                                              getCORSProxyUrl(
                                                 valueOrDefault<String>(
                                                   productProductRecord.prodImg,
-                                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/ebk2xgecgley/ShopIcon_(1).png',
+                                                  'assets/images/app/shopicon_1.png',
                                                 ),
                                               ),
                                               width: double.infinity,
                                               height: double.infinity,
-                                              fit: BoxFit.cover,
                                             ),
                                           ),
                                         ),
@@ -292,7 +287,7 @@ class _OrderViewSellerDeliverWidgetState
                                               Text(
                                                 valueOrDefault<String>(
                                                   productProductRecord.name,
-                                                  'Aucun produit Dispo',
+                                                  'Produit indisponible',
                                                 ),
                                                 maxLines: 1,
                                                 style:
@@ -302,7 +297,7 @@ class _OrderViewSellerDeliverWidgetState
                                                           font: GoogleFonts
                                                               .interTight(
                                                             fontWeight:
-                                                                FontWeight.bold,
+                                                                FontWeight.w600,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -315,7 +310,7 @@ class _OrderViewSellerDeliverWidgetState
                                                           fontSize: 16.0,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -330,7 +325,7 @@ class _OrderViewSellerDeliverWidgetState
                                                   listViewOrderItemsRecord.options,
                                                   maxLines: 2,
                                                   overflow: TextOverflow.ellipsis,
-                                                  style: GoogleFonts.inter(
+                                                  style: GoogleFonts.poppins(
                                                     color: FlutterFlowTheme.of(context).secondaryText,
                                                     fontSize: 12.5,
                                                   ),
@@ -347,14 +342,14 @@ class _OrderViewSellerDeliverWidgetState
                                                     valueOrDefault<String>(
                                                       productProductRecord
                                                           .specifications,
-                                                      'Aucune specification',
+                                                      'Aucune précision',
                                                     ),
                                                     style: FlutterFlowTheme.of(
                                                             context)
                                                         .labelSmall
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -401,7 +396,7 @@ class _OrderViewSellerDeliverWidgetState
                                                           font: GoogleFonts
                                                               .interTight(
                                                             fontWeight:
-                                                                FontWeight.w800,
+                                                                FontWeight.w600,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -413,7 +408,7 @@ class _OrderViewSellerDeliverWidgetState
                                                               .secondaryText,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.w800,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -430,7 +425,7 @@ class _OrderViewSellerDeliverWidgetState
                                                           font: GoogleFonts
                                                               .interTight(
                                                             fontWeight:
-                                                                FontWeight.w800,
+                                                                FontWeight.w600,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -442,7 +437,7 @@ class _OrderViewSellerDeliverWidgetState
                                                               .secondaryText,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.w800,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -473,7 +468,7 @@ class _OrderViewSellerDeliverWidgetState
                       'Résumer',
                       style:
                           FlutterFlowTheme.of(context).headlineMedium.override(
-                                font: GoogleFonts.interTight(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .headlineMedium
                                       .fontWeight,
@@ -554,7 +549,7 @@ class _OrderViewSellerDeliverWidgetState
                                     style: FlutterFlowTheme.of(context)
                                         .headlineMedium
                                         .override(
-                                          font: GoogleFonts.interTight(
+                                          font: GoogleFonts.poppins(
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
                                                     .headlineMedium
@@ -611,7 +606,7 @@ class _OrderViewSellerDeliverWidgetState
                                     style: FlutterFlowTheme.of(context)
                                         .headlineMedium
                                         .override(
-                                          font: GoogleFonts.interTight(
+                                          font: GoogleFonts.poppins(
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
                                                     .headlineMedium
@@ -673,7 +668,7 @@ class _OrderViewSellerDeliverWidgetState
                                     style: FlutterFlowTheme.of(context)
                                         .headlineMedium
                                         .override(
-                                          font: GoogleFonts.interTight(
+                                          font: GoogleFonts.poppins(
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
                                                     .headlineMedium
@@ -702,7 +697,7 @@ class _OrderViewSellerDeliverWidgetState
                                     style: FlutterFlowTheme.of(context)
                                         .headlineMedium
                                         .override(
-                                          font: GoogleFonts.interTight(
+                                          font: GoogleFonts.poppins(
                                             fontWeight:
                                                 FlutterFlowTheme.of(context)
                                                     .headlineMedium
@@ -733,6 +728,25 @@ class _OrderViewSellerDeliverWidgetState
                         ),
                       ),
                     ),
+                  ),
+                  // Appeler / WhatsApp : client, commerce, livreur.
+                  StreamBuilder<List<OrdersRecord>>(
+                    stream: queryOrdersRecord(
+                      queryBuilder: (o) => o.where('order_unique_reference',
+                          isEqualTo: widget.orderRefer),
+                      singleRecord: true,
+                    ),
+                    builder: (context, snap) {
+                      final order = (snap.data ?? const []).firstOrNull;
+                      if (order == null ||
+                          !KitungaOrderContacts.showsFor(order)) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: KitungaOrderContacts(order: order),
+                      );
+                    },
                   ),
                 ].divide(SizedBox(height: 16.0)),
               ),

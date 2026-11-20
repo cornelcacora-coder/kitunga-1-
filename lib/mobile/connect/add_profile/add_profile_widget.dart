@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
@@ -80,8 +81,8 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
             buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              size: 30.0,
+              color: FlutterFlowTheme.of(context).primaryText,
+              size: 24.0,
             ),
             onPressed: () async {
               context.pop();
@@ -93,17 +94,17 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
               'Photo de profile',
             ),
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                        FontWeight.w600,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme.of(context).primaryText,
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                      FontWeight.w600,
                   fontStyle:
                       FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                 ),
@@ -309,8 +310,8 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                 style: FlutterFlowTheme.of(context)
                                     .titleLarge
                                     .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.bold,
+                                      font: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .titleLarge
                                             .fontStyle,
@@ -319,7 +320,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                           .primaryText,
                                       fontSize: 24.0,
                                       letterSpacing: 0.0,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleLarge
                                           .fontStyle,
@@ -336,7 +337,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                   style: FlutterFlowTheme.of(context)
                                       .titleSmall
                                       .override(
-                                        font: GoogleFonts.inter(
+                                        font: GoogleFonts.poppins(
                                           fontWeight: FontWeight.normal,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
@@ -409,8 +410,8 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                         textStyle: FlutterFlowTheme.of(context)
                                             .titleMedium
                                             .override(
-                                              font: GoogleFonts.interTight(
-                                                fontWeight: FontWeight.bold,
+                                              font: GoogleFonts.poppins(
+                                                fontWeight: FontWeight.w600,
                                                 fontStyle:
                                                     FlutterFlowTheme.of(context)
                                                         .titleMedium
@@ -419,7 +420,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                               color: Colors.white,
                                               fontSize: 16.0,
                                               letterSpacing: 0.0,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.w600,
                                               fontStyle:
                                                   FlutterFlowTheme.of(context)
                                                       .titleMedium
@@ -507,12 +508,8 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                             ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12.0),
-                                              child: CachedNetworkImage(
-                                                fadeInDuration:
-                                                    Duration(milliseconds: 0),
-                                                fadeOutDuration:
-                                                    Duration(milliseconds: 0),
-                                                imageUrl: getCORSProxyUrl(
+                                              child: KitungaImage(
+                                                getCORSProxyUrl(
                                                   valueOrDefault<String>(
                                                     _model.uploadedFileUrl_businessCover !=
                                                                 null &&
@@ -520,13 +517,12 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                                 ''
                                                         ? _model
                                                             .uploadedFileUrl_businessCover
-                                                        : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
-                                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                        : 'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                    'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
                                                   ),
                                                 ),
                                                 width: double.infinity,
                                                 height: 250.0,
-                                                fit: BoxFit.cover,
                                               ),
                                             ),
                                             Container(
@@ -599,16 +595,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                                     .circle,
                                                               ),
                                                               child:
-                                                                  CachedNetworkImage(
-                                                                fadeInDuration:
-                                                                    Duration(
-                                                                        milliseconds:
-                                                                            0),
-                                                                fadeOutDuration:
-                                                                    Duration(
-                                                                        milliseconds:
-                                                                            0),
-                                                                imageUrl:
+                                                                  KitungaImage(
                                                                     getCORSProxyUrl(
                                                                   valueOrDefault<
                                                                       String>(
@@ -618,13 +605,11 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                                                 ''
                                                                         ? _model
                                                                             .uploadedFileUrl_businessProfile
-                                                                        : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
-                                                                    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/kitunga-xtvpe4/assets/35epd9ar50b3/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                                        : 'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
+                                                                    'assets/images/Gemini_Generated_Image_9i3o3n9i3o3n9i3o.png',
                                                                   ),
                                                                 ),
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                              ),
+                                                                  ),
                                                             ),
                                                           ),
                                                         ),
@@ -781,7 +766,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                         .titleSmall
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FontWeight
                                                                     .normal,
@@ -919,7 +904,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                         .titleSmall
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FontWeight
                                                                     .normal,
@@ -962,7 +947,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                             style: FlutterFlowTheme.of(context)
                                                 .titleSmall
                                                 .override(
-                                                  font: GoogleFonts.inter(
+                                                  font: GoogleFonts.poppins(
                                                     fontWeight:
                                                         FontWeight.normal,
                                                     fontStyle:
@@ -1070,7 +1055,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                         font: GoogleFonts
                                                             .interTight(
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1081,7 +1066,7 @@ class _AddProfileWidgetState extends State<AddProfileWidget> {
                                                         fontSize: 16.0,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FontWeight.bold,
+                                                            FontWeight.w600,
                                                         fontStyle:
                                                             FlutterFlowTheme.of(
                                                                     context)

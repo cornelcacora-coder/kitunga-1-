@@ -16,9 +16,9 @@ const _kPrivateApiFunctionName = 'ffPrivateApiCall';
 class MoMoCallCall {
   // ── Vraie API MTN MoMo Congo (Production) ──────────────────────────────────
   static const String _baseUrl = 'https://proxy.momoapi.mtn.com';
-  static const String _apiUser = '5d06e82a-3eb2-4fb1-a138-b5eaae47e143';
-  static const String _apiKey = 'db57126d1df64f0e909eb52ffcbc8687';
-  static const String _subscriptionKey = 'b9b0c0284c1744eaae459c5ad23aa873';
+  static const String _apiUser = ''; // clés retirées : paiement par le serveur
+  static const String _apiKey = '';
+  static const String _subscriptionKey = '';
   static const String _targetEnv = 'mtncongo';
 
   /// Helper de log uniquement en mode debug
@@ -34,6 +34,19 @@ class MoMoCallCall {
     double? amount,
     String? orderId,
   }) async {
+    // Ancien paiement depuis le téléphone : les clés MTN ne sont plus dans
+    // l'application (elles sont sur le serveur, voir server_payment.dart).
+    if (_apiUser.isEmpty || _apiKey.isEmpty || _subscriptionKey.isEmpty) {
+      return ApiCallResponse(
+        {
+          'status': 'failed',
+          'message': 'Mettez à jour l\'application Kitunga pour payer.',
+          'step': 'validation',
+        },
+        {},
+        400,
+      );
+    }
     // Aucun montant par défaut : on ne débite jamais un montant arbitraire.
     if (amount == null || amount <= 0) {
       return ApiCallResponse(

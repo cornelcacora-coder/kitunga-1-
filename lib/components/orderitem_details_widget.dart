@@ -107,7 +107,7 @@ class _OrderitemDetailsWidgetState extends State<OrderitemDetailsWidget> {
                       widget!.title,
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).titleMedium.override(
-                            font: GoogleFonts.interTight(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .fontWeight,
@@ -140,7 +140,7 @@ class _OrderitemDetailsWidgetState extends State<OrderitemDetailsWidget> {
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelSmall
                                       .fontWeight,
@@ -173,15 +173,15 @@ class _OrderitemDetailsWidgetState extends State<OrderitemDetailsWidget> {
                   Text(
                     widget!.price,
                     style: FlutterFlowTheme.of(context).titleSmall.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .fontStyle,
                           ),
                           color: FlutterFlowTheme.of(context).primary,
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleSmall.fontStyle,
                         ),

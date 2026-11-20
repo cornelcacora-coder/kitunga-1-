@@ -3,6 +3,12 @@ import '/noc/admin_login/admin_login_widget.dart';
 import '/noc/sales/sales_admin_widget.dart';
 import '/noc/ops/admin_ops_widget.dart';
 import '/noc/admin/admin_categories_widget.dart';
+import '/noc/admin/admin_banners_widget.dart';
+import '/noc/admin/admin_delivery_pricing_widget.dart';
+import '/noc/support/support_workspace.dart';
+import '/noc/admin/admin_finance_widget.dart';
+import '/noc/admin/admin_supervision_widget.dart';
+import '/noc/messages/staff_inbox.dart';
 import '/noc/admin/admin_clients_widget.dart';
 import '/noc/admin/admin_dashboard_widget.dart';
 import '/noc/admin/admin_monitoring_widgets.dart';
@@ -98,13 +104,16 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) => kIsWeb
+      errorBuilder: (context, state) => kIsWeb && !kWebMobilePreview
           ? AdminLoginWidget()
           : appStateNotifier.loggedIn
               ? NavBarPage()
               : IntroWidget(),
-      // Web : administration seulement (voir web_admin_only.dart).
-      redirect: kIsWeb ? (context, state) => webAdminRedirect(state.uri) : null,
+      // Web : administration seulement (voir web_admin_only.dart), sauf en
+      // aperçu local de l'application mobile.
+      redirect: kIsWeb && !kWebMobilePreview
+          ? (context, state) => webAdminRedirect(state.uri)
+          : null,
       routes: [
         FFRoute(
           name: '_initialize',
@@ -145,6 +154,44 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: AdminCategoriesWidget.routePath,
           builder: (context, params) =>
               KitungaAdminGuard(child: AdminCategoriesWidget()),
+        ),
+        FFRoute(
+          name: AdminMessagesWidget.routeName,
+          path: AdminMessagesWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminMessagesWidget()),
+        ),
+        FFRoute(
+          name: AdminSupervisionWidget.routeName,
+          path: AdminSupervisionWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminSupervisionWidget()),
+        ),
+        FFRoute(
+          name: AdminFinanceWidget.routeName,
+          path: AdminFinanceWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminFinanceWidget()),
+        ),
+        // Espace du support client : agents « Support » et admins.
+        FFRoute(
+          name: SupportWorkspaceWidget.routeName,
+          path: SupportWorkspaceWidget.routePath,
+          builder: (context, params) => KitungaAdminGuard(
+              roles: const ['Admin', 'Support'],
+              child: SupportWorkspaceWidget()),
+        ),
+        FFRoute(
+          name: AdminDeliveryPricingWidget.routeName,
+          path: AdminDeliveryPricingWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminDeliveryPricingWidget()),
+        ),
+        FFRoute(
+          name: AdminBannersWidget.routeName,
+          path: AdminBannersWidget.routePath,
+          builder: (context, params) =>
+              KitungaAdminGuard(child: AdminBannersWidget()),
         ),
         FFRoute(
           name: AdminProductsWidget.routeName,

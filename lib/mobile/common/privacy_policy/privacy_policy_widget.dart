@@ -83,8 +83,8 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
             buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              size: 30.0,
+              color: FlutterFlowTheme.of(context).primaryText,
+              size: 24.0,
             ),
             onPressed: () async {
               context.pop();
@@ -93,17 +93,17 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
           title: Text(
             'Confidentialité',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                        FontWeight.w600,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme.of(context).primaryText,
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                      FontWeight.w600,
                   fontStyle:
                       FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                 ),
@@ -118,7 +118,7 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(
-                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark, decorations: false),
                 ),
               ),
             ),
@@ -141,15 +141,15 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
                     'Types de données que nous collectons',
                     maxLines: 1,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           fontSize: 20.0,
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                           lineHeight: 1.5,
@@ -159,7 +159,7 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
                 Text(
                   'Données identitaires et de contact : Nom, prénom, numéro de téléphone, adresse e-mail et adresse physique de livraison.\n\nDonnées de géolocalisation et techniques : Position GPS exacte (pour le guidage des livreurs), modèle de téléphone, adresse IP et historique d\'utilisation de l\'application.\n\nDonnées de transaction : Historique des achats, produits ajoutés au panier et références de paiement Mobile Money (hors codes PIN secrets).',
                   style: FlutterFlowTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.inter(
+                        font: GoogleFonts.poppins(
                           fontWeight: FontWeight.normal,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleSmall.fontStyle,
@@ -178,15 +178,15 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
                     'Utilisation de vos données personnelles',
                     maxLines: 1,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           fontSize: 20.0,
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                         ),
@@ -197,7 +197,7 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
                   child: Text(
                     'ivraison et suivi : Traiter vos commandes, acheminer vos colis à la bonne adresse et vous notifier de leur statut.\n\nPaiement et gestion : Valider les transactions via MTN MoMo/Airtel Money et assurer le support client (réclamations, remboursements).\n\nAmélioration et sécurité : Personnaliser les offres de produits, optimiser le fonctionnement de l\'application et prévenir la fraude.',
                     style: FlutterFlowTheme.of(context).titleSmall.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FontWeight.normal,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
@@ -218,15 +218,15 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
                     'Divulgation de vos données',
                     maxLines: 1,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.bold,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
                           ),
                           fontSize: 20.0,
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                         ),
@@ -237,7 +237,7 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget>
                   child: Text(
                     'Partenaires logistiques : Transmission uniquement du nom, du téléphone et de l\'adresse/géolocalisation au livreur assigné à votre commande.\n\nOpérateurs de paiement et hébergeurs : Partage restreint avec MTN Congo, Airtel Congo et nos serveurs sécurisés (ex: Firebase, Supabase) pour exécuter le service.\n\nObligations légales : Aucune revente de données à des tiers ; transmission uniquement sur réquisition judiciaire officielle (police, justice, ARPCE).',
                     style: FlutterFlowTheme.of(context).titleSmall.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FontWeight.normal,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleSmall

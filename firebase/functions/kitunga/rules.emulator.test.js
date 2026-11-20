@@ -103,16 +103,48 @@ test("vendeur : accepte, prépare, refuse avec motif", async () => {
     refusal_reason: "Rupture", refund_needed: true}));
 });
 
-test("livreur : prend, livre, ajoute la preuve", async () => {
-  await seed({status: "Pret"});
-  const d = db("driver");
-  await assertSucceeds(updateDoc(orderOf("driver"), {status: "encours",
-    deliver_reference: doc(d, "User/driver"), deliverer_ref: "driver"}));
-  await assertSucceeds(updateDoc(orderOf("driver"), {status: "Livrer",
-    delivered_at: serverTimestamp()}));
-  await assertSucceeds(updateDoc(orderOf("driver"),
-      {delivery_photo: "url", user_signature: "url"}));
-});
+test("livreur : prend la commande ; la remise passe par le serveur",
+    async () => {
+      await seed({status: "Pret"}, {driver2: {role: "Deliver"}});
+      const d = db("driver");
+      // Prendre la commande au nom d'un autre livreur : refusé.
+      await assertFails(updateDoc(orderOf("driver"), {status: "encours",
+        deliver_reference: doc(d, "User/driver2"), deliverer_ref: "driver2"}));
+      await assertSucceeds(updateDoc(orderOf("driver"), {status: "encours",
+        deliver_reference: doc(d, "User/driver"), deliverer_ref: "driver"}));
+      // Sans code de remise vérifié par le serveur : refusé.
+      await assertFails(updateDoc(orderOf("driver"), {status: "Livrer",
+        delivered_at: serverTimestamp()}));
+      await assertFails(updateDoc(orderOf("driver"), {status: "Reçu"}));
+      await assertFails(updateDoc(orderOf("driver"),
+          {delivery_code_verified: true}));
+      await assertFails(updateDoc(orderOf("driver"), {delivery_photo: "url"}));
+      await assertFails(updateDoc(orderOf("driver"),
+          {receipt_number: "KTG-2026-000001"}));
+      // Déjà prise : un second livreur ne peut plus la prendre.
+      await assertFails(updateDoc(doc(db("driver2"), "Orders/o1"), {
+        deliver_reference: doc(d, "User/driver2"), deliverer_ref: "driver2"}));
+      await assertFails(updateDoc(orderOf("driver"),
+          {taken_at: serverTimestamp()}));
+      // Le client non plus ne peut pas se déclarer livré avant la remise.
+      await assertFails(updateDoc(orderOf("buyer"), {status: "Reçu"}));
+    });
+
+test("codes de remise et compteurs de reçus : fermés aux applications",
+    async () => {
+      await seed();
+      await env.withSecurityRulesDisabled(async (ctx) => {
+        const f = ctx.firestore();
+        await setDoc(doc(f, "delivery_codes/o1"), {code: "4821"});
+        await setDoc(doc(f, "receipt_counters/2026"), {next: 2});
+      });
+      for (const uid of ["buyer", "driver", "seller", "admin"]) {
+        await assertFails(getDoc(doc(db(uid), "delivery_codes/o1")));
+        await assertFails(setDoc(doc(db(uid), "delivery_codes/o1"),
+            {code: "0000"}));
+        await assertFails(getDoc(doc(db(uid), "receipt_counters/2026")));
+      }
+    });
 
 test("client : confirme ou signale la réception", async () => {
   await seed({status: "Livrer"});
@@ -246,6 +278,18 @@ test("admin : ne modifie rien d'autre sur un profil", async () => {
       {photo_url: "url"}));
 });
 
+test("profil : on ne lève pas soi-même sa suspension ; second numéro permis",
+    async () => {
+      await seed({}, {sus: {role: "Seller", account_status: "suspended",
+        account_status_reason: "Fraude"}});
+      await assertFails(updateDoc(doc(db("sus"), "User/sus"),
+          {account_status: "active"}));
+      await assertFails(updateDoc(doc(db("sus"), "User/sus"),
+          {account_status_reason: null}));
+      await assertSucceeds(updateDoc(doc(db("buyer"), "User/buyer"),
+          {phone_number: "+242060000001", phone_number_2: "+242050000002"}));
+    });
+
 test("abonnement : sans abonnement ou en visiteur, pas de commande", async () => {
   await seed({}, {guest: {role: "Guest"}});
   for (const uid of ["other", "guest"]) {
@@ -359,3 +403,44 @@ test("commerces désactivés : la liste publique reste lisible", async () => {
       where("role", "==", "Seller"),
       where("account_status", "==", "suspended"))));
 });
+
+// ── Écosystème : champs et collections tenus par le serveur seul ─────────
+
+test("statuts calculés, règlement et proposition : écrits par le serveur seul",
+    async () => {
+      await seed({status: "Pret"});
+      for (const [uid, field, value] of [
+        ["seller", "delivery_status", "delivered"],
+        ["seller", "finance_status", "settled"],
+        ["buyer", "settled_at", serverTimestamp()],
+        ["driver", "offer_to", "driver"],
+        ["driver", "arrived_at", serverTimestamp()],
+        ["seller", "status_actor", {uid: "admin", role: "Admin"}],
+        ["seller", "shop_zone", "Bacongo"],
+      ]) {
+        await assertFails(updateDoc(orderOf(uid), {[field]: value}));
+      }
+    });
+
+test("grand livre, tickets, conversations, missions : illisibles en direct",
+    async () => {
+      await seed();
+      await env.withSecurityRulesDisabled(async (ctx) => {
+        const d = ctx.firestore();
+        await setDoc(doc(d, "Ledger/o1_seller"), {account_uid: "seller",
+          amount: 2500});
+        await setDoc(doc(d, "Tickets/t1"), {author_uid: "buyer"});
+        await setDoc(doc(d, "Conversations/c1"), {participants: ["buyer"]});
+        await setDoc(doc(d, "Missions/m1"), {deliverer_uid: "driver"});
+        await setDoc(doc(d, "Settings/finance"), {commission_rate: 0});
+      });
+      await assertFails(getDoc(doc(db("seller"), "Ledger/o1_seller")));
+      await assertFails(setDoc(doc(db("seller"), "Ledger/x"),
+          {account_uid: "seller", amount: 999999}));
+      await assertFails(getDoc(doc(db("other"), "Tickets/t1")));
+      await assertFails(getDoc(doc(db("other"), "Conversations/c1")));
+      await assertFails(setDoc(doc(db("driver"), "Missions/m2"),
+          {deliverer_uid: "driver", status: "accepted"}));
+      await assertFails(setDoc(doc(db("seller"), "Settings/finance"),
+          {commission_rate: 0}));
+    });

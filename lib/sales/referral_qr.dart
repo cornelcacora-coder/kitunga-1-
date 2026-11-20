@@ -39,10 +39,10 @@ class KitungaReferralQr extends StatelessWidget {
           const SizedBox(height: 10.0),
           SelectableText(
             code,
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF17181C),
               fontSize: 20.0,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               letterSpacing: 2.0,
             ),
           ),

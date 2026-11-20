@@ -67,22 +67,22 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
             buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              size: 30.0,
+              color: FlutterFlowTheme.of(context).primaryText,
+              size: 24.0,
             ),
             onPressed: () async {
               context.pop();
             },
           ),
           title: Text(
-            'Mot de Passe Oublier',
+            'Mot de passe oublié',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight: FontWeight.w500,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme.of(context).primaryText,
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,
@@ -122,7 +122,7 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                       textAlign: TextAlign.start,
                       maxLines: 2,
                       style: FlutterFlowTheme.of(context).titleSmall.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FontWeight.normal,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleSmall
@@ -159,7 +159,7 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                           labelStyle: FlutterFlowTheme.of(context)
                               .labelMedium
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelMedium
                                       .fontWeight,
@@ -181,7 +181,7 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                           hintStyle: FlutterFlowTheme.of(context)
                               .labelMedium
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelMedium
                                       .fontWeight,
@@ -201,7 +201,7 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                               ),
                           errorStyle:
                               FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FontWeight.normal,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -248,7 +248,7 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                               16.0, 13.0, 0.0, 13.0),
                         ),
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              font: GoogleFonts.inter(
+                              font: GoogleFonts.poppins(
                                 fontWeight: FontWeight.normal,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .bodyMedium
@@ -302,8 +302,8 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                       color: FlutterFlowTheme.of(context).primary,
                       textStyle:
                           FlutterFlowTheme.of(context).titleMedium.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.bold,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleMedium
                                       .fontStyle,
@@ -312,7 +312,7 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                                     .secondaryBackground,
                                 fontSize: 16.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .fontStyle,

@@ -275,8 +275,8 @@ class _SalesHomeWidgetState extends State<SalesHomeWidget> {
             Icon(icon, size: 18.0, color: kSalesRed),
             const Spacer(),
             Text('${value ?? 0}',
-                style: GoogleFonts.interTight(
-                    fontSize: 22.0, fontWeight: FontWeight.w800, color: kSalesInk)),
+                style: GoogleFonts.poppins(
+                    fontSize: 22.0, fontWeight: FontWeight.w600, color: kSalesInk)),
             Text(label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -316,17 +316,17 @@ class _SalesHomeWidgetState extends State<SalesHomeWidget> {
               Image.asset('assets/logo/kitunga_logo_white.png', height: 52.0),
               const SizedBox(height: 14.0),
               Text('ESPACE COMMERCIAL',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       color: Colors.white.withValues(alpha: 0.85),
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 1.0)),
               const SizedBox(height: 4.0),
               Text(name.isEmpty ? 'Bienvenue' : name,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 26.0,
-                      fontWeight: FontWeight.w800)),
+                      fontWeight: FontWeight.w600)),
               if (code.isNotEmpty) ...[
                 const SizedBox(height: 8.0),
                 Container(
@@ -337,10 +337,10 @@ class _SalesHomeWidgetState extends State<SalesHomeWidget> {
                     borderRadius: BorderRadius.circular(20.0),
                   ),
                   child: Text(code,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 13.0,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 0.8)),
                 ),
               ],

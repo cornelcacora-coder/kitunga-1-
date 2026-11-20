@@ -68,7 +68,7 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
               style: GoogleFonts.getFont(
                 pickerFontFamily,
                 color: textColor,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 fontSize: 20,
               ),
             ),

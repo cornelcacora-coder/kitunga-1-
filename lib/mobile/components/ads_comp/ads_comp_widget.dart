@@ -114,8 +114,8 @@ class _AdsCompWidgetState extends State<AdsCompWidget> {
                       ),
                       style:
                           FlutterFlowTheme.of(context).headlineLarge.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FontWeight.w900,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w700,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .headlineLarge
                                       .fontStyle,
@@ -123,7 +123,7 @@ class _AdsCompWidgetState extends State<AdsCompWidget> {
                                 color: Colors.white,
                                 fontSize: 22.0,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .headlineLarge
                                     .fontStyle,
@@ -135,7 +135,7 @@ class _AdsCompWidgetState extends State<AdsCompWidget> {
                         'Achetez vos produits et vos biens immobiliers en un clic',
                       ),
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .fontWeight,
@@ -183,7 +183,7 @@ class _AdsCompWidgetState extends State<AdsCompWidget> {
                                 style: TextStyle(
                                   color: FlutterFlowTheme.of(context)
                                       .primaryBackground,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   fontSize: 10.0,
                                 ),
                               ),
@@ -208,15 +208,15 @@ class _AdsCompWidgetState extends State<AdsCompWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .labelSmall
                                   .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w500,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .labelSmall
                                           .fontStyle,
                                     ),
                                     color: Colors.white,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w500,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .labelSmall
                                         .fontStyle,

@@ -308,10 +308,10 @@ class _IntroWidgetState extends State<IntroWidget>
                               const SizedBox(width: 6.0),
                               Text(
                                 'KITUNGA',
-                                style: GoogleFonts.interTight(
+                                style: GoogleFonts.poppins(
                                   color: Colors.white,
                                   fontSize: 13.5,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -332,10 +332,10 @@ class _IntroWidgetState extends State<IntroWidget>
                                   horizontal: 14.0, vertical: 7.0),
                               child: Text(
                                 'Passer',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   color: Colors.white,
                                   fontSize: 13.0,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -399,9 +399,9 @@ class _IntroWidgetState extends State<IntroWidget>
                               children: [
                                 Text(
                                   'Commencer',
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 16.5,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     letterSpacing: 0.3,
                                   ),
                                 ),

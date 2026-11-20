@@ -19,6 +19,10 @@ typedef DashOrder = ({
   String? userPath,
   String? sellerPath,
   String? delivererPath,
+  // Remise : code vérifié, photo, problème signalé par le livreur.
+  bool codeVerified,
+  String photo,
+  String issue,
 });
 
 DateTime? _date(dynamic v) => v is Timestamp
@@ -39,6 +43,9 @@ DashOrder dashOrderFrom(String id, Map<String, dynamic> d) => (
       userPath: (d['user_ref'] as DocumentReference?)?.path,
       sellerPath: (d['seller_ref'] as DocumentReference?)?.path,
       delivererPath: (d['deliver_reference'] as DocumentReference?)?.path,
+      codeVerified: d['delivery_code_verified'] == true,
+      photo: (d['delivery_photo'] as String?) ?? '',
+      issue: ((d['delivery_issue'] as Map?)?['label'] as String?) ?? '',
     );
 
 /// Source des données ; [AdminDashboardSource.instance] lit Firestore.

@@ -1,3 +1,7 @@
+import '/mobile/main_app/subscription/my_subscription_page.dart';
+import '/backend/kitunga_hours.dart';
+import '/mobile/components/kitunga_zone_field.dart';
+import '/backend/subscription.dart';
 import '/backend/server_payment.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -36,6 +40,9 @@ class SignWidget extends StatefulWidget {
 }
 
 class _SignWidgetState extends State<SignWidget> {
+  /// Quartier du commerce (inscription d'un vendeur).
+  String? _shopZone;
+
   late SignModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -104,13 +111,10 @@ class _SignWidgetState extends State<SignWidget> {
   }
 
   final _userFormKey = GlobalKey<FormState>();
-  bool _signingUp = false;
 
-  static const _plans = [
-    'Mensuel - 250F',
-    'Trimestriel - 500 F',
-    'Annuel - 1000 F',
-  ];
+  /// Formule choisie à l'inscription (payée juste après la création).
+  String _signupPlan = 'quarterly';
+  bool _signingUp = false;
 
   Future _signUpUser() async {
     if (_signingUp) return;
@@ -141,7 +145,6 @@ class _SignWidgetState extends State<SignWidget> {
             horraire: _model.horraireTextController.text,
             // Abonnement activé par le serveur après paiement MoMo.
             isSubscribed: false,
-            subscribeType: _model.subscribTypeUserValue,
           ));
 
       // Module commercial : attribution au commercial (sans attendre).
@@ -167,6 +170,17 @@ class _SignWidgetState extends State<SignWidget> {
         },
       );
 
+      // Paiement de l'abonnement dès l'inscription (ou plus tard).
+      if (context.mounted) {
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => MySubscriptionPage(
+            fromSignup: true,
+            initialPlan: _signupPlan,
+            phone: _model.phoneUserTextController.text.trim(),
+          ),
+        ));
+      }
+      if (!context.mounted) return;
       context.pushNamedAuth(
         AddProfileWidget.routeName,
         context.mounted,
@@ -199,7 +213,7 @@ class _SignWidgetState extends State<SignWidget> {
   Widget _buildUserSignUp(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fieldStyle = GoogleFonts.inter(
+    final fieldStyle = GoogleFonts.poppins(
       color: theme.primaryText,
       fontSize: 15.0,
       fontWeight: FontWeight.w500,
@@ -252,10 +266,10 @@ class _SignWidgetState extends State<SignWidget> {
                 Text(
                   'Créer un compte',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 28.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -269,7 +283,7 @@ class _SignWidgetState extends State<SignWidget> {
                 Text(
                   'Rejoignez Kitunga et commandez auprès des commerces près de chez vous.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 14.5,
                     height: 1.45,
@@ -369,29 +383,56 @@ class _SignWidgetState extends State<SignWidget> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Formule d'abonnement
-                const KitungaFieldLabel('Formule d\'abonnement'),
-                DropdownButtonFormField<String>(
-                  initialValue: _model.subscribTypeUserValue,
-                  items: _plans
-                      .map((p) => DropdownMenuItem(
-                            value: p,
-                            child: Text(p, style: fieldStyle),
-                          ))
-                      .toList(),
-                  onChanged: (v) =>
-                      safeSetState(() => _model.subscribTypeUserValue = v),
-                  dropdownColor: isDark ? const Color(0xFF1E242B) : Colors.white,
-                  borderRadius: BorderRadius.circular(22.0),
-                  icon: Icon(
-                    Icons.expand_more_rounded,
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                // Abonnement : formule payée juste après l'inscription.
+                const KitungaFieldLabel('Abonnement'),
+                for (final p in kSubscriptionPlans)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18.0),
+                      onTap: () => safeSetState(() => _signupPlan = p.key),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 12.0),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1E242B)
+                              : const Color(0xFFFFF1F1),
+                          borderRadius: BorderRadius.circular(18.0),
+                          border: Border.all(
+                            color: _signupPlan == p.key
+                                ? FlutterFlowTheme.of(context).primary
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _signupPlan == p.key
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_unchecked_rounded,
+                              color: FlutterFlowTheme.of(context).primary,
+                            ),
+                            const SizedBox(width: 12.0),
+                            Expanded(
+                              child: Text('${p.name} · ${p.duration}',
+                                  style: fieldStyle),
+                            ),
+                            Text('${p.price} F',
+                                style: fieldStyle.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        FlutterFlowTheme.of(context).primary)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  decoration: kitungaInputDecoration(
-                    context,
-                    'Choisissez votre formule',
-                    Icons.workspace_premium_outlined,
-                  ),
+                Text(
+                  'Le paiement MTN MoMo vous sera demandé juste après la '
+                  'création du compte.',
+                  style: fieldStyle.copyWith(fontSize: 12.5),
                 ),
                 const SizedBox(height: 16.0),
 
@@ -460,7 +501,7 @@ class _SignWidgetState extends State<SignWidget> {
                   children: [
                     Text(
                       'Vous avez déjà un compte ?',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.secondaryText,
                         fontSize: 14.0,
                       ),
@@ -470,10 +511,10 @@ class _SignWidgetState extends State<SignWidget> {
                       onTap: () => context.pushNamed(LoginWidget.routeName),
                       child: Text(
                         'Se connecter',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: const Color(0xFFE51A1A),
                           fontSize: 14.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -487,7 +528,7 @@ class _SignWidgetState extends State<SignWidget> {
                   children: [
                     Text(
                       'En continuant, vous acceptez nos ',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.hint,
                         fontSize: 12.0,
                       ),
@@ -497,17 +538,17 @@ class _SignWidgetState extends State<SignWidget> {
                           context.pushNamed(TermsConditionsWidget.routeName),
                       child: Text(
                         'conditions d\'utilisation',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 12.0,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
                     Text(
                       '.',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: theme.hint,
                         fontSize: 12.0,
                       ),
@@ -632,8 +673,8 @@ class _SignWidgetState extends State<SignWidget> {
                                           style: FlutterFlowTheme.of(context)
                                               .headlineLarge
                                               .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight: FontWeight.bold,
+                                                font: GoogleFonts.poppins(
+                                                  fontWeight: FontWeight.w600,
                                                   fontStyle:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -642,7 +683,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                 ),
                                                 fontSize: 20.0,
                                                 letterSpacing: 0.0,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w600,
                                                 fontStyle:
                                                     FlutterFlowTheme.of(context)
                                                         .headlineLarge
@@ -670,90 +711,7 @@ class _SignWidgetState extends State<SignWidget> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            if ((widget!.accessibility !=
-                                                    'Deliver') ||
-                                                (widget!.accessibility !=
-                                                    'Admin'))
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        20.0, 0.0, 20.0, 0.0),
-                                                child:
-                                                    FlutterFlowDropDown<String>(
-                                                  controller: _model
-                                                          .subscribTypBusinessValueController ??=
-                                                      FormFieldController<
-                                                          String>(null),
-                                                  options: [
-                                                    'Mensuel - 250F',
-                                                    'Trimestriel - 500 F',
-                                                    'Annuel - 1000 F'
-                                                  ],
-                                                  onChanged: (val) =>
-                                                      safeSetState(() => _model
-                                                              .subscribTypBusinessValue =
-                                                          val),
-                                                  width: double.infinity,
-                                                  height: 50.0,
-                                                  textStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        fontSize: 13.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  hintText:
-                                                      'Type d\'abonnement',
-                                                  icon: Icon(
-                                                    Icons
-                                                        .keyboard_arrow_down_rounded,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryText,
-                                                    size: 24.0,
-                                                  ),
-                                                  fillColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .secondaryBackground,
-                                                  elevation: 2.0,
-                                                  borderColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .black20,
-                                                  borderWidth: 1.0,
-                                                  borderRadius: 12.0,
-                                                  margin: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          12.0, 0.0, 12.0, 0.0),
-                                                  hidesUnderline: true,
-                                                  isOverButton: false,
-                                                  isSearchable: false,
-                                                  isMultiSelect: false,
-                                                ),
-                                              ),
+                                            // Vendeurs et livreurs : pas d'abonnement.
                                             Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
@@ -778,7 +736,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -849,7 +807,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -884,7 +842,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -917,7 +875,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1002,7 +960,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1052,7 +1010,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1086,7 +1044,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1113,7 +1071,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1198,7 +1156,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1250,7 +1208,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1284,7 +1242,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1317,7 +1275,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1402,7 +1360,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1465,7 +1423,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           font:
-                                                              GoogleFonts.inter(
+                                                              GoogleFonts.poppins(
                                                             fontWeight:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -1538,7 +1496,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1572,7 +1530,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1605,7 +1563,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -1690,7 +1648,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -1746,208 +1704,26 @@ class _SignWidgetState extends State<SignWidget> {
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
                                                         20.0, 6.0, 20.0, 0.0),
-                                                child: TextFormField(
-                                                  controller: _model
-                                                      .horraireTextController,
-                                                  focusNode:
-                                                      _model.horraireFocusNode,
-                                                  autofocus: false,
-                                                  textInputAction:
-                                                      TextInputAction.next,
-                                                  obscureText: false,
-                                                  decoration: InputDecoration(
-                                                    isDense: false,
-                                                    labelStyle: FlutterFlowTheme
-                                                            .of(context)
-                                                        .labelMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primaryText,
-                                                          fontSize: 13.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                    hintText:
-                                                        'Horaire (ex: 8h - 18h)',
-                                                    hintStyle: FlutterFlowTheme
-                                                            .of(context)
-                                                        .labelMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .textfiled,
-                                                          fontSize: 17.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                    errorStyle: FlutterFlowTheme
-                                                            .of(context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .normal,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .error,
-                                                          fontSize: 17.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                          lineHeight: 1.2,
-                                                        ),
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .black20,
-                                                        width: 1.0,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12.0),
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        width: 1.0,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12.0),
-                                                    ),
-                                                    errorBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .error,
-                                                        width: 1.0,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12.0),
-                                                    ),
-                                                    focusedErrorBorder:
-                                                        OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .error,
-                                                        width: 1.0,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12.0),
-                                                    ),
-                                                    contentPadding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                16.0,
-                                                                13.0,
-                                                                0.0,
-                                                                13.0),
-                                                  ),
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
-                                                        fontSize: 17.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                  cursorColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .primaryText,
-                                                  validator: _model
-                                                      .horraireTextControllerValidator
-                                                      .asValidator(context),
+                                                child: KitungaHoursPicker(
+                                                  initial: _model
+                                                      .horraireTextController!
+                                                      .text,
+                                                  onChanged: (v) => _model
+                                                      .horraireTextController!
+                                                      .text = v,
+                                                ),
+                                              ),
+                                            // Commerce : quartier (collecte, frais de livraison).
+                                            if (widget!.accessibility == 'Seller' ||
+                                                _model.userTypeValue == 'Vendeur')
+                                              Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        20.0, 14.0, 20.0, 0.0),
+                                                child: KitungaShopZoneField(
+                                                  value: _shopZone,
+                                                  onChanged: (v) => safeSetState(
+                                                      () => _shopZone = v),
                                                 ),
                                               ),
                                             Padding(
@@ -1970,7 +1746,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -2004,7 +1780,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -2037,7 +1813,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -2141,7 +1917,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -2192,7 +1968,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -2227,7 +2003,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .labelMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -2260,7 +2036,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           .of(context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FontWeight.normal,
                                                           fontStyle:
@@ -2364,7 +2140,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                         context)
                                                     .bodyMedium
                                                     .override(
-                                                      font: GoogleFonts.inter(
+                                                      font: GoogleFonts.poppins(
                                                         fontWeight:
                                                             FontWeight.normal,
                                                         fontStyle:
@@ -2569,7 +2345,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                               ? _model.bioTextController.text
                                                               : 'Je suis content d\'utiliser Kitunga comme App pour mes achats au quotidien',
                                                           'horraire': _model.horraireTextController.text,
-                                                          'subscribeType': _model.subscribTypBusinessValue,
+                                                          if (_shopZone != null) 'shopZone': _shopZone,
                                                         },
                                                       );
                                                       partnerId = created['uid'] as String;
@@ -2618,7 +2394,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           font: GoogleFonts
                                                               .interTight(
                                                             fontWeight:
-                                                                FontWeight.bold,
+                                                                FontWeight.w600,
                                                             fontStyle:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -2631,7 +2407,7 @@ class _SignWidgetState extends State<SignWidget> {
                                                           fontSize: 16.0,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)

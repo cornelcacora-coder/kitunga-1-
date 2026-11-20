@@ -60,13 +60,13 @@ class _ProfileFieldGroupWidgetState extends State<ProfileFieldGroupWidget> {
             'FULL NAME',
           ),
           style: FlutterFlowTheme.of(context).labelMedium.override(
-                font: GoogleFonts.inter(
-                  fontWeight: FontWeight.w600,
+                font: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
                   fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
                 ),
                 color: FlutterFlowTheme.of(context).secondaryText,
                 letterSpacing: 0.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
                 lineHeight: 1.4,
               ),

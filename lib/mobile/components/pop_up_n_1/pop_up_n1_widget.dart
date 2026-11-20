@@ -116,14 +116,14 @@ class _PopUpN1WidgetState extends State<PopUpN1Widget> {
                   ),
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).titleLarge.override(
-                        font: GoogleFonts.interTight(
-                          fontWeight: FontWeight.bold,
+                        font: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleLarge.fontStyle,
                         ),
                         color: FlutterFlowTheme.of(context).primaryText,
                         letterSpacing: 0.0,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         fontStyle:
                             FlutterFlowTheme.of(context).titleLarge.fontStyle,
                       ),
@@ -135,7 +135,7 @@ class _PopUpN1WidgetState extends State<PopUpN1Widget> {
                   ),
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.inter(
+                        font: GoogleFonts.poppins(
                           fontWeight: FontWeight.normal,
                           fontStyle:
                               FlutterFlowTheme.of(context).titleSmall.fontStyle,
@@ -175,8 +175,8 @@ class _PopUpN1WidgetState extends State<PopUpN1Widget> {
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FontWeight.bold,
+                                  font: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
@@ -184,7 +184,7 @@ class _PopUpN1WidgetState extends State<PopUpN1Widget> {
                                   color: Colors.white,
                                   fontSize: 18.0,
                                   letterSpacing: 0.0,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleMedium
                                       .fontStyle,
@@ -221,8 +221,8 @@ class _PopUpN1WidgetState extends State<PopUpN1Widget> {
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FontWeight.bold,
+                                  font: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
@@ -230,7 +230,7 @@ class _PopUpN1WidgetState extends State<PopUpN1Widget> {
                                   color: FlutterFlowTheme.of(context).primary,
                                   fontSize: 18.0,
                                   letterSpacing: 0.0,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .titleMedium
                                       .fontStyle,

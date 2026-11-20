@@ -1,3 +1,7 @@
+import '/backend/backend.dart' show ProductRecord;
+import '/mobile/components/product_card/product_card_widget.dart'
+    show kitungaNoPhoto;
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -15,14 +19,18 @@ class MyProductsCardWidget extends StatefulWidget {
     String? title,
     int? price,
     String? cover,
+    this.product,
   })  : this.title = title ?? 'Hamburger Royal',
         this.price = price ?? 0,
         this.cover = cover ??
-            'https://images.unsplash.com/photo-1615996001375-c7ef13294436?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwzfHxmYXN0Zm9vZHxlbnwwfHx8fDE3MDkzNjA3ODN8MA&ixlib=rb-4.0.3&q=80&w=1080';
+            '';
 
   final String title;
   final int price;
   final String cover;
+
+  /// Produit affiché : sert à la vignette quand il n'a pas de photo.
+  final ProductRecord? product;
 
   @override
   State<MyProductsCardWidget> createState() => _MyProductsCardWidgetState();
@@ -79,15 +87,16 @@ class _MyProductsCardWidgetState extends State<MyProductsCardWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CachedNetworkImage(
-              fadeInDuration: Duration(milliseconds: 0),
-              fadeOutDuration: Duration(milliseconds: 0),
-              imageUrl: getCORSProxyUrl(
+            KitungaImage(
+              getCORSProxyUrl(
                 widget!.cover,
               ),
               width: double.infinity,
               height: 140.0,
-              fit: BoxFit.cover,
+              placeholder: widget.product == null
+                  ? null
+                  : kitungaNoPhoto(
+                      FlutterFlowTheme.of(context), widget.product!, 140.0),
             ),
             Padding(
               padding: EdgeInsets.all(10.0),
@@ -104,8 +113,8 @@ class _MyProductsCardWidgetState extends State<MyProductsCardWidget> {
                       ),
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).titleMedium.override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.w600,
+                            font: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .fontStyle,
@@ -113,7 +122,7 @@ class _MyProductsCardWidgetState extends State<MyProductsCardWidget> {
                             color: FlutterFlowTheme.of(context).secondaryText,
                             fontSize: 14.0,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .fontStyle,
@@ -132,8 +141,8 @@ class _MyProductsCardWidgetState extends State<MyProductsCardWidget> {
                           ),
                           style:
                               FlutterFlowTheme.of(context).bodyLarge.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.bold,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
@@ -141,7 +150,7 @@ class _MyProductsCardWidgetState extends State<MyProductsCardWidget> {
                                     color: FlutterFlowTheme.of(context).primary,
                                     fontSize: 14.0,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .bodyLarge
                                         .fontStyle,
@@ -151,8 +160,8 @@ class _MyProductsCardWidgetState extends State<MyProductsCardWidget> {
                           'F',
                           style:
                               FlutterFlowTheme.of(context).bodyLarge.override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FontWeight.bold,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .bodyLarge
                                           .fontStyle,
@@ -160,7 +169,7 @@ class _MyProductsCardWidgetState extends State<MyProductsCardWidget> {
                                     color: FlutterFlowTheme.of(context).primary,
                                     fontSize: 14.0,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .bodyLarge
                                         .fontStyle,

@@ -1,6 +1,9 @@
 /// Réglages de l'espace vendeur selon l'activité du commerce.
 library;
 
+import '/backend/kitunga_units.dart';
+import '/backend/kitunga_cuisines.dart';
+
 /// Nom donné au classement des produits.
 String sellerSectionLabel(String category) => switch (category) {
       'Restaurant' || 'Fast Food' => 'Rubrique du menu',
@@ -18,14 +21,7 @@ String sellerSectionsTitle(String category) => switch (category) {
 
 /// Suggestions proposées au vendeur (il peut saisir les siennes).
 List<String> sellerSectionSuggestions(String category) => switch (category) {
-      'Restaurant' => [
-          'Entrées',
-          'Plats principaux',
-          'Grillades',
-          'Accompagnements',
-          'Desserts',
-          'Boissons',
-        ],
+      'Restaurant' => kRestaurantSections,
       'Fast Food' => [
           'Menus',
           'Burgers',
@@ -54,11 +50,12 @@ List<String> sellerSectionSuggestions(String category) => switch (category) {
     };
 
 /// Unités de vente (magasins et pharmacies).
-const sellerUnits = ['pièce', 'kg', 'g', 'litre', 'paquet', 'carton', 'boîte'];
+/// Unités de vente de l'activité (voir lib/backend/kitunga_units.dart).
+List<String> sellerUnits(String category) => unitsFor(category);
 
-/// L'unité de vente est utile pour ces activités.
-bool sellerUsesUnits(String category) =>
-    category == 'Magasin' || category == 'Pharmacie';
+/// L'unité de vente est proposée pour toutes les activités (plat, portion,
+/// boîte, kg, paire…).
+bool sellerUsesUnits(String category) => true;
 
 /// Libellé du produit selon l'activité.
 String sellerItemLabel(String category) => switch (category) {

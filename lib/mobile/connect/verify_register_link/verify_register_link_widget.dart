@@ -61,12 +61,12 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
           title: Text(
             'Vérification d\'identité',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight: FontWeight.w500,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme.of(context).primaryText,
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,
@@ -100,7 +100,7 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
                 updateCallback: () => safeSetState(() {}),
                 child: EmptyCardWidget(
                   photo:
-                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/huber-eats-consumer-app-38yn7u/assets/bh9lkvi2krgy/Screenshot_2024-03-10_at_15.29.09.png',
+                      'assets/images/app/wallet_card.png',
                   title: 'Mail Envoyé',
                   description:
                       'Nnous vous avons envoyé un mail accédez à votre boite mail afin de vérifier votre compt',
@@ -118,7 +118,7 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
                   Text(
                     'Vous avez déjà un  compte ?',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FontWeight.normal,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
@@ -145,9 +145,9 @@ class _VerifyRegisterLinkWidgetState extends State<VerifyRegisterLinkWidget> {
                       iconPadding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       color: Colors.transparent,
-                      textStyle: GoogleFonts.interTight(
+                      textStyle: GoogleFonts.poppins(
                         color: FlutterFlowTheme.of(context).primary,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         fontSize: 14.0,
                       ),
                       elevation: 0.0,

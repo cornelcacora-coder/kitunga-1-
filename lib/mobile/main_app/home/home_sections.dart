@@ -1,3 +1,5 @@
+import '/mobile/main_app/search/kitunga_filters.dart';
+import '/mobile/components/product_browser/kitunga_product_browser.dart';
 import '/backend/backend.dart';
 import '/backend/kitunga_categories.dart';
 export '/backend/kitunga_categories.dart';
@@ -67,10 +69,10 @@ class KitungaSectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 18.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 if (subtitle != null) ...[
@@ -79,7 +81,7 @@ class KitungaSectionHeader extends StatelessWidget {
                     subtitle!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.secondaryText,
                       fontSize: 13.0,
                     ),
@@ -99,10 +101,10 @@ class KitungaSectionHeader extends StatelessWidget {
                 children: [
                   Text(
                     'Voir plus',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.primary,
                       fontSize: 14.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Icon(Icons.chevron_right_rounded,
@@ -142,7 +144,9 @@ class KitungaCategoryTile extends StatelessWidget {
             Container(
               width: size,
               height: size,
-              padding: EdgeInsets.all(size * 0.14),
+              padding: kitungaCategoryPadding(
+                  image, EdgeInsets.all(size * 0.14)),
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: kitungaCategoryBackground(context, name),
                 borderRadius: BorderRadius.circular(size * 0.28),
@@ -154,10 +158,10 @@ class KitungaCategoryTile extends StatelessWidget {
               name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 12.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -198,15 +202,15 @@ class _SeeMoreScaffold extends StatelessWidget {
           children: [
             Text(
               title,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 18.0,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               subtitle,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 12.0,
               ),
@@ -310,11 +314,11 @@ class _KitungaPagedGridState<T> extends State<KitungaPagedGrid<T>> {
                           ),
                           child: Text(
                             '${p + 1}',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color:
                                   p == page ? Colors.white : theme.primaryText,
                               fontSize: 14.0,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -388,12 +392,12 @@ class _KitungaShopListPageState extends State<KitungaShopListPage> {
                           selected: _category == c,
                           showCheckmark: false,
                           onSelected: (_) => setState(() => _category = c),
-                          labelStyle: GoogleFonts.inter(
+                          labelStyle: GoogleFonts.poppins(
                             color: _category == c
                                 ? Colors.white
                                 : theme.primaryText,
                             fontSize: 13.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                           selectedColor: theme.primary,
                           backgroundColor: theme.primaryBackground,
@@ -413,43 +417,213 @@ class _KitungaShopListPageState extends State<KitungaShopListPage> {
 }
 
 /// « Voir plus » des nouveaux produits : grille complète.
-class KitungaProductListPage extends StatelessWidget {
-  const KitungaProductListPage({super.key});
+/// Tests : produits et commerces de la page « Voir tout » (sans Firebase).
+@visibleForTesting
+Stream<List<ProductRecord>> Function()? productListProductsOverride;
+@visibleForTesting
+Stream<List<UserRecord>> Function()? productListShopsOverride;
+
+/// « Voir tout » des produits (Tendances, Nouveautés, Nos produits) : recherche,
+/// filtres (catégorie, cuisine, prix, express…) et tri.
+class KitungaProductListPage extends StatefulWidget {
+  const KitungaProductListPage({
+    super.key,
+    this.tag,
+    this.title = 'Nos produits',
+    this.subtitle = 'Les derniers articles ajoutés par nos commerçants',
+  });
+
+  /// Filtre « Nouveauté » ou « Tendance » (champ specifications) ; null : tous.
+  final String? tag;
+  final String title;
+  final String subtitle;
+
+  @override
+  State<KitungaProductListPage> createState() => _KitungaProductListPageState();
+}
+
+class _KitungaProductListPageState extends State<KitungaProductListPage> {
+  late ProductFilter _filter = ProductFilter(tag: widget.tag);
+  late final Stream<List<ProductRecord>> _products =
+      productListProductsOverride?.call() ??
+          queryProductRecord(
+            queryBuilder: (q) => q.orderBy('created_at', descending: true),
+            limit: 300,
+          );
+  late final Stream<List<UserRecord>> _shops = productListShopsOverride
+          ?.call() ??
+      queryUserRecord(queryBuilder: (q) => q.where('role', isEqualTo: 'Seller'));
 
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     return _SeeMoreScaffold(
-      title: 'Nos produits',
-      subtitle: 'Les derniers articles ajoutés par nos commerçants',
-      child: StreamBuilder<Set<String>>(
-        stream: kitungaSuspendedShopPaths(),
-        // En cas d'erreur de lecture, rien n'est masqué en plus.
-        builder: (context, suspended) => StreamBuilder<List<ProductRecord>>(
-        stream: queryProductRecord(
-          queryBuilder: (q) => q.orderBy('created_at', descending: true),
-          limit: 60,
+      title: widget.title,
+      subtitle: widget.subtitle,
+      child: StreamBuilder<List<UserRecord>>(
+        stream: _shops,
+        builder: (context, shopSnap) => StreamBuilder<List<ProductRecord>>(
+          stream: _products,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || !shopSnap.hasData) {
+              return Center(
+                  child: CircularProgressIndicator(color: theme.primary));
+            }
+            final shops = {
+              for (final s in shopSnap.data!) s.reference.path: s,
+            };
+            final products = snapshot.data!;
+            final filtered = filterProducts(products, shops, _filter);
+            final cuisines = {
+              for (final s in shopSnap.data!) ...shopCuisines(s),
+            }.toList()
+              ..sort();
+            return KitungaPagedGrid<ProductRecord>(
+              items: filtered,
+              perPage: 8,
+              itemExtent: KitungaProductCard.gridExtent,
+              header: Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    KitungaProductToolbar(
+                      filter: _filter,
+                      onChanged: (f) => setState(() => _filter = f),
+                      count: (f) =>
+                          filterProducts(products, shops, f).length,
+                      cuisines: cuisines,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 0.0),
+                      child: Text(
+                        filtered.isEmpty
+                            ? 'Aucun produit ne correspond à votre recherche.'
+                            : '${filtered.length} produit${filtered.length > 1 ? 's' : ''}',
+                        style: GoogleFonts.poppins(
+                            color: theme.secondaryText,
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              itemBuilder: (context, product) => KitungaProductCard(
+                product: product,
+                onTap: () => openKitungaProduct(context, product),
+              ),
+            );
+          },
         ),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-                child: CircularProgressIndicator(color: theme.primary));
-          }
-          final hidden = suspended.data ?? const <String>{};
-          final products = snapshot.data!
+      ),
+    );
+  }
+}
+
+
+/// Produits sur l'accueil des clients : Tendances, Nouveautés et Nos produits
+/// (publiés, commerces actifs), en rangées horizontales avec « Voir tout ».
+class KitungaHomeProducts extends StatefulWidget {
+  const KitungaHomeProducts({super.key, this.productsOverride});
+
+  /// Tests : remplace la lecture des produits.
+  final Stream<List<ProductRecord>>? productsOverride;
+
+  @override
+  State<KitungaHomeProducts> createState() => _KitungaHomeProductsState();
+}
+
+/// Tests : produits de l'accueil (sans Firebase).
+@visibleForTesting
+Stream<List<ProductRecord>>? Function()? kitungaHomeProductsOverride;
+
+class _KitungaHomeProductsState extends State<KitungaHomeProducts> {
+  late final Stream<List<ProductRecord>>? _override =
+      widget.productsOverride ?? kitungaHomeProductsOverride?.call();
+  late final Stream<List<ProductRecord>> _products = _override ??
+      queryProductRecord(
+        queryBuilder: (q) => q.orderBy('created_at', descending: true),
+        limit: 150,
+      );
+  late final Stream<Set<String>> _hidden = _override != null
+      ? Stream.value(const <String>{})
+      : kitungaSuspendedShopPaths();
+
+  /// Récent : ajouté depuis moins de 30 jours.
+  static bool _recent(ProductRecord p) =>
+      p.createdAt != null &&
+      DateTime.now().difference(p.createdAt!) < const Duration(days: 30);
+
+  Widget _row(BuildContext context, String title, List<ProductRecord> list,
+      VoidCallback onSeeAll) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 18.0),
+          child: KitungaSectionHeader(title: title, onMore: onSeeAll),
+        ),
+        SizedBox(
+          height: KitungaProductCard.gridExtent,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            itemCount: list.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12.0),
+            itemBuilder: (context, i) => SizedBox(
+              width: 168.0,
+              child: KitungaProductCard(
+                product: list[i],
+                onTap: () => openKitungaProduct(context, list[i]),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Set<String>>(
+      stream: _hidden,
+      builder: (context, hiddenSnap) => StreamBuilder<List<ProductRecord>>(
+        stream: _products,
+        builder: (context, snap) {
+          final hidden = hiddenSnap.data ?? const <String>{};
+          final all = (snap.data ?? const <ProductRecord>[])
               .where(kitungaIsPublished)
               .where((p) => !hidden.contains(p.sellerRef?.path))
               .toList();
-          return KitungaPagedGrid<ProductRecord>(
-            items: products,
-            itemExtent: KitungaProductCard.gridExtent,
-            itemBuilder: (context, product) => KitungaProductCard(
-              product: product,
-              onTap: () => openKitungaProduct(context, product),
-            ),
+          if (all.isEmpty) return const SizedBox.shrink();
+          final trending =
+              all.where((p) => p.specifications == 'Tendance').take(12).toList();
+          // Marqués « Nouveauté » d'abord, puis les plus récents.
+          final fresh = [
+            ...all.where((p) => p.specifications == 'Nouveauté'),
+            ...all.where((p) => p.specifications != 'Nouveauté' && _recent(p)),
+          ].take(12).toList();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (trending.isNotEmpty)
+                _row(context, 'Tendances', trending,
+                    () => openSeeMore(context, const KitungaProductListPage(
+                        tag: 'Tendance',
+                        title: 'Tendances',
+                        subtitle: 'Les produits les plus demandés'))),
+              if (fresh.isNotEmpty)
+                _row(context, 'Nouveautés', fresh,
+                    () => openSeeMore(context, const KitungaProductListPage(
+                        tag: 'Nouveauté',
+                        title: 'Nouveautés',
+                        subtitle: 'Les derniers arrivages de nos commerçants'))),
+              _row(context, 'Nos produits', all.take(12).toList(),
+                  () => openSeeMore(context, const KitungaProductListPage())),
+            ],
           );
         },
-        ),
       ),
     );
   }

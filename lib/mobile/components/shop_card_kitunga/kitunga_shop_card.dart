@@ -1,4 +1,5 @@
 import '/backend/backend.dart';
+import '/backend/kitunga_hours.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -80,10 +81,10 @@ Widget kitungaShopPlaceholder(
             color: Color(0x40FFFFFF), size: 64.0)
         : Text(
             kitungaInitials(shop.displayName),
-            style: GoogleFonts.interTight(
+            style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: (height ?? 40.0) * 0.38,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
             ),
           ),
   );
@@ -110,8 +111,14 @@ class KitungaShopCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final s = shop;
+    // Restaurant : sa cuisine principale (« Congolaise ») plutôt que la
+    // catégorie, quand elle est renseignée.
+    final cuisines = (s.snapshotData['cuisines'] as List? ?? const []);
+    final kind = cuisines.isNotEmpty
+        ? 'Cuisine ${'${cuisines.first}'.split(' (').first.toLowerCase()}'
+        : s.category;
     final subtitle =
-        [s.category, s.horraire].where((e) => e.trim().isNotEmpty).join(' · ');
+        [kind, s.horraire].where((e) => e.trim().isNotEmpty).join(' · ');
     return SizedBox(
       width: width,
       child: Material(
@@ -180,10 +187,10 @@ class KitungaShopCard extends StatelessWidget {
                               s.displayName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.interTight(
+                              style: GoogleFonts.poppins(
                                 color: theme.primaryText,
                                 fontSize: 15.0,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -200,7 +207,7 @@ class KitungaShopCard extends StatelessWidget {
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 12.0,
                         ),
@@ -217,11 +224,29 @@ class KitungaShopCard extends StatelessWidget {
   }
 }
 
+/// Statut d'un commerce pour le client : « En pause » ou « Fermé pour le
+/// moment » s'il l'a décidé, sinon d'après ses horaires.
+({bool open, String label})? kitungaShopStatus(UserRecord shop,
+    [DateTime? now]) {
+  final state = shop.snapshotData['shop_state'];
+  if (state == 'pause') return (open: false, label: 'En pause');
+  if (state == 'closed' || shop.snapshotData['shop_closed_now'] == true) {
+    return (open: false, label: 'Fermé pour le moment');
+  }
+  return kitungaOpeningStatus(shop.horraire, now);
+}
+
 /// Statut d'ouverture calculé à partir des horaires saisis par le commerçant
 /// (« 8h - 18h », « 08h30 à 22h »…). Renvoie null si les horaires ne sont pas
 /// exploitables : rien n'est alors affiché, plutôt qu'un statut inventé.
 ({bool open, String label})? kitungaOpeningStatus(String horaire,
     [DateTime? now]) {
+  // Horaires du lundi au dimanche (« Lun-Ven 8h00-20h00 · Dim fermé »).
+  final week = horaire.contains('·') ||
+          horaire.toLowerCase().startsWith('tous les jours')
+      ? parseWeek(horaire)
+      : null;
+  if (week != null) return weekStatus(week, now ?? DateTime.now());
   final m = RegExp(
           r'(\d{1,2})\s*[hH:]\s*(\d{2})?\s*(?:-|–|à|a)\s*(\d{1,2})\s*[hH:]\s*(\d{2})?')
       .firstMatch(horaire);
@@ -256,7 +281,7 @@ class KitungaShopListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final s = shop;
-    final status = kitungaOpeningStatus(s.horraire);
+    final status = kitungaShopStatus(s);
     final catColor = kitungaCategoryColor(theme, s.category);
     return InkWell(
       onTap: () => openKitungaShop(context, s),
@@ -287,10 +312,10 @@ class KitungaShopListTile extends StatelessWidget {
                           s.displayName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 15.0,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -311,16 +336,16 @@ class KitungaShopListTile extends StatelessWidget {
                       if (s.category.isNotEmpty)
                         Text(
                           s.category,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: catColor,
                             fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       if (status != null)
                         Text(
                           status.label,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: status.open
                                 ? Color(0xFF1E9E5A)
                                 : theme.secondaryText,
@@ -336,6 +361,73 @@ class KitungaShopListTile extends StatelessWidget {
             Icon(Icons.chevron_right_rounded, color: theme.secondaryText),
           ],
         ),
+      ),
+    );
+  }
+}
+
+
+/// Bandeau du panier quand le commerce est fermé (le serveur refuse alors
+/// le paiement) : le client le sait avant de payer.
+class KitungaClosedNotice extends StatelessWidget {
+  const KitungaClosedNotice({super.key, required this.sellerRef, this.now});
+
+  final DocumentReference sellerRef;
+
+  /// Tests : heure imposée.
+  final DateTime? now;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return StreamBuilder<UserRecord>(
+      stream: UserRecord.getDocument(sellerRef),
+      builder: (context, snap) {
+        final shop = snap.data;
+        final status =
+            shop == null ? null : kitungaShopStatus(shop, now);
+        if (status == null || status.open) return const SizedBox.shrink();
+        return KitungaClosedBanner(
+            name: shop!.displayName, label: status.label, theme: theme);
+      },
+    );
+  }
+}
+
+class KitungaClosedBanner extends StatelessWidget {
+  const KitungaClosedBanner(
+      {super.key, required this.name, required this.label, required this.theme});
+
+  final String name;
+  final String label;
+  final FlutterFlowTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: theme.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14.0),
+        border: Border.all(color: theme.error.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.schedule_rounded, color: theme.error),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Text(
+              '${name.isEmpty ? 'Ce commerce' : name} est fermé en ce moment '
+              '(${label.replaceFirst('Fermé · ', '')}). Votre panier est gardé : '
+              'vous pourrez commander dès son ouverture.',
+              style: GoogleFonts.poppins(
+                  color: theme.primaryText, fontSize: 13.0, height: 1.3),
+            ),
+          ),
+        ],
       ),
     );
   }

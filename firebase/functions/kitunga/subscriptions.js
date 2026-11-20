@@ -1,18 +1,22 @@
 /**
- * Abonnement client, payé par MTN MoMo depuis la page web Kitunga
- * (web/abonnement.html), jamais dans l'application Android (règle Google
- * Play sur les services numériques). L'abonnement est obligatoire pour
- * commander : User.subscribe_close_at doit être dans le futur.
+ * Abonnement client, payé par MTN MoMo depuis l'application (module « Mon
+ * abonnement ») ou la page web Kitunga (web/abonnement.html). Obligatoire
+ * pour commander : User.subscribe_close_at doit être dans le futur.
  */
 const {PaymentError} = require("./errors");
+const {checkPhone, operatorOf} = require("./wallet");
 
 const DAY = 24 * 60 * 60 * 1000;
 
-// Libellés identiques aux anciennes valeurs de User.subscribe_type.
+// Formules vendues : Trimestriel 300 F (3 mois), Semestriel 500 F (6 mois)
+// et Annuel 1000 F (12 mois).
+// Les anciennes formules (offered: false) restent connues pour terminer un
+// paiement déjà lancé et pour l'historique des commissions.
 const PLANS = {
-  monthly: {label: "Mensuel - 250F", price: 250, days: 30},
-  quarterly: {label: "Trimestriel - 500 F", price: 500, days: 90},
+  quarterly: {label: "Trimestriel - 300 F", price: 300, days: 91},
+  semester: {label: "Semestriel - 500 F", price: 500, days: 183},
   annual: {label: "Annuel - 1000 F", price: 1000, days: 365},
+  monthly: {label: "Mensuel - 300 F", price: 300, days: 30, offered: false},
 };
 
 function toDate(v) {
@@ -36,24 +40,29 @@ function subscriptionActive(user, now = new Date()) {
   return until != null && until > now;
 }
 
-/** Demande MTN pour la formule choisie. Renvoie {referenceId, amount}. */
-async function startSubscription({db, momo, uid, plan, phone}) {
+/** Demande MTN ou Airtel pour la formule choisie. Renvoie {referenceId, amount}. */
+async function startSubscription({db, momo, uid, plan, phone,
+  operator: rawOperator}) {
   if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
+  // Ancienne application ou page en cache : formule trimestrielle.
+  if (!PLANS[plan] || PLANS[plan].offered === false) plan = "quarterly";
   const p = PLANS[plan];
-  if (!p) throw new PaymentError("invalid-argument", "Formule inconnue.");
-  const payer = momo.normalizePhone(phone);
-  if (!payer) {
-    throw new PaymentError("invalid-argument", "Numéro MTN invalide.");
-  }
+  const operator = operatorOf(rawOperator);
+  const payer = checkPhone(phone, operator);
   const user = await db.doc(`User/${uid}`).get();
   if (!user.exists) {
     throw new PaymentError("failed-precondition",
         "Créez d'abord votre compte dans l'application Kitunga.");
   }
+  // Vendeurs, livreurs et admins : pas d'abonnement à payer.
+  if (ROLES_WITHOUT_SUBSCRIPTION.includes(user.get("role"))) {
+    throw new PaymentError("failed-precondition",
+        "Votre compte n'a pas besoin d'abonnement.");
+  }
   const reference = `ABO-${Date.now().toString(36).toUpperCase()}`;
   const referenceId = await momo.requestToPay({
     amount: p.price, phone: payer, externalId: reference,
-    note: `abonnement ${p.label}`,
+    note: `abonnement ${p.label}`, operator,
   });
   await db.doc(`Paiement/${referenceId}`).set({
     kind: "subscription",
@@ -64,7 +73,7 @@ async function startSubscription({db, momo, uid, plan, phone}) {
     amount: p.price,
     user_ref: user.ref,
     payer_phone: payer,
-    operator: "MTN",
+    operator,
     created_at: new Date(),
   });
   return {referenceId, amount: p.price, label: p.label};
@@ -122,5 +131,42 @@ async function confirmSubscription({db, momo, uid, referenceId}) {
   });
 }
 
-module.exports = {PLANS, ROLES_WITHOUT_SUBSCRIPTION, subscriptionActive, startSubscription,
+/**
+ * Module « Mon abonnement » de l'application : état, formules vendues et
+ * historique des paiements d'abonnement.
+ */
+async function mySubscription({db, uid, now = new Date()}) {
+  if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
+  const user = await db.doc(`User/${uid}`).get();
+  if (!user.exists) throw new PaymentError("not-found", "Compte introuvable.");
+  const role = user.get("role") || "User";
+  const until = toDate(user.get("subscribe_close_at"));
+  const active = until != null && until > now;
+  const pays = await db.collection("Paiement")
+      .where("user_ref", "==", user.ref)
+      .where("kind", "==", "subscription").get();
+  const history = pays.docs.map((d) => {
+    const p = d.data();
+    const created = toDate(p.created_at);
+    return {date: created ? created.toISOString() : null,
+      amount: p.amount || 0,
+      plan: (PLANS[p.plan] && PLANS[p.plan].label) || p.plan || "",
+      status: p.status || "",
+      until: p.subscription_until ?
+        toDate(p.subscription_until).toISOString() : null};
+  }).sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 20);
+  return {
+    required: !ROLES_WITHOUT_SUBSCRIPTION.includes(role) && role === "User",
+    active,
+    until: until ? until.toISOString() : null,
+    daysLeft: active ? Math.ceil((until - now) / DAY) : 0,
+    plan: user.get("subscribe_type") || "",
+    plans: Object.entries(PLANS).filter(([, p]) => p.offered !== false)
+        .map(([key, p]) => ({key, label: p.label, price: p.price,
+          days: p.days})),
+    history,
+  };
+}
+
+module.exports = {mySubscription, PLANS, ROLES_WITHOUT_SUBSCRIPTION, subscriptionActive, startSubscription,
   confirmSubscription};

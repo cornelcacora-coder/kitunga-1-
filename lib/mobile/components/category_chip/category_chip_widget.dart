@@ -73,7 +73,7 @@ class _CategoryChipWidgetState extends State<CategoryChipWidget> {
               color: widget!.selected!
                   ? FlutterFlowTheme.of(context).primaryBackground
                   : FlutterFlowTheme.of(context).secondaryText,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               fontSize: 14.0,
             ),
           ),

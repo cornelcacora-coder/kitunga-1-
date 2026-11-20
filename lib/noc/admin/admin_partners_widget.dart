@@ -7,6 +7,11 @@ import '/noc/sales/sales_common.dart';
 import 'admin_categories_widget.dart' show loadAdminCategories;
 import 'admin_products_widget.dart' show loadAdminPartners;
 import 'admin_shell.dart';
+import '/backend/kitunga_cuisines.dart';
+import '/backend/kitunga_hours.dart';
+import '/mobile/components/kitunga_zone_field.dart';
+import 'admin_menu_import.dart';
+import 'admin_launch_partners.dart';
 import '/noc/ui/admin_export.dart';
 import '/noc/ui/admin_table.dart';
 
@@ -83,14 +88,14 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
     if (saved == true) _reload();
   }
 
-  Future<void> _add() async {
+  Future<void> _add([LaunchPartner? template]) async {
     final categories = await _categoryNames();
     if (!mounted) return;
     final saved = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) =>
-          _NewPartnerForm(role: widget.role, categories: categories),
+      builder: (_) => _NewPartnerForm(
+          role: widget.role, categories: categories, template: template),
     );
     if (saved == true) _reload();
   }
@@ -141,7 +146,12 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                 queryParameters: {'commerce': p['uid']}).toString()),
             primary: false
           ),
-        (label: 'Modifier', icon: Icons.edit_rounded, onTap: () => _edit(p), primary: true),
+        (
+          label: 'Modifier',
+          icon: Icons.edit_rounded,
+          onTap: () => _edit(p),
+          primary: true
+        ),
       ],
     );
   }
@@ -199,8 +209,7 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
             icon: const Icon(Icons.refresh_rounded, size: 18.0),
             label: const Text('Actualiser')),
         AdminExportButton(data: _export),
-        adminAddButton(
-            _sellers ? 'Nouveau commerce' : 'Nouveau livreur', _add),
+        adminAddButton(_sellers ? 'Nouveau commerce' : 'Nouveau livreur', _add),
       ],
       body: AdminScroll(
         children: [
@@ -245,6 +254,26 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                           },
                         ),
                       ),
+                    AdminSelect<String>(
+                      value: _statusFilter,
+                      icon: Icons.toggle_on_outlined,
+                      items: const {
+                        'all': 'Tous les statuts',
+                        'active': 'Actifs',
+                        'suspended': 'Suspendus',
+                      },
+                      onChanged: (v) => setState(() => _statusFilter = v),
+                    ),
+                    AdminSelect<String>(
+                      value: _verifiedFilter,
+                      icon: Icons.verified_outlined,
+                      items: const {
+                        'all': 'Certifiés ou non',
+                        'yes': 'Certifiés',
+                        'no': 'Non certifiés',
+                      },
+                      onChanged: (v) => setState(() => _verifiedFilter = v),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -260,16 +289,36 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
                         title: 'Chargement impossible',
                         message: '${snap.error}',
                         action: TextButton(
-                            onPressed: _reload,
-                            child: const Text('Réessayer')),
+                            onPressed: _reload, child: const Text('Réessayer')),
                       );
                     }
-                    final list = snap.data!;
+                    final list = [
+                      for (final p in snap.data!)
+                        if ((_statusFilter == 'all' ||
+                                (p['accountStatus'] ?? 'active') ==
+                                    _statusFilter) &&
+                            (_verifiedFilter == 'all' ||
+                                (_verifiedFilter == 'yes') ==
+                                    (p['verified'] == true)))
+                          p,
+                    ];
                     _shown = list;
                     final n = list.length;
+                    final names = {
+                      for (final p in snap.data!)
+                        '${p['displayName'] ?? ''}'.trim().toLowerCase(),
+                    };
+                    final ready = [
+                      if (_sellers && _q.isEmpty)
+                        for (final t in kLaunchPartners)
+                          if (!names.contains(t.name.toLowerCase())) t,
+                    ];
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (ready.isNotEmpty)
+                          _LaunchPartnersBanner(
+                              partners: ready, onAdd: (t) => _add(t)),
                         if (n > 0)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 10.0),
@@ -293,6 +342,8 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
   }
 
   List<Map<String, dynamic>>? _shown;
+  String _statusFilter = 'all';
+  String _verifiedFilter = 'all';
 
   AdminExportData? _export() {
     final list = _shown;
@@ -303,7 +354,9 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
       subtitle: [
         if (_sellers && _category != null) 'catégorie $_category',
         if (_q.isNotEmpty) 'recherche « $_q »',
-        _sellers ? '$n commerce${n > 1 ? 's' : ''}' : '$n livreur${n > 1 ? 's' : ''}',
+        _sellers
+            ? '$n commerce${n > 1 ? 's' : ''}'
+            : '$n livreur${n > 1 ? 's' : ''}',
       ].join(' · '),
       fileName: _sellers ? 'commercants' : 'livreurs',
       headers: [
@@ -410,6 +463,16 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
             onTap: () => context.go(Uri(
                 path: AdminPaths.products,
                 queryParameters: {'commerce': p['uid']}).toString())),
+      if (_sellers && hasCuisines('${p['category'] ?? ''}'))
+        AdminActionDot(
+            icon: Icons.restaurant_menu_rounded,
+            tooltip: 'Importer un menu',
+            tone: kToneGreen,
+            onTap: () async {
+              await showMenuImport(context,
+                  sellerUid: p['uid'] as String, sellerName: _name(p));
+              _reload();
+            }),
       suspended
           ? AdminActionDot(
               icon: Icons.restore_rounded,
@@ -436,7 +499,7 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
           title: _sellers ? 'Aucun commerce' : 'Aucun livreur',
           message: 'Aucun compte ne correspond à cette recherche.'),
       onTap: _view,
-      actionsWidth: _sellers ? 164.0 : 124.0,
+      actionsWidth: _sellers ? 206.0 : 124.0,
       actions: _actions,
       columns: [
         AdminColumn(
@@ -448,7 +511,8 @@ class _AdminPartnersWidgetState extends State<AdminPartnersWidget> {
           AdminColumn(
               label: 'Catégorie',
               flex: 2,
-              cell: (p) => Text((p['category'] ?? '').isEmpty ? '—' : p['category'],
+              cell: (p) => Text(
+                  (p['category'] ?? '').isEmpty ? '—' : p['category'],
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AdminText.body(size: 13.0)),
@@ -521,12 +585,17 @@ class _PartnerFormState extends State<_PartnerForm> {
   late final _phone = TextEditingController(text: _p['phone'] ?? '');
   late final _bio = TextEditingController(text: _p['bio'] ?? '');
   late final _hours = TextEditingController(text: _p['horraire'] ?? '');
+  late String? _shopZone =
+      '${_p['shopZone'] ?? ''}'.isEmpty ? null : '${_p['shopZone']}';
   late String? _category = widget.categories.contains(_p['category'])
       ? _p['category'] as String
       : null;
   late String _photo = _p['photoUrl'] ?? '';
   late String _cover = _p['businessCover'] ?? '';
   late bool _verified = _p['verified'] == true;
+  late final Set<String> _cuisines = {
+    for (final c in (_p['cuisines'] as List? ?? const [])) '$c',
+  };
   bool _saving = false;
   String? _error;
 
@@ -561,7 +630,10 @@ class _PartnerFormState extends State<_PartnerForm> {
               if (_seller) ...{
                 'category': _category,
                 'horraire': _hours.text.trim(),
+                if (_shopZone != null) 'shopZone': _shopZone,
                 'businessCover': _cover,
+                if (hasCuisines(_category ?? ''))
+                  'cuisines': _cuisines.toList(),
               },
             }),
         'Fiche enregistrée');
@@ -621,18 +693,30 @@ class _PartnerFormState extends State<_PartnerForm> {
               onChanged: (v) => setState(() => _category = v),
             ),
         ]),
-        if (_seller)
-          TextField(
-            controller: _hours,
-            maxLength: 120,
-            decoration: salesInput('Horaires', hint: 'Ex. Lun-Sam 8h-20h'),
+        if (_seller) ...[
+          KitungaShopZoneField(
+            value: _shopZone,
+            onChanged: (v) => setState(() => _shopZone = v),
           ),
+          const SizedBox(height: 12),
+          Text('Horaires d\'ouverture', style: salesBody(color: kSalesInk)),
+          KitungaHoursPicker(
+            initial: _hours.text,
+            onChanged: (v) => _hours.text = v,
+            textStyle: salesBody(color: kSalesInk),
+          ),
+        ],
         TextField(
           controller: _bio,
           maxLines: 3,
           maxLength: 500,
           decoration: salesInput('Présentation'),
         ),
+        if (_seller && hasCuisines(_category ?? ''))
+          CuisinePicker(
+            selected: _cuisines,
+            onChanged: () => setState(() {}),
+          ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           activeThumbColor: kSalesRed,
@@ -650,30 +734,44 @@ class _PartnerFormState extends State<_PartnerForm> {
 /// Création d'un compte commerçant ou livreur (fonction kitungaCreatePartner,
 /// la même que le formulaire d'inscription des partenaires).
 class _NewPartnerForm extends StatefulWidget {
-  const _NewPartnerForm({required this.role, required this.categories});
+  const _NewPartnerForm(
+      {required this.role, required this.categories, this.template});
 
   final String role;
   final List<String> categories;
+  final LaunchPartner? template;
 
   @override
   State<_NewPartnerForm> createState() => _NewPartnerFormState();
 }
 
-const kPartnerPlans = ['Mensuel - 250F', 'Trimestriel - 500 F', 'Annuel - 1000 F'];
 
 class _NewPartnerFormState extends State<_NewPartnerForm> {
   late final bool _seller = widget.role == 'Seller';
+
+  @override
+  void initState() {
+    super.initState();
+    final t = widget.template;
+    if (t != null)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _applyTemplate(t);
+      });
+  }
+
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _hours = TextEditingController();
+  String? _shopZone;
   final _bio = TextEditingController();
   String? _category;
-  String _plan = kPartnerPlans.first;
   String _photo = '';
   String _cover = '';
   bool _verified = false;
+  final Set<String> _cuisines = {};
+  LaunchPartner? _template;
   bool _showPassword = false;
   bool _saving = false;
   String? _error;
@@ -701,6 +799,14 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
     });
     final messenger = ScaffoldMessenger.of(context);
     try {
+      // Fiche prête : logo et couverture intégrés, sauf s'ils sont remplacés.
+      final t = _template;
+      if (t != null && _photo.isEmpty) {
+        _photo = await uploadLaunchImage(t.logoAsset) ?? '';
+      }
+      if (t != null && _cover.isEmpty) {
+        _cover = await uploadLaunchImage(t.coverAsset) ?? '';
+      }
       final created = await salesCall('kitungaCreatePartner', {
         'email': _email.text.trim(),
         'password': _password.text,
@@ -712,18 +818,47 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         'verified': _verified,
         'bio': _bio.text.trim(),
         'horraire': _hours.text.trim(),
-        'subscribeType': _seller ? _plan : '',
+        if (_seller && _shopZone != null) 'shopZone': _shopZone,
       });
       // Logo et couverture : ajoutés à la fiche juste après la création.
-      if (_photo.isNotEmpty || _cover.isNotEmpty) {
+      if (_photo.isNotEmpty || _cover.isNotEmpty || _cuisines.isNotEmpty) {
         await salesCall('kitungaSavePartner', {
           'uid': created['uid'],
           if (_photo.isNotEmpty) 'photoUrl': _photo,
           if (_cover.isNotEmpty) 'businessCover': _cover,
+          if (_cuisines.isNotEmpty) 'cuisines': _cuisines.toList(),
         });
       }
+      // Fiche prête avec menu : plats créés tout de suite.
+      var menuNote = '';
+      if (t != null && t.menu.isNotEmpty) {
+        final lines = parseMenuText(t.menu).lines;
+        final sides = [
+          for (final l in lines)
+            if (l.section.toLowerCase().contains('accompagnement')) l,
+        ];
+        final r = await salesCall('kitungaImportMenu', {
+          'sellerUid': created['uid'],
+          'portions': 50,
+          if (t.menuDraft) 'draft': true,
+          'items': [
+            for (final l in lines)
+              {'section': l.section, 'name': l.name, 'price': l.price},
+          ],
+          if (sides.isNotEmpty)
+            'sideOption': {
+              'name': 'Accompagnement',
+              'choices': [
+                for (final s in sides) {'label': s.name, 'price': s.price},
+              ],
+            },
+        });
+        menuNote = ' · ${r['created']} plats ajoutés'
+            '${t.menuDraft ? ' en brouillon (prix à confirmer)' : ''}';
+      }
       messenger.showSnackBar(SnackBar(
-          content: Text(_seller ? 'Commerce créé' : 'Livreur créé'),
+          content:
+              Text((_seller ? 'Commerce créé' : 'Livreur créé') + menuNote),
           backgroundColor: const Color(0xFF136B3D)));
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
@@ -733,6 +868,33 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         _error = '$e';
       });
     }
+  }
+
+  Widget _assetPreview(String label, String asset) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: salesBody()),
+          const SizedBox(height: 6.0),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AdminRadius.md),
+            child: Image.asset(asset,
+                height: 110.0, width: double.infinity, fit: BoxFit.contain),
+          ),
+        ],
+      );
+
+  void _applyTemplate(LaunchPartner p) {
+    setState(() {
+      _template = p;
+      _name.text = p.name;
+      if (p.phone.isNotEmpty) _phone.text = p.phone;
+      _bio.text = p.bio;
+      if (p.hours.isNotEmpty) _hours.text = p.hours;
+      if (widget.categories.contains('Restaurant')) _category = 'Restaurant';
+      _cuisines
+        ..clear()
+        ..addAll(p.cuisines);
+    });
   }
 
   @override
@@ -748,6 +910,31 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
             'Le partenaire se connectera à l\'application mobile avec cet email '
             'et ce mot de passe. Communiquez-les-lui de façon sûre.',
             style: salesBody()),
+        if (_seller)
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text('Fiche prête :', style: salesBody()),
+              for (final p in kLaunchPartners)
+                ChoiceChip(
+                  avatar:
+                      CircleAvatar(backgroundImage: AssetImage(p.logoAsset)),
+                  label: Text(p.name),
+                  selected: _template == p,
+                  onSelected: _saving ? null : (_) => _applyTemplate(p),
+                ),
+            ],
+          ),
+        if (_template != null)
+          Text(
+              'Logo, couverture, présentation, cuisines et menu '
+              '(${parseMenuText(_template!.menu).lines.length} plats'
+              '${_template!.menuDraft ? ' en brouillon, prix à confirmer' : ''}) '
+              'ajoutés à la création. Saisissez seulement l\'email et le mot '
+              'de passe du restaurant.',
+              style: salesBody()),
         TextField(
           controller: _name,
           maxLength: 80,
@@ -781,6 +968,7 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
           ),
           if (_seller)
             DropdownButtonFormField<String>(
+              key: ValueKey('category-$_category'),
               initialValue: _category,
               isExpanded: true,
               decoration: salesInput('Catégorie'),
@@ -792,45 +980,54 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
             ),
         ]),
         if (_seller) ...[
-          DropdownButtonFormField<String>(
-            initialValue: _plan,
-            isExpanded: true,
-            decoration: salesInput('Formule d\'abonnement'),
-            items: [
-              for (final p in kPartnerPlans)
-                DropdownMenuItem(value: p, child: Text(p)),
-            ],
-            onChanged: (v) => setState(() => _plan = v ?? _plan),
+          KitungaShopZoneField(
+            value: _shopZone,
+            onChanged: (v) => setState(() => _shopZone = v),
           ),
-          TextField(
-            controller: _hours,
-            maxLength: 120,
-            decoration: salesInput('Horaires', hint: 'Ex. Lun-Sam 8h-20h'),
+          const SizedBox(height: 12),
+          Text('Horaires d\'ouverture', style: salesBody(color: kSalesInk)),
+          KitungaHoursPicker(
+            // Fiche prête : ses horaires remplacent la saisie.
+            key: ValueKey('hours-${_template?.name}'),
+            initial: _hours.text,
+            onChanged: (v) => _hours.text = v,
+            textStyle: salesBody(color: kSalesInk),
           ),
         ],
-        AdminFieldRow(children: [
-          AdminImageField(
-            label: _seller ? 'Logo' : 'Photo',
-            value: _photo,
-            height: 110.0,
-            allowRemove: true,
-            onChanged: (v) => setState(() => _photo = v),
-          ),
-          if (_seller)
+        if (_template != null && _photo.isEmpty && _cover.isEmpty)
+          AdminFieldRow(children: [
+            _assetPreview('Logo (fourni)', _template!.logoAsset),
+            _assetPreview('Couverture (fournie)', _template!.coverAsset),
+          ])
+        else
+          AdminFieldRow(children: [
             AdminImageField(
-              label: 'Couverture',
-              value: _cover,
+              label: _seller ? 'Logo' : 'Photo',
+              value: _photo,
               height: 110.0,
               allowRemove: true,
-              onChanged: (v) => setState(() => _cover = v),
+              onChanged: (v) => setState(() => _photo = v),
             ),
-        ]),
+            if (_seller)
+              AdminImageField(
+                label: 'Couverture',
+                value: _cover,
+                height: 110.0,
+                allowRemove: true,
+                onChanged: (v) => setState(() => _cover = v),
+              ),
+          ]),
         TextField(
           controller: _bio,
           maxLines: 3,
           maxLength: 500,
           decoration: salesInput('Présentation'),
         ),
+        if (_seller && hasCuisines(_category ?? ''))
+          CuisinePicker(
+            selected: _cuisines,
+            onChanged: () => setState(() {}),
+          ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           activeThumbColor: kSalesRed,
@@ -840,6 +1037,121 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         ),
         if (_error != null) Text(_error!, style: salesBody(color: kSalesRed)),
       ],
+    );
+  }
+}
+
+/// Choix des cuisines d'un restaurant (pastilles).
+class CuisinePicker extends StatelessWidget {
+  const CuisinePicker(
+      {super.key, required this.selected, required this.onChanged});
+
+  final Set<String> selected;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Cuisines proposées (${selected.length}/8)',
+            style: salesBody(color: kSalesInk)),
+        const SizedBox(height: 8.0),
+        Wrap(
+          spacing: 6.0,
+          runSpacing: 6.0,
+          children: [
+            for (final c in kCuisines)
+              FilterChip(
+                label: Text(c),
+                selected: selected.contains(c),
+                selectedColor: AdminColors.redSoft,
+                checkmarkColor: AdminColors.red,
+                onSelected: (v) {
+                  if (v && selected.length >= 8) return;
+                  v ? selected.add(c) : selected.remove(c);
+                  onChanged();
+                },
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Premiers restaurants partenaires pas encore créés : fiches prêtes.
+class _LaunchPartnersBanner extends StatelessWidget {
+  const _LaunchPartnersBanner({required this.partners, required this.onAdd});
+
+  final List<LaunchPartner> partners;
+  final void Function(LaunchPartner) onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: AdminColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(AdminRadius.md),
+        border: Border.all(color: AdminColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Partenaires prêts à ajouter', style: AdminText.strong()),
+          const SizedBox(height: 4.0),
+          Text(
+              'Leur fiche est déjà remplie (logo, couverture, présentation, '
+              'cuisines, menu). Il ne manque que l\'email et le mot de passe '
+              'de connexion du restaurant.',
+              style: AdminText.label(size: 12.5)),
+          const SizedBox(height: 12.0),
+          Wrap(
+            spacing: 12.0,
+            runSpacing: 12.0,
+            children: [
+              for (final p in partners)
+                Container(
+                  width: 300.0,
+                  padding: const EdgeInsets.all(12.0),
+                  decoration: BoxDecoration(
+                    color: AdminColors.surface,
+                    borderRadius: BorderRadius.circular(AdminRadius.md),
+                    border: Border.all(color: AdminColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: Image.asset(p.logoAsset,
+                            width: 48.0, height: 48.0, fit: BoxFit.cover),
+                      ),
+                      const SizedBox(width: 12.0),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(p.name, style: AdminText.strong(size: 14.0)),
+                            Text(
+                                '${parseMenuText(p.menu).lines.length} plats'
+                                '${p.menuDraft ? ' (prix à confirmer)' : ''}',
+                                style: AdminText.label(size: 12.0)),
+                          ],
+                        ),
+                      ),
+                      FilledButton(
+                        onPressed: () => onAdd(p),
+                        child: const Text('Ajouter'),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

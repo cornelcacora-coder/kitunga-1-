@@ -1,24 +1,20 @@
 import '/auth/firebase_auth/auth_util.dart';
-import '/mobile/components/delete_account/delete_account.dart';
-import '/backend/backend.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:math';
-import 'dart:ui';
 import '/index.dart';
+import '/mobile/common/security/change_email_page.dart';
+import '/mobile/common/security/change_password_page.dart';
+import '/mobile/components/delete_account/delete_account.dart';
+import '/mobile/main_app/order_view/order_view_widget.dart'
+    show kitungaPageBar;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'security_model.dart';
 export 'security_model.dart';
-import '/mobile/components/form_styles/form_styles.dart';
 
-/// Page d'inscription utilisateur
+const _red = Color(0xFFE51A1A);
+
+/// « Compte et sécurité » : informations du profil, e-mail et mot de passe
+/// de connexion, suppression du compte. Pour tous les comptes.
 class SecurityWidget extends StatefulWidget {
   const SecurityWidget({super.key});
 
@@ -29,463 +25,190 @@ class SecurityWidget extends StatefulWidget {
   State<SecurityWidget> createState() => _SecurityWidgetState();
 }
 
-class _SecurityWidgetState extends State<SecurityWidget>
-    with TickerProviderStateMixin {
-  late SecurityModel _model;
-
-  final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final animationsMap = <String, AnimationInfo>{};
-
+class _SecurityWidgetState extends State<SecurityWidget> {
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => SecurityModel());
-
-    _model.switchValue1 = false;
-    _model.switchValue2 = false;
-
-    // Charger les préférences depuis Firestore
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      safeSetState(() {
-        _model.switchValue1 =
-            valueOrDefault<bool>(currentUserDocument?.twoFA, false);
-      });
-    });
-    animationsMap.addAll({
-      'containerOnPageLoadAnimation1': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 100.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(100.0, 0.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-      'containerOnPageLoadAnimation2': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 100.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(100.0, 0.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-      'containerOnPageLoadAnimation3': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 100.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(100.0, 0.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _model.dispose();
-
-    super.dispose();
+    // Après un changement d'e-mail confirmé : profil remis à jour.
+    kitungaSyncEmail();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          leading: FlutterFlowIconButton(
-            borderColor: Colors.transparent,
-            borderRadius: 30.0,
-            borderWidth: 1.0,
-            buttonSize: 60.0,
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              size: 30.0,
-            ),
-            onPressed: () async {
-              context.pop();
-            },
-          ),
-          title: Text(
-            'Sécurité',
-            style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
-                    fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                    fontStyle:
-                        FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                  ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
-                  fontSize: 22.0,
-                  letterSpacing: 0.0,
-                  fontWeight:
-                      FlutterFlowTheme.of(context).headlineMedium.fontWeight,
-                  fontStyle:
-                      FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                ),
-          ),
-          actions: [],
-          centerTitle: true,
-          elevation: 0.0,
-        ),
-        body: Stack(
-          fit: StackFit.expand,
+    final password = kitungaHasPasswordLogin();
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
+      appBar: kitungaPageBar(context, 'Compte et sécurité'),
+      body: AuthUserStreamWidget(
+        builder: (context) => ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
-                ),
+            const _Title('Mes informations'),
+            _Group(children: [
+              _Item(
+                icon: Icons.person_outline_rounded,
+                title: 'Nom, photo et téléphones',
+                subtitle: currentUserDisplayName.isEmpty
+                    ? 'Compléter mon profil'
+                    : currentUserDisplayName,
+                onTap: () => context.pushNamed(EditProfileWidget.routeName),
               ),
+            ]),
+            const SizedBox(height: 18),
+            const _Title('Connexion'),
+            _Group(children: [
+              _Item(
+                icon: Icons.mail_outline_rounded,
+                title: 'Adresse e-mail',
+                subtitle: currentUserEmail.isEmpty ? '—' : currentUserEmail,
+                onTap: password
+                    ? () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const ChangeEmailPage()))
+                    : null,
+                note: password
+                    ? null
+                    : 'Compte relié à Google : l\'e-mail se gère dans votre '
+                        'compte Google.',
+              ),
+              _Item(
+                icon: Icons.lock_outline_rounded,
+                title: 'Mot de passe',
+                subtitle: password ? 'Changer mon mot de passe' : '—',
+                onTap: password
+                    ? () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const ChangePasswordPage()))
+                    : null,
+                note: password
+                    ? null
+                    : 'Compte relié à Google : pas de mot de passe Kitunga.',
+              ),
+            ]),
+            const SizedBox(height: 18),
+            const _Title('Zone sensible'),
+            _Group(children: [
+              _Item(
+                icon: Icons.delete_forever_rounded,
+                title: 'Supprimer mon compte',
+                subtitle: 'Définitif : vos données personnelles sont effacées',
+                danger: true,
+                onTap: () => showDeleteAccountDialog(context),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Title extends StatelessWidget {
+  const _Title(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+        child: Text(text.toUpperCase(),
+            style: GoogleFonts.poppins(
+                fontSize: 12,
+                letterSpacing: 0.6,
+                fontWeight: FontWeight.w600,
+                color: FlutterFlowTheme.of(context).secondaryText)),
+      );
+}
+
+class _Group extends StatelessWidget {
+  const _Group({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: theme.alternate),
+      ),
+      child: Column(children: [
+        for (var i = 0; i < children.length; i++) ...[
+          if (i > 0) Divider(height: 1, indent: 56, color: theme.alternate),
+          children[i],
+        ],
+      ]),
+    );
+  }
+}
+
+class _Item extends StatelessWidget {
+  const _Item({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.note,
+    this.danger = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback? onTap;
+  final String? note;
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final color = danger ? _red : theme.primaryText;
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 10, 14),
+        child: Row(children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: _red.withValues(alpha: 0.09),
+              borderRadius: BorderRadius.circular(10),
             ),
-            SafeArea(
-          top: true,
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
-            child: ListView(
-              padding: EdgeInsets.fromLTRB(
-                0,
-                16.0,
-                0,
-                24.0,
-              ),
-              scrollDirection: Axis.vertical,
+            child: Icon(icon, size: 19, color: _red),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).lightGrey,
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 8.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 48.0,
-                            height: 48.0,
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context).secondary,
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: AlignmentDirectional(0.0, 0.0),
-                            child: Icon(
-                              Icons.lock_reset_sharp,
-                              color: Colors.white,
-                              size: 24.0,
-                            ),
-                          ),
-                          Align(
-                            alignment: AlignmentDirectional(-1.0, 0.0),
-                            child: Text(
-                              'Double Authentification',
-                              maxLines: 1,
-                              style: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    fontSize: 17.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Align(
-                              alignment: AlignmentDirectional(1.0, -1.0),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 8.0, 0.0),
-                                child: Switch.adaptive(
-                                    value: _model.switchValue1!,
-                                    onChanged: (newValue) async {
-                                      safeSetState(
-                                          () => _model.switchValue1 = newValue);
-                                      if (currentUserReference != null) {
-                                        await currentUserReference!.update(
-                                            createUserRecordData(twoFA: newValue));
-                                      }
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(newValue
-                                              ? 'Double authentification activée'
-                                              : 'Double authentification désactivée'),
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                    },
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  activeTrackColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  inactiveTrackColor: Color(0xFFDCDCDC),
-                                  inactiveThumbColor:
-                                      FlutterFlowTheme.of(context)
-                                          .primaryBackground,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ].divide(SizedBox(width: 16.0)),
-                      ),
-                    ),
-                  ).animateOnPageLoad(
-                      animationsMap['containerOnPageLoadAnimation1']!),
-                ),
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).lightGrey,
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 8.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 48.0,
-                            height: 48.0,
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context).secondary,
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: AlignmentDirectional(0.0, 0.0),
-                            child: Icon(
-                              Icons.notifications_rounded,
-                              color: Colors.white,
-                              size: 24.0,
-                            ),
-                          ),
-                          Align(
-                            alignment: AlignmentDirectional(0.0, 0.0),
-                            child: Text(
-                              'Notifications',
-                              maxLines: 1,
-                              style: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    fontSize: 17.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Align(
-                              alignment: AlignmentDirectional(1.0, -1.0),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 8.0, 0.0),
-                                child: Switch.adaptive(
-                                  value: _model.switchValue2!,
-                                  onChanged: (newValue) async {
-                                    safeSetState(
-                                        () => _model.switchValue2 = newValue!);
-                                  },
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  activeTrackColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  inactiveTrackColor: Color(0xFFDCDCDC),
-                                  inactiveThumbColor:
-                                      FlutterFlowTheme.of(context)
-                                          .primaryBackground,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ].divide(SizedBox(width: 16.0)),
-                      ),
-                    ),
-                  ).animateOnPageLoad(
-                      animationsMap['containerOnPageLoadAnimation2']!),
-                ),
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    focusColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () async {
-                      context.pushNamed(ResetPasswordWidget.routeName);
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).lightGrey,
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                      child: Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 16.0, 8.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 48.0,
-                              height: 48.0,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context).secondary,
-                                shape: BoxShape.circle,
-                              ),
-                              alignment: AlignmentDirectional(0.0, 0.0),
-                              child: Icon(
-                                Icons.password,
-                                color: Colors.white,
-                                size: 24.0,
-                              ),
-                            ),
-                            Align(
-                              alignment: AlignmentDirectional(-1.0, 0.0),
-                              child: Text(
-                                'Changer le mot de passe',
-                                maxLines: 1,
-                                style: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.normal,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .titleSmall
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      fontSize: 17.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.normal,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Align(
-                                alignment: AlignmentDirectional(1.0, 0.0),
-                                child: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color:
-                                      FlutterFlowTheme.of(context).primaryText,
-                                  size: 24.0,
-                                ),
-                              ),
-                            ),
-                          ].divide(SizedBox(width: 16.0)),
-                        ),
-                      ),
-                    ),
-                  ).animateOnPageLoad(
-                      animationsMap['containerOnPageLoadAnimation3']!),
-                ),
-                // Suppression définitive du compte (exigence Google Play).
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 16.0),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16.0),
-                    onTap: () => showDeleteAccountDialog(context),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context)
-                            .error
-                            .withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                      padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 16.0, 8.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 48.0,
-                            height: 48.0,
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context).error,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.delete_forever_rounded,
-                                color: Colors.white, size: 24.0),
-                          ),
-                          SizedBox(width: 16.0),
-                          Expanded(
-                            child: Text(
-                              'Supprimer mon compte',
-                              style: GoogleFonts.interTight(
-                                color: FlutterFlowTheme.of(context).error,
-                                fontSize: 17.0,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          Icon(Icons.arrow_forward_ios,
-                              color: FlutterFlowTheme.of(context).error,
-                              size: 20.0),
-                        ],
-                      ),
-                    ),
+                Text(title,
+                    style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: color)),
+                Text(subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                        fontSize: 13, color: theme.secondaryText)),
+                if (note != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(note!,
+                        style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: theme.secondaryText)),
                   ),
-                ),
               ],
             ),
           ),
-        ),
-          ],
-        ),
+          if (onTap != null)
+            Icon(Icons.chevron_right_rounded, color: theme.secondaryText),
+        ]),
       ),
     );
   }

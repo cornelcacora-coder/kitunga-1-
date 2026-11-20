@@ -1,3 +1,13 @@
+import '/mobile/seller/kitunga_seller_pro.dart'
+    show SellerPerformancePage, SellerReviewsPage, SellerStockPage;
+import '/mobile/deliverer/kitunga_deliverer_pro.dart'
+    show DelivererDocumentsPage, DelivererPerformancePage, DelivererSafetyPage;
+import '/mobile/components/finance/kitunga_earnings.dart'
+    show openKitungaEarnings;
+import '/mobile/components/messaging/kitunga_messages.dart'
+    show KitungaConversationsPage;
+import '/mobile/components/support/kitunga_support.dart'
+    show openKitungaSupport;
 import '/auth/firebase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -81,10 +91,10 @@ class AppDrawerWidget extends StatelessWidget {
                               name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.interTight(
+                              style: GoogleFonts.poppins(
                                 color: theme.primaryText,
                                 fontSize: 17.0,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             SizedBox(height: 4.0),
@@ -97,10 +107,10 @@ class AppDrawerWidget extends StatelessWidget {
                               ),
                               child: Text(
                                 _roleLabel(role),
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   color: theme.primary,
                                   fontSize: 12.0,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -122,9 +132,95 @@ class AppDrawerWidget extends StatelessWidget {
                       ),
                       if (!isGuest)
                         _DrawerItem(
-                          icon: Icons.receipt_long_outlined,
-                          label: 'Mes commandes',
+                          icon: role == 'Deliver'
+                              ? Icons.two_wheeler_rounded
+                              : Icons.receipt_long_outlined,
+                          label: role == 'Deliver'
+                              ? 'Mes courses'
+                              : 'Mes commandes',
                           onTap: () => open(OrderWidget.routeName),
+                        ),
+                      // Livreur et commerce : gains / revenus.
+                      if (role == 'Deliver' || role == 'Seller')
+                        _DrawerItem(
+                          icon: Icons.account_balance_wallet_outlined,
+                          label: role == 'Deliver' ? 'Mes gains' : 'Mes revenus',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            openKitungaEarnings(context,
+                                seller: role == 'Seller');
+                          },
+                        ),
+                      if (role == 'Seller') ...[
+                        _DrawerItem(
+                          icon: Icons.warehouse_outlined,
+                          label: 'Stock',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const SellerStockPage()));
+                          },
+                        ),
+                        _DrawerItem(
+                          icon: Icons.insights_rounded,
+                          label: 'Performances',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const SellerPerformancePage()));
+                          },
+                        ),
+                        _DrawerItem(
+                          icon: Icons.star_outline_rounded,
+                          label: 'Avis des clients',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const SellerReviewsPage()));
+                          },
+                        ),
+                      ],
+                      if (role == 'Deliver') ...[
+                        _DrawerItem(
+                          icon: Icons.badge_outlined,
+                          label: 'Mes documents',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) =>
+                                    const DelivererDocumentsPage()));
+                          },
+                        ),
+                        _DrawerItem(
+                          icon: Icons.insights_rounded,
+                          label: 'Mes performances',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) =>
+                                    const DelivererPerformancePage()));
+                          },
+                        ),
+                        _DrawerItem(
+                          icon: Icons.health_and_safety_outlined,
+                          label: 'Sécurité et urgence',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const DelivererSafetyPage()));
+                          },
+                        ),
+                      ],
+                      if (!isGuest)
+                        _DrawerItem(
+                          icon: Icons.forum_outlined,
+                          label: 'Messages',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const KitungaConversationsPage(
+                                    showAppBar: true)));
+                          },
                         ),
                       if (role == 'User')
                         _DrawerItem(
@@ -132,6 +228,8 @@ class AppDrawerWidget extends StatelessWidget {
                           label: 'Mon panier',
                           onTap: () => open(CartLastWidget.routeName),
                         ),
+                      // Les boutiques ne concernent pas le livreur.
+                      if (role != 'Deliver')
                       _DrawerItem(
                         icon: Icons.storefront_outlined,
                         label: 'Boutiques',
@@ -147,6 +245,15 @@ class AppDrawerWidget extends StatelessWidget {
                           icon: Icons.person_outline_rounded,
                           label: 'Mon profil',
                           onTap: () => open(MyProfileWidget.routeName),
+                        ),
+                      if (!isGuest)
+                        _DrawerItem(
+                          icon: Icons.support_agent_outlined,
+                          label: 'Aide & support',
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            openKitungaSupport(context);
+                          },
                         ),
                       _DrawerItem(
                         icon: Icons.settings_outlined,
@@ -214,7 +321,7 @@ class _DrawerItem extends StatelessWidget {
       leading: Icon(icon, color: c),
       title: Text(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           color: c,
           fontSize: 15.0,
           fontWeight: FontWeight.w500,

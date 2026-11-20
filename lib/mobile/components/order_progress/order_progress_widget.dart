@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/backend/order_status.dart';
+import '/mobile/components/delivery/kitunga_delivery.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -81,17 +82,17 @@ class KitungaOrderProgress extends StatelessWidget {
               Expanded(
                 child: Text(
                   OrderStatus.label(status),
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 17.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
               if (order.createdAt != null)
                 Text(
                   dateTimeFormat('d/M H:mm', order.createdAt),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 12.5),
                 ),
             ],
@@ -120,11 +121,11 @@ class KitungaOrderProgress extends StatelessWidget {
                 for (var i = 0; i < OrderStatus.steps.length; i++)
                   Text(
                     OrderStatus.stepLabel(OrderStatus.steps[i]),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color:
                           i <= step ? theme.primaryText : theme.secondaryText,
                       fontSize: 11.0,
-                      fontWeight: i == step ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: i == step ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
               ],
@@ -136,7 +137,7 @@ class KitungaOrderProgress extends StatelessWidget {
                   ? 'Le commerce n\'a pas pu accepter votre commande.'
                   : 'Motif du commerce : $reason',
               style:
-                  GoogleFonts.inter(color: theme.primaryText, fontSize: 13.5),
+                  GoogleFonts.poppins(color: theme.primaryText, fontSize: 13.5),
             ),
           if (OrderStatus.isStopped(status) &&
               order.snapshotData['refund_needed'] == true) ...[
@@ -144,7 +145,7 @@ class KitungaOrderProgress extends StatelessWidget {
             Text(
               'Remboursement à traiter : contactez le support Kitunga (contact@ntemoconsulting.com) en indiquant votre numéro de commande.',
               style:
-                  GoogleFonts.inter(color: theme.secondaryText, fontSize: 12.5),
+                  GoogleFonts.poppins(color: theme.secondaryText, fontSize: 12.5),
             ),
           ],
           if (status == OrderStatus.notReceived) ...[
@@ -152,7 +153,7 @@ class KitungaOrderProgress extends StatelessWidget {
             Text(
               'Vous avez signalé ne pas avoir reçu cette commande. Le support Kitunga va vous contacter.',
               style:
-                  GoogleFonts.inter(color: theme.primaryText, fontSize: 13.0),
+                  GoogleFonts.poppins(color: theme.primaryText, fontSize: 13.0),
             ),
           ],
           if (canCancel && status == OrderStatus.pending) ...[
@@ -164,12 +165,14 @@ class KitungaOrderProgress extends StatelessWidget {
                 icon: Icon(Icons.close_rounded, color: theme.error),
                 label: Text(
                   'Annuler la commande',
-                  style: GoogleFonts.inter(
-                      color: theme.error, fontWeight: FontWeight.w700),
+                  style: GoogleFonts.poppins(
+                      color: theme.error, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
           ],
+          // Code de remise (client) ou reçu (commande livrée).
+          KitungaDeliveryExtras(order: order),
         ],
       ),
     );

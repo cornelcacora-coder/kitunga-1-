@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -65,15 +66,10 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(0.0),
-            child: CachedNetworkImage(
-              fadeInDuration: Duration(milliseconds: 500),
-              fadeOutDuration: Duration(milliseconds: 500),
-              imageUrl: getCORSProxyUrl(
-                widget!.photo!,
-              ),
+            child: KitungaImage(
+              getCORSProxyUrl(widget!.photo ?? ''),
               width: 160.0,
               height: 165.0,
-              fit: BoxFit.cover,
             ),
           ),
           Row(
@@ -87,7 +83,7 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
                 ),
                 textAlign: TextAlign.center,
                 style: FlutterFlowTheme.of(context).headlineMedium.override(
-                      font: GoogleFonts.interTight(
+                      font: GoogleFonts.poppins(
                         fontWeight: FlutterFlowTheme.of(context)
                             .headlineMedium
                             .fontWeight,
@@ -120,7 +116,7 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
                     ),
                     textAlign: TextAlign.center,
                     style: FlutterFlowTheme.of(context).bodyLarge.override(
-                          font: GoogleFonts.inter(
+                          font: GoogleFonts.poppins(
                             fontWeight: FlutterFlowTheme.of(context)
                                 .bodyLarge
                                 .fontWeight,
@@ -160,7 +156,7 @@ class _EmptyCardWidgetState extends State<EmptyCardWidget> {
                       EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: FlutterFlowTheme.of(context).primary,
                   textStyle: FlutterFlowTheme.of(context).labelLarge.override(
-                        font: GoogleFonts.inter(
+                        font: GoogleFonts.poppins(
                           fontWeight: FlutterFlowTheme.of(context)
                               .labelLarge
                               .fontWeight,

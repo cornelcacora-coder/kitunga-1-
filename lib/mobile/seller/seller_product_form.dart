@@ -7,6 +7,7 @@ import '/flutter_flow/upload_data.dart';
 import '/mobile/components/form_styles/form_styles.dart';
 import '/mobile/components/kitunga_image/kitunga_image.dart';
 import '/backend/kitunga_options.dart';
+import '/backend/kitunga_cuisines.dart';
 import 'seller_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +36,13 @@ class SellerProductFormPage extends StatefulWidget {
 class _SellerProductFormPageState extends State<SellerProductFormPage> {
   final _formKey = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.product?.name ?? '');
+  final _nameFocus = FocusNode();
+
+  /// Cuisines du restaurant (suggestions de plats en premier).
+  List<String> get _cuisines => [
+        for (final c in (widget.shop.snapshotData['cuisines'] as List? ?? const []))
+          '$c',
+      ];
   late final _description =
       TextEditingController(text: widget.product?.description ?? '');
   late final _price = TextEditingController(
@@ -49,7 +57,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
   late String _photoUrl = widget.product?.prodImg ?? '';
   late String _unit = (widget.product?.unit.isNotEmpty ?? false)
       ? widget.product!.unit
-      : 'pièce';
+      : sellerUnits(widget.shop.category).first;
   late String _tag = widget.product?.specifications ?? '';
   late bool _express = widget.product?.instantDisponibilty ?? false;
   late bool _prescription = widget.product?.requiresPrescription ?? false;
@@ -66,11 +74,37 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
   @override
   void dispose() {
     _name.dispose();
+    _nameFocus.dispose();
     _description.dispose();
     _price.dispose();
     _stock.dispose();
     _section.dispose();
     super.dispose();
+  }
+
+  Future<void> _otherUnit() async {
+    final c = TextEditingController();
+    final v = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Autre unité de vente'),
+        content: TextField(
+          controller: c,
+          autofocus: true,
+          maxLength: 30,
+          decoration: InputDecoration(hintText: 'Ex. sachet de 500 g'),
+          onSubmitted: (t) => Navigator.pop(ctx, t),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: Text('Annuler')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, c.text),
+              child: Text('Valider')),
+        ],
+      ),
+    );
+    if (v != null && v.trim().isNotEmpty) setState(() => _unit = v.trim());
   }
 
   Future<void> _pickPhoto() async {
@@ -97,7 +131,8 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
 
   Future<void> _save({required bool publish}) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (publish && _photoUrl.isEmpty) {
+    // Restaurants : un plat peut être publié sans photo.
+    if (publish && _photoUrl.isEmpty && !hasCuisines(_category)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Ajoutez une photo avant de publier ce produit.')));
       return;
@@ -178,7 +213,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
     final theme = FlutterFlowTheme.of(context);
     final item = sellerItemLabel(_category);
     final fieldStyle =
-        GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0);
+        GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0);
     final suggestions = {
       ...widget.existingSections,
       ...sellerSectionSuggestions(_category),
@@ -193,10 +228,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text(
           _editing ? 'Modifier le $item' : 'Nouveau $item',
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
             color: theme.primaryText,
             fontSize: 19.0,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
           ),
         ),
         actions: [
@@ -234,7 +269,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                                 SizedBox(height: 8.0),
                                 Text(
                                   'Ajouter une photo (obligatoire pour publier)',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                       color: theme.secondaryText,
                                       fontSize: 13.0),
                                 ),
@@ -257,10 +292,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                                     ),
                                     child: Text(
                                       'Changer la photo',
-                                      style: GoogleFonts.inter(
+                                      style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontSize: 12.0,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ),
@@ -272,14 +307,57 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
             ),
             SizedBox(height: 20.0),
             KitungaFieldLabel('Nom du $item'),
-            TextFormField(
-              controller: _name,
-              textCapitalization: TextCapitalization.sentences,
-              style: fieldStyle,
-              decoration: kitungaInputDecoration(
-                  context, 'Ex : ${_example()}', Icons.label_outline_rounded),
-              validator: (v) =>
-                  (v ?? '').trim().isEmpty ? 'Le nom est obligatoire.' : null,
+            // Restaurants : suggestions de plats (cuisines du commerce
+            // d'abord) ; le plat choisi remplit aussi la rubrique.
+            RawAutocomplete<KitungaDish>(
+              textEditingController: _name,
+              focusNode: _nameFocus,
+              displayStringForOption: (d) => d.name,
+              optionsBuilder: (v) => hasCuisines(_category)
+                  ? dishSuggestions(v.text, cuisines: _cuisines)
+                  : const <KitungaDish>[],
+              onSelected: (d) {
+                if (_section.text.trim().isEmpty) _section.text = d.section;
+                setState(() {});
+              },
+              fieldViewBuilder: (context, controller, focus, onSubmit) =>
+                  TextFormField(
+                controller: controller,
+                focusNode: focus,
+                textCapitalization: TextCapitalization.sentences,
+                style: fieldStyle,
+                decoration: kitungaInputDecoration(
+                    context, 'Ex : ${_example()}', Icons.label_outline_rounded),
+                validator: (v) =>
+                    (v ?? '').trim().isEmpty ? 'Le nom est obligatoire.' : null,
+              ),
+              optionsViewBuilder: (context, onSelected, options) => Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 6.0,
+                  borderRadius: BorderRadius.circular(14.0),
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints(maxHeight: 280.0, maxWidth: 360.0),
+                    child: ListView(
+                      padding: EdgeInsets.symmetric(vertical: 6.0),
+                      shrinkWrap: true,
+                      children: [
+                        for (final d in options)
+                          ListTile(
+                            dense: true,
+                            leading: Icon(Icons.restaurant_menu_rounded,
+                                color: FlutterFlowTheme.of(context).primary),
+                            title: Text(d.name),
+                            subtitle: Text(d.section),
+                            onTap: () => onSelected(d),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
             SizedBox(height: 16.0),
             KitungaFieldLabel('Description'),
@@ -325,7 +403,9 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      KitungaFieldLabel('Stock disponible'),
+                      KitungaFieldLabel(hasCuisines(_category)
+                          ? 'Portions disponibles'
+                          : 'Stock disponible'),
                       TextFormField(
                         controller: _stock,
                         keyboardType: TextInputType.number,
@@ -351,21 +431,33 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                 spacing: 8.0,
                 runSpacing: 8.0,
                 children: [
-                  for (final u in sellerUnits)
+                  for (final u in {
+                    ...sellerUnits(_category),
+                    if (_unit.isNotEmpty) _unit,
+                  })
                     ChoiceChip(
                       label: Text(u),
                       selected: _unit == u,
                       showCheckmark: false,
                       onSelected: (_) => setState(() => _unit = u),
-                      labelStyle: GoogleFonts.inter(
+                      labelStyle: GoogleFonts.poppins(
                         color: _unit == u ? Colors.white : theme.primaryText,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                       selectedColor: theme.primary,
                       backgroundColor: theme.primaryBackground,
                       side: BorderSide.none,
                       shape: StadiumBorder(),
                     ),
+                  // Unité absente de la liste : saisie libre.
+                  ActionChip(
+                    avatar: Icon(Icons.edit_outlined, size: 16.0),
+                    label: Text('Autre…'),
+                    onPressed: _otherUnit,
+                    backgroundColor: theme.primaryBackground,
+                    side: BorderSide.none,
+                    shape: StadiumBorder(),
+                  ),
                 ],
               ),
             ],
@@ -388,12 +480,12 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                   ActionChip(
                     label: Text(s),
                     onPressed: () => setState(() => _section.text = s),
-                    labelStyle: GoogleFonts.inter(
+                    labelStyle: GoogleFonts.poppins(
                       color: _section.text.trim() == s
                           ? Colors.white
                           : theme.primaryText,
                       fontSize: 13.0,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                     backgroundColor: _section.text.trim() == s
                         ? theme.primary
@@ -420,9 +512,9 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                     selected: _tag == t.value,
                     showCheckmark: false,
                     onSelected: (_) => setState(() => _tag = t.value),
-                    labelStyle: GoogleFonts.inter(
+                    labelStyle: GoogleFonts.poppins(
                       color: _tag == t.value ? Colors.white : theme.primaryText,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                     selectedColor: theme.primary,
                     backgroundColor: theme.primaryBackground,
@@ -438,10 +530,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
               activeThumbColor: theme.primary,
               onChanged: (v) => setState(() => _express = v),
               title: Text('Livraison express',
-                  style: GoogleFonts.inter(
-                      color: theme.primaryText, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.poppins(
+                      color: theme.primaryText, fontWeight: FontWeight.w500)),
               subtitle: Text('Affiche le badge ⚡ Express sur le produit.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 12.0)),
             ),
             if (_category == 'Pharmacie')
@@ -451,11 +543,11 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                 activeThumbColor: theme.primary,
                 onChanged: (v) => setState(() => _prescription = v),
                 title: Text('Sur ordonnance',
-                    style: GoogleFonts.inter(
-                        color: theme.primaryText, fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.poppins(
+                        color: theme.primaryText, fontWeight: FontWeight.w500)),
                 subtitle: Text(
                     'Visible par les clients mais non commandable en ligne.',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 12.0)),
               ),
             SizedBox(height: 24.0),
@@ -476,10 +568,10 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                 ),
                 child: Text(
                   'Enregistrer en brouillon',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 15.0,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -504,7 +596,13 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
 
   List<KitungaOptionGroup> get _presets => switch (_category) {
         'Restaurant' => [
-            KitungaOptionGroup(name: 'Accompagnement', required: true),
+            KitungaOptionGroup(
+                name: 'Accompagnement',
+                required: true,
+                choices: [
+                  for (final s in kCommonSides.take(8))
+                    KitungaOptionChoice(label: s),
+                ]),
             KitungaOptionGroup(name: 'Cuisson', required: true),
             KitungaOptionGroup(name: 'Suppléments', max: 0),
           ],
@@ -550,7 +648,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
         KitungaFieldLabel(_optionsTitle),
         Text(
           'Le client fera ses choix avant d\'ajouter le produit au panier. Le prix final inclut les suppléments.',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
               color: theme.secondaryText, fontSize: 12.5, height: 1.4),
         ),
         SizedBox(height: 10.0),
@@ -570,15 +668,15 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                     children: [
                       Text(
                         _groups[i].name,
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 15.0,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         _groups[i].rule,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: theme.primary, fontSize: 12.0),
                       ),
                       SizedBox(height: 2.0),
@@ -593,7 +691,7 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                             .join(' · '),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             color: theme.secondaryText, fontSize: 12.5),
                       ),
                     ],
@@ -623,8 +721,8 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
                     Icon(Icons.add_rounded, size: 16.0, color: theme.primary),
                 label: Text(preset.name),
                 onPressed: () => _editGroup(group: preset),
-                labelStyle: GoogleFonts.inter(
-                    color: theme.primaryText, fontWeight: FontWeight.w600),
+                labelStyle: GoogleFonts.poppins(
+                    color: theme.primaryText, fontWeight: FontWeight.w500),
                 backgroundColor: theme.primaryBackground,
                 side: BorderSide.none,
                 shape: StadiumBorder(),
@@ -633,8 +731,8 @@ class _SellerProductFormPageState extends State<SellerProductFormPage> {
               avatar: Icon(Icons.add_rounded, size: 16.0, color: theme.primary),
               label: Text('Autre groupe'),
               onPressed: () => _editGroup(),
-              labelStyle: GoogleFonts.inter(
-                  color: theme.primaryText, fontWeight: FontWeight.w600),
+              labelStyle: GoogleFonts.poppins(
+                  color: theme.primaryText, fontWeight: FontWeight.w500),
               backgroundColor: theme.primaryBackground,
               side: BorderSide.none,
               shape: StadiumBorder(),
@@ -725,7 +823,7 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
-    final style = GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0);
+    final style = GoogleFonts.poppins(color: theme.primaryText, fontSize: 15.0);
     return Scaffold(
       backgroundColor: theme.secondaryBackground,
       appBar: AppBar(
@@ -735,10 +833,10 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
         iconTheme: IconThemeData(color: theme.primaryText),
         title: Text(
           widget.group.name.isEmpty ? 'Nouveau groupe' : widget.group.name,
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
             color: theme.primaryText,
             fontSize: 19.0,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -760,7 +858,7 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
             onChanged: (v) => setState(() => _required = v),
             title: Text('Choix obligatoire', style: style),
             subtitle: Text('Le client doit choisir avant d\'ajouter au panier.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText, fontSize: 12.0)),
           ),
           SwitchListTile.adaptive(
@@ -770,7 +868,7 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
             onChanged: (v) => setState(() => _multiple = v),
             title: Text('Plusieurs choix possibles', style: style),
             subtitle: Text('Ex : plusieurs suppléments.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     color: theme.secondaryText, fontSize: 12.0)),
           ),
           if (_multiple)
@@ -846,8 +944,8 @@ class _OptionGroupEditorState extends State<_OptionGroupEditor> {
                   ))),
               icon: Icon(Icons.add_rounded, color: theme.primary),
               label: Text('Ajouter un choix',
-                  style: GoogleFonts.inter(
-                      color: theme.primary, fontWeight: FontWeight.w700)),
+                  style: GoogleFonts.poppins(
+                      color: theme.primary, fontWeight: FontWeight.w600)),
             ),
           ),
           SizedBox(height: 20.0),

@@ -62,7 +62,7 @@ class _InfoBadgeWidgetState extends State<InfoBadgeWidget> {
             'Delivery',
           ),
           style: FlutterFlowTheme.of(context).labelSmall.override(
-                font: GoogleFonts.inter(
+                font: GoogleFonts.poppins(
                   fontWeight:
                       FlutterFlowTheme.of(context).labelSmall.fontWeight,
                   fontStyle: FlutterFlowTheme.of(context).labelSmall.fontStyle,
@@ -79,13 +79,13 @@ class _InfoBadgeWidgetState extends State<InfoBadgeWidget> {
             '15-25 min',
           ),
           style: FlutterFlowTheme.of(context).bodySmall.override(
-                font: GoogleFonts.inter(
-                  fontWeight: FontWeight.w600,
+                font: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
                   fontStyle: FlutterFlowTheme.of(context).bodySmall.fontStyle,
                 ),
                 color: FlutterFlowTheme.of(context).primaryText,
                 letterSpacing: 0.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 fontStyle: FlutterFlowTheme.of(context).bodySmall.fontStyle,
               ),
         ),

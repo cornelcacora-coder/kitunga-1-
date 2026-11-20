@@ -85,7 +85,7 @@ class _LoginWidgetState extends State<LoginWidget> {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fieldStyle = GoogleFonts.inter(
+    final fieldStyle = GoogleFonts.poppins(
       color: theme.primaryText,
       fontSize: 15.0,
       fontWeight: FontWeight.w500,
@@ -160,10 +160,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                           Text(
                             'Connexion',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.interTight(
+                            style: GoogleFonts.poppins(
                               color: theme.primaryText,
                               fontSize: 28.0,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               letterSpacing: -0.3,
                             ),
                           ),
@@ -177,7 +177,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                           Text(
                             'Connectez-vous pour commander et suivre vos achats.',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: theme.secondaryText,
                               fontSize: 14.5,
                               height: 1.45,
@@ -257,10 +257,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   ForgotPasswordWidget.routeName),
                               child: Text(
                                 'Mot de passe oublié ?',
-                                style: GoogleFonts.interTight(
+                                style: GoogleFonts.poppins(
                                   color: const Color(0xFFE51A1A),
                                   fontSize: 13.5,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -281,7 +281,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                             children: [
                               Text(
                                 'Pas encore de compte ?',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.poppins(
                                   color: theme.secondaryText,
                                   fontSize: 14.0,
                                 ),
@@ -297,10 +297,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 ),
                                 child: Text(
                                   'Créer un compte',
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                     color: const Color(0xFFE51A1A),
                                     fontSize: 14.0,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),

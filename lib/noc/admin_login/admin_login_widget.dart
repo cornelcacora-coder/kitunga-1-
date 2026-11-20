@@ -41,14 +41,14 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
 
   /// Rôle relu dans Firestore : juste après la connexion, le profil gardé en
   /// mémoire n'est pas forcément encore chargé.
-  Future<bool> _isAdminAccount(String? uid) async {
-    if (uid == null) return false;
+  Future<String> _roleOf(String? uid) async {
+    if (uid == null) return '';
     try {
       final profile =
           await UserRecord.getDocumentOnce(UserRecord.collection.doc(uid));
-      return profile.role == 'Admin';
+      return profile.role;
     } catch (_) {
-      return false;
+      return '';
     }
   }
 
@@ -64,11 +64,17 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
       );
       if (user == null || !mounted) return;
 
-      if (await _isAdminAccount(user.uid)) {
+      final role = await _roleOf(user.uid);
+      if (role == 'Admin') {
         if (mounted) {
           context.goNamedAuth(
               AdminDashboardWidget.routeName, context.mounted);
         }
+        return;
+      }
+      // Agent du support : son propre espace de travail.
+      if (role == 'Support') {
+        if (mounted) context.goNamedAuth('SupportWorkspace', context.mounted);
         return;
       }
       if (!mounted) return;
@@ -250,27 +256,27 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
       children: [
         Text(
           'BIENVENUE',
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
             color: Colors.white,
             fontSize: titleSize,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
             letterSpacing: 1.0,
           ),
         ),
         const SizedBox(height: 4.0),
         Text(
           'CENTRE DES OPÉRATIONS',
-          style: GoogleFonts.interTight(
+          style: GoogleFonts.poppins(
             color: Colors.white,
             fontSize: 14.0,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             letterSpacing: 0.8,
           ),
         ),
         const SizedBox(height: 10.0),
         Text(
           'Commandes, livraisons et partenaires\nKitunga, au même endroit.',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             color: Colors.white.withValues(alpha: 0.9),
             fontSize: 12.5,
             height: 1.5,
@@ -287,7 +293,7 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
     );
     return InputDecoration(
       hintText: label,
-      hintStyle: GoogleFonts.inter(color: _muted, fontSize: 14.0),
+      hintStyle: GoogleFonts.poppins(color: _muted, fontSize: 14.0),
       prefixIcon: Icon(icon, color: _ink, size: 20.0),
       suffixIcon: trailing,
       filled: true,
@@ -308,7 +314,7 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
   }
 
   Widget _form() {
-    final inputStyle = GoogleFonts.inter(color: _ink, fontSize: 14.0);
+    final inputStyle = GoogleFonts.poppins(color: _ink, fontSize: 14.0);
     return Form(
       key: _formKey,
       child: AutofillGroup(
@@ -318,16 +324,16 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
           children: [
             Text(
               'Connexion',
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: _ink,
                 fontSize: 28.0,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 6.0),
             Text(
               'Accès réservé aux administrateurs Kitunga',
-              style: GoogleFonts.inter(color: _muted, fontSize: 13.0),
+              style: GoogleFonts.poppins(color: _muted, fontSize: 13.0),
             ),
             const SizedBox(height: 26.0),
             TextFormField(
@@ -363,9 +369,9 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
                     style: TextButton.styleFrom(foregroundColor: _red),
                     child: Text(
                       _hidePassword ? 'AFFICHER' : 'MASQUER',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -383,9 +389,9 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
                 style: TextButton.styleFrom(foregroundColor: _red),
                 child: Text(
                   'Mot de passe oublié ?',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -415,9 +421,9 @@ class _AdminLoginWidgetState extends State<AdminLoginWidget> {
                       )
                     : Text(
                         'Se connecter',
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           fontSize: 16.0,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
               ),

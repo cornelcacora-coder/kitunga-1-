@@ -11,9 +11,20 @@
 const {priceCart} = require("./pricing");
 const {subscriptionActive} = require("./subscriptions");
 const {PaymentError} = require("./errors");
+const {checkPhone, operatorOf} = require("./wallet");
+const {feeFor, pointOf} = require("./delivery_pricing");
+const {openingStatus} = require("./hours");
+const {usablePrescription, statusOf: prescriptionStatus} =
+  require("./prescriptions");
 
 const STOPPED = ["Refusée", "Annulée"];
 
+
+function chunks(list, size) {
+  const out = [];
+  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+  return out;
+}
 
 function orderReference() {
   const n = Date.now().toString(36).toUpperCase();
@@ -32,13 +43,12 @@ async function loadCart(db, userRef, sellerRef) {
 
 /** Démarre un paiement. Renvoie {referenceId, amount, subtotal, fee}. */
 async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
-  phone}) {
+  deliveryPoint,
+  phone, operator: rawOperator, now = new Date()}) {
   if (!uid) throw new PaymentError("unauthenticated", "Connexion requise.");
   if (!zone) throw new PaymentError("invalid-argument", "Quartier requis.");
-  const payer = momo.normalizePhone(phone);
-  if (!payer) {
-    throw new PaymentError("invalid-argument", "Numéro MTN invalide.");
-  }
+  const operator = operatorOf(rawOperator);
+  const payer = checkPhone(phone, operator);
   const userRef = db.doc(`User/${uid}`);
   const user = await userRef.get();
   if (!subscriptionActive(user)) {
@@ -51,6 +61,22 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
   if (seller.exists && seller.get("account_status") === "suspended") {
     throw new PaymentError("failed-precondition",
         "Ce commerce n'est plus disponible sur Kitunga.");
+  }
+  // Fermé momentanément par le commerçant (« Fermé maintenant »).
+  if (seller.exists && seller.get("shop_closed_now") === true) {
+    throw new PaymentError("failed-precondition",
+        `${seller.get("display_name") || "Ce commerce"} est fermé pour le ` +
+        "moment. Réessayez plus tard.");
+  }
+  // En dehors de ses horaires, le commerce ne prend pas de commande
+  // (horaires non renseignés ou illisibles : rien n'est bloqué).
+  const hours = seller.exists ?
+    openingStatus(seller.get("Horraire"), now) : null;
+  if (hours && !hours.open) {
+    const name = seller.get("display_name") || "Ce commerce";
+    throw new PaymentError("failed-precondition",
+        `${name} est fermé en ce moment (${hours.label.replace("Fermé · ", "")}). ` +
+        "Vous pourrez commander dès son ouverture.");
   }
   const carts = await loadCart(db, userRef, sellerRef);
   if (carts.length === 0) {
@@ -66,13 +92,23 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
       product: product && product.exists ? product.data() : null,
     };
   }));
-  const priced = priceCart(lines, zone);
+  // Médicaments sur ordonnance : ordonnance validée par cette pharmacie.
+  const needs = lines.some((l) => l.product &&
+    l.product.requires_prescription === true);
+  const prescription = needs ?
+    await usablePrescription(db, uid, sellerRef.id, now) : null;
+  // Frais selon la distance commerce → client (tarif réglé par l'admin).
+  // Position exacte du client (facultative) : frais de porte à porte.
+  const point = pointOf(deliveryPoint);
+  const delivery = await feeFor(db, seller, zone, null, point);
+  const priced = priceCart(lines, zone, {prescriptionOk: !!prescription,
+    fee: delivery.fee});
   if (priced.errors.length > 0) {
     throw new PaymentError("failed-precondition", priced.errors.join("\n"));
   }
   const reference = orderReference();
   const referenceId = await momo.requestToPay({
-    amount: priced.total, phone: payer, externalId: reference,
+    amount: priced.total, phone: payer, externalId: reference, operator,
   });
   await db.doc(`Paiement/${referenceId}`).set({
     status: "En attente",
@@ -81,13 +117,20 @@ async function startPayment({db, momo, uid, sellerPath, zone, deliveryLocation,
     amount: priced.total,
     subtotal: priced.subtotal,
     delivery_fees: priced.fee,
+    delivery_km: delivery.km,
+    // « route » : distance réelle ; « estimate » : sans service d'itinéraire.
+    delivery_km_source: delivery.source,
+    shop_zone: seller.exists ? seller.get("shop_zone") || "" : "",
+    delivery_point: point,
+    shop_point: seller.exists ? pointOf(seller.get("shop_point")) : null,
+    ...(prescription ? {prescription_id: prescription.id} : {}),
     user_ref: userRef,
     seller_ref: sellerRef,
     cart_ids: carts.map((c) => c.id),
     delivery_zone: zone,
     delivery_location: deliveryLocation || "",
     payer_phone: payer,
-    operator: "MTN",
+    operator,
     created_at: new Date(),
   });
   return {referenceId, amount: priced.total, subtotal: priced.subtotal,
@@ -131,6 +174,11 @@ async function confirmPayment({db, momo, uid, referenceId}) {
     const productRefs = carts.map((c) => c.exists ? c.get("product_ref") : null);
     const products = await Promise.all(
         productRefs.map((r) => r ? tx.get(r) : null));
+    // Articles provisoires créés par l'application à l'ajout au panier :
+    // remplacés par ceux de la commande.
+    const drafts = cartRefs.length === 0 ? [] : (await Promise.all(
+        chunks(cartRefs, 30).map((part) => tx.get(db.collection("OrderItems")
+            .where("cart_ref", "in", part))))).flatMap((q) => q.docs);
 
     const lines = carts.map((c, i) => ({
       cartRef: cartRefs[i],
@@ -139,7 +187,16 @@ async function confirmPayment({db, momo, uid, referenceId}) {
       options: c.exists ? c.get("options") || "" : "",
       product: products[i] && products[i].exists ? products[i].data() : null,
     }));
-    const priced = priceCart(lines, fresh.get("delivery_zone"));
+    // Ordonnance retenue au démarrage : encore validée et inutilisée ?
+    const prescriptionId = fresh.get("prescription_id");
+    const prescriptionRef = prescriptionId ?
+      db.doc(`Prescriptions/${prescriptionId}`) : null;
+    const prescription = prescriptionRef ? await tx.get(prescriptionRef) : null;
+    const prescriptionOk = !!prescription && prescription.exists &&
+      prescriptionStatus(prescription.data()) === "approved";
+    // Frais vus et payés par le client (même si l'admin change le tarif).
+    const priced = priceCart(lines, fresh.get("delivery_zone"),
+        {prescriptionOk, fee: fresh.get("delivery_fees")});
 
     // Payé mais plus disponible (stock pris entre-temps) : à rembourser.
     if (priced.errors.length > 0 || priced.total !== fresh.get("amount")) {
@@ -164,6 +221,16 @@ async function confirmPayment({db, momo, uid, referenceId}) {
         }));
       }
       tx.update(line.productRef, update);
+      // Historique du stock : vente payée.
+      tx.set(db.collection("StockMovements").doc(), {
+        product_id: line.productRef.id,
+        seller_uid: fresh.get("seller_ref").id,
+        product_name: line.product.name || "", kind: "sale",
+        quantity: line.quantity,
+        before: Number(line.product.quantity) || 0,
+        after: (Number(line.product.quantity) || 0) - line.quantity,
+        reason: `Commande ${fresh.get("order_unique_reference")}`,
+        by: "system", at: new Date()});
     });
 
     const reference = fresh.get("order_unique_reference");
@@ -178,11 +245,28 @@ async function confirmPayment({db, momo, uid, referenceId}) {
       delivery_fees: priced.fee,
       delivery_zone: fresh.get("delivery_zone"),
       delivery_location: fresh.get("delivery_location"),
+      // Quartier du commerce et distance : le livreur sait où récupérer.
+      shop_zone: fresh.get("shop_zone") || "",
+      // Positions exactes (livreur : itinéraire de porte à porte).
+      delivery_point: fresh.get("delivery_point") || null,
+      shop_point: fresh.get("shop_point") || null,
+      delivery_km: fresh.get("delivery_km") ?? null,
+      delivery_km_source: fresh.get("delivery_km_source") || null,
       order_id: reference,
       order_unique_reference: reference,
       payment_reference: referenceId,
       payment_status: "Réussi",
+      // Médicaments sur ordonnance : la pharmacie retrouve l'ordonnance.
+      ...(priced.needsPrescription && prescriptionOk ? {
+        prescription_ref: prescriptionRef,
+        prescription_photos: prescription.get("photos") || [],
+      } : {}),
     });
+    if (priced.needsPrescription && prescriptionOk) {
+      // Une ordonnance validée sert pour une seule commande.
+      tx.update(prescriptionRef, {status: "used", order_ref: orderRef,
+        used_at: new Date()});
+    }
     priced.lines.forEach((line) => {
       tx.set(db.collection("OrderItems").doc(), {
         order_ref: reference,
@@ -196,6 +280,9 @@ async function confirmPayment({db, momo, uid, referenceId}) {
       });
       tx.delete(line.cartRef);
     });
+    drafts.filter((d) => !d.get("order_ref") &&
+        d.get("user_ref") && d.get("user_ref").id === uid)
+        .forEach((d) => tx.delete(d.ref));
     tx.update(payRef, {status: "Réussi", order_ref: orderRef});
     return {status: "paid", orderPath: orderRef.path};
   });
@@ -262,6 +349,7 @@ async function refundOrder({db, momo, orderRef, order, previousStatus}) {
     const transferId = await momo.transfer({
       amount: pay.get("amount"), phone,
       externalId: pay.get("order_unique_reference"),
+      paymentReference: order.payment_reference,
     });
     await orderRef.update({refund_status: "Envoyé", refund_reference: transferId});
     return transferId;

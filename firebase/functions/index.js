@@ -4,7 +4,10 @@ admin.initializeApp();
 
 const https = require("https");
 const cors = require("cors")({ origin: true });
-const corsProxyRuntimeOptions = { minInstances: 1, timeoutSeconds: 15 };
+// Pas d'instance permanente (coût mensuel) : le proxy ne sert plus qu'en
+// secours. Ne pas écrire « minInstances » : l'outil Firebase ne connaît pas
+// les tarifs de us-west1 et refuserait le déploiement sans --force.
+const corsProxyRuntimeOptions = { timeoutSeconds: 15 };
 const ALLOWED_PROXY_HOSTS = [
   "firebasestorage.googleapis.com",
   "storage.googleapis.com",
@@ -43,6 +46,8 @@ async function handleRequest(req, res) {
     }
     https
       .get(url, (resp) => {
+        // Image introuvable ou refusée : l'erreur est transmise telle quelle.
+        res.status(resp.statusCode || 502);
         res.setHeader(
           "content-type",
           resp.headers["content-type"] || "image/jpeg",
@@ -61,7 +66,8 @@ exports.onUserDeleted = functions
   });
 
 // ── Paiement contrôlé par le serveur (voir README-KITUNGA.md) ─────────────
-const momo = require("./kitunga/momo");
+// MTN MoMo ou Airtel Money, selon l'opérateur choisi par le client.
+const momo = require("./kitunga/wallet");
 const payments = require("./kitunga/payments");
 const subscriptions = require("./kitunga/subscriptions");
 const partners = require("./kitunga/partners");
@@ -72,6 +78,10 @@ const {reconcilePending} = require("./kitunga/reconcile");
 // Disbursement approvisionné.
 const COLLECTION_SECRETS = [
   "MOMO_COLLECTION_USER", "MOMO_COLLECTION_KEY", "MOMO_COLLECTION_SUBSCRIPTION",
+  // Itinéraires réels (frais à la distance par la route).
+  "ROUTING_API_KEY",
+  // Airtel Money (valeur « absent » tant qu'Airtel n'est pas activé).
+  "AIRTEL_CLIENT_ID", "AIRTEL_CLIENT_SECRET",
 ];
 const MOMO_SECRETS = [
   ...COLLECTION_SECRETS,
@@ -298,6 +308,9 @@ exports.kitungaDeleteProduct = acquisitionCallable((data, uid) =>
   catalog.deleteProduct({db: admin.firestore(), uid, data}));
 exports.kitungaSavePartner = acquisitionCallable((data, uid) =>
   catalog.savePartner({db: admin.firestore(), uid, data}));
+/** Import d'un menu complet pour un commerce (admin). */
+exports.kitungaImportMenu = acquisitionCallable((data, uid) =>
+  catalog.importMenu({db: admin.firestore(), uid, data}));
 // ── Commandes (admin) : annuler, attribuer un livreur, livrer, clôturer ────
 const adminOrders = require("./kitunga/admin_orders");
 
@@ -306,15 +319,340 @@ exports.kitungaAdminOrderAction = acquisitionCallable((data, uid) =>
 exports.kitungaCloseStaleOrders = acquisitionCallable((data, uid) =>
   adminOrders.closeStaleOrders({db: admin.firestore(), uid, data}));
 
+// ── Nettoyage des données de test (admin) ──────────────────────────────────
+const purgeData = require("./kitunga/purge");
+
+/** Aperçu, suppression avec sauvegarde, restauration, historique. */
+exports.kitungaPurgeTestData = functions.region("us-west1")
+    .runWith({timeoutSeconds: 540, memory: "1GB"})
+    .https.onCall(async (data, context) => {
+      try {
+        return await purgeData.purgeTestData({db: admin.firestore(),
+          auth: admin.auth(), bucket: admin.storage().bucket(),
+          uid: context.auth && context.auth.uid, data: data || {}});
+      } catch (e) {
+        if (e instanceof AcquisitionError) {
+          throw new functions.https.HttpsError(e.code, e.message);
+        }
+        console.error(e);
+        throw new functions.https.HttpsError("internal",
+            "Le nettoyage n'a pas pu aboutir. Relancez-le : il reprend là où " +
+            "il s'est arrêté.");
+      }
+    });
+
+// ── Remise sécurisée et reçus ────────────────────────────────────────────
+const delivery = require("./kitunga/delivery");
+
+/** Le client obtient le code de remise de sa commande. */
+exports.kitungaDeliveryCode = acquisitionCallable((data, uid) =>
+  delivery.deliveryCode({db: admin.firestore(), uid, data}));
+/** Le livreur confirme la remise (code du client + photo). */
+exports.kitungaConfirmDelivery = acquisitionCallable((data, uid) =>
+  delivery.confirmDelivery({db: admin.firestore(), uid, data}));
+/** Le livreur signale un problème de livraison. */
+exports.kitungaTakeDelivery = acquisitionCallable((data, uid) =>
+  delivery.takeDelivery({db: admin.firestore(), uid, data}));
+
+exports.kitungaReportDeliveryIssue = acquisitionCallable((data, uid) =>
+  delivery.reportDeliveryIssue({db: admin.firestore(), uid, data}));
+/** Reçu d'une commande livrée. */
+exports.kitungaOrderReceipt = acquisitionCallable((data, uid) =>
+  delivery.orderReceipt({db: admin.firestore(), uid, data}));
+
+// ── Publicités et promotions (carrousel d'accueil) ──────────────────────
+const banners = require("./kitunga/banners");
+
+exports.kitungaListBanners = acquisitionCallable((data, uid) =>
+  banners.listBanners({db: admin.firestore(), uid}));
+exports.kitungaSaveBanner = acquisitionCallable((data, uid) =>
+  banners.saveBanner({db: admin.firestore(), uid, data}));
+exports.kitungaSetBannerActive = acquisitionCallable((data, uid) =>
+  banners.setBannerActive({db: admin.firestore(), uid, data}));
+exports.kitungaReorderBanners = acquisitionCallable((data, uid) =>
+  banners.reorderBanners({db: admin.firestore(), uid, data}));
+exports.kitungaDeleteBanner = acquisitionCallable((data, uid) =>
+  banners.deleteBanner({db: admin.firestore(), uid, data}));
+/** Bannières diffusées, lues par l'application (sans connexion). */
+exports.kitungaPublicBanners = acquisitionCallable(() =>
+  banners.publicBanners({db: admin.firestore()}));
+exports.kitungaBannerClick = acquisitionCallable((data) =>
+  banners.bannerClick({db: admin.firestore(), data}));
+exports.kitungaReviewBanner = acquisitionCallable((data, uid) =>
+  banners.reviewBanner({db: admin.firestore(), uid, data}));
+// Publicités proposées par les vendeurs depuis l'application.
+exports.kitungaSellerBanners = acquisitionCallable((data, uid) =>
+  banners.sellerBanners({db: admin.firestore(), uid}));
+exports.kitungaSaveSellerBanner = acquisitionCallable((data, uid) =>
+  banners.saveSellerBanner({db: admin.firestore(), uid, data}));
+exports.kitungaSetSellerBannerActive = acquisitionCallable((data, uid) =>
+  banners.setSellerBannerActive({db: admin.firestore(), uid, data}));
+exports.kitungaDeleteSellerBanner = acquisitionCallable((data, uid) =>
+  banners.deleteSellerBanner({db: admin.firestore(), uid, data}));
+
+// ── Ordonnances (pharmacies) ─────────────────────────────────────────────
+const prescriptions = require("./kitunga/prescriptions");
+
+exports.kitungaSubmitPrescription = acquisitionCallable((data, uid) =>
+  prescriptions.submitPrescription({db: admin.firestore(), uid, data}));
+exports.kitungaMyPrescriptions = acquisitionCallable((data, uid) =>
+  prescriptions.myPrescriptions({db: admin.firestore(), uid, data}));
+exports.kitungaSellerPrescriptions = acquisitionCallable((data, uid) =>
+  prescriptions.sellerPrescriptions({db: admin.firestore(), uid}));
+exports.kitungaReviewPrescription = acquisitionCallable((data, uid) =>
+  prescriptions.reviewPrescription({db: admin.firestore(), uid, data}));
+
+// ── Retours et échanges (boutiques, magasins) ────────────────────────────
+const returns = require("./kitunga/returns");
+
+exports.kitungaRequestReturn = acquisitionCallable((data, uid) =>
+  returns.requestReturn({db: admin.firestore(), uid, data}));
+exports.kitungaDecideReturn = acquisitionCallable((data, uid) =>
+  returns.decideReturn({db: admin.firestore(), uid, data}));
+
+// ── Notifications et rappels d'abonnement ────────────────────────────────
+const notifications = require("./kitunga/notifications");
+const orderEvents = require("./kitunga/order_events");
+
+exports.kitungaSaveFcmToken = acquisitionCallable((data, uid) =>
+  notifications.saveFcmToken({db: admin.firestore(), uid, data}));
+exports.kitungaMyNotifications = acquisitionCallable((data, uid) =>
+  notifications.myNotifications({db: admin.firestore(), uid}));
+exports.kitungaMarkNotificationsRead = acquisitionCallable((data, uid) =>
+  notifications.markNotificationsRead({db: admin.firestore(), uid}));
+exports.kitungaAdminSendReminder = acquisitionCallable((data, uid) =>
+  notifications.adminSendReminder({db: admin.firestore(),
+    messaging: admin.messaging(), uid, data}));
+
+/** Rappels d'abonnement, chaque matin à 9 h (Brazzaville). */
+exports.kitungaSubscriptionReminders = functions.region("us-west1")
+    .pubsub.schedule("0 9 * * *").timeZone("Africa/Brazzaville")
+    .onRun(() => notifications.subscriptionReminders({
+      db: admin.firestore(), messaging: admin.messaging()}));
+
+/** Notifications au fil des commandes (commerce, livreurs, client, admin). */
+exports.kitungaOrderEvents = functions.region("us-west1")
+    .firestore.document("Orders/{orderId}")
+    .onWrite((change) => orderEvents.onOrderWrite({
+      db: admin.firestore(), messaging: admin.messaging(),
+      before: change.before, after: change.after}));
+
+/** Commandes prêtes depuis 20 min sans livreur : alerte admin. */
+exports.kitungaStaleReadyOrders = functions.region("us-west1")
+    .pubsub.schedule("every 10 minutes")
+    .onRun(() => orderEvents.staleReadyOrders({
+      db: admin.firestore(), messaging: admin.messaging()}));
+
+/**
+ * Nouvelles commandes sans réponse du commerce : rappel à 10 min, annulation
+ * automatique (remboursement demandé) à 30 min.
+ */
+exports.kitungaPendingOrders = functions.region("us-west1")
+    .pubsub.schedule("every 5 minutes")
+    .onRun(() => orderEvents.pendingOrders({
+      db: admin.firestore(), messaging: admin.messaging()}));
+
+/** Le livreur : en service / hors service, quartiers couverts. */
+exports.kitungaSetDelivererStatus = acquisitionCallable((data, uid) =>
+  orderEvents.setDelivererStatus({db: admin.firestore(), uid, data}));
+
+/** Coordonnées des autres acteurs d'une commande (appel, WhatsApp). */
+exports.kitungaOrderContacts = acquisitionCallable((data, uid) =>
+  orderEvents.orderContacts({db: admin.firestore(), uid, data}));
+
+// ── Cycle de vie des commandes : statuts calculés et historique ──────────
+const lifecycle = require("./kitunga/lifecycle");
+exports.kitungaOrderLifecycle = functions.region("us-west1")
+    .firestore.document("Orders/{orderId}")
+    .onWrite((change) => lifecycle.onOrderLifecycle({
+      before: change.before, after: change.after}));
+exports.kitungaOrderHistory = acquisitionCallable((data, uid) =>
+  lifecycle.orderHistoryFor({db: admin.firestore(), uid, data}));
+/** Positions GPS des courses terminées : effacées après 24 h. */
+exports.kitungaPurgePositions = functions.region("us-west1")
+    .pubsub.schedule("every 6 hours")
+    .onRun(() => lifecycle.purgeOldPositions({db: admin.firestore()}));
+
+// ── Attribution des courses (dispatch) ───────────────────────────────────
+const dispatch = require("./kitunga/dispatch");
+/** Le livreur accepte ou refuse la course proposée. */
+exports.kitungaRespondMission = acquisitionCallable((data, uid) =>
+  dispatch.respondMission({db: admin.firestore(),
+    messaging: admin.messaging(), uid, data}));
+/** Propositions expirées : la course passe au livreur suivant. */
+exports.kitungaExpireOffers = functions.region("us-west1")
+    .pubsub.schedule("every 1 minutes")
+    .onRun(() => dispatch.expireOffers({db: admin.firestore(),
+      messaging: admin.messaging()}));
+exports.kitungaDelivererPing = acquisitionCallable((data, uid) =>
+  dispatch.delivererPing({db: admin.firestore(), uid, data}));
+exports.kitungaSetVehicle = acquisitionCallable((data, uid) =>
+  dispatch.setVehicle({db: admin.firestore(), uid, data}));
+exports.kitungaAdminDispatchSettings = acquisitionCallable((data, uid) =>
+  dispatch.adminDispatchSettings({db: admin.firestore(), uid, data}));
+exports.kitungaOrderMissions = acquisitionCallable((data, uid) =>
+  dispatch.orderMissions({db: admin.firestore(), uid, data}));
+
+// ── Messagerie et annonces ───────────────────────────────────────────────
+const chat = require("./kitunga/messaging");
+exports.kitungaOpenOrderChat = acquisitionCallable((data, uid) =>
+  chat.openOrderChat({db: admin.firestore(), uid, data}));
+exports.kitungaSendMessage = acquisitionCallable((data, uid) =>
+  chat.sendMessage({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+exports.kitungaConversationMessages = acquisitionCallable((data, uid) =>
+  chat.conversationMessages({db: admin.firestore(), uid, data}));
+exports.kitungaMyConversations = acquisitionCallable((data, uid) =>
+  chat.myConversations({db: admin.firestore(), uid}));
+exports.kitungaStaffOpenDirect = acquisitionCallable((data, uid) =>
+  chat.staffOpenDirect({db: admin.firestore(), uid, data}));
+exports.kitungaStaffInbox = acquisitionCallable((data, uid) =>
+  chat.staffInbox({db: admin.firestore(), uid}));
+exports.kitungaOrderConversations = acquisitionCallable((data, uid) =>
+  chat.orderConversations({db: admin.firestore(), uid, data}));
+exports.kitungaAdminAnnounce = acquisitionCallable((data, uid) =>
+  chat.adminAnnounce({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+
+// ── Support client (tickets) ─────────────────────────────────────────────
+const support = require("./kitunga/support");
+exports.kitungaCreateTicket = acquisitionCallable((data, uid) =>
+  support.createTicket({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+exports.kitungaMyTickets = acquisitionCallable((data, uid) =>
+  support.myTickets({db: admin.firestore(), uid}));
+exports.kitungaTicketThread = acquisitionCallable((data, uid) =>
+  support.ticketThread({db: admin.firestore(), uid, data}));
+exports.kitungaTicketReply = acquisitionCallable((data, uid) =>
+  support.ticketReply({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+exports.kitungaSupportQueue = acquisitionCallable((data, uid) =>
+  support.supportQueue({db: admin.firestore(), uid, data}));
+exports.kitungaTicketUpdate = acquisitionCallable((data, uid) =>
+  support.ticketUpdate({db: admin.firestore(), messaging: admin.messaging(),
+    uid, data}));
+exports.kitungaSupportUserLookup = acquisitionCallable((data, uid) =>
+  support.supportUserLookup({db: admin.firestore(), uid, data}));
+exports.kitungaSupportAgents = acquisitionCallable((data, uid) =>
+  support.supportAgents({db: admin.firestore(), uid}));
+exports.kitungaAdminSetSupport = acquisitionCallable((data, uid) =>
+  support.adminSetSupport({db: admin.firestore(), uid, data}));
+
+// ── Finances : grand livre, gains, versements ────────────────────────────
+const finance = require("./kitunga/finance");
+/** Règlement d'une commande livrée (et annulation si remboursée). */
+exports.kitungaOrderFinance = functions.region("us-west1")
+    .firestore.document("Orders/{orderId}")
+    .onWrite((change) => finance.onOrderFinance({db: admin.firestore(),
+      after: change.after}));
+exports.kitungaMyEarnings = acquisitionCallable((data, uid) =>
+  finance.myEarnings({db: admin.firestore(), uid}));
+exports.kitungaAdminFinanceSettings = acquisitionCallable((data, uid) =>
+  finance.adminFinanceSettings({db: admin.firestore(), uid, data}));
+exports.kitungaAdminRecordPayout = acquisitionCallable((data, uid) =>
+  finance.adminRecordPayout({db: admin.firestore(),
+    messaging: admin.messaging(), uid, data}));
+exports.kitungaAdminFinanceOverview = acquisitionCallable((data, uid) =>
+  finance.adminFinanceOverview({db: admin.firestore(), uid}));
+exports.kitungaAdminAccountLedger = acquisitionCallable((data, uid) =>
+  finance.adminAccountLedger({db: admin.firestore(), uid, data}));
+
+// ── Supervision de l'admin ───────────────────────────────────────────────
+const supervision = require("./kitunga/supervision");
+exports.kitungaAdminSupervision = acquisitionCallable((data, uid) =>
+  supervision.adminSupervision({db: admin.firestore(), uid}));
+exports.kitungaAdminDelivererHistory = acquisitionCallable((data, uid) =>
+  supervision.adminDelivererHistory({db: admin.firestore(), uid, data}));
+
+// ── Espace professionnel du livreur ──────────────────────────────────────
+const pro = require("./kitunga/deliverer_pro");
+exports.kitungaSubmitDocument = acquisitionCallable((data, uid) =>
+  pro.submitDocument({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaMyDocuments = acquisitionCallable((data, uid) =>
+  pro.myDocuments({db: admin.firestore(), uid, data}));
+exports.kitungaAdminDocuments = acquisitionCallable((data, uid) =>
+  pro.adminDocuments({db: admin.firestore(), uid, data}));
+exports.kitungaAdminReviewDocument = acquisitionCallable((data, uid) =>
+  pro.adminReviewDocument({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaRateDelivery = acquisitionCallable((data, uid) =>
+  pro.rateDelivery({db: admin.firestore(), uid, data}));
+exports.kitungaMyPerformance = acquisitionCallable((data, uid) =>
+  pro.myPerformance({db: admin.firestore(), uid, data}));
+exports.kitungaRequestWithdrawal = acquisitionCallable((data, uid) =>
+  pro.requestWithdrawal({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaMyWithdrawals = acquisitionCallable((data, uid) =>
+  pro.myWithdrawals({db: admin.firestore(), uid, data}));
+exports.kitungaAdminWithdrawals = acquisitionCallable((data, uid) =>
+  pro.adminWithdrawals({db: admin.firestore(), uid, data}));
+exports.kitungaAdminDecideWithdrawal = acquisitionCallable((data, uid) =>
+  pro.adminDecideWithdrawal({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaReportDelay = acquisitionCallable((data, uid) =>
+  pro.reportDelay({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaArrivedAtShop = acquisitionCallable((data, uid) =>
+  pro.arrivedAtShop({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaSetEmergencyContact = acquisitionCallable((data, uid) =>
+  pro.setEmergencyContact({db: admin.firestore(), uid, data}));
+exports.kitungaSafetyAlert = acquisitionCallable((data, uid) =>
+  pro.safetyAlert({db: admin.firestore(), messaging: admin.messaging(), uid, data}));
+exports.kitungaMyMissions = acquisitionCallable((data, uid) =>
+  pro.myMissions({db: admin.firestore(), uid, data}));
+
+// ── Espace professionnel du vendeur ─────────────────────────────────────
+const sellerPro = require("./kitunga/seller_pro");
+exports.kitungaSellerOrderAction = acquisitionCallable((data, uid) =>
+  sellerPro.sellerOrderAction({db: admin.firestore(), uid, data}));
+exports.kitungaSellerSetLocation = acquisitionCallable((data, uid) =>
+  sellerPro.sellerSetLocation({db: admin.firestore(), uid, data}));
+exports.kitungaSellerSetOpen = acquisitionCallable((data, uid) =>
+  sellerPro.sellerSetOpen({db: admin.firestore(), uid, data}));
+exports.kitungaSellerReviews = acquisitionCallable((data, uid) =>
+  sellerPro.sellerReviews({db: admin.firestore(), uid}));
+exports.kitungaSellerReportReview = acquisitionCallable((data, uid) =>
+  sellerPro.sellerReportReview({db: admin.firestore(),
+    messaging: admin.messaging(), uid, data}));
+exports.kitungaSellerAdjustStock = acquisitionCallable((data, uid) =>
+  sellerPro.sellerAdjustStock({db: admin.firestore(), uid, data}));
+exports.kitungaSellerStockMovements = acquisitionCallable((data, uid) =>
+  sellerPro.sellerStockMovements({db: admin.firestore(), uid, data}));
+exports.kitungaSellerPerformance = acquisitionCallable((data, uid) =>
+  sellerPro.sellerPerformance({db: admin.firestore(), uid}));
+
+// ── Suivi en direct de la livraison ──────────────────────────────────────
+const tracking = require("./kitunga/delivery_tracking");
+exports.kitungaDeliveryStep = acquisitionCallable((data, uid) =>
+  tracking.deliveryStep({db: admin.firestore(), uid, data}));
+exports.kitungaDeliveryPosition = acquisitionCallable((data, uid) =>
+  tracking.deliveryPosition({db: admin.firestore(), uid, data}), ["ROUTING_API_KEY"]);
+exports.kitungaDeliveryTracking = acquisitionCallable((data, uid) =>
+  tracking.deliveryTracking({db: admin.firestore(), uid, data}));
+
 /** Catégories visibles, lues par l'application mobile. */
 exports.kitungaPublicCategories = acquisitionCallable(() =>
   catalog.publicCategories({db: admin.firestore()}));
+
+/**
+ * Opérateurs disponibles : Airtel Money s'active tout seul dès que ses clés
+ * sont installées (scripts/airtel_cles.sh), sans nouvelle version de l'app.
+ */
+exports.kitungaPaymentOptions = callable(() => ({
+  mtn: true, airtel: require("./kitunga/airtel").enabled()}));
+
+// ── Tarif de livraison selon la distance ─────────────────────────────────
+const deliveryPricing = require("./kitunga/delivery_pricing");
+/** Frais de livraison affichés dans le panier, avant le paiement. */
+exports.kitungaDeliveryQuote = acquisitionCallable((data, uid) =>
+  deliveryPricing.deliveryQuote({db: admin.firestore(), uid, data}), ["ROUTING_API_KEY"]);
+/** L'admin lit ou règle le tarif de livraison. */
+exports.kitungaAdminDeliveryPricing = acquisitionCallable((data, uid) =>
+  deliveryPricing.adminDeliveryPricing({db: admin.firestore(), uid, data}));
 
 /** Démarre un paiement MoMo : montant recalculé par le serveur. */
 exports.kitungaStartPayment = callable((data, uid) => payments.startPayment({
   db: admin.firestore(), momo, uid,
   sellerPath: String(data.sellerPath || ""),
   zone: data.zone, deliveryLocation: data.deliveryLocation, phone: data.phone,
+  deliveryPoint: data.deliveryPoint,
+  operator: data.operator,
 }));
 
 /** Vérifie le paiement et crée la commande (stock décrémenté). */
@@ -328,9 +666,14 @@ exports.kitungaStartSubscription = callable((data, uid) =>
   subscriptions.startSubscription({
     db: admin.firestore(), momo, uid,
     plan: String(data.plan || ""), phone: data.phone,
+    operator: data.operator,
   }));
 
 /** Vérifie le paiement et prolonge l'abonnement. */
+/** Module « Mon abonnement » : état, formules, historique. */
+exports.kitungaMySubscription = acquisitionCallable((data, uid) =>
+  subscriptions.mySubscription({db: admin.firestore(), uid}));
+
 exports.kitungaConfirmSubscription = callable((data, uid) =>
   subscriptions.confirmSubscription({
     db: admin.firestore(), momo, uid, referenceId: String(data.referenceId || ""),

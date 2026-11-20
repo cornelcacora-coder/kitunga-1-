@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:kitunga/backend/kitunga_categories.dart';
 import 'package:kitunga/noc/admin/admin_categories_widget.dart';
 import 'package:kitunga/noc/admin/admin_clients_widget.dart';
+import 'package:kitunga/noc/admin/admin_launch_partners.dart';
 import 'package:kitunga/noc/admin/admin_partners_widget.dart';
 import 'package:kitunga/noc/admin/admin_products_widget.dart';
 import 'package:kitunga/noc/admin/admin_shell.dart';
@@ -205,7 +206,8 @@ void main() {
       expect(find.text('Restaurant › Chez Paul › Plats'), findsOneWidget);
       expect(find.text('Commerce supprimé'), findsOneWidget);
       expect(find.text('Brouillon'), findsOneWidget);
-      expect(find.text('⚡ Express'), findsOneWidget);
+      // Pastille du produit + filtre « ⚡ Express » de la page.
+      expect(find.text('⚡ Express'), findsNWidgets(2));
       expect(find.text('Stock : 0'), findsOneWidget);
 
       await tester.tap(find.text('Nouveau produit'));
@@ -221,10 +223,7 @@ void main() {
       await tester.enterText(fields.at(0), 'Riz parfumé');
       await tester.enterText(fields.at(1), '1 500');
       await tester.enterText(fields.at(2), '20');
-      await tester.tap(find.text('Enregistrer'));
-      await tester.pumpAndSettle();
-      expect(find.text('Ajoutez une photo avant de publier ce produit.'),
-          findsOneWidget);
+      // Restaurant : la photo n'est pas obligatoire pour publier.
       await tester.tap(find.text('Ajouter une image'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Enregistrer'));
@@ -294,6 +293,9 @@ void main() {
       await tester.tap(find.text('Créer le compte'));
       await tester.pumpAndSettle();
       expect(find.text('Choisissez la catégorie.'), findsOneWidget);
+      await tester.ensureVisible(find.widgetWithText(
+          DropdownButtonFormField<String>, 'Catégorie'));
+      await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(
           DropdownButtonFormField<String>, 'Catégorie'));
       await tester.pumpAndSettle();
@@ -305,7 +307,37 @@ void main() {
       expect(created['role'], 'Seller');
       expect(created['email'], 'eclat@test.cg');
       expect(created['category'], 'Boutique');
-      expect(created['subscribeType'], 'Mensuel - 250F');
+      // Vendeurs et livreurs : pas d'abonnement.
+      expect(created.containsKey('subscribeType'), isFalse);
+      expect(tester.takeException(), isNull);
+
+      // Fiche prête : Le Crisp'nCroc, avec logo, cuisines et menu.
+      launchLogoUploadOverride = (_) async => img;
+      addTearDown(() => launchLogoUploadOverride = null);
+      // Encadré « Partenaires prêts à ajouter » de la page.
+      expect(find.text('Partenaires prêts à ajouter'), findsOneWidget);
+      expect(find.text('33 plats'), findsOneWidget); // Zone de Confort
+      final add = find.widgetWithText(FilledButton, 'Ajouter').first;
+      await tester.ensureVisible(add);
+      await tester.pumpAndSettle();
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('menu (30 plats)'), findsOneWidget);
+      final g = dialogFields();
+      await tester.enterText(g.at(1), 'crisp@test.cg');
+      await tester.enterText(g.at(2), 'secret12');
+      await tester.tap(find.text('Créer le compte'));
+      await tester.pumpAndSettle();
+      final crisp = last('kitungaCreatePartner').$2;
+      expect(crisp['displayName'], 'Le Crisp\'nCroc');
+      expect(crisp['category'], 'Restaurant');
+      final profile = last('kitungaSavePartner').$2;
+      expect(profile['photoUrl'], img);
+      expect(profile['businessCover'], img);
+      expect(profile['cuisines'], contains('Congolaise (Brazzaville)'));
+      final menu = last('kitungaImportMenu').$2;
+      expect((menu['items'] as List).length, 30);
+      expect(((menu['sideOption'] as Map)['choices'] as List).length, 7);
       expect(tester.takeException(), isNull);
     });
 

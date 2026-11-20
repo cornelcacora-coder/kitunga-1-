@@ -111,6 +111,17 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
   String _q = '';
   String? _zone;
 
+  /// Période personnalisée (_days == -1).
+  DateTimeRange? _range;
+
+  /// Tranche de montant (index de [kAmountRanges]), commerce, livreur.
+  int _amount = 0;
+  String? _seller;
+  String? _driver;
+
+  bool get _filtered =>
+      _zone != null || _amount != 0 || _seller != null || _driver != null;
+
   late Stream<List<DashOrder>> _period = _load();
   late final Stream<List<DashOrder>> _inProgress = _src.inProgress();
 
@@ -124,9 +135,38 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
   /// Toutes les commandes chargées (période + en cours), pour la clôture.
   List<DashOrder> _all = const [];
 
-  Stream<List<DashOrder>> _load() => _src.ordersSince(_days == 0
-      ? DateTime(2020)
-      : _now.subtract(Duration(days: _days)));
+  Stream<List<DashOrder>> _load() => _src.ordersSince(_days == -1 &&
+          _range != null
+      ? _range!.start
+      : _days <= 0
+          ? DateTime(2020)
+          : _now.subtract(Duration(days: _days)));
+
+  String get _periodLabel => _days == -1 && _range != null
+      ? '${DateFormat('d MMM', 'fr').format(_range!.start)} – '
+          '${DateFormat('d MMM yyyy', 'fr').format(_range!.end)}'
+      : _periods[_days] ?? '';
+
+  Future<void> _pickRange() async {
+    final now = _now;
+    final r = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2024),
+      lastDate: DateTime(now.year, now.month, now.day),
+      initialDateRange: _range ??
+          DateTimeRange(
+              start: now.subtract(const Duration(days: 7)),
+              end: DateTime(now.year, now.month, now.day)),
+      locale: const Locale('fr'),
+      helpText: 'Période des commandes',
+    );
+    if (r == null) return;
+    setState(() {
+      _range = r;
+      _days = -1;
+      _period = _load();
+    });
+  }
 
   void _ensureNames(Iterable<String?> paths) {
     final missing =
@@ -151,6 +191,19 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
 
   bool _matches(DashOrder o) {
     if (_zone != null && o.zone.trim() != _zone) return false;
+    if (_seller != null && o.sellerPath != _seller) return false;
+    if (_driver != null && o.delivererPath != _driver) return false;
+    final a = kAmountRanges[_amount];
+    if (a.min != null && o.total < a.min!) return false;
+    if (a.max != null && o.total >= a.max!) return false;
+    // Période personnalisée : stricte (même pour les commandes en cours).
+    if (_days == -1 && _range != null) {
+      final c = o.createdAt;
+      final end = _range!.end.add(const Duration(days: 1));
+      if (c == null || c.isBefore(_range!.start) || !c.isBefore(end)) {
+        return false;
+      }
+    }
     final q = _norm(_q.trim());
     if (q.isEmpty) return true;
     return [
@@ -189,12 +242,22 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
         AdminExportButton(data: _export),
         AdminSelect<int>(
           value: _days,
-          items: _periods,
+          items: {
+            ..._periods,
+            -1: _days == -1 ? _periodLabel : 'Période personnalisée…',
+          },
           icon: Icons.calendar_today_rounded,
-          onChanged: (d) => setState(() {
-            _days = d;
-            _period = _load();
-          }),
+          onChanged: (d) {
+            if (d == -1) {
+              _pickRange();
+              return;
+            }
+            setState(() {
+              _days = d;
+              _range = null;
+              _period = _load();
+            });
+          },
         ),
       ],
       body: StreamBuilder<List<DashOrder>>(
@@ -226,6 +289,17 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
     final rows = base.where(tab.test).toList();
     _shown = rows;
     _shownTab = tab.label;
+    // Commerces et livreurs présents (noms connus), triés par nom.
+    final sellers = {
+      for (final o in all)
+        if (o.sellerPath != null) o.sellerPath!,
+    }.toList()
+      ..sort((a, b) => _name(a).compareTo(_name(b)));
+    final drivers = {
+      for (final o in all)
+        if (o.delivererPath != null) o.delivererPath!,
+    }.toList()
+      ..sort((a, b) => _name(a).compareTo(_name(b)));
     final zones = {
       for (final o in all)
         if (o.zone.trim().isNotEmpty) o.zone.trim(),
@@ -274,6 +348,46 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
                     items: {null: 'Toutes les zones', for (final z in zones) z: z},
                     onChanged: (v) => setState(() => _zone = v),
                   ),
+                  AdminSelect<String?>(
+                    value: _seller,
+                    icon: Icons.storefront_outlined,
+                    items: {
+                      null: 'Tous les commerces',
+                      for (final p in sellers) p: _name(p),
+                    },
+                    onChanged: (v) => setState(() => _seller = v),
+                  ),
+                  if (_deliveries)
+                    AdminSelect<String?>(
+                      value: _driver,
+                      icon: Icons.two_wheeler_outlined,
+                      items: {
+                        null: 'Tous les livreurs',
+                        for (final p in drivers) p: _name(p),
+                      },
+                      onChanged: (v) => setState(() => _driver = v),
+                    )
+                  else
+                    AdminSelect<int>(
+                      value: _amount,
+                      icon: Icons.payments_outlined,
+                      items: {
+                        for (var i = 0; i < kAmountRanges.length; i++)
+                          i: kAmountRanges[i].label,
+                      },
+                      onChanged: (v) => setState(() => _amount = v),
+                    ),
+                  if (_filtered)
+                    TextButton.icon(
+                      onPressed: () => setState(() {
+                        _zone = null;
+                        _seller = null;
+                        _driver = null;
+                        _amount = 0;
+                      }),
+                      icon: const Icon(Icons.filter_alt_off_outlined, size: 18.0),
+                      label: const Text('Réinitialiser'),
+                    ),
                 ],
               ),
               const SizedBox(height: 16.0),
@@ -331,7 +445,10 @@ class _AdminOrdersWidgetState extends State<AdminOrdersWidget> {
     final sorted = [...rows]..sort((a, b) =>
         (b.createdAt ?? DateTime(2000)).compareTo(a.createdAt ?? DateTime(2000)));
     final filters = [
-      _periods[_days]!,
+      _periodLabel,
+      if (_seller != null) 'commerce ${_name(_seller)}',
+      if (_driver != null) 'livreur ${_name(_driver)}',
+      if (_amount != 0) 'montant ${kAmountRanges[_amount].label}',
       'onglet « $_shownTab »',
       if (_zone != null) 'zone $_zone',
       if (_q.trim().isNotEmpty) 'recherche « ${_q.trim()} »',
@@ -754,3 +871,12 @@ class _CloseStaleDialogState extends State<_CloseStaleDialog> {
     );
   }
 }
+
+/// Tranches de montant des filtres de commandes.
+const kAmountRanges = <({String label, int? min, int? max})>[
+  (label: 'Tous les montants', min: null, max: null),
+  (label: 'Moins de 5 000 F', min: null, max: 5000),
+  (label: '5 000 – 10 000 F', min: 5000, max: 10000),
+  (label: '10 000 – 25 000 F', min: 10000, max: 25000),
+  (label: '25 000 F et plus', min: 25000, max: null),
+];

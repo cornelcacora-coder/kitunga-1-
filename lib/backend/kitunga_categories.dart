@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
@@ -127,6 +128,14 @@ class KitungaCategoryStore extends ChangeNotifier {
 }
 
 /// Image d'une catégorie : incluse dans l'application ou en ligne.
+/// Image de catégorie envoyée depuis l'admin (photo) plutôt qu'une icône
+/// incluse dans l'application : elle remplit toute la case.
+bool kitungaCategoryIsPhoto(String image) => image.startsWith('http');
+
+/// Marge intérieure d'une case de catégorie : aucune pour une photo.
+EdgeInsetsGeometry kitungaCategoryPadding(String image, EdgeInsetsGeometry icon) =>
+    kitungaCategoryIsPhoto(image) ? EdgeInsets.zero : icon;
+
 class KitungaCategoryImage extends StatelessWidget {
   const KitungaCategoryImage(this.image, {super.key});
 
@@ -136,10 +145,21 @@ class KitungaCategoryImage extends StatelessWidget {
   Widget build(BuildContext context) {
     const fallback = Icon(Icons.storefront_outlined, color: Color(0xFF8A8F98));
     if (image.startsWith('http')) {
-      return CachedNetworkImage(
-        imageUrl: image,
-        fit: BoxFit.contain,
-        errorWidget: (_, __, ___) => fallback,
+      // Photo : recadrée pour remplir la case (coins arrondis par la case).
+      if (kIsWeb) {
+        return SizedBox.expand(
+          child: Image.network(image,
+              fit: BoxFit.cover,
+              webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+              errorBuilder: (_, __, ___) => fallback),
+        );
+      }
+      return SizedBox.expand(
+        child: CachedNetworkImage(
+          imageUrl: image,
+          fit: BoxFit.cover,
+          errorWidget: (_, __, ___) => fallback,
+        ),
       );
     }
     if (image.isEmpty) return fallback;

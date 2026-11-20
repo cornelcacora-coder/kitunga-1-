@@ -1,3 +1,4 @@
+import '/mobile/components/kitunga_contact.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -108,8 +109,8 @@ class _SettingsWidgetState extends State<SettingsWidget>
             buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
-              color: FlutterFlowTheme.of(context).secondaryText,
-              size: 30.0,
+              color: FlutterFlowTheme.of(context).primaryText,
+              size: 24.0,
             ),
             onPressed: () async {
               context.pop();
@@ -118,17 +119,17 @@ class _SettingsWidgetState extends State<SettingsWidget>
           title: Text(
             'Paramètres',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  font: GoogleFonts.interTight(
+                  font: GoogleFonts.poppins(
                     fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                        FontWeight.w600,
                     fontStyle:
                         FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                   ),
-                  color: FlutterFlowTheme.of(context).secondaryText,
+                  color: FlutterFlowTheme.of(context).primaryText,
                   fontSize: 22.0,
                   letterSpacing: 0.0,
                   fontWeight:
-                      FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                      FontWeight.w600,
                   fontStyle:
                       FlutterFlowTheme.of(context).headlineMedium.fontStyle,
                 ),
@@ -143,7 +144,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(
-                  painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                  painter: KitungaAuthBackgroundPainter(isDark: isDark, decorations: false),
                 ),
               ),
             ),
@@ -214,7 +215,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
                               style: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
-                                    font: GoogleFonts.interTight(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FontWeight.normal,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
@@ -248,23 +249,8 @@ class _SettingsWidgetState extends State<SettingsWidget>
                 ).animateOnPageLoad(
                     animationsMap['containerOnPageLoadAnimation1']!),
                 InkWell(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: Text('Centre d\'aide'),
-                        content: Text(
-                          'Besoin d\'assistance avec une commande ou votre compte ?\n\n• Email : contact@ntemoconsulting.com\n• Disponibilité : Du Lundi au Samedi, 8h - 18h.\n\nNotre équipe vous répond rapidement.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: Text('Compris'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                  // Centre d'aide : appel, WhatsApp, e-mail.
+                  onTap: () => showKitungaContact(context),
                   child: Container(
                     width: 388.0,
                     height: 64.0,
@@ -302,7 +288,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
                               style: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
-                                    font: GoogleFonts.interTight(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FontWeight.normal,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
@@ -426,7 +412,7 @@ class _SettingsWidgetState extends State<SettingsWidget>
                               style: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
-                                    font: GoogleFonts.interTight(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FontWeight.normal,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleSmall

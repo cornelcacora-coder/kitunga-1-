@@ -104,8 +104,8 @@ class _PathCardWidgetState extends State<PathCardWidget> {
                           'I\'m a Shopper',
                         ),
                         style: FlutterFlowTheme.of(context).titleLarge.override(
-                              font: GoogleFonts.interTight(
-                                fontWeight: FontWeight.w800,
+                              font: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .titleLarge
                                     .fontStyle,
@@ -113,7 +113,7 @@ class _PathCardWidgetState extends State<PathCardWidget> {
                               color: FlutterFlowTheme.of(context).primaryText,
                               fontSize: 22.0,
                               letterSpacing: 0.0,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleLarge
                                   .fontStyle,
@@ -127,7 +127,7 @@ class _PathCardWidgetState extends State<PathCardWidget> {
                         ),
                         maxLines: 2,
                         style: FlutterFlowTheme.of(context).bodySmall.override(
-                              font: GoogleFonts.inter(
+                              font: GoogleFonts.poppins(
                                 fontWeight: FontWeight.normal,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .bodySmall

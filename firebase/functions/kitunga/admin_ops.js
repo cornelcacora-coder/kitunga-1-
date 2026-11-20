@@ -48,7 +48,9 @@ async function listRefunds({db}) {
     return {
       orderId: d.id,
       reference: o.order_unique_reference || o.order_id || d.id,
-      amount: o.total_amount || 0,
+      // Retour accepté : articles seulement (sans la livraison).
+      amount: o.refund_amount ?? o.total_amount ?? 0,
+      reason: o.refund_reason || "",
       deliveryFees: o.delivery_fees || 0,
       status: o.status || "",
       refundStatus: o.refund_status || "À traiter",

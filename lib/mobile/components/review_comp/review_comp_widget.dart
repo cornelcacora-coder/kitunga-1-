@@ -72,15 +72,15 @@ class _ReviewCompWidgetState extends State<ReviewCompWidget> {
                       '',
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.bold,
+                            font: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .fontStyle,
                             ),
                             fontSize: 18.0,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .fontStyle,
@@ -91,7 +91,7 @@ class _ReviewCompWidgetState extends State<ReviewCompWidget> {
                       '',
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).titleSmall.override(
-                            font: GoogleFonts.inter(
+                            font: GoogleFonts.poppins(
                               fontWeight: FontWeight.normal,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleSmall
@@ -140,7 +140,7 @@ class _ReviewCompWidgetState extends State<ReviewCompWidget> {
               '',
               textAlign: TextAlign.start,
               style: FlutterFlowTheme.of(context).titleSmall.override(
-                    font: GoogleFonts.inter(
+                    font: GoogleFonts.poppins(
                       fontWeight: FontWeight.normal,
                       fontStyle:
                           FlutterFlowTheme.of(context).titleSmall.fontStyle,

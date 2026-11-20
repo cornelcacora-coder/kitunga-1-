@@ -104,15 +104,15 @@ class _OrderCompWidgetState extends State<OrderCompWidget> {
                   widget!.productName!,
                   maxLines: 1,
                   style: FlutterFlowTheme.of(context).titleMedium.override(
-                        font: GoogleFonts.interTight(
-                          fontWeight: FontWeight.bold,
+                        font: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
                           fontStyle: FlutterFlowTheme.of(context)
                               .titleMedium
                               .fontStyle,
                         ),
                         color: FlutterFlowTheme.of(context).primaryText,
                         letterSpacing: 0.0,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         fontStyle:
                             FlutterFlowTheme.of(context).titleMedium.fontStyle,
                       ),
@@ -122,7 +122,7 @@ class _OrderCompWidgetState extends State<OrderCompWidget> {
                   key: ValueKey(widget!.parameter2!),
                   widget!.specifications!,
                   style: FlutterFlowTheme.of(context).labelSmall.override(
-                        font: GoogleFonts.inter(
+                        font: GoogleFonts.poppins(
                           fontWeight: FlutterFlowTheme.of(context)
                               .labelSmall
                               .fontWeight,
@@ -150,15 +150,15 @@ class _OrderCompWidgetState extends State<OrderCompWidget> {
                           widget!.price!.toString(),
                           style:
                               FlutterFlowTheme.of(context).titleMedium.override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w800,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,
                                     ),
                                     color: FlutterFlowTheme.of(context).accent1,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
@@ -168,15 +168,15 @@ class _OrderCompWidgetState extends State<OrderCompWidget> {
                           'F',
                           style:
                               FlutterFlowTheme.of(context).titleMedium.override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w800,
+                                    font: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,
                                     ),
                                     color: FlutterFlowTheme.of(context).accent1,
                                     letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FlutterFlowTheme.of(context)
                                         .titleMedium
                                         .fontStyle,
@@ -223,7 +223,7 @@ class _OrderCompWidgetState extends State<OrderCompWidget> {
                               style: FlutterFlowTheme.of(context)
                                   .titleLarge
                                   .override(
-                                    font: GoogleFonts.interTight(
+                                    font: GoogleFonts.poppins(
                                       fontWeight: FlutterFlowTheme.of(context)
                                           .titleLarge
                                           .fontWeight,

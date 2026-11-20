@@ -10,7 +10,8 @@ const assert = require("node:assert");
 const admin = require("firebase-admin");
 const momo = require("./momo");
 const {startPayment, confirmPayment, refundOrder} = require("./payments");
-const {startSubscription, confirmSubscription} = require("./subscriptions");
+const {startSubscription, confirmSubscription, mySubscription} =
+  require("./subscriptions");
 const {reconcilePending} = require("./reconcile");
 
 admin.initializeApp({projectId: "demo-kitunga"});
@@ -45,6 +46,24 @@ const start = () => startPayment({db, momo, uid: "buyer",
   sellerPath: "User/seller", zone: "Talangaï", deliveryLocation: "Rue 1",
   phone: "06 123 45 67"});
 
+test("commerce fermé : pas de commande, message avec l'ouverture",
+    async () => {
+      await seed("Taille : Normal", 1);
+      await db.doc("User/seller").update({display_name: "Chez Paul",
+        Horraire: "Lun-Sam 8h00-18h00 · Dim fermé"});
+      // Dimanche 15 novembre 2026, midi à Brazzaville.
+      const sunday = new Date(Date.UTC(2026, 10, 15, 11));
+      await assert.rejects(startPayment({db, momo, uid: "buyer",
+        sellerPath: "User/seller", zone: "Talangaï", phone: "06 123 45 67",
+        now: sunday}), /Chez Paul est fermé en ce moment \(ouvre demain à 8h00\)/);
+      // Lundi 10h : ouvert.
+      const monday = new Date(Date.UTC(2026, 10, 16, 9));
+      const s = await startPayment({db, momo, uid: "buyer",
+        sellerPath: "User/seller", zone: "Talangaï", phone: "06 123 45 67",
+        now: monday});
+      assert.ok(s.referenceId);
+    });
+
 test("variante épuisée : paiement refusé avant MTN", async () => {
   await seed("Taille : Maxi · Suppléments : Bacon", 2);
   await assert.rejects(start, /Stock insuffisant/);
@@ -52,6 +71,9 @@ test("variante épuisée : paiement refusé avant MTN", async () => {
 
 test("paiement réussi : commande, stock et panier", async () => {
   await seed("Taille : Maxi · Suppléments : Fromage", 2);
+  // Article provisoire écrit par l'application à l'ajout au panier.
+  await db.doc("OrderItems/draft").set({user_ref: db.doc("User/buyer"),
+    cart_ref: db.doc("Cart/c1"), item_name: "Burger", quantity: 2});
   const s = await start();
   assert.equal(s.amount, (2500 + 1000 + 300) * 2 + 1500);
 
@@ -73,6 +95,7 @@ test("paiement réussi : commande, stock et panier", async () => {
   const items = await db.collection("OrderItems")
       .where("order_ref", "==", order.order_unique_reference).get();
   assert.equal(items.size, 1);
+  assert.equal((await db.doc("OrderItems/draft").get()).exists, false);
   assert.equal(items.docs[0].get("options"),
       "Taille : Maxi · Suppléments : Fromage");
 
@@ -231,23 +254,24 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
   await seed("Taille : Normal", 1);
   await db.doc("User/buyer").update({subscribe_close_at: new Date(0)});
   const s = await startSubscription({db, momo, uid: "buyer",
-    plan: "monthly", phone: "065551234"});
-  assert.equal(s.amount, 250);
+    plan: "semester", phone: "065551234"});
+  assert.equal(s.amount, 500); // Semestriel : 500 F pour 6 mois
   const r = await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s.referenceId});
   assert.equal(r.status, "paid");
   const until = (await db.doc("User/buyer").get())
       .get("subscribe_close_at").toDate();
   const days = (until - Date.now()) / 86400000;
-  assert.ok(days > 29.9 && days <= 30, `jours : ${days}`);
+  assert.ok(days > 182.9 && days <= 183, `jours : ${days}`);
   // Confirmer deux fois ne prolonge pas deux fois.
   await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s.referenceId});
   assert.equal((await db.doc("User/buyer").get())
       .get("subscribe_close_at").toDate().getTime(), until.getTime());
-  // Un renouvellement s'ajoute à la fin actuelle.
+  // Un renouvellement annuel s'ajoute à la fin actuelle.
   const s2 = await startSubscription({db, momo, uid: "buyer",
     plan: "annual", phone: "065551234"});
+  assert.equal(s2.amount, 1000);
   await confirmSubscription({db, momo, uid: "buyer",
     referenceId: s2.referenceId});
   const until2 = (await db.doc("User/buyer").get())
@@ -255,6 +279,21 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
   assert.equal(until2 - until, 365 * 86400000);
   assert.equal((await db.doc("User/buyer").get()).get("subscribe_type"),
       "Annuel - 1000 F");
+  // Ancienne formule demandée (page en cache) : trimestrielle (300 F, 3 mois).
+  const s3 = await startSubscription({db, momo, uid: "buyer",
+    plan: "monthly", phone: "065551234"});
+  assert.equal(s3.amount, 300);
+  // Module « Mon abonnement » : état et historique.
+  const me = await mySubscription({db, uid: "buyer"});
+  assert.equal(me.active, true);
+  assert.equal(me.required, true);
+  assert.ok(me.daysLeft > 540 && me.daysLeft <= 549);
+  assert.deepEqual(me.plans.map((p) => p.key),
+      ["quarterly", "semester", "annual"]);
+  assert.equal(me.history.filter((h) => h.status === "Réussi").length, 2);
+  // Vendeurs et livreurs : pas d'abonnement à payer.
+  await assert.rejects(startSubscription({db, momo, uid: "seller",
+    plan: "monthly", phone: "065551234"}), /pas besoin d'abonnement/);
   // Le paiement d'abonnement ne peut pas servir à créer une commande.
   await assert.rejects(confirmPayment({db, momo, uid: "buyer",
     referenceId: s.referenceId}), /introuvable/);
@@ -263,7 +302,7 @@ test("abonnement payé : actif, prolongé, sans double comptage", async () => {
 
 test("reconcile : abonnement et commande en attente", async () => {
   await seed("Taille : Normal", 1);
-  await startSubscription({db, momo, uid: "buyer", plan: "monthly",
+  await startSubscription({db, momo, uid: "buyer", plan: "semester",
     phone: "065551234"});
   await start();
   assert.equal(await reconcilePending({db, momo}), 2);

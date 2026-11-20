@@ -1,8 +1,11 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
-/// Image distante robuste : passe par le cache, et si le cache échoue,
+
+/// Image robuste : image de l'application (« assets/… ») ou image distante
+/// qui passe par le cache, et si le cache échoue,
 /// retente un chargement direct avant d'afficher l'icône de remplacement.
 /// Chaque échec est noté dans le journal avec sa cause.
 class KitungaImage extends StatelessWidget {
@@ -37,9 +40,35 @@ class KitungaImage extends StatelessWidget {
     final missing = placeholder ??
         box(child: Icon(fallbackIcon, color: theme.secondaryText, size: 28.0));
 
+    // Image fournie avec l'application (assets/…).
+    if (src.startsWith('assets/')) {
+      return Image.asset(src,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => missing);
+    }
     if (src.isEmpty || !src.startsWith('http')) {
       if (src.isNotEmpty) debugPrint('Adresse d\'image invalide : "$src"');
       return missing;
+    }
+    // Web : le stockage Firebase n'autorise pas toujours la lecture par le
+    // site (CORS). Si le chargement normal est bloqué, le navigateur
+    // affiche l'image lui-même (balise <img>), sans cette autorisation.
+    if (kIsWeb) {
+      return Image.network(
+        src,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+        loadingBuilder: (_, child, progress) =>
+            progress == null ? child : box(),
+        errorBuilder: (_, error, __) {
+          debugPrint('Image (web) en échec : $src → $error');
+          return missing;
+        },
+      );
     }
     return CachedNetworkImage(
       imageUrl: src,

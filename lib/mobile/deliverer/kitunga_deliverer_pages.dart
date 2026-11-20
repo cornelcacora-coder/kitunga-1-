@@ -1,0 +1,630 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:latlong2/latlong.dart' as ll;
+
+import '/auth/firebase_auth/auth_util.dart';
+import '/backend/backend.dart';
+import '/backend/order_status.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/index.dart' show OrderViewSellerDeliverWidget;
+import '/mobile/components/delivery/kitunga_deliverer_panel.dart';
+import '/mobile/components/delivery/kitunga_delivery.dart'
+    show kitungaTakeDelivery;
+import '/mobile/components/delivery/kitunga_live_tracking.dart';
+import '/mobile/components/delivery/kitunga_map.dart';
+import '/noc/admin/brazzaville_zones.dart'
+    show kBrazzavilleCenter, kBrazzavilleZones;
+import 'kitunga_deliverer_home.dart';
+import 'kitunga_deliverer_pro.dart' show proCall;
+
+/// Onglets « Mes courses » et « Carte » de l'espace livreur.
+
+const _red = Color(0xFFE51A1A);
+const _green = Color(0xFF17A35B);
+
+Stream<List<OrdersRecord>> _myOrders() => delivererMyOrdersStream();
+
+Stream<List<OrdersRecord>> _openOrders() => delivererOpenOrdersStream();
+
+bool _isIncident(OrdersRecord o) =>
+    o.status == OrderStatus.notReceived ||
+    o.snapshotData['delivery_issue'] != null;
+
+void _openOrder(BuildContext context, OrdersRecord o) {
+  if (o.status == OrderStatus.delivering) {
+    openDelivererMission(context, o);
+    return;
+  }
+  context.pushNamed(
+    OrderViewSellerDeliverWidget.routeName,
+    queryParameters: {
+      'orderRefer': serializeParam(o.orderUniqueReference, ParamType.String),
+      'deliveryZone': serializeParam(o.deliveryZone, ParamType.String),
+      'statu': serializeParam(o.status, ParamType.String),
+      'amount': serializeParam('${o.totalAmount}', ParamType.String),
+    }.withoutNulls,
+  );
+}
+
+// ── Mes courses ──────────────────────────────────────────────────────────
+
+class KitungaDelivererCourses extends StatefulWidget {
+  const KitungaDelivererCourses({super.key});
+
+  @override
+  State<KitungaDelivererCourses> createState() =>
+      _KitungaDelivererCoursesState();
+}
+
+class _KitungaDelivererCoursesState extends State<KitungaDelivererCourses> {
+  late final Stream<List<OrdersRecord>> _stream = _myOrders();
+  late final Stream<List<OrdersRecord>> _open = _openOrders();
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  bool _matches(OrdersRecord o) {
+    final q = _search.text.trim().toLowerCase();
+    if (q.isEmpty) return true;
+    return [o.orderUniqueReference, o.deliveryZone, o.deliveryLocation]
+        .any((v) => v.toLowerCase().contains(q));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return DefaultTabController(
+      length: 5,
+      child: Scaffold(
+        backgroundColor: theme.primaryBackground,
+        appBar: AppBar(
+          backgroundColor: theme.secondaryBackground,
+          foregroundColor: theme.primaryText,
+          automaticallyImplyLeading: false,
+          elevation: 0,
+          title: Text('Mes courses',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            labelColor: _red,
+            indicatorColor: _red,
+            unselectedLabelColor: theme.secondaryText,
+            labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            tabs: const [
+              Tab(text: 'En cours'),
+              Tab(text: 'Proposées'),
+              Tab(text: 'Terminées'),
+              Tab(text: 'Refusées'),
+              Tab(text: 'Incidents'),
+            ],
+          ),
+        ),
+        body: StreamBuilder<List<OrdersRecord>>(
+          stream: _stream,
+          builder: (context, snap) {
+            if (snap.hasError) {
+              return const _Message(
+                  icon: Icons.wifi_off_rounded,
+                  text: 'Connexion perdue. Vos courses s\'afficheront dès '
+                      'le retour du réseau.');
+            }
+            if (!snap.hasData) {
+              return const Center(
+                  child: CircularProgressIndicator(color: _red));
+            }
+            final all = [...snap.data!]..sort((a, b) =>
+                (b.createdAt ?? DateTime(0))
+                    .compareTo(a.createdAt ?? DateTime(0)));
+            final running =
+                all.where((o) => o.status == OrderStatus.delivering).toList();
+            final done = all
+                .where((o) =>
+                    OrderStatus.finished.contains(o.status) && _matches(o))
+                .toList();
+            final incidents = all.where(_isIncident).toList();
+            final total = done
+                .where((o) => OrderStatus.successful.contains(o.status))
+                .fold<double>(0, (s, o) => s + o.deliveryFees);
+            return TabBarView(
+              children: [
+                _CourseList(
+                    orders: running,
+                    empty: 'Aucune course en cours. Acceptez une course '
+                        'depuis l\'accueil.'),
+                // Propositions en cours pour moi (compte à rebours).
+                StreamBuilder<List<OrdersRecord>>(
+                  stream: _open,
+                  builder: (context, open) {
+                    final now = DateTime.now();
+                    final mine = (open.data ?? const <OrdersRecord>[])
+                        .where((o) => offeredToMe(o, currentUserUid, now))
+                        .toList();
+                    if (mine.isEmpty) {
+                      return const _Message(
+                          icon: Icons.notifications_none_rounded,
+                          text: 'Aucune proposition en ce moment. Restez en '
+                              'service : vous serez prévenu.');
+                    }
+                    return ListView(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      children: [
+                        for (final o in mine) KitungaOfferCard(order: o),
+                      ],
+                    );
+                  },
+                ),
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: TextField(
+                        key: const ValueKey('courses-search'),
+                        controller: _search,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          hintText: 'N° de commande, quartier…',
+                          filled: true,
+                          fillColor: theme.secondaryBackground,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _CourseList(
+                    orders: done,
+                    header: done.isEmpty
+                        ? null
+                        : '${done.where((o) => OrderStatus.successful.contains(o.status)).length} '
+                            'livrées · ${NumberFormat.decimalPattern('fr').format(total)} F '
+                            'de frais de livraison',
+                    empty: 'Pas encore de course terminée.'),
+                    ),
+                  ],
+                ),
+                const _DeclinedList(),
+                _CourseList(
+                    orders: incidents,
+                    empty: 'Aucun incident. Tant mieux !'),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _CourseList extends StatelessWidget {
+  const _CourseList({required this.orders, required this.empty, this.header});
+
+  final List<OrdersRecord> orders;
+  final String empty;
+  final String? header;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    if (orders.isEmpty) {
+      return _Message(icon: Icons.inbox_rounded, text: empty);
+    }
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      children: [
+        if (header != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10, left: 4),
+            child: Text(header!,
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600, color: theme.primaryText)),
+          ),
+        for (final o in orders)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Material(
+              color: theme.secondaryBackground,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: theme.alternate),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                onTap: () => _openOrder(context, o),
+                leading: CircleAvatar(
+                  backgroundColor: courseStatusOf(o).color.withValues(alpha: 0.12),
+                  child: Icon(
+                      _isIncident(o)
+                          ? Icons.report_gmailerrorred_rounded
+                          : o.status == OrderStatus.delivering
+                              ? Icons.delivery_dining_rounded
+                              : Icons.task_alt_rounded,
+                      color: courseStatusOf(o).color),
+                ),
+                title: Text(
+                    o.deliveryZone.isEmpty ? 'Brazzaville' : o.deliveryZone,
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: theme.primaryText)),
+                subtitle: Text(
+                    [
+                      'N° ${o.orderUniqueReference}',
+                      if (o.createdAt != null) dateTimeFormatFr(o.createdAt!),
+                      if (o.snapshotData['delivery_issue'] is Map)
+                        '${(o.snapshotData['delivery_issue'] as Map)['label'] ?? 'Problème signalé'}',
+                    ].join(' · '),
+                    style: GoogleFonts.poppins(
+                        fontSize: 12, color: theme.secondaryText)),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(courseStatusOf(o).label,
+                        style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: courseStatusOf(o).color)),
+                    Text(
+                        '${NumberFormat.decimalPattern('fr').format(o.deliveryFees)} F',
+                        style: GoogleFonts.poppins(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: theme.primaryText)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _Message extends StatelessWidget {
+  const _Message({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 32,
+              backgroundColor: _red.withValues(alpha: 0.08),
+              child: Icon(icon, color: _red, size: 30),
+            ),
+            const SizedBox(height: 14),
+            Text(text,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                    fontSize: 14, color: theme.secondaryText)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Carte ────────────────────────────────────────────────────────────────
+
+/// Carte du livreur : sa position, ses courses en cours (destination) et
+/// les courses prêtes de ses quartiers (point de collecte).
+class KitungaDelivererMap extends StatefulWidget {
+  const KitungaDelivererMap({super.key});
+
+  @override
+  State<KitungaDelivererMap> createState() => _KitungaDelivererMapState();
+}
+
+class _KitungaDelivererMapState extends State<KitungaDelivererMap> {
+  late final Stream<List<OrdersRecord>> _mine = _myOrders();
+  late final Stream<List<OrdersRecord>> _open = _openOrders();
+  ll.LatLng? _me;
+  String? _gps;
+  final _map = KitungaMapController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (!delivererSimulated) _locate();
+  }
+
+  Future<void> _locate() async {
+    try {
+      var p = await Geolocator.checkPermission();
+      if (p == LocationPermission.denied) {
+        p = await Geolocator.requestPermission();
+      }
+      if (p == LocationPermission.denied ||
+          p == LocationPermission.deniedForever) {
+        if (mounted) {
+          setState(() => _gps = 'Autorisez la localisation pour voir votre '
+              'position.');
+        }
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition();
+      if (!mounted) return;
+      final me = ll.LatLng(pos.latitude, pos.longitude);
+      setState(() {
+        _me = me;
+        _gps = null;
+      });
+      // « Ma position » : la carte se centre sur le livreur.
+      _map.moveTo(me);
+    } catch (_) {
+      if (mounted) setState(() => _gps = 'Localisation indisponible.');
+    }
+  }
+
+  void _showCourse(OrdersRecord o, bool mine) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: KitungaCourseCard(
+            order: o,
+            mine: mine,
+            onDetails: () => _openOrder(c, o),
+            onAction: () async {
+              Navigator.pop(c);
+              if (mine) {
+                await openDelivererMission(context, o);
+              } else {
+                final taken = await kitungaTakeDelivery(context, o);
+                if (taken && mounted) {
+                  await openDelivererMission(context, o);
+                }
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return DelivererStateBuilder(
+      builder: (context, state) => StreamBuilder<List<OrdersRecord>>(
+        stream: _mine,
+        builder: (context, mineSnap) => StreamBuilder<List<OrdersRecord>>(
+          stream: _open,
+          builder: (context, openSnap) {
+            final now = DateTime.now();
+            final active = (mineSnap.data ?? const <OrdersRecord>[])
+                .where((o) => o.status == OrderStatus.delivering)
+                .toList();
+            final ready = state.state != 'on'
+                ? const <OrdersRecord>[]
+                : (openSnap.data ?? const <OrdersRecord>[])
+                    .where((o) =>
+                        o.status == OrderStatus.ready &&
+                        o.delivererRef.isEmpty &&
+                        !offeredToOther(o, currentUserUid, now) &&
+                        delivererCovers(state.zones, o.deliveryZone))
+                    .toList();
+            // Position exacte du commerce / du client, sinon le quartier.
+            ll.LatLng? pointOf(OrdersRecord o, {bool pickup = false}) {
+              if (pickup) {
+                final shop = '${o.snapshotData['shop_zone'] ?? ''}';
+                return exactPointOf(o.snapshotData['shop_point']) ??
+                    kBrazzavilleZones[shop] ??
+                    kBrazzavilleZones[o.deliveryZone];
+              }
+              return exactPointOf(o.snapshotData['delivery_point']) ??
+                  kBrazzavilleZones[o.deliveryZone];
+            }
+
+            final markers = <KitungaMapMarker>[
+              for (final o in ready)
+                if (pointOf(o, pickup: true) != null)
+                  KitungaMapMarker(
+                    id: 'ready_${o.reference.id}',
+                    point: pointOf(o, pickup: true)!,
+                    icon: Icons.storefront_rounded,
+                    color: _green,
+                    round: true,
+                    onTap: () => _showCourse(o, false),
+                  ),
+              for (final o in active)
+                if (pointOf(o) != null)
+                  KitungaMapMarker(
+                    id: 'active_${o.reference.id}',
+                    point: pointOf(o)!,
+                    icon: Icons.location_on_rounded,
+                    color: _red,
+                    round: true,
+                    onTap: () => _showCourse(o, true),
+                  ),
+              if (_me != null)
+                KitungaMapMarker(
+                  id: 'me',
+                  point: _me!,
+                  icon: Icons.delivery_dining_rounded,
+                  color: const Color(0xFF1E242B),
+                  round: true,
+                ),
+            ];
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: delivererSimulated
+                      ? Container(color: theme.alternate)
+                      : KitungaMapView(
+                          controller: _map,
+                          initialCenter: _me ?? kBrazzavilleCenter,
+                          initialZoom: 12.5,
+                          markers: markers,
+                        ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  top: MediaQuery.paddingOf(context).top + 12,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: theme.secondaryBackground,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(color: Color(0x22000000), blurRadius: 12)
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const _Pin(
+                            icon: Icons.storefront_rounded,
+                            color: _green,
+                            size: 30),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                              state.state != 'on'
+                                  ? 'Passez en service pour voir les courses '
+                                      'prêtes.'
+                                  : '${ready.length} course(s) prête(s) · '
+                                      '${active.length} en cours',
+                              style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13.5,
+                                  color: theme.primaryText)),
+                        ),
+                        IconButton(
+                          tooltip: 'Ma position',
+                          onPressed: _locate,
+                          icon: const Icon(Icons.my_location_rounded,
+                              color: _red),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (_gps != null)
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 16,
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3E0),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(_gps!,
+                          style: GoogleFonts.poppins(fontSize: 13)),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _Pin extends StatelessWidget {
+  const _Pin({required this.icon, required this.color, this.size = 40});
+
+  final IconData icon;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2.5),
+          boxShadow: const [
+            BoxShadow(color: Color(0x33000000), blurRadius: 6)
+          ],
+        ),
+        child: Icon(icon, color: Colors.white, size: size * 0.55),
+      );
+}
+
+
+/// Propositions refusées ou laissées sans réponse.
+class _DeclinedList extends StatelessWidget {
+  const _DeclinedList();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return FutureBuilder<Map<String, dynamic>>(
+      future: proCall('kitungaMyMissions', const {}),
+      builder: (context, snap) {
+        if (snap.hasError) {
+          return const _Message(
+              icon: Icons.wifi_off_rounded, text: 'Connexion impossible.');
+        }
+        if (!snap.hasData) {
+          return const Center(child: CircularProgressIndicator(color: _red));
+        }
+        final list = (snap.data!['missions'] as List? ?? const [])
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .where((m) => ['declined', 'expired'].contains(m['status']))
+            .toList();
+        if (list.isEmpty) {
+          return const _Message(
+              icon: Icons.thumb_up_alt_outlined,
+              text: 'Aucune proposition refusée.');
+        }
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          children: [
+            for (final m in list)
+              Card(
+                elevation: 0,
+                color: theme.secondaryBackground,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: theme.alternate)),
+                child: ListTile(
+                  leading: Icon(
+                      m['status'] == 'declined'
+                          ? Icons.do_not_disturb_alt_rounded
+                          : Icons.timer_off_rounded,
+                      color: theme.secondaryText),
+                  title: Text('N° ${m['reference'] ?? ''} · ${m['zone'] ?? ''}',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+                  subtitle: Text(
+                      m['status'] == 'declined' ? 'Refusée' : 'Sans réponse',
+                      style: GoogleFonts.poppins(fontSize: 12.5)),
+                  trailing: Text(
+                      '${NumberFormat.decimalPattern('fr').format(m['fees'] ?? 0)} F',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}

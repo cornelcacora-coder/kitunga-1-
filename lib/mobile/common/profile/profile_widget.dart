@@ -1,5 +1,11 @@
+import '/mobile/seller/kitunga_seller_home.dart' show SellerShopSection;
+import '/mobile/deliverer/kitunga_deliverer_pro.dart' show DelivererActivitySection;
+import '/mobile/components/messaging/kitunga_messages.dart' show KitungaConversationsPage;
+import '/mobile/components/support/kitunga_support.dart' show openKitungaSupport;
+import '/mobile/main_app/subscription/my_subscription_page.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/subscription.dart';
+import '/mobile/components/kitunga_contact.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -82,30 +88,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     context.pushNamedAuth(OnboardingWidget.routeName, context.mounted);
   }
 
-  Future<void> _help() async {
-    await showDialog(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text('Centre d\'aide'),
-        content: Text(
-            'Besoin d\'assistance avec une commande ou votre compte ?\n\nE-mail : contact@ntemoconsulting.com\nDu lundi au samedi, 8h - 18h.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: Text('Fermer')),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(c);
-              launchURL(Uri(
-                scheme: 'mailto',
-                path: 'contact@ntemoconsulting.com',
-                query: 'subject=${Uri.encodeComponent('Assistance Kitunga')}',
-              ).toString());
-            },
-            child: Text('Écrire au support'),
-          ),
-        ],
-      ),
-    );
-  }
+  /// Centre d'aide : appel, WhatsApp et e-mail de NTEMO CONSULTING.
+  Future<void> _help() => showKitungaContact(context);
 
   Widget _group(FlutterFlowTheme theme, String title, List<Widget> items) {
     return Padding(
@@ -117,10 +101,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
             padding: EdgeInsets.only(left: 4.0, bottom: 8.0),
             child: Text(
               title,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 13.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -162,7 +146,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       ),
       title: Text(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           color: theme.primaryText,
           fontSize: 15.0,
           fontWeight: FontWeight.w500,
@@ -175,7 +159,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
   Widget _header(FlutterFlowTheme theme, String role) {
     final photo = currentUserPhoto;
-    final plan = valueOrDefault(currentUserDocument?.subscribeType, '');
     final verified = valueOrDefault(currentUserDocument?.verified, false);
     // Le fond rouge passe sous la barre d'état.
     final top = MediaQuery.paddingOf(context).top;
@@ -209,10 +192,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
               children: [
                 Text(
                   'Profil',
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 20.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Spacer(),
@@ -222,9 +205,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                         context.pushNamed(EditProfileWidget.routeName),
                     child: Text(
                       'Modifier',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -254,10 +237,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   _initial(),
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                     color: Colors.white,
                                     fontSize: 46.0,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               )
@@ -290,16 +273,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       : (currentUserDisplayName.isEmpty
                           ? 'Mon compte'
                           : currentUserDisplayName),
-                  style: GoogleFonts.interTight(
+                  style: GoogleFonts.poppins(
                     color: theme.primaryText,
                     fontSize: 21.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 if (currentUserEmail.isNotEmpty)
                   Text(
                     currentUserEmail,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         color: theme.secondaryText, fontSize: 14.0),
                   ),
                 SizedBox(height: 6.0),
@@ -307,10 +290,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _badge(theme, _roleLabel(role)),
-                    if (plan.isNotEmpty && role != 'Guest' && role != 'User') ...[
-                      SizedBox(width: 6.0),
-                      _badge(theme, plan),
-                    ],
+                    // Vendeurs et livreurs : pas d'abonnement.
                     if (role == 'User') ...[
                       SizedBox(width: 6.0),
                       _badge(
@@ -338,10 +318,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         ),
         child: Text(
           text,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             color: theme.primary,
             fontSize: 12.0,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
           ),
         ),
       );
@@ -359,7 +339,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
           Positioned.fill(
             child: IgnorePointer(
               child: CustomPaint(
-                painter: KitungaAuthBackgroundPainter(isDark: isDark),
+                painter: KitungaAuthBackgroundPainter(isDark: isDark, decorations: false),
               ),
             ),
           ),
@@ -387,16 +367,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       children: [
                         Text(
                           'Créez votre compte Kitunga',
-                          style: GoogleFonts.interTight(
+                          style: GoogleFonts.poppins(
                             color: theme.primaryText,
                             fontSize: 17.0,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         SizedBox(height: 4.0),
                         Text(
                           'Pour commander, suivre vos livraisons et retrouver l\'historique de vos achats.',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                               color: theme.secondaryText,
                               fontSize: 13.5,
                               height: 1.4),
@@ -427,7 +407,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                           ? 'Commandes'
                           : 'Mes commandes',
                       () => context.pushNamed(OrderWidget.routeName)),
-                  _item(theme, Icons.lock_outline_rounded, 'Sécurité',
+                  // Clients : abonnement consultable et payable à tout moment.
+                  if (role == 'User')
+                    _item(theme, Icons.workspace_premium_outlined,
+                        'Mon abonnement', () => openMySubscription(context)),
+                  _item(theme, Icons.lock_outline_rounded, 'Compte et sécurité',
                       () => context.pushNamed(SecurityWidget.routeName)),
                 ]),
               _group(theme, 'Préférences', [
@@ -447,9 +431,22 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   ),
                 ),
               ]),
+              // Livreur : documents, performances, gains, sécurité.
+              if (valueOrDefault(currentUserDocument?.role, '') == 'Deliver')
+                const DelivererActivitySection(),
+              // Vendeur : gestion du commerce.
+              if (valueOrDefault(currentUserDocument?.role, '') == 'Seller')
+                const SellerShopSection(),
               _group(theme, 'Aide et informations légales', [
                 _item(theme, Icons.support_agent_rounded, 'Centre d\'aide',
                     _help),
+                // Demandes écrites au support Kitunga (tickets).
+                _item(theme, Icons.forum_outlined, 'Mes demandes au support',
+                    () => openKitungaSupport(context)),
+                _item(theme, Icons.chat_bubble_outline_rounded, 'Mes messages',
+                    () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => const KitungaConversationsPage(
+                            showAppBar: true)))),
                 _item(
                     theme,
                     Icons.description_outlined,
@@ -476,10 +473,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   icon: Icon(Icons.logout_rounded, color: theme.error),
                   label: Text(
                     'Déconnexion',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: theme.error,
                       fontSize: 15.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

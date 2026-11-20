@@ -166,9 +166,9 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                   .titleLarge
                                                   .override(
                                                     font:
-                                                        GoogleFonts.interTight(
+                                                        GoogleFonts.poppins(
                                                       fontWeight:
-                                                          FontWeight.w800,
+                                                          FontWeight.w600,
                                                       fontStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -177,7 +177,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                     ),
                                                     color: Colors.white,
                                                     letterSpacing: 0.0,
-                                                    fontWeight: FontWeight.w800,
+                                                    fontWeight: FontWeight.w600,
                                                     fontStyle:
                                                         FlutterFlowTheme.of(
                                                                 context)
@@ -368,7 +368,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                         font: GoogleFonts
                                                             .interTight(
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w600,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -378,7 +378,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                         color: Colors.white,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FontWeight.bold,
+                                                            FontWeight.w600,
                                                         fontStyle:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -392,7 +392,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                           context)
                                                       .bodySmall
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -454,8 +454,8 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                 style: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.w800,
+                                      font: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .titleMedium
                                             .fontStyle,
@@ -463,7 +463,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                       color: FlutterFlowTheme.of(context)
                                           .primaryText,
                                       letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,
@@ -512,7 +512,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                     Icons.title_rounded,
                                   ),
                                 ),
-                                style: GoogleFonts.inter(),
+                                style: GoogleFonts.poppins(),
                                 maxLines: null,
                                 validator: _model.titleTextControllerValidator
                                     .asValidator(context),
@@ -572,7 +572,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                     Icons.title_rounded,
                                   ),
                                 ),
-                                style: GoogleFonts.inter(),
+                                style: GoogleFonts.poppins(),
                                 maxLines: null,
                                 keyboardType: TextInputType.multiline,
                                 validator: _model
@@ -609,8 +609,8 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight: FontWeight.bold,
+                                                font: GoogleFonts.poppins(
+                                                  fontWeight: FontWeight.w600,
                                                   fontStyle:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -619,7 +619,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                 ),
                                                 fontSize: 16.0,
                                                 letterSpacing: 0.0,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w600,
                                                 fontStyle:
                                                     FlutterFlowTheme.of(context)
                                                         .bodyMedium
@@ -647,7 +647,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                   context)
                                               .bodyMedium
                                               .override(
-                                                font: GoogleFonts.inter(
+                                                font: GoogleFonts.poppins(
                                                   fontWeight:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -709,8 +709,8 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight: FontWeight.bold,
+                                            font: GoogleFonts.poppins(
+                                              fontWeight: FontWeight.w600,
                                               fontStyle:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -718,7 +718,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                             ),
                                             fontSize: 16.0,
                                             letterSpacing: 0.0,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w600,
                                             fontStyle:
                                                 FlutterFlowTheme.of(context)
                                                     .bodyMedium
@@ -768,7 +768,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                           style: FlutterFlowTheme.of(context)
                                               .titleLarge
                                               .override(
-                                                font: GoogleFonts.interTight(
+                                                font: GoogleFonts.poppins(
                                                   fontWeight:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -812,8 +812,8 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight: FontWeight.bold,
+                                        font: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600,
                                           fontStyle:
                                               FlutterFlowTheme.of(context)
                                                   .bodyMedium
@@ -821,7 +821,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                         ),
                                         fontSize: 16.0,
                                         letterSpacing: 0.0,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .fontStyle,
@@ -870,7 +870,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                     Icons.attach_money_sharp,
                                   ),
                                 ),
-                                style: GoogleFonts.inter(),
+                                style: GoogleFonts.poppins(),
                                 maxLines: null,
                                 keyboardType: TextInputType.number,
                                 validator: _model.priceTextControllerValidator
@@ -892,8 +892,8 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                 style: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .override(
-                                      font: GoogleFonts.interTight(
-                                        fontWeight: FontWeight.w800,
+                                      font: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
                                         fontStyle: FlutterFlowTheme.of(context)
                                             .titleMedium
                                             .fontStyle,
@@ -901,7 +901,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                       color: FlutterFlowTheme.of(context)
                                           .primaryText,
                                       letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FlutterFlowTheme.of(context)
                                           .titleMedium
                                           .fontStyle,
@@ -962,9 +962,9 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                           context)
                                                       .bodyMedium
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
-                                                              FontWeight.w600,
+                                                              FontWeight.w500,
                                                           fontStyle:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -977,7 +977,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                                 .primaryText,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
-                                                            FontWeight.w600,
+                                                            FontWeight.w500,
                                                         fontStyle:
                                                             FlutterFlowTheme.of(
                                                                     context)
@@ -991,7 +991,7 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                                           context)
                                                       .bodySmall
                                                       .override(
-                                                        font: GoogleFonts.inter(
+                                                        font: GoogleFonts.poppins(
                                                           fontWeight:
                                                               FlutterFlowTheme.of(
                                                                       context)
@@ -1144,10 +1144,10 @@ class _AddProductWidgetState extends State<AddProductWidget> {
                                     iconPadding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 0.0),
                                     color: FlutterFlowTheme.of(context).primary,
-                                    textStyle: GoogleFonts.interTight(
+                                    textStyle: GoogleFonts.poppins(
                                       color: FlutterFlowTheme.of(context)
                                           .primaryBackground,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w500,
                                       fontSize: 14.0,
                                     ),
                                     elevation: 0.0,

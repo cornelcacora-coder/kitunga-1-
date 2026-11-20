@@ -8,6 +8,8 @@ import '/backend/order_status.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart' show IntroWidget;
 import '/noc/ui/admin_kit.dart';
+import '/noc/admin/admin_shell.dart' show pickAdminImage;
+import '/mobile/common/security/change_password_page.dart';
 
 /// Cadre de l'administration : menu latéral à sections dépliables (réductible
 /// en icônes), barre du haut (recherche de page, notifications, compte) et
@@ -35,6 +37,7 @@ class AdminNavGroup {
 class AdminPaths {
   static const dashboard = '/supervisionDashboard';
   static const categories = '/categories';
+  static const banners = '/publicites';
   static const products = '/produits';
   static const sellers = '/commercants';
   static const delivers = '/livreurs';
@@ -44,6 +47,11 @@ class AdminPaths {
   static const orders = '/commandes';
   static const deliveries = '/livraisons';
   static const zones = '/zones';
+  static const deliveryPricing = '/tarif-livraison';
+  static const support = '/support';
+  static const finance = '/finances';
+  static const supervision = '/supervision';
+  static const messages = '/messages';
   static const alerts = '/alertes';
   static const missingImages = '/produits?sansImage=1';
 }
@@ -54,14 +62,24 @@ const kDashboardItem = AdminNavItem(
 
 const List<AdminNavGroup> kAdminMenu = [
   const AdminNavGroup('Opérations', Icons.local_shipping_rounded, [
+    AdminNavItem('supervision', 'Supervision en direct',
+        Icons.monitor_heart_rounded,
+        path: AdminPaths.supervision),
     AdminNavItem('orders', 'Commandes', Icons.receipt_long_rounded,
         path: AdminPaths.orders),
     AdminNavItem('deliveries', 'Livraisons', Icons.delivery_dining_rounded,
         path: AdminPaths.deliveries),
     AdminNavItem('zones', 'Livraisons par zone', Icons.place_rounded,
         path: AdminPaths.zones),
+    AdminNavItem('deliveryPricing', 'Tarif et attribution',
+        Icons.price_change_rounded,
+        path: AdminPaths.deliveryPricing),
     AdminNavItem('alerts', 'Alertes', Icons.warning_amber_rounded,
         path: AdminPaths.alerts),
+    AdminNavItem('messages', 'Messages', Icons.forum_rounded,
+        path: AdminPaths.messages),
+    AdminNavItem('support', 'Support client', Icons.support_agent_rounded,
+        path: AdminPaths.support),
   ]),
   const AdminNavGroup('Catalogue', Icons.inventory_2_rounded, [
     AdminNavItem('categories', 'Catégories', Icons.category_rounded,
@@ -70,6 +88,10 @@ const List<AdminNavGroup> kAdminMenu = [
         path: AdminPaths.products),
     AdminNavItem('missing', 'Produits sans photo', Icons.hide_image_rounded,
         path: AdminPaths.missingImages),
+  ]),
+  const AdminNavGroup('Marketing', Icons.campaign_rounded, [
+    AdminNavItem('banners', 'Publicités & promotions', Icons.view_carousel_rounded,
+        path: AdminPaths.banners),
   ]),
   const AdminNavGroup('Partenaires', Icons.handshake_rounded, [
     AdminNavItem('sellers', 'Commerçants & boutiques', Icons.storefront_rounded,
@@ -82,6 +104,8 @@ const List<AdminNavGroup> kAdminMenu = [
         path: AdminPaths.clients),
   ]),
   const AdminNavGroup('Gestion', Icons.admin_panel_settings_rounded, [
+    AdminNavItem('finance', 'Finances', Icons.payments_rounded,
+        path: AdminPaths.finance),
     AdminNavItem('ops', 'Remboursements & comptes',
         Icons.account_balance_wallet_rounded,
         path: AdminPaths.ops),
@@ -741,7 +765,7 @@ class _SubTileState extends State<_SubTile> {
                             size: 13.5)
                         .copyWith(
                             fontWeight:
-                                sel ? FontWeight.w700 : FontWeight.w500)),
+                                sel ? FontWeight.w600 : FontWeight.w500)),
               ),
               if (widget.count > 0) _countBadge(widget.count),
             ],
@@ -954,6 +978,25 @@ class _NotificationsState extends State<_Notifications> {
   }
 }
 
+/// Photo de l'admin connecté (mise à jour aussitôt après un changement).
+final adminPhoto = ValueNotifier<String?>(null);
+
+/// Nouvelle photo de profil de l'admin : choisie, envoyée, enregistrée.
+Future<void> _changeAdminPhoto(BuildContext context) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final url = await pickAdminImage(context);
+  if (url == null || currentUserReference == null) return;
+  try {
+    await currentUserReference!.update({'photo_url': url});
+    adminPhoto.value = url;
+    messenger.showSnackBar(
+        const SnackBar(content: Text('Photo de profil mise à jour.')));
+  } catch (_) {
+    messenger.showSnackBar(const SnackBar(
+        content: Text('La photo n\'a pas pu être enregistrée. Réessayez.')));
+  }
+}
+
 class _AccountMenu extends StatelessWidget {
   const _AccountMenu({required this.wide});
 
@@ -968,6 +1011,11 @@ class _AccountMenu extends StatelessWidget {
       onSelected: (v) {
         if (v == 'logout') adminSignOut(context);
         if (v == 'home') context.go(AdminPaths.dashboard);
+        if (v == 'photo') _changeAdminPhoto(context);
+        if (v == 'password') {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const ChangePasswordPage()));
+        }
       },
       itemBuilder: (_) => [
         PopupMenuItem(
@@ -988,6 +1036,24 @@ class _AccountMenu extends StatelessWidget {
                 size: 18.0, color: AdminColors.muted),
             const SizedBox(width: 10.0),
             Text('Tableau de bord', style: AdminText.body()),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'photo',
+          child: Row(children: [
+            Icon(Icons.photo_camera_outlined,
+                size: 18.0, color: AdminColors.muted),
+            const SizedBox(width: 10.0),
+            Text('Changer ma photo', style: AdminText.body()),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'password',
+          child: Row(children: [
+            Icon(Icons.lock_outline_rounded,
+                size: 18.0, color: AdminColors.muted),
+            const SizedBox(width: 10.0),
+            Text('Changer mon mot de passe', style: AdminText.body()),
           ]),
         ),
         PopupMenuItem(
@@ -1013,7 +1079,20 @@ class _AccountMenu extends StatelessWidget {
             ),
             const SizedBox(width: 10.0),
           ],
-          AdminAvatar(name: name, size: 42.0),
+          ValueListenableBuilder<String?>(
+            valueListenable: adminPhoto,
+            builder: (context, photo, _) {
+              var p = photo;
+              if (p == null) {
+                try {
+                  p = currentUserPhoto;
+                } catch (_) {
+                  p = '';
+                }
+              }
+              return AdminAvatar(name: name, photo: p, size: 42.0);
+            },
+          ),
         ],
       ),
     );
@@ -1312,7 +1391,7 @@ class AdminTabbedBody extends StatelessWidget {
                 unselectedLabelColor: AdminColors.text,
                 labelStyle: AdminText.strong(size: 13.5),
                 unselectedLabelStyle: AdminText.label(size: 13.5)
-                    .copyWith(fontWeight: FontWeight.w600),
+                    .copyWith(fontWeight: FontWeight.w500),
                 splashBorderRadius: BorderRadius.circular(AdminRadius.md),
                 labelPadding: const EdgeInsets.symmetric(horizontal: 16.0),
                 tabs: [

@@ -113,20 +113,20 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
                       Text(
                         'Bienvenue sur',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: theme.primaryText,
                           fontSize: 26.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           height: 1.15,
                         ),
                       ),
                       Text(
                         'Kitunga',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.interTight(
+                        style: GoogleFonts.poppins(
                           color: const Color(0xFFE51A1A),
                           fontSize: 38.0,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           height: 1.1,
                           letterSpacing: -0.5,
                         ),
@@ -141,7 +141,7 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
                       Text(
                         'Boutiques, restaurants et pharmacies\nprès de chez vous.',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 14.5,
                           height: 1.45,
@@ -196,16 +196,16 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
                                     children: [
                                       Text(
                                         'J\'ai déjà un compte',
-                                        style: GoogleFonts.interTight(
+                                        style: GoogleFonts.poppins(
                                           color: theme.primaryText,
                                           fontSize: 15.5,
-                                          fontWeight: FontWeight.w800,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                       const SizedBox(height: 3.0),
                                       Text(
                                         'Connectez-vous pour continuer',
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.poppins(
                                           color: theme.secondaryText,
                                           fontSize: 12.5,
                                         ),
@@ -279,16 +279,16 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
                                     children: [
                                       Text(
                                         'Découvrir en visiteur',
-                                        style: GoogleFonts.interTight(
+                                        style: GoogleFonts.poppins(
                                           color: theme.primaryText,
                                           fontSize: 15.5,
-                                          fontWeight: FontWeight.w800,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                       const SizedBox(height: 3.0),
                                       Text(
                                         'Parcourez sans compte',
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.poppins(
                                           color: theme.secondaryText,
                                           fontSize: 12.5,
                                         ),
@@ -325,7 +325,7 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
                       Text(
                         'Pas encore de compte ?',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: theme.secondaryText,
                           fontSize: 13.5,
                           fontWeight: FontWeight.w500,
@@ -368,10 +368,10 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
                               children: [
                                 Text(
                                   'Créer un compte',
-                                  style: GoogleFonts.interTight(
+                                  style: GoogleFonts.poppins(
                                     color: Colors.white,
                                     fontSize: 15.0,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const SizedBox(width: 6.0),
@@ -393,7 +393,7 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
                         children: [
                           Text(
                             'En continuant, vous acceptez nos ',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: theme.hint,
                               fontSize: 12.0,
                             ),
@@ -403,17 +403,17 @@ class _OnboardingWidgetState extends State<OnboardingWidget> {
                                 context.pushNamed(TermsConditionsWidget.routeName),
                             child: Text(
                               'conditions d\'utilisation',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 color: theme.secondaryText,
                                 fontSize: 12.0,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 decoration: TextDecoration.underline,
                               ),
                             ),
                           ),
                           Text(
                             '.',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: theme.hint,
                               fontSize: 12.0,
                             ),

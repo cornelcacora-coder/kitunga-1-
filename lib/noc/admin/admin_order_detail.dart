@@ -1,10 +1,13 @@
+import '/noc/messages/staff_inbox.dart' show StaffWriteButton;
 import 'package:flutter/material.dart';
 
 import '/backend/order_status.dart';
 import '/noc/sales/sales_common.dart'
     show fcfa, salesCall, askText, runSalesAction, listOf;
 import '/noc/ui/admin_kit.dart';
+import '/noc/ui/admin_export.dart' show downloadReceiptPdf;
 import 'admin_dashboard_data.dart';
+import 'admin_order_trace.dart';
 
 /// Fiche d'une commande : client, commerce, livreur, adresse, articles.
 Future<void> showAdminOrderDetail(BuildContext context, DashOrder order,
@@ -50,6 +53,98 @@ class _OrderDetailState extends State<_OrderDetail> {
   ].whereType<String>());
 
   bool _busy = false;
+
+  /// Preuve de remise, problème signalé et reçu.
+  Widget _proof(DashOrder o) {
+    final delivered = [
+      OrderStatus.delivered,
+      OrderStatus.received,
+      OrderStatus.notReceived,
+    ].contains(o.status);
+    if (o.issue.isEmpty && !delivered) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 14.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (o.issue.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: AdminColors.redSoft,
+                borderRadius: BorderRadius.circular(AdminRadius.md),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.report_rounded, color: AdminColors.red),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: Text('Problème signalé par le livreur : ${o.issue}',
+                        style: AdminText.strong(
+                            size: 13.0, color: AdminColors.red)),
+                  ),
+                ],
+              ),
+            ),
+          if (delivered) ...[
+            if (o.issue.isNotEmpty) const SizedBox(height: 10.0),
+            Wrap(
+              spacing: 10.0,
+              runSpacing: 10.0,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                o.codeVerified
+                    ? const AdminBadge('Remise confirmée par code',
+                        tone: kToneGreen)
+                    : const AdminBadge('Remise sans code (ancienne version)',
+                        tone: kToneOrange),
+                if (o.photo.startsWith('http'))
+                  InkWell(
+                    borderRadius: BorderRadius.circular(AdminRadius.sm),
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (_) => Dialog(
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.network(o.photo,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.fallback, fit: BoxFit.contain),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AdminRadius.sm),
+                      child: Image.network(o.photo,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+                          width: 56.0,
+                          height: 56.0,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox(
+                              width: 56.0,
+                              height: 56.0,
+                              child: Icon(Icons.image_not_supported_outlined))),
+                    ),
+                  ),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    try {
+                      final r = await salesCall(
+                          'kitungaOrderReceipt', {'orderId': o.id});
+                      await downloadReceiptPdf(r);
+                      messenger.showSnackBar(SnackBar(
+                          content: Text('Reçu ${r['number']} téléchargé')));
+                    } catch (e) {
+                      messenger.showSnackBar(SnackBar(content: Text('$e')));
+                    }
+                  },
+                  icon: const Icon(Icons.receipt_long_rounded, size: 18.0),
+                  label: const Text('Reçu PDF'),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
   Future<void> _run(Map<String, dynamic> data, String done) async {
     setState(() => _busy = true);
@@ -186,6 +281,9 @@ class _OrderDetailState extends State<_OrderDetail> {
           ),
           if ((p?.phone ?? '').isNotEmpty)
             Text(p!.phone, style: AdminText.label()),
+          // Message direct de l'équipe Kitunga.
+          if (p != null && path != null)
+            StaffWriteButton(uid: path.split('/').last, dense: true),
         ],
       ),
     );
@@ -307,6 +405,9 @@ class _OrderDetailState extends State<_OrderDetail> {
                         ],
                       ),
                     ],
+                    _proof(o),
+                    // Pourquoi ce livreur, et qui a fait quoi.
+                    AdminOrderTrace(orderId: o.id),
                     const SizedBox(height: 20.0),
                     Text('ARTICLES', style: AdminText.caps()),
                     const SizedBox(height: 8.0),
@@ -364,6 +465,7 @@ class _ItemRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(AdminRadius.sm),
             child: img.startsWith('http')
                 ? Image.network(img,
+                        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
                     width: 46.0,
                     height: 46.0,
                     fit: BoxFit.cover,

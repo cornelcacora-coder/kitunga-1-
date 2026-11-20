@@ -68,7 +68,15 @@ service cloud.firestore {
             <= request.time + duration.value(1, 'h');
       allow update: if signedIn() && request.auth.uid == document
         && subscriptionUnchanged()
-        && roleChangeAllowed();
+        && roleChangeAllowed()
+        // Note, vérification, position, contact d'urgence : serveur seul.
+        && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['rating_sum', 'rating_count', 'verification',
+              'last_position', 'emergency_contact', 'shop_rating_sum',
+              'shop_rating_count', 'shop_point',
+              // Suspension décidée par l'admin (serveur seul).
+              'account_status', 'account_status_reason',
+              'account_status_updated_at']);
       // À la création d'un partenaire, l'administrateur ajoute son logo et sa
       // couverture. Il ne peut rien modifier d'autre sur ce profil.
       allow update: if isAdmin()
@@ -121,10 +129,14 @@ service cloud.firestore {
         || order.get('deliverer_ref', '') == request.auth.uid;
     }
 
-    // Un livreur peut prendre une commande qui n'a pas encore de livreur.
+    // Un livreur peut prendre une commande qui n'a pas encore de livreur,
+    // et seulement pour lui-même (kitungaTakeDelivery le fait en transaction).
     function canTakeOrder(order) {
       return myRole() == 'Deliver'
-        && (order.get('deliver_reference', null) == null || isAssignedDeliverer(order));
+        && order.get('deliver_reference', null) == null
+        && order.get('deliverer_ref', '') == ''
+        && request.resource.data.get('deliver_reference', null) == me()
+        && request.resource.data.get('deliverer_ref', '') == request.auth.uid;
     }
 
     function orderKeyFieldsUnchanged() {
@@ -153,7 +165,29 @@ service cloud.firestore {
         || isAdmin()
         || (after == 'Annulée' && isPendingStatus(before) && isBuyer(resource.data))
         || (after == 'Refusée' && isPendingStatus(before) && isSeller(resource.data))
-        || (!isPendingStatus(after) && !isStoppedStatus(after) && !isStoppedStatus(before));
+        // Réception : seulement le client, une fois la commande livrée.
+        || (after in ['Reçu', 'Non Reçu'] && before == 'Livrer' && isBuyer(resource.data))
+        // « Livrer » n'est posé que par le serveur (code de remise vérifié).
+        || (!isPendingStatus(after) && !isStoppedStatus(after) && !isStoppedStatus(before)
+            && !(after in ['Livrer', 'Reçu', 'Non Reçu']));
+    }
+    // Remise, reçu et incidents : écrits par le serveur seulement.
+    function orderServerFieldsUnchanged() {
+      return isAdmin() || !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['delivery_code_verified', 'delivery_photo', 'delivered_at',
+          'delivery_issue', 'receipt_number', 'receipt_at', 'cancel_reason',
+          'cancelled_by', 'admin_updated_by', 'taken_at', 'picked_up_at',
+          'shop_zone', 'delivery_km', 'arrived_at', 'delivery_status',
+          'finance_status', 'status_actor', 'status_reason', 'offer_to',
+          'offer_expires_at', 'dispatch_reason', 'settled_at', 'settlement',
+          'settlement_reversed_at', 'rating', 'delay', 'at_shop_at',
+          'handover_confirmed_at', 'accepted_at', 'shop_rating',
+          'delivery_point', 'shop_point',
+          'ready_at', 'stale_alert_at',
+          'prescription_ref', 'prescription_photos',
+          'return_status', 'return_reason', 'return_wish', 'return_note',
+          'return_photos', 'return_requested_at', 'return_decided_at',
+          'return_decision_note', 'refund_amount', 'refund_reason']);
     }
 
     // La demande de remboursement n'est possible qu'au moment de l'arrêt de
@@ -190,6 +224,7 @@ service cloud.firestore {
         || isAdmin());
       allow update: if signedIn() && orderKeyFieldsUnchanged()
         && orderStatusChangeAllowed()
+        && orderServerFieldsUnchanged()
         && orderRefundFieldsAllowed()
         && orderPaymentFieldsAllowed()
         && (isBuyer(resource.data) || isSeller(resource.data)

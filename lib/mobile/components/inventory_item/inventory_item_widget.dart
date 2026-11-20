@@ -118,15 +118,15 @@ class _InventoryItemWidgetState extends State<InventoryItemWidget> {
                       ),
                       maxLines: 1,
                       style: FlutterFlowTheme.of(context).titleMedium.override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.bold,
+                            font: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .titleMedium
                                   .fontStyle,
                             ),
                             color: FlutterFlowTheme.of(context).primaryText,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .fontStyle,
@@ -143,7 +143,7 @@ class _InventoryItemWidgetState extends State<InventoryItemWidget> {
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelSmall
                                       .fontWeight,
@@ -178,7 +178,7 @@ class _InventoryItemWidgetState extends State<InventoryItemWidget> {
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
-                                font: GoogleFonts.inter(
+                                font: GoogleFonts.poppins(
                                   fontWeight: FlutterFlowTheme.of(context)
                                       .labelSmall
                                       .fontWeight,
@@ -213,15 +213,15 @@ class _InventoryItemWidgetState extends State<InventoryItemWidget> {
                       '\$299',
                     ),
                     style: FlutterFlowTheme.of(context).titleMedium.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.w800,
+                          font: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .titleMedium
                                 .fontStyle,
                           ),
                           color: FlutterFlowTheme.of(context).primary,
                           letterSpacing: 0.0,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                           fontStyle: FlutterFlowTheme.of(context)
                               .titleMedium
                               .fontStyle,

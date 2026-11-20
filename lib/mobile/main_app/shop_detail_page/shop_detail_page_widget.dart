@@ -1,4 +1,6 @@
+import '/mobile/components/product_browser/kitunga_product_browser.dart';
 import '/backend/backend.dart';
+import '/mobile/main_app/search/kitunga_filters.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'dart:ui';
@@ -10,8 +12,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'shop_detail_page_model.dart';
-import '/mobile/components/form_styles/form_styles.dart';
 export 'shop_detail_page_model.dart';
+
+/// Tests : commerce et produits simulés (sans Firebase).
+@visibleForTesting
+Stream<UserRecord> Function()? shopDetailShopOverride;
+@visibleForTesting
+Stream<List<ProductRecord>> Function()? shopDetailProductsOverride;
 
 class ShopDetailPageWidget extends StatefulWidget {
   const ShopDetailPageWidget({
@@ -52,12 +59,6 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
     super.dispose();
   }
 
-  static const _filters = [
-    (label: 'Tous', value: ''),
-    (label: 'Nouveautés', value: 'Nouveauté'),
-    (label: 'Tendances', value: 'Tendance'),
-  ];
-
   void _openProduct(ProductRecord p, UserRecord shop) {
     context.pushNamed(
       ProductViewWidget.routeName,
@@ -96,10 +97,10 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
           SizedBox(width: 5.0),
           Text(
             text,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: color,
               fontSize: 12.0,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -192,10 +193,10 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                   Flexible(
                     child: Text(
                       shop.displayName,
-                      style: GoogleFonts.interTight(
+                      style: GoogleFonts.poppins(
                         color: theme.primaryText,
                         fontSize: 24.0,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -218,6 +219,13 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                   if (shop.horraire.trim().isNotEmpty)
                     _pill(theme, Icons.schedule_rounded, shop.horraire.trim(),
                         theme.secondaryText),
+                  // Restaurants : temps moyen de préparation.
+                  if ((shop.snapshotData['prep_minutes'] as num?) != null)
+                    _pill(
+                        theme,
+                        Icons.timer_outlined,
+                        'Prêt en ~${(shop.snapshotData['prep_minutes'] as num).toInt()} min',
+                        theme.secondaryText),
                   if (shop.verified)
                     _pill(theme, Icons.verified_outlined, 'Certifié',
                         theme.primary),
@@ -227,7 +235,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
                 SizedBox(height: 12.0),
                 Text(
                   shop.bio.trim(),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: theme.secondaryText,
                     fontSize: 14.0,
                     height: 1.5,
@@ -242,23 +250,18 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
   }
 
   // ── Catalogue adapté à la catégorie du commerce ──────────────────────
-  String _search = '';
-  String _chip = '';
+  /// Recherche, filtres et tri de la vitrine.
+  ProductFilter _filter = const ProductFilter();
+
+  /// Tri et disponibilité choisis par le client dans la vitrine.
   final _sectionKeys = <String, GlobalKey>{};
   late Stream<List<ProductRecord>> _productStream = _loadProducts();
 
-  Stream<List<ProductRecord>> _loadProducts() => queryProductRecord(
+  Stream<List<ProductRecord>> _loadProducts() =>
+      shopDetailProductsOverride?.call() ??
+      queryProductRecord(
         queryBuilder: (q) => q.where('seller_ref', isEqualTo: widget!.userRef),
       );
-
-  bool _isMenu(String category) =>
-      category == 'Restaurant' || category == 'Fast Food';
-
-  String _norm(String v) => v
-      .toLowerCase()
-      .replaceAll(RegExp('[éèêë]'), 'e')
-      .replaceAll(RegExp('[àâä]'), 'a')
-      .replaceAll('ç', 'c');
 
   /// Regroupe les produits par rubrique (ou rayon). Sans rubrique saisie,
   /// un seul groupe au nom adapté à l'activité.
@@ -281,67 +284,37 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
     return groups;
   }
 
-  Widget _searchField(FlutterFlowTheme theme, String hint) {
-    return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 12.0),
-      child: TextField(
-        onChanged: (v) => setState(() => _search = v),
-        textInputAction: TextInputAction.search,
-        style: GoogleFonts.inter(color: theme.primaryText, fontSize: 15.0),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle:
-              GoogleFonts.inter(color: theme.secondaryText, fontSize: 15.0),
-          prefixIcon: Icon(Icons.search_rounded, color: theme.secondaryText),
-          filled: true,
-          fillColor: theme.primaryBackground,
-          contentPadding: EdgeInsets.symmetric(vertical: 14.0),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14.0),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _chips(FlutterFlowTheme theme, List<String> labels,
-      {required bool scrollTo}) {
+  /// Rayons en accès rapide (filtre « rayon »).
+  Widget _chips(FlutterFlowTheme theme, List<String> labels) {
     return SizedBox(
       height: 48.0,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.fromLTRB(20.0, 4.0, 20.0, 8.0),
+        padding: EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 0.0),
         children: [
           for (final label in ['', ...labels])
-            if (!(scrollTo && label.isEmpty))
-              Padding(
-                padding: EdgeInsetsDirectional.only(end: 8.0),
-                child: ChoiceChip(
-                  label: Text(label.isEmpty ? 'Tous' : label),
-                  selected: _chip == label,
-                  showCheckmark: false,
-                  onSelected: (_) {
-                    setState(() => _chip = label);
-                    // Menu : on fait défiler jusqu'à la rubrique.
-                    final key = _sectionKeys[label];
-                    if (scrollTo && key?.currentContext != null) {
-                      Scrollable.ensureVisible(key!.currentContext!,
-                          duration: Duration(milliseconds: 350),
-                          curve: Curves.easeInOut);
-                    }
-                  },
-                  labelStyle: GoogleFonts.inter(
-                    color: _chip == label ? Colors.white : theme.primaryText,
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  selectedColor: theme.primary,
-                  backgroundColor: theme.primaryBackground,
-                  side: BorderSide.none,
-                  shape: StadiumBorder(),
+            Padding(
+              padding: EdgeInsetsDirectional.only(end: 8.0),
+              child: ChoiceChip(
+                label: Text(label.isEmpty ? 'Tout' : label),
+                selected: (_filter.section ?? '') == label,
+                showCheckmark: false,
+                onSelected: (_) => setState(() => _filter =
+                    _filter.copyWith(
+                        section: () => label.isEmpty ? null : label)),
+                labelStyle: GoogleFonts.poppins(
+                  color: (_filter.section ?? '') == label
+                      ? Colors.white
+                      : theme.primaryText,
+                  fontSize: 13.0,
+                  fontWeight: FontWeight.w500,
                 ),
+                selectedColor: theme.primary,
+                backgroundColor: theme.primaryBackground,
+                side: BorderSide.none,
+                shape: StadiumBorder(),
               ),
+            ),
         ],
       ),
     );
@@ -357,19 +330,19 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.interTight(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 18.0,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
           Text(
             '$count',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: theme.secondaryText,
               fontSize: 13.0,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -396,26 +369,6 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
     );
   }
 
-  Widget _rows(
-      FlutterFlowTheme theme, List<ProductRecord> products, UserRecord shop) {
-    return Column(
-      children: [
-        for (var i = 0; i < products.length; i++) ...[
-          if (i > 0)
-            Divider(
-                height: 1.0,
-                indent: 20.0,
-                endIndent: 20.0,
-                color: theme.divider),
-          KitungaProductRow(
-            product: products[i],
-            onTap: () => _openProduct(products[i], shop),
-          ),
-        ],
-      ],
-    );
-  }
-
   Widget _info(FlutterFlowTheme theme, IconData icon, String text) {
     return Container(
       margin: EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 12.0),
@@ -432,7 +385,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: theme.primaryText,
                 fontSize: 13.0,
                 height: 1.45,
@@ -456,7 +409,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
             text,
             textAlign: TextAlign.center,
             style:
-                GoogleFonts.inter(color: theme.secondaryText, fontSize: 14.0),
+                GoogleFonts.poppins(color: theme.secondaryText, fontSize: 14.0),
           ),
         ],
       ),
@@ -476,7 +429,7 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
               children: [
                 Text(
                   'Impossible de charger les produits.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       color: theme.secondaryText, fontSize: 14.0),
                 ),
                 SizedBox(height: 12.0),
@@ -499,93 +452,85 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
           );
         }
 
-        final q = _norm(_search.trim());
         // Les clients ne voient que les produits publiés (pas les brouillons).
         final published = snapshot.data!.where(kitungaIsPublished).toList();
-        final all = published
-            .where((p) =>
-                q.isEmpty ||
-                _norm(p.name).contains(q) ||
-                _norm(p.description).contains(q))
-            .toList();
-        final groups = _group(all, category);
-        final menu = _isMenu(category);
+        final shops = {shop.reference.path: shop};
+        // Rubriques / rayons du commerce, dans l'ordre de la vitrine.
+        final sections = _group(published, category).keys.toList();
+        final hasSections = published.any((p) => p.section.trim().isNotEmpty);
+        List<ProductRecord> apply(ProductFilter f) =>
+            filterProducts(published, shops, f);
+        // Ordre du commerce tant qu'aucune recherche ni aucun tri n'est choisi.
+        final matching = apply(_filter);
+        final filtered = _filter.query.trim().isEmpty &&
+                _filter.sort == ProductSort.relevance
+            ? [
+                for (final p in published)
+                  if (matching.contains(p)) p,
+              ]
+            : matching;
         final pharmacy = category == 'Pharmacie';
-
-        // Pastilles : rubriques si le vendeur en a créé, sinon les
-        // étiquettes existantes (Nouveautés / Tendances).
-        final useSections = groups.length > 1;
-        final tagLabels = _filters
-            .where((f) =>
-                f.value.isNotEmpty &&
-                all.any((p) => p.specifications == f.value))
-            .map((f) => f.label)
-            .toList();
-        List<ProductRecord> byChip(List<ProductRecord> ps) {
-          if (_chip.isEmpty || useSections || menu) return ps;
-          final tag = _filters
-              .firstWhere((f) => f.label == _chip, orElse: () => _filters.first)
-              .value;
-          return tag.isEmpty
-              ? ps
-              : ps.where((p) => p.specifications == tag).toList();
-        }
-
         final searchHint = switch (category) {
           'Restaurant' || 'Fast Food' => 'Rechercher un plat…',
-          'Pharmacie' => 'Rechercher un produit par son nom…',
+          'Pharmacie' => 'Rechercher un médicament…',
           _ => 'Rechercher un article…',
         };
 
         final children = <Widget>[
           if (pharmacy)
             _info(theme, Icons.medical_information_outlined,
-                'Les médicaments sur ordonnance sont visibles mais ne peuvent pas être commandés en ligne : présentez votre ordonnance directement à la pharmacie.'),
-          _searchField(theme, searchHint),
+                'Médicaments sur ordonnance : envoyez la photo de votre ordonnance depuis la fiche du médicament. Une fois validée par la pharmacie, vous pouvez commander pendant 7 jours.'),
         ];
-
         if (published.isEmpty) {
           children.add(
               _empty(theme, 'Ce commerce n\'a pas encore publié de produits.'));
           return Column(children: children);
         }
-        if (all.isEmpty) {
-          children.add(_empty(
-              theme, 'Aucun produit ne correspond à « ${_search.trim()} ».'));
+        children.add(KitungaProductToolbar(
+          filter: _filter,
+          onChanged: (f) => setState(() => _filter = f),
+          count: (f) => apply(f).length,
+          hint: searchHint,
+          sections: hasSections ? sections : const [],
+          showCategory: false,
+        ));
+        // Rayons : accès rapide.
+        if (hasSections && sections.length > 1) {
+          children.add(_chips(theme, sections));
+        }
+        if (filtered.isEmpty) {
+          children.add(_empty(theme, 'Aucun produit ne correspond à votre recherche.'));
           return Column(children: children);
         }
-
-        if (menu || pharmacy) {
-          // Menu / pharmacie : rubriques empilées, lignes produits.
-          if (useSections) {
-            children.add(_chips(theme, groups.keys.toList(), scrollTo: true));
-          }
-          groups.forEach((name, products) {
+        final grouped = hasSections &&
+            _filter.section == null &&
+            _filter.query.trim().isEmpty &&
+            _filter.sort == ProductSort.relevance;
+        if (grouped) {
+          // Rubriques empilées, cartes en grille sous chaque rubrique.
+          _group(filtered, category).forEach((name, products) {
             final key = _sectionKeys.putIfAbsent(name, () => GlobalKey());
             children.add(_sectionTitle(theme, name, products.length, key: key));
-            children.add(_rows(theme, products, shop));
+            children.add(_grid(products, shop));
           });
         } else {
-          // Boutique / magasin : filtres puis grille.
-          final labels = useSections ? groups.keys.toList() : tagLabels;
-          if (labels.isNotEmpty) {
-            children.add(_chips(theme, labels, scrollTo: false));
-          }
-          final shown = useSections && _chip.isNotEmpty
-              ? (groups[_chip] ?? <ProductRecord>[])
-              : byChip(all);
+          final unit = category == 'Restaurant' || category == 'Fast Food'
+              ? 'plat'
+              : category == 'Magasin'
+                  ? 'article'
+                  : 'produit';
           children.add(Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(20.0, 4.0, 20.0, 0.0),
+            padding: EdgeInsetsDirectional.fromSTEB(20.0, 12.0, 20.0, 0.0),
             child: Text(
-              '${shown.length} ${category == 'Magasin' ? 'article' : 'produit'}${shown.length > 1 ? 's' : ''}',
-              style: GoogleFonts.inter(
+              '${filtered.length} $unit${filtered.length > 1 ? 's' : ''}',
+              style: GoogleFonts.poppins(
                 color: theme.secondaryText,
                 fontSize: 13.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ));
-          children.add(_grid(shown, shop));
+          children.add(_grid(filtered, shop));
         }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -602,9 +547,12 @@ class _ShopDetailPageWidgetState extends State<ShopDetailPageWidget> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: isDark ? const Color(0xFF101418) : Colors.white,
-      body: KitungaScaffoldBackground(
-        child: StreamBuilder<UserRecord>(
-        stream: UserRecord.getDocument(widget!.userRef!),
+      // Pas de décor rouge figé en bas : les produits défilent sur un fond
+      // uni (aspect professionnel).
+      body: Builder(
+        builder: (context) => StreamBuilder<UserRecord>(
+        stream: shopDetailShopOverride?.call() ??
+            UserRecord.getDocument(widget!.userRef!),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(

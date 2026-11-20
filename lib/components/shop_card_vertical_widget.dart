@@ -165,7 +165,7 @@ class _ShopCardVerticalWidgetState extends State<ShopCardVerticalWidget> {
                       'Ouvert',
                       style: TextStyle(
                         color: FlutterFlowTheme.of(context).primaryBackground,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         fontSize: 10.0,
                       ),
                     ),
@@ -190,8 +190,8 @@ class _ShopCardVerticalWidgetState extends State<ShopCardVerticalWidget> {
                       style: FlutterFlowTheme.of(context)
                           .headlineLarge
                           .override(
-                            font: GoogleFonts.interTight(
-                              fontWeight: FontWeight.w600,
+                            font: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
                               fontStyle: FlutterFlowTheme.of(context)
                                   .headlineLarge
                                   .fontStyle,
@@ -199,7 +199,7 @@ class _ShopCardVerticalWidgetState extends State<ShopCardVerticalWidget> {
                             color: FlutterFlowTheme.of(context).secondaryText,
                             fontSize: 14.0,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             fontStyle: FlutterFlowTheme.of(context)
                                 .headlineLarge
                                 .fontStyle,
@@ -223,8 +223,8 @@ class _ShopCardVerticalWidgetState extends State<ShopCardVerticalWidget> {
                           style: FlutterFlowTheme.of(context)
                               .labelSmall
                               .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
+                                font: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w500,
                                   fontStyle: FlutterFlowTheme.of(context)
                                       .labelSmall
                                       .fontStyle,
@@ -232,7 +232,7 @@ class _ShopCardVerticalWidgetState extends State<ShopCardVerticalWidget> {
                                 color:
                                     FlutterFlowTheme.of(context).secondaryText,
                                 letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 fontStyle: FlutterFlowTheme.of(context)
                                     .labelSmall
                                     .fontStyle,
