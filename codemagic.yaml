@@ -23,6 +23,8 @@ workflows:
           flutter build ios --config-only
       - name: Install pods
         script: |
+          flutter config --no-enable-swift-package-manager
+          flutter precache --ios
           cd ios
           pod deintegrate || true
           rm -f Podfile.lock
