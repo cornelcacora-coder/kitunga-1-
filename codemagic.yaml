@@ -13,7 +13,7 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.ntemoconsulting.kitunga
       vars:
-        APP_STORE_APPLE_ID: 35G928M34D
+        APP_STORE_APPLE_ID: U34NZ869UB
     scripts:
       - name: Set up code signing
         script: xcode-project use-profiles
