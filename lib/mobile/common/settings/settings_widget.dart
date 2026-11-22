@@ -1,4 +1,5 @@
 import '/mobile/components/kitunga_contact.dart';
+import '/mobile/components/delete_account/delete_account.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -445,6 +446,79 @@ class _SettingsWidgetState extends State<SettingsWidget>
                   ),
                 ).animateOnPageLoad(
                     animationsMap['containerOnPageLoadAnimation3']!),
+                InkWell(
+                  onTap: () => showDeleteAccountDialog(context),
+                  child: Container(
+                    width: 388.0,
+                    height: 64.0,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).lightGrey,
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    child: Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 16.0, 8.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 48.0,
+                            height: 48.0,
+                            decoration: const BoxDecoration(
+                              color: Color(0x22E51A1A),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: const AlignmentDirectional(0.0, 0.0),
+                            child: const Icon(
+                              Icons.delete_forever_rounded,
+                              color: Color(0xFFE51A1A),
+                              size: 24.0,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                16.0, 0.0, 0.0, 0.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Supprimer mon compte',
+                                  maxLines: 1,
+                                  style: GoogleFonts.poppins(
+                                    color: const Color(0xFFE51A1A),
+                                    fontSize: 15.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  'Action définitive',
+                                  maxLines: 1,
+                                  style: GoogleFonts.poppins(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                    fontSize: 12.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Expanded(
+                            child: Align(
+                              alignment: AlignmentDirectional(1.0, 0.0),
+                              child: Icon(
+                                Icons.arrow_forward_ios,
+                                color: Color(0xFFE51A1A),
+                                size: 18.0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ].divide(SizedBox(height: 16.0)),
             ),
           ),
