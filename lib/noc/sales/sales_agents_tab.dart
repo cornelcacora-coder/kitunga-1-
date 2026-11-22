@@ -279,7 +279,8 @@ class _AgentFormState extends State<_AgentForm> {
               children: [
                 TextFormField(
                     controller: _name,
-                    decoration: salesInput('Nom complet'),
+                    decoration: salesInput('Nom complet',
+                        hint: 'Ex. BITODI Cornelca'),
                     validator: _required),
                 const SizedBox(height: 12.0),
                 if (_isNew) ...[

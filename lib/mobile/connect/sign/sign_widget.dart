@@ -302,7 +302,7 @@ class _SignWidgetState extends State<SignWidget> {
                   style: fieldStyle,
                   decoration: kitungaInputDecoration(
                     context,
-                    'Ex : Jean Mabiala',
+                    'Ex : BITODI Cornelca',
                     Icons.person_outline_rounded,
                   ),
                   validator: (v) => (v ?? '').trim().isEmpty
