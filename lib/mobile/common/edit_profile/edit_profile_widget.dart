@@ -198,7 +198,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                   controller: _model.nameTextController,
                   focusNode: _model.nameFocusNode,
                   textCapitalization: TextCapitalization.words,
-                  decoration: deco('Nom et prénom', Icons.person_outline),
+                  decoration: deco('Nom et prénom', Icons.person_outline,
+                      hint: 'Ex. BITODI Cornelca'),
                   validator: (v) => (v ?? '').trim().length < 2
                       ? 'Indiquez votre nom.'
                       : null,

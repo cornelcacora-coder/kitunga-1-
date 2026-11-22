@@ -938,7 +938,8 @@ class _NewPartnerFormState extends State<_NewPartnerForm> {
         TextField(
           controller: _name,
           maxLength: 80,
-          decoration: salesInput(_seller ? 'Nom du commerce' : 'Nom complet'),
+          decoration: salesInput(_seller ? 'Nom du commerce' : 'Nom complet',
+              hint: _seller ? null : 'Ex. BITODI Cornelca'),
         ),
         AdminFieldRow(children: [
           TextField(

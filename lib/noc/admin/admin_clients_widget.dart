@@ -567,7 +567,7 @@ class _ClientFormState extends State<_ClientForm> {
         TextField(
           controller: _name,
           maxLength: 80,
-          decoration: salesInput('Nom'),
+          decoration: salesInput('Nom', hint: 'Ex. BITODI Cornelca'),
         ),
         TextField(
           controller: _phone,
